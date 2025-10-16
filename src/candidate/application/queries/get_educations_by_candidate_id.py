@@ -1,6 +1,6 @@
 from typing import List
 
-from presentation.candidate.schemas.candidate_education import CandidateEducationResponse
+from adapters.http.candidate.schemas.candidate_education import CandidateEducationResponse
 from src.candidate.domain.repositories.candidate_education_repository_interface import \
     CandidateEducationRepositoryInterface
 from src.candidate.domain.value_objects.candidate_id import CandidateId

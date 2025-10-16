@@ -7,7 +7,7 @@ from sqlalchemy import String, Text, Float, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
-from src.interview.interview.Infrastructure.models.interview_model import InterviewModel
+# Removed import to avoid circular dependency
 
 
 @dataclass
@@ -29,4 +29,4 @@ class InterviewAnswerModel(Base):
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     created_by: Mapped[Optional[str]] = mapped_column(String)
     updated_by: Mapped[Optional[str]] = mapped_column(String)
-    interview: Mapped["InterviewModel"] = relationship(back_populates="answers")
+    interview: Mapped["InterviewModel"] = relationship(back_populates="answers")   # type: ignore # noqa: F821

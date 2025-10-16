@@ -5,7 +5,7 @@ Admin authentication middleware for validating admin roles
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from presentation.shared.schemas.user import UserResponse
+from adapters.http.shared.schemas.user import UserResponse
 from src.shared.application.query_bus import QueryBus
 from src.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
 from src.staff.infrastructure.repositories.staff_repository import SQLAlchemyStaffRepository

@@ -3,11 +3,11 @@ import logging
 from typing import Dict, Any
 
 try:
-    import PyPDF2
+    import pypdf
 
-    PYPDF2_AVAILABLE = True
+    PYPDF_AVAILABLE = True
 except ImportError:
-    PYPDF2_AVAILABLE = False
+    PYPDF_AVAILABLE = False
 
 from src.user.domain.enums.asset_enums import ProcessingStatusEnum
 
@@ -27,8 +27,8 @@ class PDFProcessingService:
             "metadata": {}
         }
 
-        if not PYPDF2_AVAILABLE:
-            error_msg = "PyPDF2 is not installed. Install with: pip install PyPDF2"
+        if not PYPDF_AVAILABLE:
+            error_msg = "pypdf is not installed. Install with: pip install pypdf"
             self.logger.error(error_msg)
             result["error"] = error_msg
             return result
@@ -38,7 +38,7 @@ class PDFProcessingService:
             pdf_file = io.BytesIO(pdf_bytes)
 
             # Create PDF reader
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            pdf_reader = pypdf.PdfReader(pdf_file)
 
             # Get metadata
             metadata = {
@@ -115,13 +115,13 @@ class PDFProcessingService:
 
     def validate_pdf_file(self, pdf_bytes: bytes) -> bool:
         """Validar si el archivo es un PDF válido"""
-        if not PYPDF2_AVAILABLE:
-            self.logger.warning("PyPDF2 not available, skipping PDF validation")
+        if not PYPDF_AVAILABLE:
+            self.logger.warning("pypdf not available, skipping PDF validation")
             return True  # Assume valid if we can't validate
 
         try:
             pdf_file = io.BytesIO(pdf_bytes)
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            pdf_reader = pypdf.PdfReader(pdf_file)
 
             # Try to read metadata and first page to ensure it's valid
             _ = len(pdf_reader.pages)

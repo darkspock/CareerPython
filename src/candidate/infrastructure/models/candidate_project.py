@@ -6,7 +6,6 @@ from sqlalchemy import String, Date, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
-from src.candidate.infrastructure.models import CandidateModel
 from src.shared.domain.entities.base import generate_id
 
 
@@ -24,4 +23,4 @@ class CandidateProjectModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    candidate: Mapped["CandidateModel"] = relationship(back_populates="projects")
+    candidate: Mapped["CandidateModel"] = relationship(back_populates="projects")   # type: ignore # noqa: F821

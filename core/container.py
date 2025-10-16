@@ -4,19 +4,19 @@ from core.database import SQLAlchemyDatabase
 from core.event_bus import EventBus
 
 # Solo imports esenciales para admin e interview templates
-from presentation.admin.controllers.inverview_template_controller import InterviewTemplateController
-from presentation.admin.controllers.company_controller import CompanyController
-from presentation.admin.controllers.job_position_controller import JobPositionController
-from presentation.admin.controllers.interview_controller import InterviewController
-from presentation.shared.controllers.user import UserController
+from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
+from adapters.http.admin.controllers.company_controller import CompanyController
+from adapters.http.admin.controllers import JobPositionController
+from adapters.http.admin.controllers.interview_controller import InterviewController
+from adapters.http.shared.controllers.user import UserController
 
 # Onboarding Controller
-from presentation.candidate.controllers.onboarding_controller import OnboardingController
-from presentation.candidate.controllers.candidate import CandidateController
-from presentation.candidate.controllers.application_controller import ApplicationController
+from adapters.http.candidate import OnboardingController
+from adapters.http.candidate.controllers.candidate import CandidateController
+from adapters.http.candidate.controllers.application_controller import ApplicationController
 
 # Admin Controllers
-from presentation.admin.controllers.admin_candidate_controller import AdminCandidateController
+from adapters.http.admin.controllers.admin_candidate_controller import AdminCandidateController
 
 # Auth Application Layer
 from src.user.application.commands.create_user_command import CreateUserCommandHandler
@@ -25,12 +25,12 @@ from src.user.application.commands.create_user_from_landing import CreateUserFro
 from src.user.application.commands.request_password_reset_command import RequestPasswordResetCommandHandler
 from src.user.application.commands.reset_password_with_token_command import ResetPasswordWithTokenCommandHandler
 from src.user.application.commands.update_user_password_command import UpdateUserPasswordCommandHandler
-from src.user.application.commands.update_user_language_command import UpdateUserLanguageCommand, UpdateUserLanguageCommandHandler
+from src.user.application.commands.update_user_language_command import UpdateUserLanguageCommandHandler
 from src.user.application.queries.authenticate_user_query import AuthenticateUserQueryHandler
 from src.user.application.queries.check_user_exists_query import CheckUserExistsQueryHandler
 from src.user.application.queries.create_access_token_query import CreateAccessTokenQueryHandler
 from src.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQueryHandler
-from src.user.application.queries.get_user_language_query import GetUserLanguageQuery, GetUserLanguageQueryHandler
+from src.user.application.queries.get_user_language_query import GetUserLanguageQueryHandler
 
 # Auth Infrastructure
 from src.user.infrastructure.repositories.user_repository import SQLAlchemyUserRepository
@@ -277,6 +277,7 @@ class Container(containers.DeclarativeContainer):
 
     check_user_exists_query_handler = providers.Factory(
         CheckUserExistsQueryHandler,
+        user_repository=user_repository
     )
 
     get_current_user_from_token_query_handler = providers.Factory(
@@ -389,6 +390,7 @@ class Container(containers.DeclarativeContainer):
     # Auth Command Handlers
     create_user_command_handler = providers.Factory(
         CreateUserCommandHandler,
+        user_repository=user_repository
     )
 
     create_user_automatically_command_handler = providers.Factory(
@@ -398,10 +400,13 @@ class Container(containers.DeclarativeContainer):
 
     request_password_reset_command_handler = providers.Factory(
         RequestPasswordResetCommandHandler,
+        user_repository=user_repository,
+        email_service=email_service
     )
 
     reset_password_with_token_command_handler = providers.Factory(
         ResetPasswordWithTokenCommandHandler,
+        user_repository=user_repository
     )
 
     # Admin User Management Command Handlers

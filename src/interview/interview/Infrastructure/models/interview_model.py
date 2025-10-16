@@ -7,7 +7,7 @@ from sqlalchemy import String, DateTime, Integer, Float, Text, JSON, Enum, Forei
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
-from src.interview.interview.Infrastructure.models.interview_answer_model import InterviewAnswerModel
+# Removed import to avoid circular dependency
 from src.interview.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
 from src.shared.domain.entities.base import generate_id
 
@@ -47,7 +47,7 @@ class InterviewModel(Base):
     updated_by: Mapped[Optional[str]] = mapped_column(String)  # User ID who last updated the interview
 
     # Relationships
-    answers: Mapped[List["InterviewAnswerModel"]] = relationship(back_populates="interview",
+    answers: Mapped[List["InterviewAnswerModel"]] = relationship(back_populates="interview",   # type: ignore # noqa: F821
                                                                  cascade="all, delete-orphan")
     application: Mapped[Optional["CandidateApplicationModel"]] = relationship("CandidateApplicationModel",
                                                                               back_populates="interviews")

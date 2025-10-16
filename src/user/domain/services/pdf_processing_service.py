@@ -1,8 +1,8 @@
 import io
 from typing import Dict, Any
 
-from PyPDF2 import PdfReader
-from PyPDF2.errors import PdfReadError
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 
 class PDFProcessingService:
@@ -85,7 +85,7 @@ class PDFProcessingService:
             "error_message": None,
             "metadata": {
                 "page_count": 0,
-                "extraction_method": "PyPDF2"
+                "extraction_method": "pypdf"
             }
         }
 

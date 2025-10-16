@@ -1,6 +1,6 @@
 from typing import List
 
-from presentation.candidate.schemas.candidate_project import CandidateProjectResponse
+from adapters.http.candidate.schemas.candidate_project import CandidateProjectResponse
 from src.candidate.domain.repositories.candidate_project_repository_interface import CandidateProjectRepositoryInterface
 from src.candidate.domain.value_objects.candidate_id import CandidateId
 from src.shared.application.query_bus import Query, QueryHandler

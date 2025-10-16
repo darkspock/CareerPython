@@ -4,7 +4,7 @@ from typing import Optional
 
 from sqlalchemy import String, Date, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.candidate.infrastructure.models.candidate_model import CandidateModel
+# Removed import to avoid circular dependency
 
 from core.base import Base
 from src.shared.domain.entities.base import generate_id
@@ -25,4 +25,4 @@ class CandidateExperienceModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    candidate: Mapped["CandidateModel"] = relationship(back_populates="experiences")
+    candidate: Mapped["CandidateModel"] = relationship(back_populates="experiences")   # type: ignore # noqa: F821

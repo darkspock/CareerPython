@@ -22,5 +22,7 @@ coverage.xml
 .pytest_cache
 .hypothesis
 
-# uv
-uv.lock
+# macOS
+.DS_Store
+
+# uv (don't ignore uv.lock - it should be committed like package-lock.json)

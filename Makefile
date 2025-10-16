@@ -4,7 +4,11 @@
 
 # Start the development environment
 start:
-	@./scripts/dev-start.sh
+	@echo "🚀 Starting development environment..."
+	@echo "📦 Starting Docker services..."
+	docker-compose up -d
+	@echo "🐍 Starting FastAPI server locally..."
+	source .venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 # Stop all services
 stop:
@@ -24,10 +28,10 @@ logs:
 	@echo "📋 Viewing logs..."
 	docker-compose logs -f
 
-# Access backend shell
+# Activate local Python environment
 shell:
-	@echo "🐚 Accessing backend shell..."
-	docker-compose exec web bash
+	@echo "🐚 Activating local Python environment..."
+	source .venv/bin/activate && bash
 
 # Access database shell
 db-shell:
@@ -61,20 +65,19 @@ db-fix-version:
 # Run database migrations
 migrate:
 	@echo "🔄 Running database migrations..."
-	docker-compose exec web alembic upgrade head
+	source .venv/bin/activate && alembic upgrade head
 
 # Create new migration
 migration:
 	@echo "📝 Creating new migration..."
 	@read -p "Enter migration message: " message; \
-	docker-compose exec web alembic revision --autogenerate -m "$$message"
+	source .venv/bin/activate && alembic revision --autogenerate -m "$$message"
 
 # Install new Python package
 install:
 	@echo "📦 Installing Python package..."
 	@read -p "Enter package name: " package; \
-	docker-compose exec web uv add "$$package"
-	docker-compose restart web
+	source .venv/bin/activate && uv add "$$package"
 
 # Setup development environment
 dev-setup:
@@ -84,14 +87,16 @@ dev-setup:
 		cp .env.example .env; \
 		echo "⚠️  Please update .env with your configuration"; \
 	fi
-	@echo "🔨 Building containers..."
-	docker-compose build
-	@echo "🗄️  Setting up database..."
-	docker-compose up -d db
+	@echo "🐍 Creating local virtual environment..."
+	uv venv .venv --clear
+	@echo "📦 Installing dependencies..."
+	source .venv/bin/activate && uv pip install -e .
+	@echo "🗄️  Starting database services..."
+	docker-compose up -d
 	@echo "⏳ Waiting for database to be ready..."
 	@sleep 10
 	@echo "✅ Development environment ready!"
-	@echo "Run 'make start' to start all services"
+	@echo "Run 'make start' to start the development server"
 
 # Clean development environment
 clean:
@@ -102,26 +107,26 @@ clean:
 
 # 🧪 Testing Commands
 
-# Ejecutar todas las pruebas con Docker
+# Ejecutar todas las pruebas localmente
 test:
-	@echo "🧪 Ejecutando todas las pruebas con Docker..."
-	./scripts/run-tests.sh
+	@echo "🧪 Ejecutando todas las pruebas localmente..."
+	source .venv/bin/activate && pytest tests/ -v
 
 # Ejecutar solo pruebas unitarias
 test-unit:
 	@echo "🧪 Ejecutando pruebas unitarias..."
-	docker-compose -f docker-compose.test.yml run --rm unit-tests
+	source .venv/bin/activate && pytest tests/unit/ -v
 
-# Ejecutar solo pruebas de integración
+# Ejecutar solo pruebas de integración (requiere Docker para servicios)
 test-integration:
 	@echo "🧪 Ejecutando pruebas de integración..."
-	docker-compose -f docker-compose.test.yml run --rm integration-tests
-
-# Ejecutar pruebas con Docker (sin script)
-test-docker:
-	@echo "🧪 Ejecutando pruebas con Docker..."
-	docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
-	docker-compose -f docker-compose.test.yml down -v
+	@echo "🐳 Iniciando servicios de prueba..."
+	docker-compose -f docker-compose.test.yml up -d test-db test-redis
+	@echo "⏳ Esperando a que los servicios estén listos..."
+	@sleep 10
+	source .venv/bin/activate && POSTGRES_HOST=localhost POSTGRES_PORT=5434 REDIS_HOST=localhost REDIS_PORT=6380 TEST_DATABASE_URL="postgresql://test_user:test_password@localhost:5434/test_career_db" pytest tests/integration/ -v
+	@echo "🧹 Deteniendo servicios de prueba..."
+	docker-compose -f docker-compose.test.yml down
 
 # Limpiar contenedores y volúmenes de prueba
 clean-test:
@@ -132,67 +137,131 @@ clean-test:
 # Ejecutar pruebas específicas
 test-subscription:
 	@echo "🧪 Ejecutando pruebas de suscripción..."
-	docker-compose -f docker-compose.test.yml run --rm unit-tests pytest tests/unit/user/test_subscription* tests/integration/test_subscription* -v
+	source .venv/bin/activate && pytest tests/unit/user/test_subscription* tests/integration/test_subscription* -v
 
 # Ejecutar pruebas de interview templates
 test-interview-templates:
 	@echo "🧪 Ejecutando pruebas de interview templates..."
-	docker-compose -f docker-compose.test.yml run --rm integration-tests pytest tests/integration/test_interview_templates.py -v
+	@echo "🐳 Iniciando servicios de prueba..."
+	docker-compose -f docker-compose.test.yml up -d test-db test-redis
+	@sleep 10
+	source .venv/bin/activate && POSTGRES_HOST=localhost POSTGRES_PORT=5434 pytest tests/integration/test_interview_templates.py -v
+	docker-compose -f docker-compose.test.yml down
 
 # Ejecutar pruebas de integración sin las marcadas como skip
 test-integration-quick:
 	@echo "🧪 Ejecutando pruebas de integración rápidas..."
-	docker-compose -f docker-compose.test.yml run --rm integration-tests pytest tests/integration/ -m "not skip" -v
+	@echo "🐳 Iniciando servicios de prueba..."
+	docker-compose -f docker-compose.test.yml up -d test-db test-redis
+	@sleep 10
+	source .venv/bin/activate && POSTGRES_HOST=localhost POSTGRES_PORT=5434 pytest tests/integration/ -m "not skip" -v
+	docker-compose -f docker-compose.test.yml down
 
 # Ejecutar pruebas con cobertura
 test-coverage:
 	@echo "🧪 Ejecutando pruebas con cobertura..."
-	docker-compose -f docker-compose.test.yml run --rm unit-tests pytest --cov=src --cov-report=html --cov-report=term-missing
+	source .venv/bin/activate && pytest tests/ --cov=src --cov-report=html --cov-report=term-missing -v
+
+# 👥 Candidate Domain Tests
+
+# Ejecutar todas las pruebas del dominio candidate
+test-candidate:
+	@echo "👥 Ejecutando todas las pruebas del dominio candidate..."
+	source .venv/bin/activate && pytest tests/unit/candidate/ -v
+
+# Ejecutar pruebas de comandos del dominio candidate
+test-candidate-commands:
+	@echo "⚡ Ejecutando pruebas de comandos candidate..."
+	source .venv/bin/activate && pytest tests/unit/candidate/commands/ -v
+
+# Ejecutar pruebas de queries del dominio candidate
+test-candidate-queries:
+	@echo "🔍 Ejecutando pruebas de queries candidate..."
+	source .venv/bin/activate && pytest tests/unit/candidate/queries/ -v
+
+# Ejecutar pruebas específicas de candidate (create, update)
+test-candidate-crud:
+	@echo "📝 Ejecutando pruebas CRUD de candidate..."
+	source .venv/bin/activate && pytest tests/unit/candidate/commands/test_candidate_commands.py -v
+
+# Ejecutar pruebas específicas de experience (create, update)
+test-candidate-experience:
+	@echo "💼 Ejecutando pruebas de experience..."
+	source .venv/bin/activate && pytest tests/unit/candidate/commands/test_experience_commands.py -v
+
+# Ejecutar pruebas específicas de education (create, update)
+test-candidate-education:
+	@echo "🎓 Ejecutando pruebas de education..."
+	source .venv/bin/activate && pytest tests/unit/candidate/commands/test_education_commands.py -v
+
+# Ejecutar pruebas específicas de project (create, update)
+test-candidate-projects:
+	@echo "🚀 Ejecutando pruebas de projects..."
+	source .venv/bin/activate && pytest tests/unit/candidate/commands/test_project_commands.py -v
+
+# Ejecutar pruebas del dominio candidate con cobertura
+test-candidate-coverage:
+	@echo "📊 Ejecutando pruebas candidate con cobertura..."
+	source .venv/bin/activate && pytest tests/unit/candidate/ --cov=src/candidate/application --cov-report=html --cov-report=term-missing -v
+
+# Ejecutar pruebas candidate con output verbose y colores
+test-candidate-verbose:
+	@echo "📝 Ejecutando pruebas candidate con output detallado..."
+	source .venv/bin/activate && pytest tests/unit/candidate/ -v -s --tb=short --color=yes
 
 # 🔍 Code Quality Commands
 
 # Ejecutar mypy type checking
 mypy:
 	@echo "🔍 Ejecutando verificación de tipos con mypy..."
-	docker-compose exec web mypy src/ presentation/
+	source .venv/bin/activate && mypy src/ adapters/
 
 # Ejecutar flake8 linting y corregir W291, W292, W293, E302
 lint:
 	@echo "🔍 Ejecutando linting con flake8..."
-	docker-compose exec web uv run flake8 src/ presentation/
+	source .venv/bin/activate && flake8 src/ adapters/
 	@echo "🔧 Corrigiendo errores W291, W292, W293, E302..."
-	docker-compose exec web uv run autopep8 --select=W291,W292,W293,E302 --in-place --recursive src/ presentation/
+	source .venv/bin/activate && autopep8 --select=W291,W292,W293,E302 --in-place --recursive src/ adapters/
 
 # Ejecutar linting con flake8
 linter:
 	@echo "🔍 Ejecutando linting con flake8..."
-	docker-compose exec web uv run flake8 src/ presentation/
+	source .venv/bin/activate && flake8 src/ adapters/
 
 # Corregir errores E501 (line too long) con autopep8 agresivo
 lint-fix-long-lines:
 	@echo "🔧 Corrigiendo errores E501 (line too long) con modo agresivo..."
-	docker-compose exec web uv run autopep8 --select=E501 --aggressive --in-place --recursive src/ presentation/
+	source .venv/bin/activate && autopep8 --select=E501 --aggressive --in-place --recursive src/ adapters/
 	@echo "✅ Líneas largas corregidas!"
 
 # Ejecutar verificación completa de calidad del código
 check:
 	@echo "🔍 Ejecutando verificación completa de calidad del código..."
 	@echo "📋 Ejecutando flake8..."
-	docker-compose exec web uv run flake8 src/ presentation/
+	source .venv/bin/activate && flake8 src/ adapters/
 	@echo "📋 Ejecutando mypy..."
-	docker-compose exec web mypy src/ presentation/
+	source .venv/bin/activate && mypy src/ adapters/
 	@echo "✅ Verificación completa!"
 
 # Ayuda
 help:
 	@echo "Comandos disponibles:"
 	@echo "🧪 Testing:"
-	@echo "  make test              - Ejecutar todas las pruebas con Docker"
+	@echo "  make test              - Ejecutar todas las pruebas localmente"
 	@echo "  make test-unit         - Ejecutar solo pruebas unitarias"
-	@echo "  make test-integration  - Ejecutar solo pruebas de integración"
-	@echo "  make test-docker       - Ejecutar pruebas con Docker (directo)"
+	@echo "  make test-integration  - Ejecutar solo pruebas de integración (con Docker para servicios)"
 	@echo "  make test-subscription - Ejecutar pruebas de suscripción"
 	@echo "  make test-coverage     - Ejecutar pruebas con cobertura"
+	@echo "👥 Candidate Domain Tests:"
+	@echo "  make test-candidate           - Ejecutar todas las pruebas del dominio candidate"
+	@echo "  make test-candidate-commands  - Ejecutar pruebas de comandos candidate"
+	@echo "  make test-candidate-queries   - Ejecutar pruebas de queries candidate"
+	@echo "  make test-candidate-crud      - Ejecutar pruebas CRUD de candidate"
+	@echo "  make test-candidate-experience - Ejecutar pruebas de experience"
+	@echo "  make test-candidate-education - Ejecutar pruebas de education"
+	@echo "  make test-candidate-projects  - Ejecutar pruebas de projects"
+	@echo "  make test-candidate-coverage  - Ejecutar pruebas candidate con cobertura"
+	@echo "  make test-candidate-verbose   - Ejecutar pruebas candidate con output detallado"
 	@echo "🔍 Code Quality:"
 	@echo "  make lint              - Ejecutar linting con flake8 y corregir W291, W292, W293, E302"
 	@echo "  make linter            - Ejecutar linting con flake8 (solo verificar)"
@@ -200,5 +269,6 @@ help:
 	@echo "  make mypy              - Ejecutar verificación de tipos con mypy"
 	@echo "  make check             - Verificación completa (flake8 + mypy)"
 	@echo "🛠️ Utilities:"
-	@echo "  make clean-test        - Limpiar contenedores y volúmenes"
+	@echo "  make clean-test        - Limpiar contenedores y volúmenes de prueba"
+	@echo "  make shell             - Activar entorno Python local"
 	@echo "  make help              - Mostrar esta ayuda"

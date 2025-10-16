@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional
 
-from src.candidate.domain.exceptions import CandidateNotFoundError
+from src.candidate.domain.exceptions import EducationNotFoundError
 from src.candidate.domain.repositories.candidate_education_repository_interface import \
     CandidateEducationRepositoryInterface
 from src.candidate.domain.value_objects.candidate_education_id import CandidateEducationId
@@ -26,7 +26,7 @@ class UpdateEducationCommandHandler(CommandHandler[UpdateEducationCommand]):
     def execute(self, command: UpdateEducationCommand) -> None:
         existing_education = self.education_repository.get_by_id(command.id)
         if not existing_education:
-            raise CandidateNotFoundError("Education not found")
+            raise EducationNotFoundError("Education not found")
         existing_education.update_details(
             degree=command.degree,
             institution=command.institution,

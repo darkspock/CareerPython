@@ -1,7 +1,6 @@
 """
 FastAPI app minimal - Solo admin interview templates
 """
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,15 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.container import Container
 
 # Initialize Dramatiq broker for web service
-from src.shared.infrastructure.dramatiq_app import broker
-from presentation.admin.routes.admin_router import router as admin_router
-from presentation.candidate.routers.landing_router import router as landing_router
-from presentation.candidate.routers.candidate_router import candidate_router
-from presentation.candidate.routers.resume_router import router as resume_router
-from presentation.candidate.routers.file_router import file_router
-from presentation.candidate.routers.job_router import job_router
-from presentation.shared.routes.user_router import user_router
-from presentation.shared.routes.ai_test_router import router as ai_test_router
+from adapters.http.admin.routes.admin_router import router as admin_router
+from adapters.http.candidate.routers.landing_router import router as landing_router
+from adapters.http.candidate.routers.candidate_router import candidate_router
+from adapters.http.candidate.routers.resume_router import router as resume_router
+from adapters.http.candidate.routers.file_router import file_router
+from adapters.http.candidate.routers.job_router import job_router
+from adapters.http.shared.routes.user_router import user_router
+from adapters.http.shared.routes.ai_test_router import router as ai_test_router
 
 # Crear tablas - COMENTADO temporalmente para aislamiento
 # Base.metadata.create_all(bind=engine)
@@ -81,11 +79,11 @@ app.container = container
 
 # Wire solo el admin router y onboarding
 container.wire(modules=[
-    "presentation.admin.routes.admin_router",
-    "presentation.candidate.routers.landing_router",
-    "presentation.candidate.routers.candidate_router",
-    "presentation.candidate.routers.resume_router",
-    "presentation.candidate.routers.file_router",
-    "presentation.candidate.routers.job_router",
-    "presentation.shared.routes.user_router",
+    "adapters.http.admin.routes.admin_router",
+    "adapters.http.candidate.routers.landing_router",
+    "adapters.http.candidate.routers.candidate_router",
+    "adapters.http.candidate.routers.resume_router",
+    "adapters.http.candidate.routers.file_router",
+    "adapters.http.candidate.routers.job_router",
+    "adapters.http.shared.routes.user_router",
 ])

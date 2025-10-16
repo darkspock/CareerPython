@@ -5,11 +5,8 @@ from typing import Optional, Dict, List, Any
 from sqlalchemy import String, Integer, Boolean, JSON, Enum, DateTime, Date, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from core.base import Base
 from src.candidate.domain.enums.candidate_enums import CandidateStatusEnum, CandidateTypeEnum
-from src.candidate.infrastructure.models import CandidateExperienceModel, CandidateEducationModel, CandidateProjectModel
-from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
 from src.shared.domain.entities.base import generate_id
 from src.shared.domain.enums.job_category import JobCategoryEnum
 
@@ -48,7 +45,7 @@ class CandidateModel(Base):
     candidate_notes: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
-    experiences: Mapped[List["CandidateExperienceModel"]] = relationship(back_populates="candidate")
-    educations: Mapped[List["CandidateEducationModel"]] = relationship(back_populates="candidate")
-    projects: Mapped[List["CandidateProjectModel"]] = relationship(back_populates="candidate")
-    applications: Mapped[List["CandidateApplicationModel"]] = relationship(back_populates="candidate")
+    experiences: Mapped[List["CandidateExperienceModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
+    educations: Mapped[List["CandidateEducationModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
+    projects: Mapped[List["CandidateProjectModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
+    applications: Mapped[List["CandidateApplicationModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821

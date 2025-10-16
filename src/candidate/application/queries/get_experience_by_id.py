@@ -1,6 +1,6 @@
 from typing import Optional
 
-from presentation.candidate.schemas.candidate_experience import CandidateExperienceResponse
+from adapters.http.candidate.schemas.candidate_experience import CandidateExperienceResponse
 from src.candidate.domain.repositories.candiadate_experience_repository_interface import \
     CandidateExperienceRepositoryInterface
 from src.candidate.domain.value_objects.candidate_experience_id import CandidateExperienceId
