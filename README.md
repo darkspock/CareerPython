@@ -107,7 +107,7 @@ This project demonstrates **professional-grade software architecture** patterns:
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/CareerPython.git
+git clone https://github.com/darkspock/CareerPython.git
 cd CareerPython
 ```
 
