@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, ConfigDict
 from datetime import date, datetime
 from typing import Optional, Any
 
@@ -24,8 +24,7 @@ class CandidateEducation(CandidateEducationBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CandidateEducationResponse(CandidateEducationBase):
@@ -48,8 +47,7 @@ class CandidateEducationResponse(CandidateEducationBase):
             return str(v.value)
         return str(v)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CandidateEducationCreateRequest(BaseModel):
