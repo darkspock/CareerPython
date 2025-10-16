@@ -1,0 +1,252 @@
+# Makefile for running tests with Docker
+# AI Resume Enhancement Platform - Test Suite
+
+.PHONY: help test test-unit test-integration test-security test-performance test-ai test-all clean setup logs viewer
+
+# Default target
+help:
+	@echo "AI Resume Enhancement Platform - Test Suite"
+	@echo "==========================================="
+	@echo ""
+	@echo "Available targets:"
+	@echo "  setup              - Set up test environment"
+	@echo "  test               - Run all tests"
+	@echo "  test-unit          - Run unit tests only"
+	@echo "  test-integration   - Run integration tests only"
+	@echo "  test-security      - Run security tests only"
+	@echo "  test-performance   - Run performance tests only"
+	@echo "  test-ai            - Run AI-specific tests"
+	@echo "  test-quick         - Run quick test suite (unit + security)"
+	@echo "  test-all           - Run comprehensive test suite"
+	@echo "  clean              - Clean up test containers and volumes"
+	@echo "  logs               - Show test container logs"
+	@echo "  viewer             - Start test results viewer"
+	@echo "  shell              - Open shell in test container"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make test-security              # Run security tests"
+	@echo "  make test-ai                    # Run AI-specific tests"
+	@echo "  make test ARGS='--verbose'      # Run tests with verbose output"
+
+# Setup test environment
+setup:
+	@echo "🔧 Setting up test environment..."
+	@mkdir -p test-results coverage-reports security-reports performance-reports
+	@docker-compose -f docker-compose.test.yml pull
+	@docker-compose -f docker-compose.test.yml build
+	@echo "✅ Test environment ready!"
+
+# Run all tests
+test:
+	@echo "🧪 Running all tests..."
+	@./scripts/run-tests.sh all
+
+# Run unit tests only
+test-unit:
+	@echo "🔬 Running unit tests..."
+	@./scripts/run-tests.sh unit
+
+# Run integration tests only
+test-integration:
+	@echo "🔗 Running integration tests..."
+	@./scripts/run-tests.sh integration
+
+# Run security tests only
+test-security:
+	@echo "🔒 Running security tests..."
+	@./scripts/run-tests.sh security
+
+# Run performance tests only
+test-performance:
+	@echo "⚡ Running performance tests..."
+	@./scripts/run-tests.sh performance
+
+# Run AI-specific tests
+test-ai:
+	@echo "🤖 Running AI-specific tests..."
+	@./scripts/run-ai-tests.sh --all
+
+# Run quick test suite
+test-quick:
+	@echo "⚡ Running quick test suite..."
+	@./scripts/run-tests.sh quick
+
+# Run comprehensive test suite
+test-all: setup
+	@echo "🚀 Running comprehensive test suite..."
+	@./scripts/run-tests.sh all
+	@./scripts/run-ai-tests.sh --all
+
+# Clean up containers and volumes
+clean:
+	@echo "🧹 Cleaning up test environment..."
+	@docker-compose -f docker-compose.test.yml down --volumes --remove-orphans
+	@docker system prune -f
+	@echo "✅ Cleanup completed!"
+
+# Show logs from test containers
+logs:
+	@echo "📋 Showing test container logs..."
+	@docker-compose -f docker-compose.test.yml logs --tail=100 -f
+
+# Start test results viewer
+viewer:
+	@echo "🌐 Starting test results viewer..."
+	@echo "Open http://localhost:8090 in your browser"
+	@docker-compose -f docker-compose.test.yml up test-viewer
+
+# Open shell in test container
+shell:
+	@echo "🐚 Opening shell in test container..."
+	@docker-compose -f docker-compose.test.yml run --rm test-runner /bin/bash
+
+# Security-specific targets
+security-scan:
+	@echo "🔍 Running security scan..."
+	@docker-compose -f docker-compose.test.yml run --rm security-tests \
+		sh -c "bandit -r src/ -f json -o /app/security-reports/bandit-full.json && \
+		       safety check --json --output /app/security-reports/safety-full.json"
+
+security-report:
+	@echo "📊 Generating security report..."
+	@docker-compose -f docker-compose.test.yml run --rm security-tests \
+		python -m pytest tests/unit/shared/test_subscription_security.py \
+		tests/integration/test_enhanced_security_middleware.py \
+		--html=/app/security-reports/security-detailed-report.html \
+		--self-contained-html
+
+# AI-specific targets
+ai-unit:
+	@echo "🤖 Running AI unit tests..."
+	@./scripts/run-ai-tests.sh --unit-only
+
+ai-integration:
+	@echo "🤖 Running AI integration tests..."
+	@./scripts/run-ai-tests.sh --integration-only
+
+ai-e2e:
+	@echo "🤖 Running AI end-to-end tests..."
+	@./scripts/run-ai-tests.sh --e2e
+
+ai-performance:
+	@echo "🤖 Running AI performance tests..."
+	@./scripts/run-ai-tests.sh --performance
+
+# Coverage targets
+coverage:
+	@echo "📊 Generating coverage report..."
+	@docker-compose -f docker-compose.test.yml run --rm test-runner \
+		python -m pytest tests/ --cov=src --cov-report=html:/app/coverage-reports/full \
+		--cov-report=term-missing
+
+coverage-security:
+	@echo "📊 Generating security coverage report..."
+	@docker-compose -f docker-compose.test.yml run --rm test-runner \
+		python -m pytest tests/unit/shared/test_subscription_security.py \
+		tests/integration/test_enhanced_security_middleware.py \
+		--cov=src/shared/infrastructure/security \
+		--cov-report=html:/app/coverage-reports/security \
+		--cov-report=term-missing
+
+# Database targets
+db-reset:
+	@echo "🗄️ Resetting test database..."
+	@docker-compose -f docker-compose.test.yml down test-db
+	@docker volume rm $$(docker volume ls -q | grep test_db_data) 2>/dev/null || true
+	@docker-compose -f docker-compose.test.yml up -d test-db
+	@sleep 10
+
+# Monitoring targets
+monitor:
+	@echo "📊 Starting test monitoring..."
+	@docker-compose -f docker-compose.test.yml up -d test-db test-redis mock-ai-service
+	@echo "Services available at:"
+	@echo "  - Test Database: localhost:5433"
+	@echo "  - Test Redis: localhost:6380"
+	@echo "  - Mock AI Service: localhost:8080"
+	@echo "  - Mock Email Service: localhost:8025"
+
+# Development targets
+dev-setup: setup
+	@echo "🛠️ Setting up development test environment..."
+	@docker-compose -f docker-compose.test.yml up -d test-db test-redis mock-ai-service mock-email-service
+	@echo "✅ Development test environment ready!"
+
+dev-test:
+	@echo "🔄 Running development tests (with file watching)..."
+	@docker-compose -f docker-compose.test.yml run --rm test-runner \
+		python -m pytest tests/ -v --tb=short -x --lf
+
+# Benchmark targets
+benchmark:
+	@echo "⏱️ Running benchmark tests..."
+	@docker-compose -f docker-compose.test.yml run --rm performance-tests \
+		python -m pytest tests/performance/ --benchmark-only \
+		--benchmark-json=/app/performance-reports/benchmark-results.json
+
+benchmark-compare:
+	@echo "📊 Comparing benchmark results..."
+	@docker-compose -f docker-compose.test.yml run --rm performance-tests \
+		python -m pytest tests/performance/ --benchmark-compare \
+		--benchmark-compare-fail=min:5% --benchmark-compare-fail=mean:10%
+
+# Parallel testing targets
+test-parallel:
+	@echo "⚡ Running tests in parallel..."
+	@docker-compose -f docker-compose.test.yml run --rm test-runner \
+		python -m pytest tests/ -n auto --dist worksteal
+
+# Stress testing targets
+stress-test:
+	@echo "💪 Running stress tests..."
+	@docker-compose -f docker-compose.test.yml run --rm performance-tests \
+		python -m pytest tests/performance/ -k stress --timeout=600
+
+# Documentation targets
+test-docs:
+	@echo "📚 Generating test documentation..."
+	@docker-compose -f docker-compose.test.yml run --rm test-runner \
+		python -m pytest tests/ --collect-only --quiet | \
+		grep "test session starts" -A 1000 > test-results/test-inventory.txt
+
+# Validation targets
+validate-security:
+	@echo "✅ Validating security implementation..."
+	@make test-security
+	@make security-scan
+	@make security-report
+	@echo "🔒 Security validation completed!"
+
+validate-ai:
+	@echo "✅ Validating AI implementation..."
+	@make ai-unit
+	@make ai-integration
+	@echo "🤖 AI validation completed!"
+
+# Complete validation
+validate-all: setup
+	@echo "🎯 Running complete validation suite..."
+	@make test-all
+	@make security-scan
+	@make benchmark
+	@echo "✅ Complete validation finished!"
+
+# Help for specific test categories
+help-security:
+	@echo "Security Testing Commands:"
+	@echo "========================="
+	@echo "  make test-security     - Run security tests"
+	@echo "  make security-scan     - Run security vulnerability scan"
+	@echo "  make security-report   - Generate detailed security report"
+	@echo "  make coverage-security - Generate security test coverage"
+	@echo "  make validate-security - Complete security validation"
+
+help-ai:
+	@echo "AI Testing Commands:"
+	@echo "==================="
+	@echo "  make test-ai        - Run all AI tests"
+	@echo "  make ai-unit        - Run AI unit tests"
+	@echo "  make ai-integration - Run AI integration tests"
+	@echo "  make ai-e2e         - Run AI end-to-end tests"
+	@echo "  make ai-performance - Run AI performance tests"
+	@echo "  make validate-ai    - Complete AI validation"

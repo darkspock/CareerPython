@@ -1,0 +1,1 @@
+from .commands.update_interview_template import UpdateInterviewTemplateCommandHandler

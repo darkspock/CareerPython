@@ -1,0 +1,464 @@
+import React, { useState, useEffect } from 'react';
+import { api } from '../../lib/api';
+import {
+  Interview,
+  InterviewProgress,
+  ConversationalQuestion,
+  InterviewStatus,
+  InterviewType
+} from '../../types/interview';
+
+interface InterviewProgressNavigationProps {
+  interview: Interview;
+  progress: InterviewProgress;
+  onNavigateToQuestion?: (questionIndex: number) => void;
+  onSectionChange?: (section: string) => void;
+  onStatusChange?: (status: InterviewStatus) => void;
+  showSectionNavigation?: boolean;
+  showQuestionNavigation?: boolean;
+  showTimeTracking?: boolean;
+  showProgressStats?: boolean;
+  compact?: boolean;
+}
+
+interface SectionInfo {
+  id: string;
+  name: string;
+  status: 'completed' | 'current' | 'upcoming' | 'locked';
+  questionsCount: number;
+  completedCount: number;
+  estimatedTime: number;
+  actualTime?: number;
+  score?: number;
+}
+
+interface NavigationBreadcrumb {
+  type: 'section' | 'question';
+  id: string;
+  label: string;
+  status: 'completed' | 'current' | 'upcoming';
+  clickable: boolean;
+}
+
+const InterviewProgressNavigation: React.FC<InterviewProgressNavigationProps> = ({
+  interview,
+  progress,
+  onNavigateToQuestion,
+  onSectionChange,
+  onStatusChange,
+  showSectionNavigation = true,
+  showQuestionNavigation = false,
+  showTimeTracking = true,
+  showProgressStats = true,
+  compact = false
+}) => {
+  const [sections, setSections] = useState<SectionInfo[]>([]);
+  const [breadcrumbs, setBreadcrumbs] = useState<NavigationBreadcrumb[]>([]);
+  const [totalTime, setTotalTime] = useState(0);
+  const [sectionTime, setSectionTime] = useState(0);
+  const [showNavigationMenu, setShowNavigationMenu] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadSectionInfo();
+    updateBreadcrumbs();
+  }, [progress]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTotalTime(prev => prev + 1);
+      setSectionTime(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    // Reset section time when moving to a new section
+    if (progress.current_section) {
+      setSectionTime(0);
+    }
+  }, [progress.current_section]);
+
+  const loadSectionInfo = async () => {
+    try {
+      // Mock section data - in real implementation, this would come from the API
+      const mockSections: SectionInfo[] = [
+        {
+          id: 'introduction',
+          name: 'Introduction',
+          status: progress.sections_completed.includes('introduction') ? 'completed' :
+                  progress.current_section === 'introduction' ? 'current' : 'upcoming',
+          questionsCount: 2,
+          completedCount: progress.sections_completed.includes('introduction') ? 2 :
+                         progress.current_section === 'introduction' ? 1 : 0,
+          estimatedTime: 300, // 5 minutes
+          actualTime: progress.sections_completed.includes('introduction') ? 280 : undefined,
+          score: progress.sections_completed.includes('introduction') ? 8.5 : undefined
+        },
+        {
+          id: 'technical',
+          name: 'Technical Skills',
+          status: progress.sections_completed.includes('technical') ? 'completed' :
+                  progress.current_section === 'technical' ? 'current' :
+                  progress.sections_completed.includes('introduction') ? 'upcoming' : 'locked',
+          questionsCount: 5,
+          completedCount: progress.sections_completed.includes('technical') ? 5 :
+                         progress.current_section === 'technical' ? Math.floor(Math.random() * 3) : 0,
+          estimatedTime: 1800, // 30 minutes
+          actualTime: progress.sections_completed.includes('technical') ? 1650 : undefined,
+          score: progress.sections_completed.includes('technical') ? 7.8 : undefined
+        },
+        {
+          id: 'behavioral',
+          name: 'Behavioral Questions',
+          status: progress.sections_completed.includes('behavioral') ? 'completed' :
+                  progress.current_section === 'behavioral' ? 'current' :
+                  progress.sections_completed.includes('technical') ? 'upcoming' : 'locked',
+          questionsCount: 4,
+          completedCount: progress.sections_completed.includes('behavioral') ? 4 :
+                         progress.current_section === 'behavioral' ? Math.floor(Math.random() * 2) : 0,
+          estimatedTime: 1200, // 20 minutes
+          actualTime: progress.sections_completed.includes('behavioral') ? 1320 : undefined,
+          score: progress.sections_completed.includes('behavioral') ? 8.9 : undefined
+        },
+        {
+          id: 'conclusion',
+          name: 'Wrap-up',
+          status: progress.sections_completed.includes('conclusion') ? 'completed' :
+                  progress.current_section === 'conclusion' ? 'current' :
+                  progress.sections_completed.includes('behavioral') ? 'upcoming' : 'locked',
+          questionsCount: 1,
+          completedCount: progress.sections_completed.includes('conclusion') ? 1 :
+                         progress.current_section === 'conclusion' ? 0 : 0,
+          estimatedTime: 300, // 5 minutes
+          actualTime: progress.sections_completed.includes('conclusion') ? 250 : undefined,
+          score: progress.sections_completed.includes('conclusion') ? 9.0 : undefined
+        }
+      ];
+
+      setSections(mockSections);
+    } catch (err) {
+      console.error('Failed to load section info:', err);
+    }
+  };
+
+  const updateBreadcrumbs = () => {
+    const crumbs: NavigationBreadcrumb[] = [];
+
+    // Add interview type
+    crumbs.push({
+      type: 'section',
+      id: 'interview',
+      label: interview.interview_type.replace('_', ' '),
+      status: 'current',
+      clickable: false
+    });
+
+    // Add current section
+    if (progress.current_section) {
+      const sectionName = progress.current_section.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      crumbs.push({
+        type: 'section',
+        id: progress.current_section,
+        label: sectionName,
+        status: 'current',
+        clickable: showSectionNavigation
+      });
+    }
+
+    // Add current question
+    if (progress.current_question) {
+      crumbs.push({
+        type: 'question',
+        id: progress.current_question.question_id,
+        label: `Question ${progress.answered_questions + 1}`,
+        status: 'current',
+        clickable: false
+      });
+    }
+
+    setBreadcrumbs(crumbs);
+  };
+
+  const handleSectionNavigation = async (sectionId: string) => {
+    if (!onSectionChange || loading) return;
+
+    const targetSection = sections.find(s => s.id === sectionId);
+    if (!targetSection || targetSection.status === 'locked') return;
+
+    try {
+      setLoading(true);
+      onSectionChange(sectionId);
+    } catch (err) {
+      console.error('Failed to navigate to section:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const calculateOverallProgress = (): number => {
+    return progress.completion_percentage;
+  };
+
+  const calculateTimeRemaining = (): number => {
+    const totalEstimated = sections.reduce((acc, section) => acc + section.estimatedTime, 0);
+    const completedTime = sections
+      .filter(s => s.status === 'completed')
+      .reduce((acc, section) => acc + (section.actualTime || section.estimatedTime), 0);
+
+    return Math.max(0, totalEstimated - completedTime);
+  };
+
+  const getStatusColor = (status: SectionInfo['status']): string => {
+    const colors = {
+      completed: 'text-green-600 bg-green-50 border-green-200',
+      current: 'text-blue-600 bg-blue-50 border-blue-200',
+      upcoming: 'text-gray-600 bg-gray-50 border-gray-200',
+      locked: 'text-gray-400 bg-gray-50 border-gray-200'
+    };
+    return colors[status];
+  };
+
+  const getStatusIcon = (status: SectionInfo['status']): React.ReactNode => {
+    switch (status) {
+      case 'completed':
+        return (
+          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        );
+      case 'current':
+        return (
+          <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+          </div>
+        );
+      case 'upcoming':
+        return (
+          <div className="w-4 h-4 border-2 border-gray-400 rounded-full" />
+        );
+      case 'locked':
+        return (
+          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-9a2 2 0 00-2-2H15V4a3 3 0 00-6 0v4H7a2 2 0 00-2 2v9a2 2 0 002 2z" />
+          </svg>
+        );
+    }
+  };
+
+  if (compact) {
+    return (
+      <div className="bg-white border-b border-gray-200 px-4 py-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {/* Progress Bar */}
+            <div className="flex items-center space-x-2">
+              <div className="w-24 bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${calculateOverallProgress()}%` }}
+                />
+              </div>
+              <span className="text-sm font-medium text-gray-900">
+                {Math.round(calculateOverallProgress())}%
+              </span>
+            </div>
+
+            {/* Current Position */}
+            <span className="text-sm text-gray-600">
+              Q{progress.answered_questions + 1}/{progress.total_questions}
+            </span>
+          </div>
+
+          {showTimeTracking && (
+            <div className="text-sm text-gray-600">
+              ⏱️ {formatTime(totalTime)}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center space-x-2 text-sm mb-4">
+          {breadcrumbs.map((crumb, index) => (
+            <div key={crumb.id} className="flex items-center">
+              {index > 0 && (
+                <svg className="w-4 h-4 text-gray-400 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
+              <span className={`${
+                crumb.status === 'current' ? 'text-blue-600 font-medium' : 'text-gray-500'
+              } ${crumb.clickable ? 'cursor-pointer hover:underline' : ''}`}>
+                {crumb.label}
+              </span>
+            </div>
+          ))}
+        </nav>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Overall Progress */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-medium text-gray-900">Interview Progress</h3>
+              <span className="text-sm text-gray-500">
+                {progress.answered_questions} of {progress.total_questions} questions completed
+              </span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+              <div
+                className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 shadow-sm"
+                style={{ width: `${calculateOverallProgress()}%` }}
+              />
+            </div>
+
+            {/* Section Navigation */}
+            {showSectionNavigation && (
+              <div className="space-y-2">
+                {sections.map((section, index) => (
+                  <div
+                    key={section.id}
+                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
+                      getStatusColor(section.status)
+                    } ${section.status === 'locked' ? 'cursor-not-allowed' : 'hover:shadow-sm'}`}
+                    onClick={() => section.status !== 'locked' && handleSectionNavigation(section.id)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      {getStatusIcon(section.status)}
+                      <div>
+                        <div className="font-medium">{section.name}</div>
+                        <div className="text-sm opacity-75">
+                          {section.completedCount}/{section.questionsCount} questions
+                          {section.score && (
+                            <span className="ml-2">• Score: {section.score.toFixed(1)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right text-sm">
+                      <div className="font-medium">
+                        {section.actualTime ? formatTime(section.actualTime) : formatTime(section.estimatedTime)}
+                      </div>
+                      <div className="opacity-75">
+                        {section.actualTime ? 'Completed' : 'Estimated'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Stats Panel */}
+          {showProgressStats && (
+            <div className="space-y-6">
+              {/* Time Tracking */}
+              {showTimeTracking && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3">Time Tracking</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total Time:</span>
+                      <span className="font-medium">{formatTime(totalTime)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Section Time:</span>
+                      <span className="font-medium">{formatTime(sectionTime)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Est. Remaining:</span>
+                      <span className="font-medium">{formatTime(calculateTimeRemaining())}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Quick Stats */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">Quick Stats</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {Math.round(calculateOverallProgress())}%
+                    </div>
+                    <div className="text-sm text-gray-600">Complete</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {progress.sections_completed.length}
+                    </div>
+                    <div className="text-sm text-gray-600">Sections</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {progress.answered_questions}
+                    </div>
+                    <div className="text-sm text-gray-600">Questions</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {formatTime(totalTime).split(':')[0]}m
+                    </div>
+                    <div className="text-sm text-gray-600">Time</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation Menu */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">Quick Actions</h4>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setShowNavigationMenu(!showNavigationMenu)}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center justify-between"
+                  >
+                    <span>Navigation Menu</span>
+                    <svg className={`w-4 h-4 transition-transform ${showNavigationMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {showNavigationMenu && (
+                    <div className="pl-3 space-y-1">
+                      <button className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded">
+                        Review Answers
+                      </button>
+                      <button className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded">
+                        Interview Settings
+                      </button>
+                      <button className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded">
+                        Get Help
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InterviewProgressNavigation;

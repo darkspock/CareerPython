@@ -1,0 +1,1 @@
+from .repositories.interview_template_repository import InterviewTemplateRepository

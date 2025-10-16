@@ -1,0 +1,1 @@
+# Candidate Application Domain Entities

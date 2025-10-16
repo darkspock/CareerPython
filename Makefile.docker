@@ -1,0 +1,142 @@
+# Docker-based Makefile for AI Resume Enhancement Platform
+
+.PHONY: help docker-build docker-up docker-down docker-logs docker-test docker-clean
+
+# Default target
+help:
+	@echo "Available Docker commands:"
+	@echo "  docker-build     - Build all Docker images"
+	@echo "  docker-up        - Start all services with Docker Compose"
+	@echo "  docker-down      - Stop all services"
+	@echo "  docker-logs      - View logs from all services"
+	@echo "  docker-test      - Run tests in Docker containers"
+	@echo "  docker-clean     - Clean up Docker resources"
+	@echo "  docker-migrate   - Run database migrations"
+	@echo "  docker-shell     - Open shell in main app container"
+	@echo "  docker-psql      - Connect to PostgreSQL database"
+	@echo "  docker-redis     - Connect to Redis CLI"
+
+# Build all Docker images
+docker-build:
+	@echo "Building Docker images..."
+	docker-compose -f docker/docker-compose.subscription.yml build
+
+# Start all services
+docker-up:
+	@echo "Starting services with Docker Compose..."
+	docker-compose -f docker/docker-compose.subscription.yml up -d
+	@echo "Waiting for services to be ready..."
+	@sleep 10
+	@echo "Services started. Running health checks..."
+	@make docker-health-check
+
+# Stop all services
+docker-down:
+	@echo "Stopping services..."
+	docker-compose -f docker/docker-compose.subscription.yml down
+
+# View logs
+docker-logs:
+	docker-compose -f docker/docker-compose.subscription.yml logs -f
+
+# Run tests in Docker
+docker-test:
+	@echo "Running tests in Docker containers..."
+	docker-compose -f docker/docker-compose.subscription.yml exec app python -m pytest tests/ -v
+
+# Clean up Docker resources
+docker-clean:
+	@echo "Cleaning up Docker resources..."
+	docker-compose -f docker/docker-compose.subscription.yml down -v
+	docker system prune -f
+	docker volume prune -f
+
+# Run database migrations
+docker-migrate:
+	@echo "Running database migrations..."
+	docker-compose -f docker/docker-compose.subscription.yml exec app alembic upgrade head
+
+# Open shell in main app container
+docker-shell:
+	docker-compose -f docker/docker-compose.subscription.yml exec app /bin/bash
+
+# Connect to PostgreSQL
+docker-psql:
+	docker-compose -f docker/docker-compose.subscription.yml exec postgres psql -U postgres -d resume_app
+
+# Connect to Redis CLI
+docker-redis:
+	docker-compose -f docker/docker-compose.subscription.yml exec redis redis-cli
+
+# Health check for all services
+docker-health-check:
+	@echo "Checking service health..."
+	@echo -n "Main App: "
+	@curl -f http://localhost:8000/health > /dev/null 2>&1 && echo "✓ Healthy" || echo "✗ Unhealthy"
+	@echo -n "Payment Service: "
+	@curl -f http://localhost:8001/health > /dev/null 2>&1 && echo "✓ Healthy" || echo "✗ Unhealthy"
+	@echo -n "Email Service: "
+	@curl -f http://localhost:8002/health > /dev/null 2>&1 && echo "✓ Healthy" || echo "✗ Unhealthy"
+	@echo -n "PostgreSQL: "
+	@docker-compose -f docker/docker-compose.subscription.yml exec -T postgres pg_isready -U postgres > /dev/null 2>&1 && echo "✓ Ready" || echo "✗ Not Ready"
+	@echo -n "Redis: "
+	@docker-compose -f docker/docker-compose.subscription.yml exec -T redis redis-cli ping > /dev/null 2>&1 && echo "✓ Ready" || echo "✗ Not Ready"
+
+# Start development environment
+docker-dev:
+	@echo "Starting development environment..."
+	@make docker-build
+	@make docker-up
+	@make docker-migrate
+	@echo "Development environment ready!"
+
+# Production deployment
+docker-prod:
+	@echo "Starting production environment..."
+	@export APP_ENV=production
+	@make docker-build
+	@make docker-up
+	@make docker-migrate
+	@echo "Production environment ready!"
+
+# Monitor services
+docker-monitor:
+	@echo "Monitoring services..."
+	@while true; do \
+		clear; \
+		echo "=== Service Status ==="; \
+		make docker-health-check; \
+		echo ""; \
+		echo "=== Container Status ==="; \
+		docker-compose -f docker/docker-compose.subscription.yml ps; \
+		echo ""; \
+		echo "Press Ctrl+C to stop monitoring"; \
+		sleep 5; \
+	done
+
+# Backup database
+docker-backup:
+	@echo "Creating database backup..."
+	@mkdir -p backups
+	@docker-compose -f docker/docker-compose.subscription.yml exec -T postgres pg_dump -U postgres resume_app > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
+	@echo "Backup created in backups/ directory"
+
+# Restore database
+docker-restore:
+	@echo "Restoring database from backup..."
+	@read -p "Enter backup file path: " backup_file; \
+	docker-compose -f docker/docker-compose.subscription.yml exec -T postgres psql -U postgres -d resume_app < $$backup_file
+	@echo "Database restored"
+
+# Scale services
+docker-scale:
+	@echo "Scaling services..."
+	@read -p "Enter service name: " service; \
+	read -p "Enter number of replicas: " replicas; \
+	docker-compose -f docker/docker-compose.subscription.yml up -d --scale $$service=$$replicas
+
+# View service metrics
+docker-metrics:
+	@echo "Service Metrics:"
+	@echo "================"
+	@docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}"

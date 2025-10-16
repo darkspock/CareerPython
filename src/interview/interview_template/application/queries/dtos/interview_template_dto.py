@@ -1,0 +1,54 @@
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+
+from src.company.domain.value_objects.company_id import CompanyId
+from src.interview.interview_template.domain.entities.interview_template import InterviewTemplate
+from src.interview.interview_template.domain.enums import (
+    InterviewTemplateStatusEnum,
+    InterviewTemplateTypeEnum
+)
+from src.interview.interview_template.domain.value_objects import InterviewTemplateId
+from src.shared.domain.enums.job_category import JobCategoryEnum
+
+
+@dataclass
+class InterviewTemplateDto:
+    """Basic DTO for Interview Template - used by simple queries"""
+    # Core template properties
+    id: InterviewTemplateId
+    company_id: Optional[CompanyId]
+    name: str
+    intro: str
+    prompt: str
+    goal: str
+    status: InterviewTemplateStatusEnum
+    template_type: InterviewTemplateTypeEnum
+    job_category: Optional[JobCategoryEnum]
+
+    # Extended properties
+    tags: List[str]
+    metadata: Dict[str, Any]
+
+    # Timestamps (from metadata)
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    @classmethod
+    def from_entity(cls, entity: InterviewTemplate) -> 'InterviewTemplateDto':
+        """Convert domain entity to DTO"""
+        return cls(
+            id=entity.id,
+            company_id=entity.company_id,
+            name=entity.name,
+            intro=entity.intro,
+            prompt=entity.prompt,
+            goal=entity.goal,
+            status=entity.status,
+            template_type=entity.template_type,
+            job_category=entity.job_category,
+            tags=entity.tags or [],
+            metadata=entity.metadata or {},
+            created_at=entity.metadata.get('created_at') if entity.metadata else None,
+            updated_at=entity.metadata.get('updated_at') if entity.metadata else None,
+        )

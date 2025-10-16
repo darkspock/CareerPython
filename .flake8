@@ -1,0 +1,27 @@
+[flake8]
+max-line-length = 150
+ignore = F401,W503,W504,E125,E126
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    .venv1,
+    .venv2,
+    .mypy_cache,
+    .pytest_cache,
+    node_modules,
+    .idea,
+    .vscode,
+    .cursor,
+    .kiro,
+    migrations,
+    alembic,
+    logs,
+    backups,
+    coverage-reports,
+    performance-reports,
+    client-vite,
+    docker,
+    monitoring,
+    scripts,
+    docs

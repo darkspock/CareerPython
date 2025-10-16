@@ -1,0 +1,596 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { api } from '../../lib/api';
+import {
+  Interview,
+  InterviewProgress,
+  ConversationalQuestion,
+  InterviewStatus,
+  QuestionDifficulty,
+  QuestionCategory
+} from '../../types/interview';
+import LoadingSpinner from '../common/LoadingSpinner';
+import ErrorAlert from '../common/ErrorAlert';
+
+interface InteractiveInterviewInterfaceProps {
+  interviewId: string;
+  onComplete?: (interview: Interview) => void;
+  onPause?: () => void;
+  compact?: boolean;
+}
+
+interface ChatMessage {
+  id: string;
+  type: 'question' | 'response' | 'system' | 'ai_feedback';
+  content: string;
+  timestamp: Date;
+  metadata?: {
+    questionId?: string;
+    difficulty?: QuestionDifficulty;
+    category?: QuestionCategory;
+    isRequired?: boolean;
+    points?: number;
+    expectedDuration?: number;
+  };
+}
+
+interface ResponseSubmission {
+  questionId: string;
+  responseText: string;
+  timeSpent: number;
+  confidence?: number;
+}
+
+const InteractiveInterviewInterface: React.FC<InteractiveInterviewInterfaceProps> = ({
+  interviewId,
+  onComplete,
+  onPause,
+  compact = false
+}) => {
+  const [interview, setInterview] = useState<Interview | null>(null);
+  const [progress, setProgress] = useState<InterviewProgress | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [currentResponse, setCurrentResponse] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [timeSpent, setTimeSpent] = useState(0);
+  const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null);
+  const [showConfidence, setShowConfidence] = useState(false);
+  const [confidence, setConfidence] = useState(3);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const responseTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    loadInterview();
+    connectToRealTimeUpdates();
+    startTimer();
+
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [interviewId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    // Auto-resize textarea
+    if (responseTextareaRef.current) {
+      responseTextareaRef.current.style.height = 'auto';
+      responseTextareaRef.current.style.height = responseTextareaRef.current.scrollHeight + 'px';
+    }
+  }, [currentResponse]);
+
+  const loadInterview = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const interviewData = await api.getInterview(interviewId);
+      setInterview(interviewData);
+
+      const progressData = await api.getInterviewProgress(interviewId);
+      setProgress(progressData);
+
+      // Initialize chat with welcome message
+      const welcomeMessage: ChatMessage = {
+        id: 'welcome',
+        type: 'system',
+        content: `Welcome to your ${interviewData.interview_type.replace('_', ' ')} interview! I'll be guiding you through this session. Let's begin when you're ready.`,
+        timestamp: new Date()
+      };
+
+      setMessages([welcomeMessage]);
+
+      // Load first question if available
+      if (progressData.current_question) {
+        addQuestionMessage(progressData.current_question);
+        setQuestionStartTime(new Date());
+      }
+
+    } catch (err: any) {
+      setError(err.message || 'Failed to load interview');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const connectToRealTimeUpdates = () => {
+    try {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+
+      const eventSource = api.createProgressStream(interviewId);
+      eventSourceRef.current = eventSource;
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          setProgress(data);
+
+          // Handle new questions
+          if (data.current_question && (!progress?.current_question ||
+              data.current_question.question_id !== progress.current_question.question_id)) {
+            addQuestionMessage(data.current_question);
+            setQuestionStartTime(new Date());
+            setCurrentResponse('');
+          }
+        } catch (err) {
+          console.error('Failed to parse progress update:', err);
+        }
+      };
+
+      eventSource.addEventListener('interview_finished', (event) => {
+        const data = JSON.parse(event.data);
+        addSystemMessage('Interview completed! Thank you for your participation.');
+        if (onComplete && interview) {
+          onComplete({ ...interview, status: InterviewStatus.COMPLETED });
+        }
+      });
+
+      eventSource.addEventListener('ai_feedback', (event) => {
+        const data = JSON.parse(event.data);
+        addAIFeedbackMessage(data.feedback);
+      });
+
+      eventSource.onerror = (event) => {
+        console.error('Real-time connection error:', event);
+      };
+
+    } catch (err: any) {
+      console.error('Failed to connect to real-time updates:', err);
+    }
+  };
+
+  const startTimer = () => {
+    timerRef.current = setInterval(() => {
+      setTimeSpent(prev => prev + 1);
+    }, 1000);
+  };
+
+  const addQuestionMessage = (question: ConversationalQuestion) => {
+    const questionMessage: ChatMessage = {
+      id: `question-${question.question_id}`,
+      type: 'question',
+      content: question.question_text,
+      timestamp: new Date(),
+      metadata: {
+        questionId: question.question_id,
+        difficulty: question.difficulty,
+        category: question.category,
+        isRequired: question.is_required,
+        points: question.points,
+        expectedDuration: question.expected_duration
+      }
+    };
+
+    setMessages(prev => [...prev, questionMessage]);
+
+    // Add context if available
+    if (question.context) {
+      const contextMessage: ChatMessage = {
+        id: `context-${question.question_id}`,
+        type: 'system',
+        content: `💡 Context: ${question.context}`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, contextMessage]);
+    }
+
+    // Simulate AI typing for follow-up or hints
+    if (question.is_follow_up) {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        addSystemMessage('This is a follow-up question based on your previous response. Take your time to provide a detailed answer.');
+      }, 2000);
+    }
+  };
+
+  const addSystemMessage = (content: string) => {
+    const systemMessage: ChatMessage = {
+      id: `system-${Date.now()}`,
+      type: 'system',
+      content,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, systemMessage]);
+  };
+
+  const addAIFeedbackMessage = (content: string) => {
+    const feedbackMessage: ChatMessage = {
+      id: `feedback-${Date.now()}`,
+      type: 'ai_feedback',
+      content,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, feedbackMessage]);
+  };
+
+  const handleSubmitResponse = async () => {
+    if (!currentResponse.trim() || !progress?.current_question || submitting) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const questionTimeSpent = questionStartTime
+        ? Math.floor((new Date().getTime() - questionStartTime.getTime()) / 1000)
+        : 0;
+
+      // Add user response to chat
+      const responseMessage: ChatMessage = {
+        id: `response-${progress.current_question.question_id}`,
+        type: 'response',
+        content: currentResponse.trim(),
+        timestamp: new Date(),
+        metadata: {
+          questionId: progress.current_question.question_id
+        }
+      };
+      setMessages(prev => [...prev, responseMessage]);
+
+      // Submit response to API
+      const submission: ResponseSubmission = {
+        questionId: progress.current_question.question_id,
+        responseText: currentResponse.trim(),
+        timeSpent: questionTimeSpent,
+        confidence: showConfidence ? confidence : undefined
+      };
+
+      await api.processInterviewAnswer(interviewId, submission);
+
+      // Clear response and reset confidence
+      setCurrentResponse('');
+      setConfidence(3);
+      setShowConfidence(false);
+
+      // Add acknowledgment message
+      addSystemMessage('Thank you for your response. Processing your answer...');
+
+      // Simulate AI typing for next question
+      setIsTyping(true);
+
+    } catch (err: any) {
+      setError(`Failed to submit response: ${err.message}`);
+      addSystemMessage('Sorry, there was an issue submitting your response. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePauseInterview = async () => {
+    try {
+      await api.pauseInterview(interviewId, 'User requested pause');
+      addSystemMessage('Interview paused. You can resume anytime by clicking the resume button.');
+      if (onPause) onPause();
+    } catch (err: any) {
+      setError(`Failed to pause interview: ${err.message}`);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handleSubmitResponse();
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getDifficultyColor = (difficulty?: QuestionDifficulty) => {
+    const colors = {
+      [QuestionDifficulty.EASY]: 'text-green-600 bg-green-50',
+      [QuestionDifficulty.MEDIUM]: 'text-yellow-600 bg-yellow-50',
+      [QuestionDifficulty.HARD]: 'text-red-600 bg-red-50'
+    };
+    return difficulty ? colors[difficulty] : 'text-gray-600 bg-gray-50';
+  };
+
+  const getCategoryIcon = (category?: QuestionCategory) => {
+    const icons = {
+      [QuestionCategory.TECHNICAL]: '💻',
+      [QuestionCategory.BEHAVIORAL]: '🤝',
+      [QuestionCategory.SITUATIONAL]: '📋',
+      [QuestionCategory.SYSTEM_DESIGN]: '🏗️'
+    };
+    return category ? icons[category] : '❓';
+  };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error && !interview) {
+    return <ErrorAlert message={error} onRetry={loadInterview} />;
+  }
+
+  if (!interview || !progress) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">Interview not found</p>
+      </div>
+    );
+  }
+
+  const isCompleted = interview.status === InterviewStatus.COMPLETED;
+  const isPaused = interview.status === InterviewStatus.PAUSED;
+  const canSubmit = currentResponse.trim().length > 0 && !submitting && !isPaused && !isCompleted;
+
+  return (
+    <div className={`flex flex-col h-full ${compact ? 'max-h-96' : 'min-h-screen'} bg-gray-50`}>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {interview.interview_type.replace('_', ' ')} Interview
+              </h2>
+              <p className="text-sm text-gray-600">
+                Progress: {Math.round(progress.completion_percentage)}% •
+                Question {progress.answered_questions + 1} of {progress.total_questions}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-gray-600">
+              ⏱️ {formatTime(timeSpent)}
+            </div>
+
+            {!isCompleted && !isPaused && (
+              <button
+                onClick={handlePauseInterview}
+                className="px-3 py-1.5 text-sm border border-yellow-300 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+              >
+                Pause
+              </button>
+            )}
+
+            {isPaused && (
+              <span className="px-3 py-1.5 text-sm bg-yellow-100 text-yellow-800 rounded-lg">
+                Paused
+              </span>
+            )}
+
+            {isCompleted && (
+              <span className="px-3 py-1.5 text-sm bg-green-100 text-green-800 rounded-lg">
+                Completed
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mt-3">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              style={{ width: `${progress.completion_percentage}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        {messages.map((message) => (
+          <div key={message.id} className={`flex ${message.type === 'response' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-3xl rounded-lg px-4 py-3 ${
+              message.type === 'question'
+                ? 'bg-blue-50 border border-blue-200'
+                : message.type === 'response'
+                ? 'bg-green-50 border border-green-200 ml-12'
+                : message.type === 'ai_feedback'
+                ? 'bg-purple-50 border border-purple-200'
+                : 'bg-gray-50 border border-gray-200'
+            }`}>
+              {/* Message Header */}
+              {message.type === 'question' && message.metadata && (
+                <div className="flex items-center justify-between mb-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span>{getCategoryIcon(message.metadata.category)}</span>
+                    <span className="font-medium text-gray-700">
+                      {message.metadata.category?.replace('_', ' ')}
+                    </span>
+                    {message.metadata.isRequired && (
+                      <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full">
+                        Required
+                      </span>
+                    )}
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${getDifficultyColor(message.metadata.difficulty)}`}>
+                      {message.metadata.difficulty}
+                    </span>
+                  </div>
+                  <div className="text-gray-500 text-xs">
+                    {message.metadata.expectedDuration &&
+                      `~${Math.round(message.metadata.expectedDuration / 60)}min`
+                    }
+                    {message.metadata.points && ` • ${message.metadata.points} pts`}
+                  </div>
+                </div>
+              )}
+
+              {/* Message Content */}
+              <div className={`${
+                message.type === 'question' ? 'text-blue-900' :
+                message.type === 'response' ? 'text-green-900' :
+                message.type === 'ai_feedback' ? 'text-purple-900' :
+                'text-gray-700'
+              }`}>
+                {message.content}
+              </div>
+
+              {/* Message Footer */}
+              <div className="mt-2 text-xs text-gray-500">
+                {message.timestamp.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* AI Typing Indicator */}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3">
+              <div className="flex items-center gap-2">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+                <span className="text-sm text-gray-500">AI is typing...</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Response Input */}
+      {!isCompleted && progress.current_question && (
+        <div className="bg-white border-t border-gray-200 px-6 py-4">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="mt-1 text-sm text-red-600 hover:text-red-800 underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {/* Response Textarea */}
+            <div>
+              <textarea
+                ref={responseTextareaRef}
+                value={currentResponse}
+                onChange={(e) => setCurrentResponse(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={isPaused ? "Interview is paused" : "Type your response here..."}
+                disabled={isPaused || submitting}
+                rows={3}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 resize-none disabled:bg-gray-50 disabled:text-gray-500"
+              />
+            </div>
+
+            {/* Confidence Slider */}
+            {showConfidence && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600">Confidence:</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="5"
+                  value={confidence}
+                  onChange={(e) => setConfidence(parseInt(e.target.value))}
+                  className="flex-1"
+                />
+                <span className="text-sm font-medium text-gray-900">
+                  {['Very Low', 'Low', 'Medium', 'High', 'Very High'][confidence - 1]}
+                </span>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500">
+                  {currentResponse.trim().split(/\s+/).filter(word => word.length > 0).length} words
+                </span>
+
+                <button
+                  onClick={() => setShowConfidence(!showConfidence)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  {showConfidence ? 'Hide' : 'Show'} Confidence
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-500">
+                  Ctrl+Enter to submit
+                </span>
+
+                <button
+                  onClick={handleSubmitResponse}
+                  disabled={!canSubmit}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {submitting && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  )}
+                  Submit Response
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Completion Message */}
+      {isCompleted && (
+        <div className="bg-green-50 border-t border-green-200 px-6 py-4">
+          <div className="text-center">
+            <p className="text-green-800 font-medium">
+              🎉 Interview completed successfully!
+            </p>
+            <p className="text-sm text-green-700 mt-1">
+              Thank you for your participation. You can review your responses and get insights about your performance.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default InteractiveInterviewInterface;

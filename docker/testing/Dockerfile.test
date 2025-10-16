@@ -1,0 +1,39 @@
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONPATH=/app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set work directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+COPY requirements-test.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-test.txt
+
+# Copy application code
+COPY . .
+
+# Create test directories
+RUN mkdir -p /app/test-results
+RUN mkdir -p /app/coverage-reports
+
+# Set permissions
+RUN chmod +x /app/scripts/run-tests.sh
+RUN chmod +x /app/scripts/run-ai-tests.sh
+
+# Default command for running tests
+CMD ["python", "-m", "pytest", "tests/", "-v", "--tb=short"]

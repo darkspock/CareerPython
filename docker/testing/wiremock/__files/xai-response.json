@@ -1,0 +1,21 @@
+{
+  "id": "chatcmpl-test123",
+  "object": "chat.completion",
+  "created": 1699000000,
+  "model": "grok-beta",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "This is a mock AI response for testing purposes. The candidate appears to have strong technical skills in software development."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 50,
+    "completion_tokens": 25,
+    "total_tokens": 75
+  }
+}

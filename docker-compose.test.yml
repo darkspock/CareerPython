@@ -1,0 +1,275 @@
+services:
+  # Test Database
+  test-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: test_career_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - test_db_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-test.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d test_career_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Redis for testing (caching, sessions)
+  test-redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - test_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - test-network
+
+  # Main test runner
+  test-runner:
+    build:
+      context: .
+      dockerfile: docker/testing/Dockerfile.test
+    environment:
+      # Database
+      POSTGRES_HOST: test-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: test_career_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      
+      # Redis
+      REDIS_HOST: test-redis
+      REDIS_PORT: 6379
+      
+      # Testing
+      TESTING: "true"
+      TEST_DATABASE_URL: "postgresql://test_user:test_password@test-db:5432/test_career_db"
+      
+      # Security
+      SECRET_KEY: "test-secret-key-for-testing-only-not-for-production"
+      ALGORITHM: "HS256"
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      
+      # AI Services (mock for testing)
+      XAI_API_KEY: "test-xai-key"
+      XAI_API_URL: "http://mock-ai-service:8080"
+      
+      # Email (mock for testing)
+      SMTP_HOST: "mock-email-service"
+      SMTP_PORT: 587
+      SMTP_USERNAME: "test@example.com"
+      SMTP_PASSWORD: "test-password"
+      
+      # Payment (mock for testing)
+      STRIPE_SECRET_KEY: "sk_test_mock_key"
+      STRIPE_WEBHOOK_SECRET: "whsec_test_mock_secret"
+    volumes:
+      - .:/app
+      - test_results:/app/test-results
+      - coverage_reports:/app/coverage-reports
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 10 &&
+        echo 'Running security enhancement tests...' &&
+        python -m pytest tests/unit/shared/test_subscription_security.py -v --tb=short --cov=src/shared/infrastructure/security --cov-report=html:/app/coverage-reports/security &&
+        python -m pytest tests/integration/test_enhanced_security_middleware.py -v --tb=short &&
+        echo 'Security tests completed!'
+      "
+
+  # Unit tests runner
+  unit-tests:
+    build:
+      context: .
+      dockerfile: docker/testing/Dockerfile.test
+    environment:
+      TESTING: "true"
+      SECRET_KEY: "test-secret-key-for-testing-only"
+      ALGORITHM: "HS256"
+    volumes:
+      - .:/app
+      - test_results:/app/test-results
+      - coverage_reports:/app/coverage-reports
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        echo 'Running unit tests...' &&
+        python -m pytest tests/unit/ -v --tb=short --cov=src --cov-report=html:/app/coverage-reports/unit --cov-report=term-missing &&
+        echo 'Unit tests completed!'
+      "
+
+  # Integration tests runner
+  integration-tests:
+    build:
+      context: .
+      dockerfile: docker/testing/Dockerfile.test
+    environment:
+      # Database
+      POSTGRES_HOST: test-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: test_career_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      TEST_DATABASE_URL: "postgresql://test_user:test_password@test-db:5432/test_career_db"
+      
+      # Redis
+      REDIS_HOST: test-redis
+      REDIS_PORT: 6379
+      
+      # Testing
+      TESTING: "true"
+      
+      # Security
+      SECRET_KEY: "test-secret-key-for-testing-only"
+      ALGORITHM: "HS256"
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      
+      # Mock services
+      XAI_API_KEY: "test-xai-key"
+      XAI_API_URL: "http://mock-ai-service:8080"
+    volumes:
+      - .:/app
+      - test_results:/app/test-results
+      - coverage_reports:/app/coverage-reports
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      mock-ai-service:
+        condition: service_started
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        echo 'Waiting for services...' &&
+        sleep 15 &&
+        echo 'Running integration tests...' &&
+        python -m pytest tests/integration/ -v --tb=short --cov=src --cov-report=html:/app/coverage-reports/integration &&
+        echo 'Integration tests completed!'
+      "
+
+  # Security tests runner
+  security-tests:
+    build:
+      context: .
+      dockerfile: docker/testing/Dockerfile.test
+    environment:
+      TESTING: "true"
+      SECRET_KEY: "test-secret-key-for-testing-only"
+      ALGORITHM: "HS256"
+    volumes:
+      - .:/app
+      - test_results:/app/test-results
+      - security_reports:/app/security-reports
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        echo 'Running security tests...' &&
+        echo 'Running Bandit security scan...' &&
+        bandit -r src/ -f json -o /app/security-reports/bandit-report.json || true &&
+        bandit -r src/ -f txt -o /app/security-reports/bandit-report.txt || true &&
+        echo 'Running Safety dependency check...' &&
+        safety check --json --output /app/security-reports/safety-report.json || true &&
+        echo 'Running security-focused pytest...' &&
+        python -m pytest tests/unit/shared/test_subscription_security.py tests/integration/test_enhanced_security_middleware.py -v --tb=short --html=/app/security-reports/security-test-report.html --self-contained-html &&
+        echo 'Security tests completed!'
+      "
+
+  # Performance tests runner
+  performance-tests:
+    build:
+      context: .
+      dockerfile: docker/testing/Dockerfile.test
+    environment:
+      POSTGRES_HOST: test-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: test_career_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      TEST_DATABASE_URL: "postgresql://test_user:test_password@test-db:5432/test_career_db"
+      TESTING: "true"
+      SECRET_KEY: "test-secret-key-for-testing-only"
+    volumes:
+      - .:/app
+      - test_results:/app/test-results
+      - performance_reports:/app/performance-reports
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        echo 'Running performance tests...' &&
+        python -m pytest tests/performance/ -v --tb=short --benchmark-json=/app/performance-reports/benchmark-results.json &&
+        echo 'Performance tests completed!'
+      "
+
+  # Mock AI service for testing
+  mock-ai-service:
+    image: wiremock/wiremock:2.35.0
+    ports:
+      - "9080:8080"
+    volumes:
+      - ./docker/testing/wiremock:/home/wiremock
+    command: --global-response-templating --verbose
+    networks:
+      - test-network
+
+  # Mock email service for testing
+  mock-email-service:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "8025:8025"  # Web UI
+      - "1025:1025"  # SMTP
+    networks:
+      - test-network
+
+  # Test results viewer (optional)
+  test-viewer:
+    image: nginx:alpine
+    ports:
+      - "8090:80"
+    volumes:
+      - test_results:/usr/share/nginx/html/results:ro
+      - coverage_reports:/usr/share/nginx/html/coverage:ro
+      - security_reports:/usr/share/nginx/html/security:ro
+      - performance_reports:/usr/share/nginx/html/performance:ro
+      - ./docker/testing/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - test-network
+
+volumes:
+  test_db_data:
+  test_redis_data:
+  test_results:
+  coverage_reports:
+  security_reports:
+  performance_reports:
+
+networks:
+  test-network:
+    driver: bridge

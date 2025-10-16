@@ -1,0 +1,767 @@
+import React, { useState, useEffect } from 'react';
+
+interface AccessibilitySettings {
+  // Visual Accessibility
+  highContrast: boolean;
+  reducedMotion: boolean;
+  largeText: boolean;
+  textSize: 'small' | 'medium' | 'large' | 'extra-large';
+  colorScheme: 'light' | 'dark' | 'auto';
+  focusIndicators: boolean;
+
+  // Audio Accessibility
+  audioDescriptions: boolean;
+  soundAlerts: boolean;
+  volumeLevel: number;
+  speechRate: number;
+  speechPitch: number;
+  speechVoice: string;
+
+  // Motor Accessibility
+  stickyKeys: boolean;
+  slowKeys: boolean;
+  mouseKeys: boolean;
+  dwellClick: boolean;
+  dwellTime: number;
+  keyboardNavigation: boolean;
+
+  // Cognitive Accessibility
+  simplifiedInterface: boolean;
+  extraTime: boolean;
+  timeMultiplier: number;
+  reminderAlerts: boolean;
+  autoSave: boolean;
+  readingGuide: boolean;
+
+  // Language & Localization
+  language: string;
+  readingDirection: 'ltr' | 'rtl';
+  numberFormat: 'western' | 'arabic' | 'devanagari';
+  dateFormat: string;
+
+  // Screen Reader Support
+  screenReaderOptimized: boolean;
+  verboseDescriptions: boolean;
+  skipToContent: boolean;
+  landmarkNavigation: boolean;
+}
+
+interface InterviewAccessibilitySettingsProps {
+  onSettingsChange: (settings: AccessibilitySettings) => void;
+  currentSettings?: Partial<AccessibilitySettings>;
+  disabled?: boolean;
+}
+
+const defaultSettings: AccessibilitySettings = {
+  highContrast: false,
+  reducedMotion: false,
+  largeText: false,
+  textSize: 'medium',
+  colorScheme: 'auto',
+  focusIndicators: true,
+  audioDescriptions: false,
+  soundAlerts: true,
+  volumeLevel: 70,
+  speechRate: 1.0,
+  speechPitch: 1.0,
+  speechVoice: '',
+  stickyKeys: false,
+  slowKeys: false,
+  mouseKeys: false,
+  dwellClick: false,
+  dwellTime: 1000,
+  keyboardNavigation: true,
+  simplifiedInterface: false,
+  extraTime: false,
+  timeMultiplier: 1.5,
+  reminderAlerts: true,
+  autoSave: true,
+  readingGuide: false,
+  language: 'en',
+  readingDirection: 'ltr',
+  numberFormat: 'western',
+  dateFormat: 'MM/dd/yyyy',
+  screenReaderOptimized: false,
+  verboseDescriptions: false,
+  skipToContent: true,
+  landmarkNavigation: true
+};
+
+const InterviewAccessibilitySettings: React.FC<InterviewAccessibilitySettingsProps> = ({
+  onSettingsChange,
+  currentSettings = {},
+  disabled = false
+}) => {
+  const [settings, setSettings] = useState<AccessibilitySettings>({
+    ...defaultSettings,
+    ...currentSettings
+  });
+  const [activeSection, setActiveSection] = useState<string>('visual');
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [testingFeature, setTestingFeature] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadAvailableVoices();
+    detectSystemPreferences();
+  }, []);
+
+  useEffect(() => {
+    onSettingsChange(settings);
+  }, [settings, onSettingsChange]);
+
+  const loadAvailableVoices = () => {
+    if ('speechSynthesis' in window) {
+      const voices = speechSynthesis.getVoices();
+      setAvailableVoices(voices);
+
+      // Set default voice if none selected
+      if (!settings.speechVoice && voices.length > 0) {
+        const englishVoice = voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+        updateSetting('speechVoice', englishVoice.name);
+      }
+
+      // Re-load voices when they become available
+      speechSynthesis.onvoiceschanged = () => {
+        const updatedVoices = speechSynthesis.getVoices();
+        setAvailableVoices(updatedVoices);
+      };
+    }
+  };
+
+  const detectSystemPreferences = () => {
+    // Detect system preferences
+    if (window.matchMedia) {
+      // Reduced motion preference
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        updateSetting('reducedMotion', true);
+      }
+
+      // Color scheme preference
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        updateSetting('colorScheme', 'dark');
+      }
+
+      // High contrast preference
+      if (window.matchMedia('(prefers-contrast: high)').matches) {
+        updateSetting('highContrast', true);
+      }
+    }
+
+    // Detect language preference
+    const browserLanguage = navigator.language.split('-')[0];
+    updateSetting('language', browserLanguage);
+
+    // Detect RTL languages
+    const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
+    if (rtlLanguages.includes(browserLanguage)) {
+      updateSetting('readingDirection', 'rtl');
+    }
+  };
+
+  const updateSetting = <K extends keyof AccessibilitySettings>(
+    key: K,
+    value: AccessibilitySettings[K]
+  ) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const testTextToSpeech = () => {
+    if ('speechSynthesis' in window) {
+      setTestingFeature('speech');
+
+      const utterance = new SpeechSynthesisUtterance(
+        'This is a test of the text-to-speech feature. How does this sound?'
+      );
+
+      if (settings.speechVoice) {
+        const voice = availableVoices.find(v => v.name === settings.speechVoice);
+        if (voice) utterance.voice = voice;
+      }
+
+      utterance.rate = settings.speechRate;
+      utterance.pitch = settings.speechPitch;
+      utterance.volume = settings.volumeLevel / 100;
+
+      utterance.onend = () => setTestingFeature(null);
+      utterance.onerror = () => setTestingFeature(null);
+
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  const resetToDefaults = () => {
+    setSettings(defaultSettings);
+  };
+
+  const exportSettings = () => {
+    const dataStr = JSON.stringify(settings, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'accessibility-settings.json';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  const importSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedSettings = JSON.parse(e.target?.result as string);
+        setSettings({ ...defaultSettings, ...importedSettings });
+      } catch (error) {
+        alert('Failed to import settings. Please check the file format.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'visual':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-900">Visual Accessibility</h3>
+
+            {/* High Contrast */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">High Contrast Mode</label>
+                <p className="text-sm text-gray-500">Increases contrast for better visibility</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.highContrast}
+                  onChange={(e) => updateSetting('highContrast', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            {/* Text Size */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Text Size</label>
+              <select
+                value={settings.textSize}
+                onChange={(e) => updateSetting('textSize', e.target.value as any)}
+                disabled={disabled}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+                <option value="extra-large">Extra Large</option>
+              </select>
+            </div>
+
+            {/* Color Scheme */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
+              <div className="grid grid-cols-3 gap-3">
+                {['light', 'dark', 'auto'].map((scheme) => (
+                  <label key={scheme} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="colorScheme"
+                      value={scheme}
+                      checked={settings.colorScheme === scheme}
+                      onChange={(e) => updateSetting('colorScheme', e.target.value as any)}
+                      disabled={disabled}
+                      className="mr-2"
+                    />
+                    <span className="capitalize">{scheme}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Reduced Motion */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Reduced Motion</label>
+                <p className="text-sm text-gray-500">Minimizes animations and transitions</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.reducedMotion}
+                  onChange={(e) => updateSetting('reducedMotion', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            {/* Reading Guide */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Reading Guide</label>
+                <p className="text-sm text-gray-500">Highlights the current line being read</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.readingGuide}
+                  onChange={(e) => updateSetting('readingGuide', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+        );
+
+      case 'audio':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-900">Audio Accessibility</h3>
+
+            {/* Text to Speech */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Text-to-Speech Voice</label>
+              <div className="flex space-x-3">
+                <select
+                  value={settings.speechVoice}
+                  onChange={(e) => updateSetting('speechVoice', e.target.value)}
+                  disabled={disabled}
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="">Default Voice</option>
+                  {availableVoices.map((voice) => (
+                    <option key={voice.name} value={voice.name}>
+                      {voice.name} ({voice.lang})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={testTextToSpeech}
+                  disabled={disabled || testingFeature === 'speech'}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {testingFeature === 'speech' ? 'Testing...' : 'Test'}
+                </button>
+              </div>
+            </div>
+
+            {/* Speech Rate */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Speech Rate: {settings.speechRate.toFixed(1)}x
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2.0"
+                step="0.1"
+                value={settings.speechRate}
+                onChange={(e) => updateSetting('speechRate', parseFloat(e.target.value))}
+                disabled={disabled}
+                className="w-full"
+              />
+            </div>
+
+            {/* Speech Pitch */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Speech Pitch: {settings.speechPitch.toFixed(1)}
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2.0"
+                step="0.1"
+                value={settings.speechPitch}
+                onChange={(e) => updateSetting('speechPitch', parseFloat(e.target.value))}
+                disabled={disabled}
+                className="w-full"
+              />
+            </div>
+
+            {/* Volume Level */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Volume: {settings.volumeLevel}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={settings.volumeLevel}
+                onChange={(e) => updateSetting('volumeLevel', parseInt(e.target.value))}
+                disabled={disabled}
+                className="w-full"
+              />
+            </div>
+
+            {/* Sound Alerts */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Sound Alerts</label>
+                <p className="text-sm text-gray-500">Audio notifications for important events</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.soundAlerts}
+                  onChange={(e) => updateSetting('soundAlerts', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+        );
+
+      case 'motor':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-900">Motor Accessibility</h3>
+
+            {/* Keyboard Navigation */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Enhanced Keyboard Navigation</label>
+                <p className="text-sm text-gray-500">Improved keyboard shortcuts and navigation</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.keyboardNavigation}
+                  onChange={(e) => updateSetting('keyboardNavigation', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            {/* Dwell Click */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Dwell Click</label>
+                  <p className="text-sm text-gray-500">Click by hovering for a set duration</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.dwellClick}
+                    onChange={(e) => updateSetting('dwellClick', e.target.checked)}
+                    disabled={disabled}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              {settings.dwellClick && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Dwell Time: {settings.dwellTime}ms
+                  </label>
+                  <input
+                    type="range"
+                    min="500"
+                    max="3000"
+                    step="100"
+                    value={settings.dwellTime}
+                    onChange={(e) => updateSetting('dwellTime', parseInt(e.target.value))}
+                    disabled={disabled}
+                    className="w-full"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Sticky Keys */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Sticky Keys</label>
+                <p className="text-sm text-gray-500">Press modifier keys one at a time</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.stickyKeys}
+                  onChange={(e) => updateSetting('stickyKeys', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+        );
+
+      case 'cognitive':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-900">Cognitive Accessibility</h3>
+
+            {/* Simplified Interface */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Simplified Interface</label>
+                <p className="text-sm text-gray-500">Reduces visual complexity and distractions</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.simplifiedInterface}
+                  onChange={(e) => updateSetting('simplifiedInterface', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            {/* Extra Time */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Extended Time</label>
+                  <p className="text-sm text-gray-500">Additional time for responses</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.extraTime}
+                    onChange={(e) => updateSetting('extraTime', e.target.checked)}
+                    disabled={disabled}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              {settings.extraTime && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Time Multiplier: {settings.timeMultiplier}x
+                  </label>
+                  <input
+                    type="range"
+                    min="1.0"
+                    max="3.0"
+                    step="0.1"
+                    value={settings.timeMultiplier}
+                    onChange={(e) => updateSetting('timeMultiplier', parseFloat(e.target.value))}
+                    disabled={disabled}
+                    className="w-full"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Auto Save */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Auto Save</label>
+                <p className="text-sm text-gray-500">Automatically saves responses as you type</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.autoSave}
+                  onChange={(e) => updateSetting('autoSave', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            {/* Reminder Alerts */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Reminder Alerts</label>
+                <p className="text-sm text-gray-500">Notifications to help stay on track</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.reminderAlerts}
+                  onChange={(e) => updateSetting('reminderAlerts', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+        );
+
+      case 'screen-reader':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-900">Screen Reader Support</h3>
+
+            {/* Screen Reader Optimization */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Screen Reader Optimized</label>
+                <p className="text-sm text-gray-500">Enhanced compatibility with screen readers</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.screenReaderOptimized}
+                  onChange={(e) => updateSetting('screenReaderOptimized', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            {/* Verbose Descriptions */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Verbose Descriptions</label>
+                <p className="text-sm text-gray-500">Detailed descriptions of interface elements</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.verboseDescriptions}
+                  onChange={(e) => updateSetting('verboseDescriptions', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            {/* Skip to Content */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Skip to Content Links</label>
+                <p className="text-sm text-gray-500">Quick navigation links for screen readers</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.skipToContent}
+                  onChange={(e) => updateSetting('skipToContent', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            {/* Landmark Navigation */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Landmark Navigation</label>
+                <p className="text-sm text-gray-500">Proper ARIA landmarks for easy navigation</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.landmarkNavigation}
+                  onChange={(e) => updateSetting('landmarkNavigation', e.target.checked)}
+                  disabled={disabled}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Accessibility Settings</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Customize your interview experience for better accessibility
+              </p>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={exportSettings}
+                className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Export
+              </button>
+              <label className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 cursor-pointer">
+                Import
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={importSettings}
+                  className="hidden"
+                />
+              </label>
+              <button
+                onClick={resetToDefaults}
+                className="px-3 py-2 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex">
+          {/* Navigation */}
+          <nav className="w-64 bg-gray-50 border-r border-gray-200 p-4">
+            <div className="space-y-1">
+              {[
+                { id: 'visual', name: 'Visual', icon: '👁️' },
+                { id: 'audio', name: 'Audio', icon: '🔊' },
+                { id: 'motor', name: 'Motor', icon: '⌨️' },
+                { id: 'cognitive', name: 'Cognitive', icon: '🧠' },
+                { id: 'screen-reader', name: 'Screen Reader', icon: '📱' }
+              ].map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full text-left px-3 py-2 rounded-lg flex items-center space-x-3 transition-colors ${
+                    activeSection === section.id
+                      ? 'bg-blue-100 text-blue-900'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <span>{section.icon}</span>
+                  <span>{section.name}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
+
+          {/* Content */}
+          <div className="flex-1 p-6">
+            {renderSection()}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InterviewAccessibilitySettings;

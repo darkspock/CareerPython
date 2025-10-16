@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Expired</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .expired-banner {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .expired-banner h2 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        .expired-banner p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .content {
+            margin: 30px 0;
+        }
+
+        .status-change {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .status-change h3 {
+            margin: 0 0 12px 0;
+            color: #92400e;
+            font-size: 18px;
+        }
+
+        .status-change p {
+            margin: 8px 0;
+            color: #92400e;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tier-expired {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .tier-free {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #2563eb;
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .cta-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .comparison {
+            margin: 30px 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .comparison-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .feature-lost {
+            color: #dc2626;
+            text-decoration: line-through;
+        }
+
+        .feature-kept {
+            color: #10b981;
+        }
+
+        .free-features {
+            background-color: #f0fdf4;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .free-features h3 {
+            margin: 0 0 16px 0;
+            color: #065f46;
+            font-size: 18px;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .feature-icon {
+            color: #10b981;
+            font-size: 16px;
+            margin-right: 12px;
+        }
+
+        .feature-text {
+            color: #065f46;
+            font-size: 14px;
+        }
+
+        .reactivation-offer {
+            background-color: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .reactivation-offer h3 {
+            margin: 0 0 12px 0;
+            color: #1e40af;
+            font-size: 18px;
+        }
+
+        .reactivation-offer p {
+            margin: 8px 0;
+            color: #1e40af;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">AI Resume Enhancement</div>
+        <h1 class="title">Subscription Expired</h1>
+        <p class="subtitle">Your account has been moved to the Free plan</p>
+    </div>
+
+    <div class="expired-banner">
+        <h2>📅 Your {{expired_tier}} subscription has expired</h2>
+        <p>Don't worry - your account is still active with Free plan features</p>
+    </div>
+
+    <div class="content">
+        <p>Hello {{user_name}},</p>
+
+        <p>We wanted to let you know that your <span class="tier-badge tier-expired">{{expired_tier}}</span>
+            subscription has expired. Your account has been automatically moved to our <span
+                    class="tier-badge tier-free">FREE</span> plan.</p>
+
+        <div class="status-change">
+            <h3>📋 Account Status Update</h3>
+            <p><strong>Previous Plan:</strong> {{expired_tier}}</p>
+            <p><strong>Current Plan:</strong> Free</p>
+            <p><strong>Status:</strong> Active (with limited features)</p>
+        </div>
+
+        <div class="free-features">
+            <h3>✅ What You Still Have Access To:</h3>
+
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <div class="feature-text">1 resume download per week</div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <div class="feature-text">Basic AI interview features</div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <div class="feature-text">Resume data extraction from PDF</div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <div class="feature-text">Profile editing and management</div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <div class="feature-text">Standard customer support</div>
+            </div>
+        </div>
+
+        <div class="comparison">
+            <h3 style="color: #1f2937; margin-bottom: 20px;">📊 Feature Comparison:</h3>
+            <table class="comparison-table">
+                <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Free Plan</th>
+                    <th>{{expired_tier}} Plan</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Resume Downloads</td>
+                    <td class="feature-kept">1 per week</td>
+                    <td class="feature-lost">{{expired_tier == 'STANDARD' ? '10 per week' : 'Unlimited'}}</td>
+                </tr>
+                <tr>
+                    <td>Job Applications</td>
+                    <td class="feature-kept">Not available</td>
+                    <td class="feature-lost">{{expired_tier == 'STANDARD' ? '3 per day' : '30 per day'}}</td>
+                </tr>
+                <tr>
+                    <td>Cover Letter Generation</td>
+                    <td class="feature-kept">Not available</td>
+                    <td class="feature-lost">Available</td>
+                </tr>
+                <tr>
+                    <td>Priority Support</td>
+                    <td class="feature-kept">Standard</td>
+                    <td class="feature-lost">Priority</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="reactivation-offer">
+            <h3>🎯 Ready to Upgrade Again?</h3>
+            <p>Reactivate your premium features anytime! All your data and progress are safely stored.</p>
+            <p><strong>Your enhanced resume content is preserved and ready when you upgrade.</strong></p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{upgrade_url}}" class="cta-button">Upgrade Now</a>
+        </div>
+
+        <p><strong>Important:</strong> All your data, including your enhanced resume content, interview responses, and
+            profile information, has been preserved. When you upgrade again, everything will be exactly as you left it.
+        </p>
+
+        <p>Thank you for being part of the AI Resume Enhancement community. We hope to see you back as a premium member
+            soon!</p>
+    </div>
+
+    <div class="footer">
+        <p>Need help? Contact us at <a href="mailto:{{support_email}}">{{support_email}}</a></p>
+        <p>© 2024 AI Resume Enhancement. All rights reserved.</p>
+        <p>This is an automated message, please do not reply to this email.</p>
+    </div>
+</div>
+</body>
+</html>

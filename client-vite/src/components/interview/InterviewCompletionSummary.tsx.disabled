@@ -1,0 +1,886 @@
+import React, { useState, useEffect } from 'react';
+import { api } from '../../lib/api';
+import {
+  Interview,
+  InterviewProgress,
+  InterviewStatus,
+  InterviewType,
+  QuestionCategory,
+  QuestionDifficulty
+} from '../../types/interview';
+import LoadingSpinner from '../common/LoadingSpinner';
+import ErrorAlert from '../common/ErrorAlert';
+
+interface InterviewCompletionSummaryProps {
+  interviewId: string;
+  onRetakeInterview?: () => void;
+  onShareResults?: (results: InterviewResults) => void;
+  onExportResults?: (results: InterviewResults) => void;
+  onViewDetailedAnalysis?: () => void;
+}
+
+interface InterviewResults {
+  interview: Interview;
+  progress: InterviewProgress;
+  overallScore: number;
+  sectionScores: Record<string, {
+    score: number;
+    maxScore: number;
+    questionsAnswered: number;
+    totalQuestions: number;
+    timeSpent: number;
+    strengths: string[];
+    improvements: string[];
+  }>;
+  skillAssessment: {
+    technicalSkills: Record<string, number>;
+    softSkills: Record<string, number>;
+    overallCompetency: number;
+  };
+  performanceMetrics: {
+    responseTime: {
+      average: number;
+      fastest: number;
+      slowest: number;
+    };
+    difficultyPerformance: Record<QuestionDifficulty, {
+      attempted: number;
+      correct: number;
+      averageScore: number;
+    }>;
+    categoryPerformance: Record<QuestionCategory, {
+      score: number;
+      questionsAnswered: number;
+      strengths: string[];
+      improvements: string[];
+    }>;
+  };
+  insights: {
+    strengths: string[];
+    improvements: string[];
+    recommendations: string[];
+    nextSteps: string[];
+    careerFit: {
+      roles: string[];
+      industries: string[];
+      confidenceLevel: number;
+    };
+  };
+  comparisonData: {
+    percentile: number;
+    similarProfiles: {
+      averageScore: number;
+      scoreDistribution: number[];
+    };
+  };
+  certificateEligible: boolean;
+  retakeRecommended: boolean;
+  completionDate: string;
+}
+
+const InterviewCompletionSummary: React.FC<InterviewCompletionSummaryProps> = ({
+  interviewId,
+  onRetakeInterview,
+  onShareResults,
+  onExportResults,
+  onViewDetailedAnalysis
+}) => {
+  const [results, setResults] = useState<InterviewResults | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'performance' | 'insights' | 'comparison'>('overview');
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  useEffect(() => {
+    loadResults();
+  }, [interviewId]);
+
+  const loadResults = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // In real implementation, this would fetch from API
+      // Mock comprehensive results data
+      const mockResults: InterviewResults = {
+        interview: {
+          id: interviewId,
+          candidate_id: 'candidate-123',
+          interview_type: InterviewType.TECHNICAL,
+          status: InterviewStatus.COMPLETED,
+          scheduled_at: '2024-01-15T10:00:00Z',
+          started_at: '2024-01-15T10:05:00Z',
+          completed_at: new Date().toISOString(),
+          score: 8.2,
+          created_at: '2024-01-15T09:00:00Z',
+          updated_at: new Date().toISOString()
+        },
+        progress: {
+          interview_id: interviewId,
+          status: 'COMPLETED',
+          completion_percentage: 100,
+          answered_questions: 12,
+          total_questions: 12,
+          current_section: null,
+          sections_completed: ['introduction', 'technical', 'problem_solving', 'behavioral'],
+          is_paused: false,
+          can_resume: false,
+          estimated_completion_time: null,
+          current_question: null
+        },
+        overallScore: 8.2,
+        sectionScores: {
+          'introduction': {
+            score: 9.0,
+            maxScore: 10,
+            questionsAnswered: 2,
+            totalQuestions: 2,
+            timeSpent: 420,
+            strengths: ['Clear communication', 'Professional presentation'],
+            improvements: []
+          },
+          'technical': {
+            score: 7.8,
+            maxScore: 10,
+            questionsAnswered: 5,
+            totalQuestions: 5,
+            timeSpent: 1800,
+            strengths: ['Strong algorithmic thinking', 'Good code structure'],
+            improvements: ['Consider edge cases', 'Optimize time complexity']
+          },
+          'problem_solving': {
+            score: 8.5,
+            maxScore: 10,
+            questionsAnswered: 3,
+            totalQuestions: 3,
+            timeSpent: 1200,
+            strengths: ['Systematic approach', 'Creative solutions'],
+            improvements: ['Document assumptions']
+          },
+          'behavioral': {
+            score: 8.0,
+            maxScore: 10,
+            questionsAnswered: 2,
+            totalQuestions: 2,
+            timeSpent: 600,
+            strengths: ['Leadership examples', 'Team collaboration'],
+            improvements: ['Quantify impact more specifically']
+          }
+        },
+        skillAssessment: {
+          technicalSkills: {
+            'JavaScript': 8.5,
+            'React': 9.0,
+            'Node.js': 7.5,
+            'Database Design': 7.0,
+            'System Architecture': 8.0,
+            'Problem Solving': 8.5
+          },
+          softSkills: {
+            'Communication': 9.0,
+            'Leadership': 8.0,
+            'Teamwork': 8.5,
+            'Adaptability': 7.5,
+            'Critical Thinking': 8.5
+          },
+          overallCompetency: 8.2
+        },
+        performanceMetrics: {
+          responseTime: {
+            average: 285,
+            fastest: 120,
+            slowest: 480
+          },
+          difficultyPerformance: {
+            [QuestionDifficulty.EASY]: {
+              attempted: 3,
+              correct: 3,
+              averageScore: 9.2
+            },
+            [QuestionDifficulty.MEDIUM]: {
+              attempted: 6,
+              correct: 5,
+              averageScore: 7.8
+            },
+            [QuestionDifficulty.HARD]: {
+              attempted: 3,
+              correct: 2,
+              averageScore: 7.0
+            }
+          },
+          categoryPerformance: {
+            [QuestionCategory.TECHNICAL]: {
+              score: 7.8,
+              questionsAnswered: 5,
+              strengths: ['Algorithm design', 'Code quality'],
+              improvements: ['Performance optimization', 'Error handling']
+            },
+            [QuestionCategory.BEHAVIORAL]: {
+              score: 8.0,
+              questionsAnswered: 2,
+              strengths: ['Leadership examples', 'Communication'],
+              improvements: ['Specific metrics', 'Conflict resolution']
+            },
+            [QuestionCategory.SYSTEM_DESIGN]: {
+              score: 8.5,
+              questionsAnswered: 3,
+              strengths: ['Scalability thinking', 'Trade-off analysis'],
+              improvements: ['Security considerations', 'Monitoring']
+            },
+            [QuestionCategory.SITUATIONAL]: {
+              score: 9.0,
+              questionsAnswered: 2,
+              strengths: ['Decision making', 'Problem analysis'],
+              improvements: []
+            }
+          }
+        },
+        insights: {
+          strengths: [
+            'Excellent communication and presentation skills',
+            'Strong problem-solving methodology',
+            'Good understanding of system design principles',
+            'Leadership experience with concrete examples',
+            'Adaptable to different technical challenges'
+          ],
+          improvements: [
+            'Focus more on performance optimization techniques',
+            'Provide more quantified examples of impact',
+            'Strengthen error handling and edge case considerations',
+            'Expand knowledge in database optimization',
+            'Practice explaining complex concepts more concisely'
+          ],
+          recommendations: [
+            'Consider senior developer roles with architectural responsibilities',
+            'Focus on full-stack positions that leverage your React/Node.js skills',
+            'Explore tech lead opportunities where communication skills are valued',
+            'Consider companies that emphasize collaborative development',
+            'Look into positions that involve mentoring junior developers'
+          ],
+          nextSteps: [
+            'Practice advanced algorithm problems to improve technical scores',
+            'Work on a portfolio project demonstrating system design skills',
+            'Prepare specific metrics for behavioral interview responses',
+            'Study performance optimization patterns and best practices',
+            'Consider taking a course on database design and optimization'
+          ],
+          careerFit: {
+            roles: ['Senior Frontend Developer', 'Full-Stack Developer', 'Technical Lead', 'Software Architect'],
+            industries: ['Technology', 'FinTech', 'E-commerce', 'SaaS'],
+            confidenceLevel: 8.2
+          }
+        },
+        comparisonData: {
+          percentile: 78,
+          similarProfiles: {
+            averageScore: 7.4,
+            scoreDistribution: [6.2, 7.1, 7.4, 7.8, 8.2, 8.5, 8.9]
+          }
+        },
+        certificateEligible: true,
+        retakeRecommended: false,
+        completionDate: new Date().toISOString()
+      };
+
+      setResults(mockResults);
+
+      // Show celebration for good scores
+      if (mockResults.overallScore >= 8.0) {
+        setShowCelebration(true);
+        setTimeout(() => setShowCelebration(false), 3000);
+      }
+
+    } catch (err: any) {
+      setError(err.message || 'Failed to load interview results');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+  };
+
+  const getScoreColor = (score: number): string => {
+    if (score >= 8.5) return 'text-green-600';
+    if (score >= 7.0) return 'text-blue-600';
+    if (score >= 6.0) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreBadgeColor = (score: number): string => {
+    if (score >= 8.5) return 'bg-green-100 text-green-800';
+    if (score >= 7.0) return 'bg-blue-100 text-blue-800';
+    if (score >= 6.0) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
+
+  const getPerformanceLevel = (score: number): string => {
+    if (score >= 9.0) return 'Excellent';
+    if (score >= 8.0) return 'Very Good';
+    if (score >= 7.0) return 'Good';
+    if (score >= 6.0) return 'Fair';
+    return 'Needs Improvement';
+  };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <ErrorAlert message={error} onRetry={loadResults} />;
+  }
+
+  if (!results) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No results available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Celebration Animation */}
+      {showCelebration && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 opacity-10 animate-pulse" />
+          <div className="flex items-center justify-center h-full">
+            <div className="text-6xl animate-bounce">🎉</div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Interview Complete! 🎯</h1>
+            <p className="text-blue-100 text-lg">
+              {results.interview.interview_type.replace('_', ' ')} Interview Results
+            </p>
+            <p className="text-blue-200 text-sm mt-1">
+              Completed on {new Date(results.completionDate).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
+          </div>
+
+          <div className="text-right">
+            <div className="text-5xl font-bold mb-2">{results.overallScore.toFixed(1)}</div>
+            <div className="text-blue-100">Overall Score</div>
+            <div className="text-blue-200 text-sm">
+              {getPerformanceLevel(results.overallScore)}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-4 gap-6 mt-8">
+          <div className="text-center">
+            <div className="text-2xl font-bold">{results.progress.answered_questions}</div>
+            <div className="text-blue-200 text-sm">Questions Answered</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold">
+              {formatTime(Object.values(results.sectionScores).reduce((acc, section) => acc + section.timeSpent, 0))}
+            </div>
+            <div className="text-blue-200 text-sm">Total Time</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold">{results.comparisonData.percentile}th</div>
+            <div className="text-blue-200 text-sm">Percentile</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold">{results.progress.sections_completed.length}</div>
+            <div className="text-blue-200 text-sm">Sections Completed</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-3 justify-center">
+        {results.certificateEligible && (
+          <button className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Download Certificate
+          </button>
+        )}
+
+        {onViewDetailedAnalysis && (
+          <button
+            onClick={onViewDetailedAnalysis}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
+            </svg>
+            Detailed Analysis
+          </button>
+        )}
+
+        {onShareResults && (
+          <button
+            onClick={() => onShareResults(results)}
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+            </svg>
+            Share Results
+          </button>
+        )}
+
+        {onExportResults && (
+          <button
+            onClick={() => onExportResults(results)}
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export PDF
+          </button>
+        )}
+
+        {results.retakeRecommended && onRetakeInterview && (
+          <button
+            onClick={onRetakeInterview}
+            className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Retake Interview
+          </button>
+        )}
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8 px-6">
+            {[
+              { id: 'overview', name: 'Overview', icon: '📊' },
+              { id: 'performance', name: 'Performance', icon: '📈' },
+              { id: 'insights', name: 'Insights', icon: '💡' },
+              { id: 'comparison', name: 'Comparison', icon: '⚖️' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                {tab.name}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="p-6">
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              {/* Section Scores */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Section Performance</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(results.sectionScores).map(([section, data]) => (
+                    <div key={section} className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-gray-900 capitalize">
+                          {section.replace('_', ' ')}
+                        </h4>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreBadgeColor(data.score)}`}>
+                          {data.score.toFixed(1)}/10
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <span>Questions: {data.questionsAnswered}/{data.totalQuestions}</span>
+                          <span>Time: {formatTime(data.timeSpent)}</span>
+                        </div>
+
+                        {data.strengths.length > 0 && (
+                          <div>
+                            <div className="text-sm font-medium text-green-700 mb-1">Strengths:</div>
+                            <ul className="text-sm text-green-600 space-y-1">
+                              {data.strengths.map((strength, index) => (
+                                <li key={index} className="flex items-start">
+                                  <span className="text-green-500 mr-1">✓</span>
+                                  {strength}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {data.improvements.length > 0 && (
+                          <div>
+                            <div className="text-sm font-medium text-orange-700 mb-1">Areas for improvement:</div>
+                            <ul className="text-sm text-orange-600 space-y-1">
+                              {data.improvements.map((improvement, index) => (
+                                <li key={index} className="flex items-start">
+                                  <span className="text-orange-500 mr-1">→</span>
+                                  {improvement}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Skill Assessment */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Skill Assessment</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3">Technical Skills</h4>
+                    <div className="space-y-3">
+                      {Object.entries(results.skillAssessment.technicalSkills).map(([skill, score]) => (
+                        <div key={skill} className="flex items-center justify-between">
+                          <span className="text-gray-700">{skill}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full"
+                                style={{ width: `${score * 10}%` }}
+                              />
+                            </div>
+                            <span className={`text-sm font-medium ${getScoreColor(score)}`}>
+                              {score.toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3">Soft Skills</h4>
+                    <div className="space-y-3">
+                      {Object.entries(results.skillAssessment.softSkills).map(([skill, score]) => (
+                        <div key={skill} className="flex items-center justify-between">
+                          <span className="text-gray-700">{skill}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-green-600 h-2 rounded-full"
+                                style={{ width: `${score * 10}%` }}
+                              />
+                            </div>
+                            <span className={`text-sm font-medium ${getScoreColor(score)}`}>
+                              {score.toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'performance' && (
+            <div className="space-y-6">
+              {/* Response Time Analysis */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Response Time Analysis</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-blue-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {formatTime(results.performanceMetrics.responseTime.average)}
+                    </div>
+                    <div className="text-sm text-blue-700">Average Response Time</div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {formatTime(results.performanceMetrics.responseTime.fastest)}
+                    </div>
+                    <div className="text-sm text-green-700">Fastest Response</div>
+                  </div>
+                  <div className="bg-orange-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {formatTime(results.performanceMetrics.responseTime.slowest)}
+                    </div>
+                    <div className="text-sm text-orange-700">Slowest Response</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Difficulty Performance */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Performance by Difficulty</h3>
+                <div className="space-y-4">
+                  {Object.entries(results.performanceMetrics.difficultyPerformance).map(([difficulty, data]) => (
+                    <div key={difficulty} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-medium text-gray-900 capitalize">{difficulty}</span>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreBadgeColor(data.averageScore)}`}>
+                          {data.averageScore.toFixed(1)}/10
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Attempted: {data.attempted}</span>
+                        <span>Correct: {data.correct}/{data.attempted}</span>
+                        <span>Success Rate: {((data.correct / data.attempted) * 100).toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Performance */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Performance by Category</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(results.performanceMetrics.categoryPerformance).map(([category, data]) => (
+                    <div key={category} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-medium text-gray-900 capitalize">
+                          {category.replace('_', ' ')}
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreBadgeColor(data.score)}`}>
+                          {data.score.toFixed(1)}/10
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600 mb-2">
+                        {data.questionsAnswered} questions answered
+                      </div>
+                      {data.strengths.length > 0 && (
+                        <div className="space-y-1">
+                          {data.strengths.map((strength, index) => (
+                            <div key={index} className="text-sm text-green-600 flex items-start">
+                              <span className="text-green-500 mr-1">✓</span>
+                              {strength}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {data.improvements.length > 0 && (
+                        <div className="space-y-1 mt-2">
+                          {data.improvements.map((improvement, index) => (
+                            <div key={index} className="text-sm text-orange-600 flex items-start">
+                              <span className="text-orange-500 mr-1">→</span>
+                              {improvement}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'insights' && (
+            <div className="space-y-6">
+              {/* Strengths and Improvements */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <span className="text-green-500 mr-2">💪</span>
+                    Your Strengths
+                  </h3>
+                  <div className="space-y-3">
+                    {results.insights.strengths.map((strength, index) => (
+                      <div key={index} className="flex items-start bg-green-50 rounded-lg p-3">
+                        <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                        <span className="text-green-800">{strength}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <span className="text-orange-500 mr-2">🎯</span>
+                    Areas for Improvement
+                  </h3>
+                  <div className="space-y-3">
+                    {results.insights.improvements.map((improvement, index) => (
+                      <div key={index} className="flex items-start bg-orange-50 rounded-lg p-3">
+                        <span className="text-orange-500 mr-2 mt-0.5">→</span>
+                        <span className="text-orange-800">{improvement}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Career Fit */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                  <span className="text-purple-500 mr-2">🚀</span>
+                  Career Fit Analysis
+                </h3>
+                <div className="bg-purple-50 rounded-lg p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-medium text-purple-900 mb-3">Recommended Roles</h4>
+                      <div className="space-y-2">
+                        {results.insights.careerFit.roles.map((role, index) => (
+                          <div key={index} className="bg-white rounded-lg px-3 py-2 text-purple-800">
+                            {role}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-purple-900 mb-3">Industry Match</h4>
+                      <div className="space-y-2">
+                        {results.insights.careerFit.industries.map((industry, index) => (
+                          <div key={index} className="bg-white rounded-lg px-3 py-2 text-purple-800">
+                            {industry}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 text-center">
+                    <div className="text-2xl font-bold text-purple-900">
+                      {results.insights.careerFit.confidenceLevel.toFixed(1)}/10
+                    </div>
+                    <div className="text-purple-700">Career Fit Confidence</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations and Next Steps */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <span className="text-blue-500 mr-2">💡</span>
+                    Recommendations
+                  </h3>
+                  <div className="space-y-3">
+                    {results.insights.recommendations.map((recommendation, index) => (
+                      <div key={index} className="flex items-start bg-blue-50 rounded-lg p-3">
+                        <span className="text-blue-500 mr-2 mt-0.5">💡</span>
+                        <span className="text-blue-800">{recommendation}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <span className="text-indigo-500 mr-2">📋</span>
+                    Next Steps
+                  </h3>
+                  <div className="space-y-3">
+                    {results.insights.nextSteps.map((step, index) => (
+                      <div key={index} className="flex items-start bg-indigo-50 rounded-lg p-3">
+                        <span className="text-indigo-500 mr-2 mt-0.5">{index + 1}.</span>
+                        <span className="text-indigo-800">{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'comparison' && (
+            <div className="space-y-6">
+              {/* Percentile Ranking */}
+              <div className="text-center bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-8">
+                <div className="text-4xl font-bold text-gray-900 mb-2">
+                  {results.comparisonData.percentile}th Percentile
+                </div>
+                <div className="text-gray-600 mb-4">
+                  You scored better than {results.comparisonData.percentile}% of candidates with similar profiles
+                </div>
+                <div className="max-w-md mx-auto">
+                  <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 h-4 rounded-full transition-all duration-1000"
+                      style={{ width: `${results.comparisonData.percentile}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Score Distribution */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Score Distribution</h3>
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="flex items-end space-x-2 h-32">
+                    {results.comparisonData.similarProfiles.scoreDistribution.map((score, index) => {
+                      const isYourScore = Math.abs(score - results.overallScore) < 0.1;
+                      const height = (score / 10) * 100;
+
+                      return (
+                        <div key={index} className="flex-1 flex flex-col items-center">
+                          <div
+                            className={`w-full rounded-t transition-all duration-500 ${
+                              isYourScore ? 'bg-blue-600' : 'bg-gray-300'
+                            }`}
+                            style={{ height: `${height}%` }}
+                          />
+                          <div className="text-xs text-gray-600 mt-1">{score.toFixed(1)}</div>
+                          {isYourScore && (
+                            <div className="text-xs text-blue-600 font-medium">You</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 text-center text-sm text-gray-600">
+                    Average score among similar profiles: {results.comparisonData.similarProfiles.averageScore.toFixed(1)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Benchmark Analysis */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Benchmark Analysis</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center bg-green-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-green-600">
+                      {((results.overallScore - results.comparisonData.similarProfiles.averageScore) > 0 ? '+' : '')}
+                      {(results.overallScore - results.comparisonData.similarProfiles.averageScore).toFixed(1)}
+                    </div>
+                    <div className="text-sm text-green-700">Above Average</div>
+                  </div>
+                  <div className="text-center bg-blue-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {getPerformanceLevel(results.overallScore)}
+                    </div>
+                    <div className="text-sm text-blue-700">Performance Level</div>
+                  </div>
+                  <div className="text-center bg-purple-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {results.certificateEligible ? 'Yes' : 'No'}
+                    </div>
+                    <div className="text-sm text-purple-700">Certificate Eligible</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InterviewCompletionSummary;
