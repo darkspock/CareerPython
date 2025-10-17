@@ -19,10 +19,28 @@ class Settings(BaseSettings):
     XAI_API_KEY: str = ""
     XAI_API_URL: str = "https://api.x.ai/v1"
 
-    # Mailgun settings
+    # Environment settings
+    ENVIRONMENT: str = "development"
+
+    # Email service selection (smtp or mailgun)
+    EMAIL_SERVICE: str = "smtp"
+
+    # SMTP settings (for development with Mailpit)
+    SMTP_HOST: str = "mailpit"
+    SMTP_PORT: int = 1025
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "noreply@careerpython.local"
+    SMTP_USE_TLS: bool = False
+
+    # Mailgun settings (for production)
     MAILGUN_API_KEY: str = ""
     MAILGUN_DOMAIN: str = ""
     MAILGUN_API_URL: str = "https://api.mailgun.net/v3"
+
+    # Frontend and support settings
+    FRONTEND_URL: str = "http://localhost:3000"
+    SUPPORT_EMAIL: str = "support@careerpython.com"
 
     auth: AuthSettings = AuthSettings()
 

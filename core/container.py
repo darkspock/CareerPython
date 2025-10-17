@@ -142,8 +142,12 @@ from src.candidate_application.application.commands.create_candidate_application
 from src.candidate_application.application.commands.update_application_status import UpdateApplicationStatusCommandHandler
 from src.candidate_application.application.queries.get_applications_by_candidate_id import GetApplicationsByCandidateIdQueryHandler
 from src.candidate_application.infrastructure.repositories.candidate_application_repository import SQLAlchemyCandidateApplicationRepository
-# from src.notification.application.handlers.send_email_command_handler import SendEmailCommandHandler
-# from src.notification.infrastructure.services.mailgun_service import MailgunService
+
+# Email Services
+from src.notification.infrastructure.services.smtp_email_service import SMTPEmailService
+from src.notification.infrastructure.services.mailgun_service import MailgunService
+from src.notification.application.handlers.send_email_command_handler import SendEmailCommandHandler
+from core.config import settings
 
 # Command and Query Buses
 from src.shared.application.command_bus import CommandBus
@@ -169,8 +173,16 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
-    # Mock email service for now (can be replaced with real implementation)
-    email_service = providers.Object(None)  # TODO: Replace with actual EmailService implementation
+    # Email service - automatically selects SMTP or Mailgun based on settings
+    @staticmethod
+    def _get_email_service():
+        """Factory method to create the appropriate email service based on configuration"""
+        if settings.EMAIL_SERVICE == "mailgun":
+            return MailgunService()
+        else:
+            return SMTPEmailService()
+
+    email_service = providers.Singleton(_get_email_service)
 
     # Repositories - Using concrete implementation but typed as interface
     interview_template_repository = providers.Factory(
@@ -796,10 +808,11 @@ class Container(containers.DeclarativeContainer):
         candidate_application_repository=candidate_application_repository
     )
 
-    # send_email_command_handler = providers.Factory(
-    #     SendEmailCommandHandler,
-    #     mailgun_service=mailgun_service
-    # )
+    # Email Command Handler
+    send_email_command_handler = providers.Factory(
+        SendEmailCommandHandler,
+        email_service=email_service
+    )
 
     # Controllers
     interview_template_controller = providers.Factory(

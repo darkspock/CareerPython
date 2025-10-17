@@ -185,6 +185,12 @@ export const api = {
   register: (userData: { email: string; password: string; full_name?: string }) =>
     ApiClient.post('/auth/register', userData),
 
+  resetPasswordWithToken: (token: string, newPassword: string) =>
+    ApiClient.post('/user/password-reset/confirm', {
+      reset_token: token,
+      new_password: newPassword,
+    }),
+
   // Candidates
   getCandidates: () =>
     ApiClient.authenticatedRequest('/admin/candidates'),

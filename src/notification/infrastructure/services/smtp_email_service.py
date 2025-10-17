@@ -1,21 +1,26 @@
 import logging
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from pathlib import Path
-from typing import Dict, Any, Optional, List
-
-import requests
+from typing import Dict, Any, List
 
 from core.config import settings
 from src.shared.domain.interfaces.email_service import EmailServiceInterface
 from src.notification.domain.exceptions.notification_exceptions import EmailSendingException
 
 
-class MailgunService(EmailServiceInterface):
-    """Service for sending emails through Mailgun (Production)"""
+class SMTPEmailService(EmailServiceInterface):
+    """SMTP-based email service for development using Mailpit or any SMTP server"""
 
     def __init__(self) -> None:
-        self.api_key = settings.MAILGUN_API_KEY
-        self.domain = settings.MAILGUN_DOMAIN
-        self.api_url = settings.MAILGUN_API_URL
+        self.smtp_host = settings.SMTP_HOST
+        self.smtp_port = settings.SMTP_PORT
+        self.smtp_username = settings.SMTP_USERNAME
+        self.smtp_password = settings.SMTP_PASSWORD
+        self.smtp_from_email = settings.SMTP_FROM_EMAIL
+        self.smtp_use_tls = settings.SMTP_USE_TLS
+
         self.logger = logging.getLogger(__name__)
         # Go up 4 levels: services -> infrastructure -> notification -> src, then go to shared
         self.template_dir = Path(__file__).parent.parent.parent.parent / "shared" / "infrastructure" / "services" / "email_templates"
@@ -131,100 +136,61 @@ class MailgunService(EmailServiceInterface):
 
     async def retry_failed_emails(self) -> int:
         """Retry sending failed emails that are ready for retry"""
-        # Mailgun has its own retry mechanism
-        self.logger.info("Mailgun handles email retries automatically")
+        # For development, we don't need retry logic
+        self.logger.info("Retry failed emails not implemented for SMTP service")
         return 0
 
     def get_delivery_stats(self) -> Dict[str, Any]:
-        """Get email delivery statistics from Mailgun"""
-        try:
-            if not self.api_key or not self.domain:
-                return {"error": "Mailgun not configured"}
-
-            url = f"{self.api_url}/{self.domain}/stats/total"
-            response = requests.get(
-                url,
-                auth=("api", self.api_key),
-                params={"event": ["accepted", "delivered", "failed"]},
-                timeout=10
-            )
-
-            if response.status_code == 200:
-                data = response.json()
-                return dict(data) if isinstance(data, dict) else {"error": "Invalid response format"}
-            else:
-                return {"error": f"Failed to get stats: {response.status_code}"}
-
-        except Exception as e:
-            self.logger.error(f"Error getting delivery stats: {str(e)}")
-            return {"error": str(e)}
+        """Get email delivery statistics"""
+        # For development, return empty stats
+        return {
+            "total_sent": 0,
+            "total_failed": 0,
+            "success_rate": 100.0
+        }
 
     def get_failed_emails(self) -> List[Dict[str, Any]]:
-        """Get list of failed email attempts from Mailgun"""
+        """Get list of failed email attempts"""
+        # For development, return empty list
+        return []
+
+    def _send_email(self, to_email: str, subject: str, html_content: str) -> bool:
+        """Send email via SMTP"""
         try:
-            if not self.api_key or not self.domain:
-                return []
+            # Create message
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = self.smtp_from_email
+            msg["To"] = to_email
 
-            url = f"{self.api_url}/{self.domain}/events"
-            response = requests.get(
-                url,
-                auth=("api", self.api_key),
-                params={"event": "failed"},
-                timeout=10
-            )
+            # Attach HTML content
+            html_part = MIMEText(html_content, "html")
+            msg.attach(html_part)
 
-            if response.status_code == 200:
-                data = response.json()
-                items = data.get("items", [])
-                return list(items) if isinstance(items, list) else []
+            # Send email
+            if self.smtp_use_tls:
+                # Use STARTTLS
+                with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                    server.starttls()
+                    if self.smtp_username and self.smtp_password:
+                        server.login(self.smtp_username, self.smtp_password)
+                    server.send_message(msg)
             else:
-                self.logger.error(f"Failed to get failed emails: {response.status_code}")
-                return []
+                # Plain SMTP (for Mailpit in development)
+                with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                    if self.smtp_username and self.smtp_password:
+                        server.login(self.smtp_username, self.smtp_password)
+                    server.send_message(msg)
 
-        except Exception as e:
-            self.logger.error(f"Error getting failed emails: {str(e)}")
-            return []
+            self.logger.info(f"Email sent successfully to {to_email}: {subject}")
+            return True
 
-    def _send_email(self, to_email: str, subject: str, html_content: str, text_content: Optional[str] = None) -> bool:
-        """Send email through Mailgun API"""
-        try:
-            if not self.api_key or not self.domain:
-                self.logger.warning("Mailgun not configured, skipping email send")
-                return True  # Return True for dev environments
-
-            url = f"{self.api_url}/{self.domain}/messages"
-
-            data = {
-                "from": f"CareerPython <noreply@{self.domain}>",
-                "to": to_email,
-                "subject": subject,
-                "html": html_content
-            }
-
-            if text_content:
-                data["text"] = text_content
-
-            response = requests.post(
-                url,
-                auth=("api", self.api_key),
-                data=data,
-                timeout=30
-            )
-
-            if response.status_code == 200:
-                self.logger.info(f"Email sent successfully to {to_email}")
-                return True
-            else:
-                error_msg = f"Mailgun API error: {response.status_code} - {response.text}"
-                self.logger.error(error_msg)
-                raise EmailSendingException(error_msg)
-
-        except requests.RequestException as e:
-            error_msg = f"Network error sending email: {str(e)}"
+        except smtplib.SMTPException as e:
+            error_msg = f"SMTP error sending email to {to_email}: {str(e)}"
             self.logger.error(error_msg)
             raise EmailSendingException(error_msg)
         except Exception as e:
-            error_msg = f"Unexpected error sending email: {str(e)}"
+            error_msg = f"Unexpected error sending email to {to_email}: {str(e)}"
             self.logger.error(error_msg)
             raise EmailSendingException(error_msg)
 

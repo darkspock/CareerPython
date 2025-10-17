@@ -121,9 +121,17 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
                 # self.command_bus.execute(application_command)
                 self.logger.info(f"Job application for position {command.job_position_id} will be created later")
 
-            # 6. Send welcome email - TEMPORARILY DISABLED
-            # self._send_welcome_email(command.email, extracted_name)
-            self.logger.info(f"Welcome email to {command.email} will be sent later")
+            # 6. Send password reset email for new users
+            if not existing_user:
+                self.logger.info(f"🔔 Starting password reset email process for new user: {command.email}")
+                # Retrieve the user to generate reset token
+                created_user: Optional[User] = self.user_repository.get_by_email(command.email)
+                if created_user:
+                    reset_token = created_user.request_password_reset()
+                    self.user_repository.update_entity(created_user)
+                    self._send_password_reset_email(command.email, reset_token, extracted_data)
+                else:
+                    self.logger.warning(f"❌ User {command.email} not found for password reset email")
 
         except Exception as e:
             self.logger.error(f"Error creating user from landing: {str(e)}")
@@ -211,30 +219,26 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
             # Don't raise - PDF analysis failure shouldn't break user creation
             return None
 
-    def _send_welcome_email(self, email: str, extracted_data: Optional[Dict[str, str]]) -> None:
-        """Send welcome email"""
+    def _send_password_reset_email(self, email: str, reset_token: str, extracted_data: Optional[Dict[str, str]]) -> None:
+        """Send password reset email to new user"""
         try:
             name = "User"
             if extracted_data:
                 name = extracted_data.get("first_name", "User")
 
-            # TODO: Generate actual password reset URL
-            reset_url = f"https://yourdomain.com/reset-password?email={email}"
-
             email_command = SendEmailCommand(
                 recipient_email=email,
-                subject="Welcome to CareerPython!",
-                template_name="welcome_email",
-                notification_type=NotificationTypeEnum.WELCOME_EMAIL,
+                subject="Set Your Password - CareerPython",
+                template_name="password_reset",
+                notification_type=NotificationTypeEnum.PASSWORD_RESET,
                 template_data={
                     "name": name,
-                    "reset_url": reset_url
+                    "reset_token": reset_token
                 }
             )
 
             self.command_bus.execute(email_command)
-            self.logger.info(f"Welcome email sent to {email}")
 
         except Exception as e:
-            self.logger.error(f"Error sending welcome email: {str(e)}")
+            self.logger.error(f"❌ Error sending password reset email: {str(e)}", exc_info=True)
             # Don't raise - email failure shouldn't break user creation

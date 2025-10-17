@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Upload, CheckCircle, FileText, Bot, Target } from "lucide-react";
+import { toast } from "react-toastify";
 import { api } from "../lib/api";
 import { useOnboarding } from "../hooks/useOnboarding";
 
@@ -93,6 +94,19 @@ export default function LandingPage() {
           localStorage.setItem("access_token", data.access_token);
           console.log('✅ Stored JWT token for authenticated onboarding flow');
         }
+
+        // Show success toast notification
+        toast.success(
+          '¡Cuenta creada! Hemos enviado un correo electrónico a tu bandeja de entrada con un enlace para establecer tu contraseña.',
+          {
+            position: "top-center",
+            autoClose: 7000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        );
 
         // Always navigate to complete-profile page with analysis_job_id if available
         console.log('✅ Onboarding successful, navigating to complete-profile');

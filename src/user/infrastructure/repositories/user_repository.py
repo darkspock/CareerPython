@@ -88,7 +88,7 @@ class SQLAlchemyUserRepository(UserRepositoryInterface):
     def update_entity(self, user: User) -> User:
         """Update user entity directly"""
         session = self.database.get_session()
-        model = session.query(UserModel).filter(UserModel.id == user.id).first()
+        model = session.query(UserModel).filter(UserModel.id == user.id.value).first()
         if model:
             model.email = user.email
             model.hashed_password = user.hashed_password

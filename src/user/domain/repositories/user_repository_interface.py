@@ -33,6 +33,11 @@ class UserRepositoryInterface(ABC):
         pass
 
     @abstractmethod
+    def update_entity(self, user: User) -> User:
+        """Update user entity directly"""
+        pass
+
+    @abstractmethod
     def delete(self, user_id: UserId) -> bool:
         pass
 

@@ -10,6 +10,7 @@ import CandidatesPage from './pages/CandidatesPage';
 import CandidateLoginPage from './pages/CandidateLoginPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
 import PDFProcessingPage from './pages/PDFProcessingPage';
 
@@ -106,6 +107,7 @@ function App() {
                         <Route path="/admin/login" element={<Navigate to="/admin/auth/login" replace />} />
                         <Route path="/candidate/login" element={<Navigate to="/candidate/auth/login" replace />} />
                         <Route path="/candidate/auth/register" element={<RegisterPage />} />
+                        <Route path="/candidate/reset-password" element={<ResetPasswordPage />} />
                         <Route path="/candidate/onboarding/complete-profile" element={<CompleteProfilePage />} />
                         <Route path="/candidate/onboarding/pdf-processing" element={<PDFProcessingPage />} />
                         <Route path="/candidate/onboarding/experience" element={<OnboardingExperiencePage />} />

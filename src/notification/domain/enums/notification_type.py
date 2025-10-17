@@ -8,6 +8,9 @@ class NotificationTypeEnum(str, Enum):
     ACCOUNT_ACTIVATION = "account_activation"
     APPLICATION_CONFIRMATION = "application_confirmation"
     INTERVIEW_INVITATION = "interview_invitation"
+    SUBSCRIPTION_CONFIRMATION = "subscription_confirmation"
+    SUBSCRIPTION_RENEWAL_REMINDER = "subscription_renewal_reminder"
+    SUBSCRIPTION_EXPIRED = "subscription_expired"
 
 
 class NotificationStatusEnum(str, Enum):
