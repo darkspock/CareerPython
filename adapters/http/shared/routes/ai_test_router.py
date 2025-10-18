@@ -5,7 +5,8 @@ from typing import Dict, Any
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 
-from src.shared.infrastructure.services.ai.xai_service import XAIResumeAnalysisService
+from core.config import settings
+from src.shared.infrastructure.services.ai.ai_service_factory import get_ai_service
 from src.user.infrastructure.services.pdf_processing_service import PDFProcessingService
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/test", tags=["AI Testing"])
 @router.post("/analyze-pdf-direct")
 async def analyze_pdf_direct(file: UploadFile = File(...)) -> JSONResponse:
     """
-    Direct PDF analysis with xAI - no queues, immediate response.
+    Direct PDF analysis with AI (xAI or Groq based on configuration) - no queues, immediate response.
 
     This endpoint is for testing purposes only.
     """
@@ -53,9 +54,9 @@ async def analyze_pdf_direct(file: UploadFile = File(...)) -> JSONResponse:
         logger.info(f"Text preview: {text_content[:200]}...")
         logger.info(f"PDF metadata: {extraction_result.get('metadata', {})}")
 
-        # 3. Analyze with xAI
-        xai_service = XAIResumeAnalysisService()
-        analysis_result = xai_service.analyze_resume_pdf(text_content)
+        # 3. Analyze with AI (automatically uses xAI or Groq based on configuration)
+        ai_service = get_ai_service()
+        analysis_result = ai_service.analyze_resume_pdf(text_content)
 
         # 4. Return results
         response_data = {
@@ -94,14 +95,15 @@ async def analyze_pdf_direct(file: UploadFile = File(...)) -> JSONResponse:
 async def get_ai_config() -> Dict[str, Any]:
     """Get current AI configuration for debugging."""
     try:
-        xai_service = XAIResumeAnalysisService()
+        ai_service = get_ai_service()
         return {
-            "model": xai_service.model,
-            "max_tokens": xai_service.max_tokens,
-            "timeout": xai_service.timeout,
-            "api_url": xai_service.api_url,
-            "has_api_key": bool(xai_service.api_key),
-            "api_key_preview": f"{xai_service.api_key[:10]}..." if xai_service.api_key else None
+            "ai_agent": settings.AI_AGENT,
+            "model": ai_service.model,
+            "max_tokens": ai_service.max_tokens,
+            "timeout": ai_service.timeout,
+            "api_url": ai_service.api_url,
+            "has_api_key": bool(ai_service.api_key),
+            "api_key_preview": f"{ai_service.api_key[:10]}..." if ai_service.api_key else None
         }
     except Exception as e:
         return {"error": str(e)}

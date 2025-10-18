@@ -8,7 +8,7 @@ import dramatiq
 from core.database import database
 from ..jobs.async_job_service import AsyncJobService
 from ..repositories.async_job_repository import AsyncJobRepository
-from ..services.ai.xai_service import XAIResumeAnalysisService
+from ..services.ai.ai_service_factory import get_ai_service
 from ...domain.enums.async_job import AsyncJobStatus
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @dramatiq.actor  # Simplified actor without retries to avoid middleware issues
 def analyze_pdf_resume(job_id: str, user_asset_id: str, candidate_id: str) -> None:
     """
-    Analyze PDF resume using xAI and populate candidate data.
+    Analyze PDF resume using AI (xAI or Groq based on configuration) and populate candidate data.
 
     Args:
         job_id: ID of the async job
@@ -29,7 +29,9 @@ def analyze_pdf_resume(job_id: str, user_asset_id: str, candidate_id: str) -> No
     # Initialize services
     repository = AsyncJobRepository(database)
     async_job_service = AsyncJobService(repository)
-    xai_service = XAIResumeAnalysisService()
+
+    # Get AI service (automatically selects xAI or Groq based on configuration)
+    ai_service = get_ai_service()
 
     try:
         # 1. Update progress: Starting analysis
@@ -55,18 +57,18 @@ def analyze_pdf_resume(job_id: str, user_asset_id: str, candidate_id: str) -> No
             message="Analizando CV con IA..."
         )
 
-        # 4. Analyze with xAI
-        xai_result = xai_service.analyze_resume_pdf(pdf_content)
+        # 4. Analyze with AI
+        ai_result = ai_service.analyze_resume_pdf(pdf_content)
 
-        if not xai_result.success:
-            raise ValueError(f"xAI analysis failed: {xai_result.error_message}")
+        if not ai_result.success:
+            raise ValueError(f"AI analysis failed: {ai_result.error_message}")
 
         # Validate result quality
-        if not xai_service.validate_analysis_result(xai_result):
+        if not ai_service.validate_analysis_result(ai_result):
             logger.warning(f"Low quality analysis result for job {job_id}")
             # Continue anyway but with lower confidence
 
-        logger.info(f"xAI analysis completed with confidence: {xai_result.confidence_score}")
+        logger.info(f"AI analysis completed with confidence: {ai_result.confidence_score}")
 
         # 5. Update progress: Populating candidate data
         async_job_service.update_job_status(
@@ -79,13 +81,13 @@ def analyze_pdf_resume(job_id: str, user_asset_id: str, candidate_id: str) -> No
         # 6. Populate candidate data from analysis results
         results = {
             "analysis_successful": True,
-            "candidate_info": xai_result.candidate_info,
-            "experiences": xai_result.experiences,
-            "educations": xai_result.educations,
-            "projects": xai_result.projects,
-            "skills": xai_result.skills,
-            "confidence_score": xai_result.confidence_score,
-            "raw_response": xai_result.raw_response,
+            "candidate_info": ai_result.candidate_info,
+            "experiences": ai_result.experiences,
+            "educations": ai_result.educations,
+            "projects": ai_result.projects,
+            "skills": ai_result.skills,
+            "confidence_score": ai_result.confidence_score,
+            "raw_response": ai_result.raw_response,
             "user_asset_id": user_asset_id,
             "candidate_id": candidate_id
         }
@@ -100,7 +102,7 @@ def analyze_pdf_resume(job_id: str, user_asset_id: str, candidate_id: str) -> No
 
         # 7. Complete job with analysis results
         async_job_service.complete_job(job_id, results)
-        logger.info(f"PDF analysis completed successfully for job {job_id}. Confidence: {xai_result.confidence_score}")
+        logger.info(f"PDF analysis completed successfully for job {job_id}. Confidence: {ai_result.confidence_score}")
 
     except Exception as e:
         logger.error(f"PDF analysis failed for job {job_id}: {str(e)}")
@@ -148,11 +150,14 @@ def _populate_candidate_from_analysis(candidate_id: str, analysis_results: Dict[
         from src.candidate.application.commands.populate_candidate_from_pdf_analysis import (
             PopulateCandidateFromPdfAnalysisCommand
         )
-        from core.container import Container
 
-        # Get the command bus from the container
-        container = Container()
-        command_bus = container.command_bus()
+        # Lazy import to avoid circular dependency
+        def get_command_bus():
+            from core.container import Container
+            container = Container()
+            return container.command_bus()
+
+        command_bus = get_command_bus()
 
         # Create and execute the populate command
         populate_command = PopulateCandidateFromPdfAnalysisCommand(

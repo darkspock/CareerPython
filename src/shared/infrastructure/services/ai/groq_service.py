@@ -1,4 +1,4 @@
-"""xAI service for resume analysis."""
+"""Groq service for resume analysis."""
 
 import json
 import logging
@@ -13,29 +13,29 @@ from ....domain.value_objects.resume_analysis_result import ResumeAnalysisResult
 logger = logging.getLogger(__name__)
 
 
-class XAIResumeAnalysisService(AIServiceInterface):
-    """Service for analyzing resumes using xAI."""
+class GroqResumeAnalysisService(AIServiceInterface):
+    """Service for analyzing resumes using Groq."""
 
     def __init__(self) -> None:
-        self.api_key = settings.XAI_API_KEY
-        self.model = settings.XAI_MODEL
-        self.max_tokens = settings.XAI_MAX_TOKENS
-        self.timeout = settings.XAI_TIMEOUT
-        self.api_url = f"{settings.XAI_API_URL}/chat/completions"
+        self.api_key = settings.GROQ_API_KEY
+        self.model = settings.GROQ_MODEL
+        self.max_tokens = settings.GROQ_MAX_TOKENS
+        self.timeout = settings.GROQ_TIMEOUT
+        self.api_url = f"{settings.GROQ_API_URL}/chat/completions"
 
         if not self.api_key:
-            raise ValueError("XAI_API_KEY environment variable is required")
+            raise ValueError("GROQ_API_KEY environment variable is required")
 
     def analyze_resume_pdf(self, pdf_text: str) -> ResumeAnalysisResult:
-        """Analyze resume PDF text with xAI."""
+        """Analyze resume PDF text with Groq."""
         try:
-            logger.info("Starting resume analysis with xAI")
+            logger.info("Starting resume analysis with Groq")
 
             # Create the analysis prompt
             prompt = self._create_analysis_prompt(pdf_text)
 
-            # Call xAI API
-            response = self._call_xai_api(prompt)
+            # Call Groq API
+            response = self._call_groq_api(prompt)
 
             # Parse the response
             analysis_result = self._parse_response(response)
@@ -57,7 +57,7 @@ class XAIResumeAnalysisService(AIServiceInterface):
             )
 
     def _create_analysis_prompt(self, pdf_text: str) -> str:
-        """Create the analysis prompt for xAI."""
+        """Create the analysis prompt for Groq."""
         return f"""
 Analyze this resume and extract the information in exact JSON format. It is critical that you respond ONLY with valid JSON, without additional text.
 
@@ -108,8 +108,8 @@ INSTRUCTIONS:
 - Respond ONLY with the JSON, without additional explanations
 """
 
-    def _call_xai_api(self, prompt: str) -> str:
-        """Call xAI API with the analysis prompt."""
+    def _call_groq_api(self, prompt: str) -> str:
+        """Call Groq API with the analysis prompt."""
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -132,7 +132,7 @@ INSTRUCTIONS:
         }
 
         try:
-            logger.info("Calling xAI API")
+            logger.info("Calling Groq API")
             response = requests.post(
                 self.api_url,
                 headers=headers,
@@ -141,25 +141,25 @@ INSTRUCTIONS:
             )
 
             if response.status_code != 200:
-                raise RequestException(f"xAI API returned status {response.status_code}: {response.text}")
+                raise RequestException(f"Groq API returned status {response.status_code}: {response.text}")
 
             response_data = response.json()
             content: str = response_data["choices"][0]["message"]["content"]
 
-            logger.info("xAI API call successful")
+            logger.info("Groq API call successful")
             return content
 
         except Timeout:
-            raise Exception(f"xAI API call timed out after {self.timeout} seconds")
+            raise Exception(f"Groq API call timed out after {self.timeout} seconds")
         except RequestException as e:
-            raise Exception(f"xAI API request failed: {str(e)}")
+            raise Exception(f"Groq API request failed: {str(e)}")
         except KeyError as e:
-            raise Exception(f"Unexpected xAI API response format: missing {str(e)}")
+            raise Exception(f"Unexpected Groq API response format: missing {str(e)}")
         except Exception as e:
-            raise Exception(f"xAI API call failed: {str(e)}")
+            raise Exception(f"Groq API call failed: {str(e)}")
 
     def _parse_response(self, response_text: str) -> ResumeAnalysisResult:
-        """Parse xAI response into structured data."""
+        """Parse Groq response into structured data."""
         try:
             # Clean response text - remove any markdown formatting
             cleaned_text = response_text.strip()
@@ -200,14 +200,14 @@ INSTRUCTIONS:
             )
 
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse xAI response as JSON: {e}")
+            logger.error(f"Failed to parse Groq response as JSON: {e}")
             logger.error(f"Response text: {response_text}")
 
             # Try to extract partial information
             return self._fallback_parsing(response_text)
 
         except Exception as e:
-            logger.error(f"Failed to parse xAI response: {e}")
+            logger.error(f"Failed to parse Groq response: {e}")
             return ResumeAnalysisResult(
                 candidate_info={},
                 experiences=[],
@@ -222,7 +222,7 @@ INSTRUCTIONS:
 
     def _fallback_parsing(self, response_text: str) -> ResumeAnalysisResult:
         """Fallback parsing when JSON parsing fails."""
-        logger.warning("Using fallback parsing for xAI response")
+        logger.warning("Using fallback parsing for Groq response")
 
         # This could implement basic text parsing as a fallback
         # For now, return a low-confidence failed result

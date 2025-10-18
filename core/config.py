@@ -16,8 +16,23 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
     RAPIDAPI_KEY: str = "your_rapidapi_key_here"
+
+    # AI Service Configuration
+    AI_AGENT: str = "xai"  # Options: "xai" or "groq"
+
+    # xAI Configuration
     XAI_API_KEY: str = ""
     XAI_API_URL: str = "https://api.x.ai/v1"
+    XAI_MODEL: str = "grok-3-mini"
+    XAI_MAX_TOKENS: int = 4000
+    XAI_TIMEOUT: int = 60
+
+    # Groq Configuration
+    GROQ_API_KEY: str = ""
+    GROQ_API_URL: str = "https://api.groq.com/openai/v1"
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MAX_TOKENS: int = 4000
+    GROQ_TIMEOUT: int = 60
 
     # Environment settings
     ENVIRONMENT: str = "development"

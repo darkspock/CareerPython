@@ -14,7 +14,7 @@ from src.shared.domain.entities.base import generate_id
 from src.shared.domain.enums.async_job import AsyncJobType, AsyncJobStatus
 from src.shared.infrastructure.jobs.async_job_service import AsyncJobService
 from src.shared.infrastructure.repositories.async_job_repository import AsyncJobRepository
-from src.shared.infrastructure.services.ai.xai_service import XAIResumeAnalysisService
+from src.shared.infrastructure.services.ai.ai_service_factory import get_ai_service
 from src.user.application.commands.create_user_from_landing import CreateUserFromLandingCommand
 from src.user.application.queries.create_access_token_query import CreateAccessTokenQuery
 from src.user.application.queries.dtos.auth_dto import TokenDto
@@ -179,9 +179,9 @@ class OnboardingController:
 
                 text_content = str(result[0])
 
-            # Analyze with xAI
-            xai_service = XAIResumeAnalysisService()
-            analysis_result = xai_service.analyze_resume_pdf(text_content)
+            # Analyze with AI (automatically uses xAI or Groq based on configuration)
+            ai_service = get_ai_service()
+            analysis_result = ai_service.analyze_resume_pdf(text_content)
 
             if analysis_result.success:
                 # Complete job with analysis results

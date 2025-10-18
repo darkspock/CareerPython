@@ -147,6 +147,7 @@ from src.candidate_application.infrastructure.repositories.candidate_application
 from src.notification.infrastructure.services.smtp_email_service import SMTPEmailService
 from src.notification.infrastructure.services.mailgun_service import MailgunService
 from src.notification.application.handlers.send_email_command_handler import SendEmailCommandHandler
+
 from core.config import settings
 
 # Command and Query Buses
@@ -183,6 +184,20 @@ class Container(containers.DeclarativeContainer):
             return SMTPEmailService()
 
     email_service = providers.Singleton(_get_email_service)
+
+    # AI service - automatically selects xAI or Groq based on settings
+    @staticmethod
+    def _get_ai_service():
+        """Factory method to create the appropriate AI service based on configuration"""
+        # Lazy import to avoid circular dependencies
+        if settings.AI_AGENT.lower() == "groq":
+            from src.shared.infrastructure.services.ai.groq_service import GroqResumeAnalysisService
+            return GroqResumeAnalysisService()
+        else:
+            from src.shared.infrastructure.services.ai.xai_service import XAIResumeAnalysisService
+            return XAIResumeAnalysisService()
+
+    ai_service = providers.Singleton(_get_ai_service)
 
     # Repositories - Using concrete implementation but typed as interface
     interview_template_repository = providers.Factory(
