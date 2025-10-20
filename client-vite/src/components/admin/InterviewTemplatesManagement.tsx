@@ -255,7 +255,7 @@ const InterviewTemplatesManagement: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{template.name}</div>
-                        <div className="text-sm text-gray-500">ID: {template.id.substring(0, 8)}...</div>
+                        <div className="text-sm text-gray-500">ID: {String(template.id).substring(0, 8)}...</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

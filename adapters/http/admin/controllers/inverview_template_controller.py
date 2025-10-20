@@ -123,6 +123,8 @@ class InterviewTemplateController:
             goal=template_data.goal,
             template_type=template_data.type,
             job_category=template_data.job_category,
+            allow_ai_questions=template_data.allow_ai_questions or False,
+            legal_notice=template_data.legal_notice,
             created_by=current_admin_id,
             tags=template_data.tags,
             template_metadata=template_data.template_metadata
@@ -145,6 +147,9 @@ class InterviewTemplateController:
                     goal=section_data.get('goal', ''),
                     section=InterviewTemplateSectionEnum(
                         section_data['section']) if section_data.get('section') else None,
+                    allow_ai_questions=section_data.get('allow_ai_questions', False),
+                    allow_ai_override_questions=section_data.get('allow_ai_override_questions', False),
+                    legal_notice=section_data.get('legal_notice'),
                     created_by=current_admin_id
                 )
                 self.command_bus.execute(section_create_command)
@@ -191,6 +196,8 @@ class InterviewTemplateController:
             type=template_data.type,
             job_category=template_data.job_category,
             section=template_data.section,
+            allow_ai_questions=template_data.allow_ai_questions,
+            legal_notice=template_data.legal_notice,
             tags=template_data.tags,
             template_metadata=template_data.template_metadata
         )
@@ -212,6 +219,9 @@ class InterviewTemplateController:
                         goal=section_data.get('goal', ''),
                         section=InterviewTemplateSectionEnum(
                             section_data['section']) if section_data.get('section') else None,
+                        allow_ai_questions=section_data.get('allow_ai_questions'),
+                        allow_ai_override_questions=section_data.get('allow_ai_override_questions'),
+                        legal_notice=section_data.get('legal_notice'),
                         updated_by=current_admin_id
                     )
                     self.command_bus.execute(section_update_command)
@@ -227,6 +237,9 @@ class InterviewTemplateController:
                         goal=section_data.get('goal', ''),
                         section=InterviewTemplateSectionEnum(
                             section_data['section']) if section_data.get('section') else None,
+                        allow_ai_questions=section_data.get('allow_ai_questions', False),
+                        allow_ai_override_questions=section_data.get('allow_ai_override_questions', False),
+                        legal_notice=section_data.get('legal_notice'),
                         created_by=current_admin_id
                     )
                     self.command_bus.execute(section_create_command)
@@ -317,6 +330,9 @@ class InterviewTemplateController:
             prompt=section_data.prompt,
             goal=section_data.goal,
             sort_order=getattr(section_data, 'sort_order', 0),
+            allow_ai_questions=getattr(section_data, 'allow_ai_questions', False),
+            allow_ai_override_questions=getattr(section_data, 'allow_ai_override_questions', False),
+            legal_notice=getattr(section_data, 'legal_notice', None),
             created_by=current_admin_id
         )
         self.command_bus.execute(command)
@@ -338,6 +354,9 @@ class InterviewTemplateController:
             prompt=section_data.prompt,
             goal=section_data.goal,
             section=section_data.section,
+            allow_ai_questions=getattr(section_data, 'allow_ai_questions', None),
+            allow_ai_override_questions=getattr(section_data, 'allow_ai_override_questions', None),
+            legal_notice=getattr(section_data, 'legal_notice', None),
             updated_by=current_admin_id
         )
         self.command_bus.execute(command)
@@ -448,7 +467,9 @@ class InterviewTemplateController:
                 interview_template_section_id=dto.interview_template_section_id.value,
                 scope=dto.scope.value if dto.scope else "",
                 data_type=dto.data_type.value if dto.data_type else "",
-                status=dto.status.value if dto.status else ""
+                status=dto.status.value if dto.status else "",
+                allow_ai_followup=dto.allow_ai_followup,
+                legal_notice=dto.legal_notice
             )
             for dto in questions_dtos
         ]
@@ -472,7 +493,9 @@ class InterviewTemplateController:
             name=question_data.name,
             description=question_data.description,
             code=question_data.code,
-            data_type=InterviewTemplateQuestionDataTypeEnum(question_data.data_type)
+            data_type=InterviewTemplateQuestionDataTypeEnum(question_data.data_type),
+            allow_ai_followup=getattr(question_data, 'allow_ai_followup', False),
+            legal_notice=getattr(question_data, 'legal_notice', None)
         )
         self.command_bus.execute(command)
         return {"message": "Interview template question created successfully", "id": str(question_id)}
@@ -496,6 +519,8 @@ class InterviewTemplateController:
             description=question_data.description,
             code=question_data.code,
             data_type=InterviewTemplateQuestionDataTypeEnum(question_data.data_type),
+            allow_ai_followup=getattr(question_data, 'allow_ai_followup', None),
+            legal_notice=getattr(question_data, 'legal_notice', None),
             updated_by=current_admin_id
         )
         self.command_bus.execute(command)

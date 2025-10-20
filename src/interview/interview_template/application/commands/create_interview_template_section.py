@@ -23,6 +23,9 @@ class CreateInterviewTemplateSectionCommand(Command):
     prompt: Optional[str] = None
     goal: Optional[str] = None
     sort_order: int = 0
+    allow_ai_questions: bool = False
+    allow_ai_override_questions: bool = False
+    legal_notice: Optional[str] = None
     created_by: str = ""
 
 
@@ -38,6 +41,10 @@ class CreateInterviewTemplateSectionCommandHandler(CommandHandler[CreateIntervie
             prompt=command.prompt or "",
             goal=command.goal or "",
             interview_template_id=command.interview_template_id,
-            section=command.section
+            section=command.section,
+            sort_order=command.sort_order,
+            allow_ai_questions=command.allow_ai_questions,
+            allow_ai_override_questions=command.allow_ai_override_questions,
+            legal_notice=command.legal_notice
         )
         self.interview_template_section_repository.create(new_interview_template)

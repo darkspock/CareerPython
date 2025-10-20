@@ -20,6 +20,8 @@ class InterviewTemplateBase(BaseModel):
     type: InterviewTemplateTypeEnum
     job_category: Optional[JobCategoryEnum] = None
     section: Optional[InterviewTemplateSectionEnum] = None
+    allow_ai_questions: Optional[bool] = False
+    legal_notice: Optional[str] = None
     tags: Optional[List[str]] = None
     template_metadata: Optional[Dict[str, Any]] = None
 
@@ -40,7 +42,7 @@ class InterviewTemplate(InterviewTemplateBase):
 
 
 class InterviewTemplateResponse(InterviewTemplateBase):
-    id: InterviewTemplateId
+    id: str
     status: InterviewTemplateStatusEnum
     sections: Optional[List['InterviewTemplateSectionResponse']] = None
 
@@ -50,7 +52,7 @@ class InterviewTemplateResponse(InterviewTemplateBase):
     def from_dto(cls, dto: InterviewTemplateDto) -> 'InterviewTemplateResponse':
         """Convert DTO to Response schema"""
         return cls(
-            id=dto.id,
+            id=dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
             name=dto.name,
             intro=dto.intro,
             prompt=dto.prompt,
@@ -58,6 +60,8 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             type=dto.template_type,
             status=dto.status,
             job_category=dto.job_category,
+            allow_ai_questions=dto.allow_ai_questions,
+            legal_notice=dto.legal_notice,
             tags=dto.tags,
             template_metadata=dto.metadata
         )
@@ -70,7 +74,7 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             sections = [InterviewTemplateSectionResponse.from_dto(section_dto) for section_dto in dto.sections]
 
         return cls(
-            id=dto.id,
+            id=dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
             name=dto.name,
             intro=dto.intro,
             prompt=dto.prompt,
@@ -78,6 +82,8 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             type=dto.template_type,
             status=dto.status,
             job_category=dto.job_category,
+            allow_ai_questions=dto.allow_ai_questions,
+            legal_notice=dto.legal_notice,
             tags=dto.tags,
             template_metadata=dto.metadata,
             sections=sections
@@ -87,7 +93,7 @@ class InterviewTemplateResponse(InterviewTemplateBase):
     def from_list_dto(cls, dto: InterviewTemplateListDto) -> 'InterviewTemplateResponse':
         """Convert ListDTO to Response schema"""
         return cls(
-            id=dto.id,
+            id=dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
             name=dto.name,
             type=dto.template_type,
             status=dto.status,
@@ -97,6 +103,8 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             intro=None,
             prompt=None,
             goal=None,
+            allow_ai_questions=False,
+            legal_notice=None,
             template_metadata={}
         )
 
@@ -109,6 +117,9 @@ class InterviewTemplateSectionBase(BaseModel):
     goal: Optional[str] = None
     section: Optional[InterviewTemplateSectionEnum] = None
     sort_order: int = 0
+    allow_ai_questions: Optional[bool] = False
+    allow_ai_override_questions: Optional[bool] = False
+    legal_notice: Optional[str] = None
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -143,6 +154,9 @@ class InterviewTemplateSectionResponse(InterviewTemplateSectionBase):
             goal=dto.goal,
             section=dto.section,
             sort_order=dto.sort_order,
+            allow_ai_questions=dto.allow_ai_questions,
+            allow_ai_override_questions=dto.allow_ai_override_questions,
+            legal_notice=dto.legal_notice,
             status=dto.status.value
         )
 
@@ -153,6 +167,8 @@ class InterviewTemplateQuestionBase(BaseModel):
     description: str
     code: str
     sort_order: int
+    allow_ai_followup: Optional[bool] = False
+    legal_notice: Optional[str] = None
 
     model_config = ConfigDict(use_enum_values=True)
 

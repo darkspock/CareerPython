@@ -39,7 +39,10 @@ class InterviewTemplateSectionRepository(InterviewTemplateSectionRepositoryInter
                     goal=section.goal,
                     section=section.section,
                     sort_order=section.sort_order,
-                    status=section.status
+                    status=section.status,
+                    allow_ai_questions=section.allow_ai_questions,
+                    allow_ai_override_questions=section.allow_ai_override_questions,
+                    legal_notice=section.legal_notice
                 )
 
                 session.add(db_section)
@@ -95,6 +98,9 @@ class InterviewTemplateSectionRepository(InterviewTemplateSectionRepositoryInter
             db_section.section = section.section
             db_section.sort_order = section.sort_order
             db_section.status = section.status
+            db_section.allow_ai_questions = section.allow_ai_questions
+            db_section.allow_ai_override_questions = section.allow_ai_override_questions
+            db_section.legal_notice = section.legal_notice
 
             session.commit()
             session.refresh(db_section)
@@ -126,5 +132,8 @@ class InterviewTemplateSectionRepository(InterviewTemplateSectionRepositoryInter
             goal=db_section.goal,
             section=db_section.section,
             sort_order=db_section.sort_order,
-            status=db_section.status
+            status=db_section.status,
+            allow_ai_questions=db_section.allow_ai_questions,
+            allow_ai_override_questions=db_section.allow_ai_override_questions,
+            legal_notice=db_section.legal_notice
         )

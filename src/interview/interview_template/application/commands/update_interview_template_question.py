@@ -27,6 +27,8 @@ class UpdateInterviewTemplateQuestionCommand(Command):
     scope: InterviewTemplateQuestionScopeEnum
     code: str
     sort_order: int
+    allow_ai_followup: Optional[bool] = None
+    legal_notice: Optional[str] = None
     updated_by: Optional[str] = None
 
 
@@ -50,6 +52,8 @@ class UpdateInterviewTemplateQuestionCommandHandler:
             scope=command.scope,
             code=command.code,
             description=command.description,
+            allow_ai_followup=command.allow_ai_followup if command.allow_ai_followup is not None else question.allow_ai_followup,
+            legal_notice=command.legal_notice if command.legal_notice is not None else question.legal_notice
         )
 
         self.question_repository.update(question)

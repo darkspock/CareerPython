@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from src.interview.interview_template.domain.enums.interview_template_question import \
     InterviewTemplateQuestionStatusEnum, \
@@ -20,13 +21,17 @@ class InterviewTemplateQuestion:
     scope: InterviewTemplateQuestionScopeEnum
     code: str
     status: InterviewTemplateQuestionStatusEnum = InterviewTemplateQuestionStatusEnum.DRAFT
+    allow_ai_followup: bool = False  # If True, AI can generate follow-up questions based on this question
+    legal_notice: Optional[str] = None  # Legal text displayed to users for compliance
 
     @staticmethod
     def create(id: InterviewTemplateQuestionId, interview_template_section_id: InterviewTemplateSectionId,
                sort_order: int, name: str, description: str,
                data_type: InterviewTemplateQuestionDataTypeEnum, scope: InterviewTemplateQuestionScopeEnum,
                code: str,
-               status: InterviewTemplateQuestionStatusEnum = InterviewTemplateQuestionStatusEnum.DRAFT) -> 'InterviewTemplateQuestion':
+               status: InterviewTemplateQuestionStatusEnum = InterviewTemplateQuestionStatusEnum.DRAFT,
+               allow_ai_followup: bool = False,
+               legal_notice: Optional[str] = None) -> 'InterviewTemplateQuestion':
         return InterviewTemplateQuestion(
             id=id,
             interview_template_section_id=interview_template_section_id,
@@ -36,7 +41,9 @@ class InterviewTemplateQuestion:
             status=status,
             data_type=data_type,
             scope=scope,
-            code=code
+            code=code,
+            allow_ai_followup=allow_ai_followup,
+            legal_notice=legal_notice
         )
 
     def update_details(self, interview_template_section_id: InterviewTemplateSectionId,
@@ -45,7 +52,9 @@ class InterviewTemplateQuestion:
                        description: str,
                        data_type: InterviewTemplateQuestionDataTypeEnum,
                        scope: InterviewTemplateQuestionScopeEnum,
-                       code: str) -> None:
+                       code: str,
+                       allow_ai_followup: bool = False,
+                       legal_notice: Optional[str] = None) -> None:
         self.sort_order = sort_order
         self.name = name
         self.description = description
@@ -53,6 +62,8 @@ class InterviewTemplateQuestion:
         self.scope = scope
         self.code = code
         self.interview_template_section_id = interview_template_section_id
+        self.allow_ai_followup = allow_ai_followup
+        self.legal_notice = legal_notice
 
     def enable(self) -> None:
         """Enable this interview template question"""

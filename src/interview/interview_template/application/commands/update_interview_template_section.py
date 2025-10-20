@@ -21,6 +21,9 @@ class UpdateInterviewTemplateSectionCommand(Command):
     prompt: Optional[str] = None
     goal: Optional[str] = None
     section: Optional[InterviewTemplateSectionEnum] = None
+    allow_ai_questions: Optional[bool] = None
+    allow_ai_override_questions: Optional[bool] = None
+    legal_notice: Optional[str] = None
     updated_by: Optional[str] = None
 
 
@@ -51,6 +54,15 @@ class UpdateInterviewTemplateSectionCommandHandler:
 
         if command.section is not None:
             section.section = command.section
+
+        if command.allow_ai_questions is not None:
+            section.allow_ai_questions = command.allow_ai_questions
+
+        if command.allow_ai_override_questions is not None:
+            section.allow_ai_override_questions = command.allow_ai_override_questions
+
+        if command.legal_notice is not None:
+            section.legal_notice = command.legal_notice
 
         # Save and return updated section
         return self.section_repository.update(section)

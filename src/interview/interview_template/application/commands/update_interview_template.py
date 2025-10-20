@@ -27,6 +27,8 @@ class UpdateInterviewTemplateCommand(Command):
     type: Optional[InterviewTemplateTypeEnum] = None
     job_category: Optional[JobCategoryEnum] = None
     section: Optional[InterviewTemplateSectionEnum] = None
+    allow_ai_questions: Optional[bool] = None
+    legal_notice: Optional[str] = None
     tags: Optional[List[str]] = None
     template_metadata: Optional[Dict[str, Any]] = None
     updated_by: Optional[str] = None
@@ -66,6 +68,12 @@ class UpdateInterviewTemplateCommandHandler(CommandHandler[UpdateInterviewTempla
 
         if command.job_category is not None:
             template.job_category = command.job_category
+
+        if command.allow_ai_questions is not None:
+            template.allow_ai_questions = command.allow_ai_questions
+
+        if command.legal_notice is not None:
+            template.legal_notice = command.legal_notice
 
         if command.tags is not None:
             template.tags = command.tags

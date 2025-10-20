@@ -91,7 +91,9 @@ class GetInterviewTemplateByJobCategoryQueryHandler(
                     data_type=q.data_type,
                     scope=q.scope,
                     code=q.code,
-                    status=q.status
+                    status=q.status,
+                    allow_ai_followup=q.allow_ai_followup,
+                    legal_notice=q.legal_notice
                 ) for q in final_questions
             ]
 
@@ -106,6 +108,9 @@ class GetInterviewTemplateByJobCategoryQueryHandler(
                 status=section.status,
                 questions=question_dtos,
                 sort_order=section.sort_order,
+                allow_ai_questions=section.allow_ai_questions,
+                allow_ai_override_questions=section.allow_ai_override_questions,
+                legal_notice=section.legal_notice
             )
             section_dtos.append(section_dto)
 
@@ -122,6 +127,8 @@ class GetInterviewTemplateByJobCategoryQueryHandler(
             job_category=template.job_category,
             tags=template.tags or [],
             metadata=template.metadata or {},
+            allow_ai_questions=template.allow_ai_questions,
+            legal_notice=template.legal_notice,
             created_at=template.metadata.get('created_at') if template.metadata else None,
             updated_at=template.metadata.get('updated_at') if template.metadata else None,
             sections=section_dtos

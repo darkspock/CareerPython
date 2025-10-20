@@ -30,6 +30,8 @@ class InterviewTemplateQuestionDto:
     scope: InterviewTemplateQuestionScopeEnum
     code: str
     status: InterviewTemplateQuestionStatusEnum
+    allow_ai_followup: bool
+    legal_notice: Optional[str]
 
     @classmethod
     def from_entity(cls, entity: InterviewTemplateQuestion) -> 'InterviewTemplateQuestionDto':
@@ -43,7 +45,9 @@ class InterviewTemplateQuestionDto:
             data_type=entity.data_type,
             scope=entity.scope,
             code=entity.code,
-            status=entity.status
+            status=entity.status,
+            allow_ai_followup=entity.allow_ai_followup,
+            legal_notice=entity.legal_notice
         )
 
 
@@ -59,6 +63,9 @@ class InterviewTemplateSectionDto:
     section: Optional[InterviewTemplateSectionEnum]
     sort_order: int
     status: InterviewTemplateSectionStatusEnum
+    allow_ai_questions: bool
+    allow_ai_override_questions: bool
+    legal_notice: Optional[str]
     questions: List[InterviewTemplateQuestionDto]
 
     @classmethod
@@ -75,6 +82,9 @@ class InterviewTemplateSectionDto:
             section=entity.section,
             sort_order=entity.sort_order,
             status=entity.status,
+            allow_ai_questions=entity.allow_ai_questions,
+            allow_ai_override_questions=entity.allow_ai_override_questions,
+            legal_notice=entity.legal_notice,
             questions=questions
         )
 
@@ -92,6 +102,8 @@ class InterviewTemplateFullDto:
     status: InterviewTemplateStatusEnum
     template_type: InterviewTemplateTypeEnum
     job_category: Optional[JobCategoryEnum]
+    allow_ai_questions: bool
+    legal_notice: Optional[str]
 
     # Extended properties
     tags: List[str]

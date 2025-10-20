@@ -350,8 +350,37 @@ POSTGRES_PORT=5432
 SECRET_KEY=your_secret_key
 ```
 
-### Docker usage
-User docker for calling Python, do not call python directly.
+### Command Execution Best Practices
+
+**IMPORTANT**: Always use Makefile commands when available. DO NOT use docker directly or call python commands directly.
+
+**Priority order for command execution**:
+1. **First priority**: Use Makefile commands when available
+2. **Second priority**: Use `uv run` for Python commands if Makefile command doesn't exist
+3. **Last resort**: Direct docker commands (avoid unless necessary)
+
+**Common Makefile commands**:
+- `make mypy` - Run type checking with mypy
+- `make test` - Run tests
+- `make lint` - Run linter
+- `make flake8` - Run flake8 linter
+- `make format` - Format code
+- `make migrate` - Run database migrations
+- `make revision m="message"` - Create new migration
+
+**Examples**:
+```bash
+# ✅ CORRECT - Use Makefile
+make mypy
+make test
+make lint
+
+# ❌ WRONG - Don't use docker directly
+docker-compose exec web mypy ...
+
+# ❌ WRONG - Don't call python directly
+python -m mypy ...
+```
 
 ### Docker Setup
 - Backend runs on port 8000 (mapped from container port 80)

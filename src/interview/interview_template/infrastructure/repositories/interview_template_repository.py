@@ -39,8 +39,11 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
                     status=template.status,
                     type=template.template_type,
                     job_category=template.job_category,
+                    allow_ai_questions=template.allow_ai_questions,
+                    legal_notice=template.legal_notice,
                     created_by=getattr(template, 'created_by', None),
                     tags=template.tags or [],
+                    template_metadata=template.metadata or {},
                 )
 
                 session.add(db_template)
@@ -90,6 +93,8 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             db_template.status = template.status
             db_template.type = template.template_type
             db_template.job_category = template.job_category
+            db_template.allow_ai_questions = template.allow_ai_questions
+            db_template.legal_notice = template.legal_notice
             db_template.tags = template.tags or []
             db_template.template_metadata = template.metadata or {}
             db_template.updated_at = datetime.utcnow()
@@ -232,8 +237,10 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             status=db_template.status,
             template_type=db_template.type,
             job_category=db_template.job_category,
+            allow_ai_questions=db_template.allow_ai_questions,
+            legal_notice=db_template.legal_notice,
             tags=db_template.tags or [],
-
+            metadata=db_template.template_metadata or {},
         )
 
     def clone_template(self, template_id: str, new_name: str, created_by: Optional[str] = None) -> InterviewTemplate:
@@ -256,6 +263,8 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             status=InterviewTemplateStatusEnum.DRAFT,  # Clones start as draft
             template_type=original.template_type,
             job_category=original.job_category,
+            allow_ai_questions=original.allow_ai_questions,
+            legal_notice=original.legal_notice,
             tags=(original.tags or []) + ['cloned'],
             metadata={
                 'cloned_from': template_id,

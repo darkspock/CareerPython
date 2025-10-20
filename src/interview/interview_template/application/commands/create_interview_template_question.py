@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from src.interview.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
 from src.interview.interview_template.domain.enums.interview_template_question import \
@@ -22,6 +23,8 @@ class CreateInterviewTemplateQuestionCommand(Command):
     description: str
     code: str
     data_type: InterviewTemplateQuestionDataTypeEnum
+    allow_ai_followup: bool = False
+    legal_notice: Optional[str] = None
 
 
 class CreateInterviewTemplateQuestionCommandHandler:
@@ -37,6 +40,8 @@ class CreateInterviewTemplateQuestionCommandHandler:
             description=command.description,
             data_type=command.data_type,
             code=command.code,
-            scope=command.scope
+            scope=command.scope,
+            allow_ai_followup=command.allow_ai_followup,
+            legal_notice=command.legal_notice
         )
         self.interview_template_question_repository.create(new_interview_template_question)

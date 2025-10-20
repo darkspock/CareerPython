@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 
-from sqlalchemy import String, Enum, Text, DateTime, Index, JSON
+from sqlalchemy import String, Enum, Text, DateTime, Index, JSON, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
@@ -29,6 +29,8 @@ class InterviewTemplateModel(Base):
     status: Mapped[InterviewTemplateStatusEnum] = mapped_column(Enum(InterviewTemplateStatusEnum), nullable=False,
                                                                 default=InterviewTemplateStatusEnum.DRAFT, index=True)
     job_category: Mapped[Optional[JobCategoryEnum]] = mapped_column(Enum(JobCategoryEnum), nullable=True, index=True)
+    allow_ai_questions: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # Allow AI to generate additional questions
+    legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for compliance
 
     # Extended metadata
     created_by: Mapped[Optional[str]] = mapped_column(String, nullable=True,

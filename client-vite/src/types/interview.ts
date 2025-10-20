@@ -87,6 +87,8 @@ export interface InterviewTemplate {
   description: string;
   interview_type: InterviewType;
   is_active: boolean;
+  allow_ai_questions?: boolean;
+  legal_notice?: string;
   questions?: InterviewQuestion[];
   created_at: string;
   updated_at: string;
@@ -98,6 +100,8 @@ export interface InterviewQuestion {
   category: QuestionCategory;
   difficulty: QuestionDifficulty;
   estimated_time_minutes?: number;
+  allow_ai_followup?: boolean;
+  legal_notice?: string;
 }
 
 export const QuestionCategory = {

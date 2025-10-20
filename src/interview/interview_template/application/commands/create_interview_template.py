@@ -21,6 +21,8 @@ class CreateInterviewTemplateCommand(Command):
     goal: Optional[str] = None
     template_type: InterviewTemplateTypeEnum = InterviewTemplateTypeEnum.EXTENDED_PROFILE
     job_category: Optional[JobCategoryEnum] = None
+    allow_ai_questions: bool = False
+    legal_notice: Optional[str] = None
     created_by: str = ""
     tags: Optional[List[str]] = None
     template_metadata: Optional[Dict[str, Any]] = None
@@ -40,6 +42,8 @@ class CreateInterviewTemplateCommandHandler(CommandHandler[CreateInterviewTempla
             status=InterviewTemplateStatusEnum.DRAFT,  # New templates start as DRAFT
             template_type=command.template_type,
             job_category=command.job_category,
+            allow_ai_questions=command.allow_ai_questions,
+            legal_notice=command.legal_notice,
             tags=command.tags or [],
             metadata=command.template_metadata or {},
             company_id=command.company_id  # Company association can be set later

@@ -13,6 +13,8 @@ interface InterviewTemplate {
   job_category: string;
   section: 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL';
   tags?: string[];
+  allow_ai_questions?: boolean;
+  legal_notice?: string;
   sections?: InterviewTemplateSection[];
 }
 
@@ -26,6 +28,9 @@ interface InterviewTemplateSection {
   section?: 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL';
   sort_order: number;
   status: 'ENABLED' | 'DRAFT' | 'DISABLED';
+  allow_ai_questions?: boolean;
+  allow_ai_override_questions?: boolean;
+  legal_notice?: string;
 }
 
 const InterviewTemplateEditor: React.FC = () => {
@@ -46,7 +51,9 @@ const InterviewTemplateEditor: React.FC = () => {
     type: 'EXTENDED_PROFILE' as 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW',
     job_category: 'Other',
     section: 'GENERAL' as 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL',
-    tags: [] as string[]
+    tags: [] as string[],
+    allow_ai_questions: false,
+    legal_notice: ''
   });
 
   // Sections state
@@ -102,7 +109,9 @@ const InterviewTemplateEditor: React.FC = () => {
         type: template.type,
         job_category: template.job_category,
         section: template.section,
-        tags: template.tags || []
+        tags: template.tags || [],
+        allow_ai_questions: template.allow_ai_questions || false,
+        legal_notice: template.legal_notice || ''
       });
 
       // Load sections if template has them
@@ -557,6 +566,33 @@ const InterviewTemplateEditor: React.FC = () => {
 - Any special instructions"
                 />
               </div>
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.allow_ai_questions}
+                    onChange={(e) => setFormData({ ...formData, allow_ai_questions: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Allow AI to generate additional questions</span>
+                </label>
+                <p className="mt-1 text-xs text-gray-500 ml-6">
+                  If enabled, AI can create additional questions beyond the predefined ones
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Legal Notice</label>
+                <textarea
+                  value={formData.legal_notice}
+                  onChange={(e) => setFormData({ ...formData, legal_notice: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={4}
+                  placeholder="Legal text that will be displayed to users for compliance purposes (GDPR, data processing, etc.)"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  This text will be shown to candidates before starting the interview
+                </p>
+              </div>
             </div>
           </div>
 
@@ -750,7 +786,10 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
     goal: section?.goal || '',
     section: section?.section || 'GENERAL' as 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL',
     sort_order: section?.sort_order || 0,
-    status: section?.status || 'DRAFT' as 'ENABLED' | 'DRAFT' | 'DISABLED'
+    status: section?.status || 'DRAFT' as 'ENABLED' | 'DRAFT' | 'DISABLED',
+    allow_ai_questions: section?.allow_ai_questions || false,
+    allow_ai_override_questions: section?.allow_ai_override_questions || false,
+    legal_notice: section?.legal_notice || ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -842,6 +881,52 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
                 rows={6}
                 placeholder="AI prompt for generating questions in this section"
               />
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.allow_ai_questions}
+                    onChange={(e) => setFormData({ ...formData, allow_ai_questions: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Allow AI to generate additional questions</span>
+                </label>
+                <p className="mt-1 text-xs text-gray-500 ml-6">
+                  AI can create additional questions for this section
+                </p>
+              </div>
+
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.allow_ai_override_questions}
+                    onChange={(e) => setFormData({ ...formData, allow_ai_override_questions: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Allow AI to reformulate existing questions</span>
+                </label>
+                <p className="mt-1 text-xs text-gray-500 ml-6">
+                  AI can modify and improve the wording of predefined questions
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Legal Notice</label>
+              <textarea
+                value={formData.legal_notice}
+                onChange={(e) => setFormData({ ...formData, legal_notice: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows={3}
+                placeholder="Legal text specific to this section (if needed)"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Optional legal notice that will be shown for this section
+              </p>
             </div>
 
             <div className="flex justify-end space-x-3 pt-4">
@@ -1183,7 +1268,9 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
     code: question?.code || '',
     sort_order: question?.sort_order || 0,
     scope: question?.scope || 'global',
-    data_type: question?.data_type || 'short_string'
+    data_type: question?.data_type || 'short_string',
+    allow_ai_followup: question?.allow_ai_followup || false,
+    legal_notice: question?.legal_notice || ''
   });
 
   const scopeOptions = [
@@ -1285,6 +1372,35 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Unique code for the question (optional)"
               />
+            </div>
+
+            <div>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.allow_ai_followup}
+                  onChange={(e) => setFormData({ ...formData, allow_ai_followup: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Allow AI to generate follow-up questions</span>
+              </label>
+              <p className="mt-1 text-xs text-gray-500 ml-6">
+                AI can create additional follow-up questions based on candidate responses
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Legal Notice</label>
+              <textarea
+                value={formData.legal_notice}
+                onChange={(e) => setFormData({ ...formData, legal_notice: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows={3}
+                placeholder="Legal text specific to this question (if needed)"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Optional legal notice for sensitive questions (background checks, personal data, etc.)
+              </p>
             </div>
 
             <div className="flex justify-end space-x-3 pt-4">

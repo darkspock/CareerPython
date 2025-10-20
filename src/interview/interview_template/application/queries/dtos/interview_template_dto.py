@@ -25,6 +25,8 @@ class InterviewTemplateDto:
     status: InterviewTemplateStatusEnum
     template_type: InterviewTemplateTypeEnum
     job_category: Optional[JobCategoryEnum]
+    allow_ai_questions: bool
+    legal_notice: Optional[str]
 
     # Extended properties
     tags: List[str]
@@ -47,6 +49,8 @@ class InterviewTemplateDto:
             status=entity.status,
             template_type=entity.template_type,
             job_category=entity.job_category,
+            allow_ai_questions=entity.allow_ai_questions,
+            legal_notice=entity.legal_notice,
             tags=entity.tags or [],
             metadata=entity.metadata or {},
             created_at=entity.metadata.get('created_at') if entity.metadata else None,

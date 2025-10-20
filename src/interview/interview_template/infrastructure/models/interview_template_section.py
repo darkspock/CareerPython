@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, List, TYPE_CHECKING
 
-from sqlalchemy import String, Enum, Text, ForeignKey, Integer
+from sqlalchemy import String, Enum, Text, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
@@ -34,6 +34,9 @@ class InterviewTemplateSectionModel(Base):
                                                                        nullable=False,
                                                                        default=InterviewTemplateSectionStatusEnum.DRAFT,
                                                                        index=True)
+    allow_ai_questions: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # Allow AI to generate additional questions
+    allow_ai_override_questions: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # Allow AI to reformulate existing questions
+    legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for this section
 
     # Relationships
     interview_template: Mapped["InterviewTemplateModel"] = relationship("InterviewTemplateModel",

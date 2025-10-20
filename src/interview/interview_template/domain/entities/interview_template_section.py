@@ -19,12 +19,18 @@ class InterviewTemplateSection:
     section: Optional[InterviewTemplateSectionEnum]
     sort_order: int = 0  # order within the template (0 = first)
     status: InterviewTemplateSectionStatusEnum = InterviewTemplateSectionStatusEnum.DRAFT
+    allow_ai_questions: bool = False  # If True, AI can generate additional questions for this section
+    allow_ai_override_questions: bool = False  # If True, AI can reformulate/override existing questions
+    legal_notice: Optional[str] = None  # Legal text displayed to users for compliance
 
     @staticmethod
     def create(id: InterviewTemplateSectionId, interview_template_id: InterviewTemplateId, name: str, intro: str,
                prompt: str, goal: str, section: Optional[InterviewTemplateSectionEnum] = None,
                sort_order: int = 0,
-               status: InterviewTemplateSectionStatusEnum = InterviewTemplateSectionStatusEnum.DRAFT) -> 'InterviewTemplateSection':
+               status: InterviewTemplateSectionStatusEnum = InterviewTemplateSectionStatusEnum.DRAFT,
+               allow_ai_questions: bool = False,
+               allow_ai_override_questions: bool = False,
+               legal_notice: Optional[str] = None) -> 'InterviewTemplateSection':
         return InterviewTemplateSection(
             id=id,
             interview_template_id=interview_template_id,
@@ -34,17 +40,26 @@ class InterviewTemplateSection:
             goal=goal,
             section=section,
             sort_order=sort_order,
-            status=status
+            status=status,
+            allow_ai_questions=allow_ai_questions,
+            allow_ai_override_questions=allow_ai_override_questions,
+            legal_notice=legal_notice
         )
 
     def update_details(self, name: str, intro: str,
                        prompt: str, goal: str,
-                       section: Optional[InterviewTemplateSectionEnum]) -> None:
+                       section: Optional[InterviewTemplateSectionEnum],
+                       allow_ai_questions: bool = False,
+                       allow_ai_override_questions: bool = False,
+                       legal_notice: Optional[str] = None) -> None:
         self.name = name
         self.intro = intro
         self.prompt = prompt
         self.goal = goal
         self.section = section
+        self.allow_ai_questions = allow_ai_questions
+        self.allow_ai_override_questions = allow_ai_override_questions
+        self.legal_notice = legal_notice
 
     def enable(self) -> None:
         """Enable this interview template section"""
