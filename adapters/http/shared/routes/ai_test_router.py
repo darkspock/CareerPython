@@ -96,14 +96,16 @@ async def get_ai_config() -> Dict[str, Any]:
     """Get current AI configuration for debugging."""
     try:
         ai_service = get_ai_service()
+        # Use getattr to safely access implementation-specific attributes
+        api_key = getattr(ai_service, 'api_key', None)
         return {
             "ai_agent": settings.AI_AGENT,
-            "model": ai_service.model,
-            "max_tokens": ai_service.max_tokens,
-            "timeout": ai_service.timeout,
-            "api_url": ai_service.api_url,
-            "has_api_key": bool(ai_service.api_key),
-            "api_key_preview": f"{ai_service.api_key[:10]}..." if ai_service.api_key else None
+            "model": getattr(ai_service, 'model', 'unknown'),
+            "max_tokens": getattr(ai_service, 'max_tokens', None),
+            "timeout": getattr(ai_service, 'timeout', None),
+            "api_url": getattr(ai_service, 'api_url', 'unknown'),
+            "has_api_key": bool(api_key),
+            "api_key_preview": f"{api_key[:10]}..." if api_key else None
         }
     except Exception as e:
         return {"error": str(e)}

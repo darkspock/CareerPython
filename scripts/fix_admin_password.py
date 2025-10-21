@@ -5,8 +5,7 @@ Fix admin user password to use correct hashing method
 
 import os
 import sys
-import hashlib
-import secrets
+import bcrypt
 
 # Add the project root to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -15,10 +14,10 @@ from core.config import settings
 from sqlalchemy import create_engine, text
 
 def get_password_hash(password: str) -> str:
-    """Use the same hashing method as AuthUseCase"""
-    salt = secrets.token_hex(32)
-    password_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
-    return f"{salt}${password_hash.hex()}"
+    """Use the same hashing method as PasswordService - bcrypt"""
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password.decode('utf-8')
 
 def fix_admin_password():
     """Update admin user password to use correct hashing"""
@@ -29,7 +28,7 @@ def fix_admin_password():
     with engine.connect() as conn:
         try:
             admin_email = "admin@careerpython.com"
-            admin_password = "admin123"
+            admin_password = "12345678"
 
             # Check if admin user exists
             result = conn.execute(text("SELECT id FROM users WHERE email = :email"), {"email": admin_email})

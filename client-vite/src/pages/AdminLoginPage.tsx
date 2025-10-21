@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await api.login({
+      const response = await api.adminLogin({
         username: email,
         password: password,
       }) as { access_token: string };

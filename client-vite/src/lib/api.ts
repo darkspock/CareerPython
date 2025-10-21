@@ -182,6 +182,17 @@ export const api = {
     });
   },
 
+  adminLogin: (credentials: { username: string; password: string }) => {
+    const formData = new URLSearchParams();
+    formData.append('username', credentials.username);
+    formData.append('password', credentials.password);
+    return ApiClient.request('/admin/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData,
+    });
+  },
+
   register: (userData: { email: string; password: string; full_name?: string }) =>
     ApiClient.post('/auth/register', userData),
 

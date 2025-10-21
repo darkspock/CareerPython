@@ -215,7 +215,7 @@ make rebuild-venv
 cd client
 
 # Development
-npm run dev          # http://localhost:3000
+npm run dev          # http://localhost:5173
 
 # Build
 npm run build

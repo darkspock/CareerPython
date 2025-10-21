@@ -46,7 +46,7 @@ const ProtectedAdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/auth/login" replace state={{
+    return <Navigate to="/admin/login" replace state={{
       message: 'Admin access required',
       error: error
     }} />;
