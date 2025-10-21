@@ -3,6 +3,9 @@
 # from presentation.shared.routes.user_router import user_router
 # Removed: auth_router (T011 completed)
 from adapters.http.admin.routes.admin_router import router as admin_router
+from adapters.http.company.routers.company_router import router as company_router
+from adapters.http.company.routers.company_user_router import router as company_user_router
+from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
 # from presentation.candidate.routers.home_router import home_router
 # from presentation.candidate.routers import interview_router
 # from presentation.candidate.routers.profile_router import router as profile_router
@@ -16,8 +19,10 @@ from adapters.http.admin.routes.admin_router import router as admin_router
 # from presentation.candidate.routers import router as email_admin_router
 
 __all__ = [
-    # Solo admin_router por ahora
     "admin_router",
+    "company_router",
+    "company_user_router",
+    "company_candidate_router",
     # COMENTADO - Solo admin interview templates por ahora
     # "candidate_router",
     # "user_router",

@@ -81,20 +81,55 @@ from src.interview.interview.application.queries.get_interview_answer_by_id impo
 from src.interview.interview.Infrastructure.repositories.interview_repository import SQLAlchemyInterviewRepository as InterviewRepository
 from src.interview.interview.Infrastructure.repositories.interview_answer_repository import SQLAlchemyInterviewAnswerRepository as InterviewAnswerRepository
 
-# Company Application Layer
-from src.company.application.commands.create_company import CreateCompanyCommandHandler
-from src.company.application.commands.update_company import UpdateCompanyCommandHandler
-from src.company.application.commands.approve_company import ApproveCompanyCommandHandler
-from src.company.application.commands.reject_company import RejectCompanyCommandHandler
-from src.company.application.commands.activate_company import ActivateCompanyCommandHandler
-from src.company.application.commands.deactivate_company import DeactivateCompanyCommandHandler
-from src.company.application.commands.delete_company import DeleteCompanyCommandHandler
-from src.company.application.queries.list_companies import ListCompaniesQueryHandler
+# Company Application Layer - Commands
+from src.company.application.commands.create_company_command import CreateCompanyCommandHandler
+from src.company.application.commands.update_company_command import UpdateCompanyCommandHandler
+from src.company.application.commands.suspend_company_command import SuspendCompanyCommandHandler
+from src.company.application.commands.activate_company_command import ActivateCompanyCommandHandler
+from src.company.application.commands.delete_company_command import DeleteCompanyCommandHandler
+from src.company.application.commands.add_company_user_command import AddCompanyUserCommandHandler
+from src.company.application.commands.update_company_user_command import UpdateCompanyUserCommandHandler
+from src.company.application.commands.activate_company_user_command import ActivateCompanyUserCommandHandler
+from src.company.application.commands.deactivate_company_user_command import DeactivateCompanyUserCommandHandler
+from src.company.application.commands.remove_company_user_command import RemoveCompanyUserCommandHandler
+
+# Company Application Layer - Queries
 from src.company.application.queries.get_company_by_id import GetCompanyByIdQueryHandler
-from src.company.application.queries.get_companies_stats import GetCompaniesStatsQueryHandler
+from src.company.application.queries.get_company_by_domain import GetCompanyByDomainQueryHandler
+from src.company.application.queries.list_companies import ListCompaniesQueryHandler
+from src.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQueryHandler
+from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQueryHandler
+from src.company.application.queries.list_company_users_by_company import ListCompanyUsersByCompanyQueryHandler
 
 # Company Infrastructure
 from src.company.infrastructure.repositories.company_repository import CompanyRepository
+from src.company.infrastructure.repositories.company_user_repository import CompanyUserRepository
+
+# Company Presentation Controllers
+from src.company.presentation.controllers.company_controller import CompanyController as CompanyManagementController
+from src.company.presentation.controllers.company_user_controller import CompanyUserController
+
+# CompanyCandidate Application Layer - Commands
+from src.company_candidate.application.commands.create_company_candidate_command import CreateCompanyCandidateCommandHandler
+from src.company_candidate.application.commands.update_company_candidate_command import UpdateCompanyCandidateCommandHandler
+from src.company_candidate.application.commands.confirm_company_candidate_command import ConfirmCompanyCandidateCommandHandler
+from src.company_candidate.application.commands.reject_company_candidate_command import RejectCompanyCandidateCommandHandler
+from src.company_candidate.application.commands.archive_company_candidate_command import ArchiveCompanyCandidateCommandHandler
+from src.company_candidate.application.commands.transfer_ownership_command import TransferOwnershipCommandHandler
+from src.company_candidate.application.commands.assign_workflow_command import AssignWorkflowCommandHandler
+from src.company_candidate.application.commands.change_stage_command import ChangeStageCommandHandler
+
+# CompanyCandidate Application Layer - Queries
+from src.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQueryHandler
+from src.company_candidate.application.queries.get_company_candidate_by_company_and_candidate import GetCompanyCandidateByCompanyAndCandidateQueryHandler
+from src.company_candidate.application.queries.list_company_candidates_by_company import ListCompanyCandidatesByCompanyQueryHandler
+from src.company_candidate.application.queries.list_company_candidates_by_candidate import ListCompanyCandidatesByCandidateQueryHandler
+
+# CompanyCandidate Infrastructure
+from src.company_candidate.infrastructure.repositories.company_candidate_repository import CompanyCandidateRepository
+
+# CompanyCandidate Presentation Controllers
+from src.company_candidate.presentation.controllers.company_candidate_controller import CompanyCandidateController
 
 # Job Position Application Layer
 from src.job_position.application.commands.create_job_position import CreateJobPositionCommandHandler
@@ -226,9 +261,20 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
-    # Company Repository
+    # Company Repositories
     company_repository = providers.Factory(
         CompanyRepository,
+        database=database
+    )
+
+    company_user_repository = providers.Factory(
+        CompanyUserRepository,
+        database=database
+    )
+
+    # CompanyCandidate Repository
+    company_candidate_repository = providers.Factory(
+        CompanyCandidateRepository,
         database=database
     )
 
@@ -383,19 +429,61 @@ class Container(containers.DeclarativeContainer):
     )
 
     # Company Query Handlers
-    list_companies_query_handler = providers.Factory(
-        ListCompaniesQueryHandler,
-        company_repository=company_repository
-    )
-
     get_company_by_id_query_handler = providers.Factory(
         GetCompanyByIdQueryHandler,
         company_repository=company_repository
     )
 
+    get_company_by_domain_query_handler = providers.Factory(
+        GetCompanyByDomainQueryHandler,
+        company_repository=company_repository
+    )
+
+    list_companies_query_handler = providers.Factory(
+        ListCompaniesQueryHandler,
+        company_repository=company_repository
+    )
+
+    # Company User Query Handlers
+    get_company_user_by_id_query_handler = providers.Factory(
+        GetCompanyUserByIdQueryHandler,
+        company_user_repository=company_user_repository
+    )
+
+    get_company_user_by_company_and_user_query_handler = providers.Factory(
+        GetCompanyUserByCompanyAndUserQueryHandler,
+        company_user_repository=company_user_repository
+    )
+
+    list_company_users_by_company_query_handler = providers.Factory(
+        ListCompanyUsersByCompanyQueryHandler,
+        company_user_repository=company_user_repository
+    )
+
     get_companies_stats_query_handler = providers.Factory(
         GetCompaniesStatsQueryHandler,
         company_repository=company_repository
+    )
+
+    # CompanyCandidate Query Handlers
+    get_company_candidate_by_id_query_handler = providers.Factory(
+        GetCompanyCandidateByIdQueryHandler,
+        repository=company_candidate_repository
+    )
+
+    get_company_candidate_by_company_and_candidate_query_handler = providers.Factory(
+        GetCompanyCandidateByCompanyAndCandidateQueryHandler,
+        repository=company_candidate_repository
+    )
+
+    list_company_candidates_by_company_query_handler = providers.Factory(
+        ListCompanyCandidatesByCompanyQueryHandler,
+        repository=company_candidate_repository
+    )
+
+    list_company_candidates_by_candidate_query_handler = providers.Factory(
+        ListCompanyCandidatesByCandidateQueryHandler,
+        repository=company_candidate_repository
     )
 
     # Job Position Query Handlers
@@ -571,37 +659,94 @@ class Container(containers.DeclarativeContainer):
     # Company Command Handlers
     create_company_command_handler = providers.Factory(
         CreateCompanyCommandHandler,
-        company_repository=company_repository
+        repository=company_repository
     )
 
     update_company_command_handler = providers.Factory(
         UpdateCompanyCommandHandler,
-        company_repository=company_repository
+        repository=company_repository
     )
 
-    approve_company_command_handler = providers.Factory(
-        ApproveCompanyCommandHandler,
-        company_repository=company_repository
-    )
-
-    reject_company_command_handler = providers.Factory(
-        RejectCompanyCommandHandler,
-        company_repository=company_repository
+    suspend_company_command_handler = providers.Factory(
+        SuspendCompanyCommandHandler,
+        repository=company_repository
     )
 
     activate_company_command_handler = providers.Factory(
         ActivateCompanyCommandHandler,
-        company_repository=company_repository
-    )
-
-    deactivate_company_command_handler = providers.Factory(
-        DeactivateCompanyCommandHandler,
-        company_repository=company_repository
+        repository=company_repository
     )
 
     delete_company_command_handler = providers.Factory(
         DeleteCompanyCommandHandler,
-        company_repository=company_repository
+        repository=company_repository
+    )
+
+    # Company User Command Handlers
+    add_company_user_command_handler = providers.Factory(
+        AddCompanyUserCommandHandler,
+        repository=company_user_repository
+    )
+
+    update_company_user_command_handler = providers.Factory(
+        UpdateCompanyUserCommandHandler,
+        repository=company_user_repository
+    )
+
+    activate_company_user_command_handler = providers.Factory(
+        ActivateCompanyUserCommandHandler,
+        repository=company_user_repository
+    )
+
+    deactivate_company_user_command_handler = providers.Factory(
+        DeactivateCompanyUserCommandHandler,
+        repository=company_user_repository
+    )
+
+    remove_company_user_command_handler = providers.Factory(
+        RemoveCompanyUserCommandHandler,
+        repository=company_user_repository
+    )
+
+    # CompanyCandidate Command Handlers
+    create_company_candidate_command_handler = providers.Factory(
+        CreateCompanyCandidateCommandHandler,
+        repository=company_candidate_repository
+    )
+
+    update_company_candidate_command_handler = providers.Factory(
+        UpdateCompanyCandidateCommandHandler,
+        repository=company_candidate_repository
+    )
+
+    confirm_company_candidate_command_handler = providers.Factory(
+        ConfirmCompanyCandidateCommandHandler,
+        repository=company_candidate_repository
+    )
+
+    reject_company_candidate_command_handler = providers.Factory(
+        RejectCompanyCandidateCommandHandler,
+        repository=company_candidate_repository
+    )
+
+    archive_company_candidate_command_handler = providers.Factory(
+        ArchiveCompanyCandidateCommandHandler,
+        repository=company_candidate_repository
+    )
+
+    transfer_ownership_command_handler = providers.Factory(
+        TransferOwnershipCommandHandler,
+        repository=company_candidate_repository
+    )
+
+    assign_workflow_command_handler = providers.Factory(
+        AssignWorkflowCommandHandler,
+        repository=company_candidate_repository
+    )
+
+    change_stage_command_handler = providers.Factory(
+        ChangeStageCommandHandler,
+        repository=company_candidate_repository
     )
 
     # Job Position Command Handlers
@@ -840,6 +985,24 @@ class Container(containers.DeclarativeContainer):
         CompanyController,
         query_bus=query_bus,
         command_bus=command_bus
+    )
+
+    company_management_controller = providers.Factory(
+        CompanyManagementController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    company_user_controller = providers.Factory(
+        CompanyUserController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    company_candidate_controller = providers.Factory(
+        CompanyCandidateController,
+        command_bus=command_bus,
+        query_bus=query_bus
     )
 
     job_position_controller = providers.Factory(

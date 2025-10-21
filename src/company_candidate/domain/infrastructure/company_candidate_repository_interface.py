@@ -1,0 +1,50 @@
+from abc import ABC, abstractmethod
+from typing import Optional, List
+
+from ..entities.company_candidate import CompanyCandidate
+from ..value_objects import CompanyCandidateId
+from src.company.domain.value_objects import CompanyId
+from src.candidate.domain.value_objects.candidate_id import CandidateId
+
+
+class CompanyCandidateRepositoryInterface(ABC):
+    """CompanyCandidate repository interface"""
+
+    @abstractmethod
+    def save(self, company_candidate: CompanyCandidate) -> None:
+        """Save or update a company candidate relationship"""
+        pass
+
+    @abstractmethod
+    def get_by_id(self, company_candidate_id: CompanyCandidateId) -> Optional[CompanyCandidate]:
+        """Get a company candidate by ID"""
+        pass
+
+    @abstractmethod
+    def get_by_company_and_candidate(
+        self,
+        company_id: CompanyId,
+        candidate_id: CandidateId
+    ) -> Optional[CompanyCandidate]:
+        """Get a company candidate by company and candidate IDs"""
+        pass
+
+    @abstractmethod
+    def list_by_company(self, company_id: CompanyId) -> List[CompanyCandidate]:
+        """List all company candidates for a company"""
+        pass
+
+    @abstractmethod
+    def list_by_candidate(self, candidate_id: CandidateId) -> List[CompanyCandidate]:
+        """List all company candidates for a candidate"""
+        pass
+
+    @abstractmethod
+    def list_active_by_company(self, company_id: CompanyId) -> List[CompanyCandidate]:
+        """List all active company candidates for a company"""
+        pass
+
+    @abstractmethod
+    def delete(self, company_candidate_id: CompanyCandidateId) -> None:
+        """Delete a company candidate relationship"""
+        pass

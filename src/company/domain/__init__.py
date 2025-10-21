@@ -1,5 +1,7 @@
-from .entities import Company
-from .enums import CompanyStatusEnum
+"""Company domain module"""
+from .entities import Company, CompanyUser
+from .enums import CompanyStatus, CompanyUserRole, CompanyUserStatus
+from .value_objects import CompanyId, CompanySettings
 from .exceptions import (
     CompanyNotFoundError,
     CompanyAlreadyExistsError,
@@ -7,9 +9,18 @@ from .exceptions import (
     CompanyNotApprovedException
 )
 
+# Backward compatibility
+CompanyStatusEnum = CompanyStatus
+
 __all__ = [
     "Company",
-    "CompanyStatusEnum",
+    "CompanyUser",
+    "CompanyStatus",
+    "CompanyStatusEnum",  # Backward compatibility
+    "CompanyUserRole",
+    "CompanyUserStatus",
+    "CompanyId",
+    "CompanySettings",
     "CompanyNotFoundError",
     "CompanyAlreadyExistsError",
     "CompanyValidationError",

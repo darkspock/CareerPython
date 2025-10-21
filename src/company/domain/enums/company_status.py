@@ -1,9 +1,8 @@
-import enum
+from enum import Enum
 
 
-class CompanyStatusEnum(str, enum.Enum):
-    """Status enum for companies"""
-    PENDING = "pending"
-    REJECTED = "rejected"
+class CompanyStatus(str, Enum):
+    """Company status in the system"""
     ACTIVE = "active"
-    INACTIVE = "inactive"
+    SUSPENDED = "suspended"
+    DELETED = "deleted"
