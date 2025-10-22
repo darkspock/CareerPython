@@ -17,6 +17,7 @@ from adapters.http.candidate.controllers.application_controller import Applicati
 
 # Admin Controllers
 from adapters.http.admin.controllers.admin_candidate_controller import AdminCandidateController
+from src.company.application.queries.get_companies_stats import GetCompaniesStatsQueryHandler
 
 # Auth Application Layer
 from src.user.application.commands.create_user_command import CreateUserCommandHandler
@@ -100,6 +101,7 @@ from src.company.application.queries.list_companies import ListCompaniesQueryHan
 from src.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQueryHandler
 from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQueryHandler
 from src.company.application.queries.list_company_users_by_company import ListCompanyUsersByCompanyQueryHandler
+from src.company.application.queries.authenticate_company_user_query import AuthenticateCompanyUserQueryHandler
 
 # Company Infrastructure
 from src.company.infrastructure.repositories.company_repository import CompanyRepository
@@ -130,6 +132,37 @@ from src.company_candidate.infrastructure.repositories.company_candidate_reposit
 
 # CompanyCandidate Presentation Controllers
 from src.company_candidate.presentation.controllers.company_candidate_controller import CompanyCandidateController
+
+# CompanyWorkflow Application Layer - Commands
+from src.company_workflow.application.commands.create_workflow_command import CreateWorkflowCommandHandler
+from src.company_workflow.application.commands.update_workflow_command import UpdateWorkflowCommandHandler
+from src.company_workflow.application.commands.activate_workflow_command import ActivateWorkflowCommandHandler
+from src.company_workflow.application.commands.deactivate_workflow_command_handler import DeactivateWorkflowCommandHandler
+from src.company_workflow.application.commands.archive_workflow_command_handler import ArchiveWorkflowCommandHandler
+from src.company_workflow.application.commands.set_as_default_workflow_command_handler import SetAsDefaultWorkflowCommandHandler
+from src.company_workflow.application.commands.unset_as_default_workflow_command_handler import UnsetAsDefaultWorkflowCommandHandler
+from src.company_workflow.application.commands.create_stage_command_handler import CreateStageCommandHandler
+from src.company_workflow.application.commands.update_stage_command_handler import UpdateStageCommandHandler
+from src.company_workflow.application.commands.delete_stage_command_handler import DeleteStageCommandHandler
+from src.company_workflow.application.commands.reorder_stages_command_handler import ReorderStagesCommandHandler
+from src.company_workflow.application.commands.activate_stage_command_handler import ActivateStageCommandHandler
+from src.company_workflow.application.commands.deactivate_stage_command_handler import DeactivateStageCommandHandler
+
+# CompanyWorkflow Application Layer - Queries
+from src.company_workflow.application.queries.get_workflow_by_id import GetWorkflowByIdQueryHandler
+from src.company_workflow.application.queries.list_workflows_by_company import ListWorkflowsByCompanyQueryHandler
+from src.company_workflow.application.queries.get_stage_by_id import GetStageByIdQueryHandler
+from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQueryHandler
+from src.company_workflow.application.queries.get_initial_stage import GetInitialStageQueryHandler
+from src.company_workflow.application.queries.get_final_stages import GetFinalStagesQueryHandler
+
+# CompanyWorkflow Infrastructure
+from src.company_workflow.infrastructure.repositories.company_workflow_repository import CompanyWorkflowRepository
+from src.company_workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
+
+# CompanyWorkflow Presentation Controllers
+from src.company_workflow.presentation.controllers.company_workflow_controller import CompanyWorkflowController
+from src.company_workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
 
 # Job Position Application Layer
 from src.job_position.application.commands.create_job_position import CreateJobPositionCommandHandler
@@ -183,6 +216,9 @@ from src.notification.infrastructure.services.smtp_email_service import SMTPEmai
 from src.notification.infrastructure.services.mailgun_service import MailgunService
 from src.notification.application.handlers.send_email_command_handler import SendEmailCommandHandler
 
+# Storage Services
+from src.shared.infrastructure.storage.storage_factory import StorageFactory
+
 from core.config import settings
 
 # Command and Query Buses
@@ -234,6 +270,26 @@ class Container(containers.DeclarativeContainer):
 
     ai_service = providers.Singleton(_get_ai_service)
 
+    # Storage service - automatically selects Local or S3 based on settings
+    @staticmethod
+    def _get_storage_service():
+        """Factory method to create the appropriate storage service based on configuration"""
+        from src.shared.domain.infrastructure.storage_service_interface import StorageConfig
+
+        # Create storage config from settings
+        allowed_extensions = [ext.strip() for ext in settings.ALLOWED_FILE_EXTENSIONS.split(',')]
+        config = StorageConfig(
+            max_file_size_mb=settings.MAX_FILE_SIZE_MB,
+            allowed_extensions=allowed_extensions
+        )
+
+        return StorageFactory.create_storage_service(
+            storage_type=settings.STORAGE_TYPE,
+            config=config
+        )
+
+    storage_service = providers.Singleton(_get_storage_service)
+
     # Repositories - Using concrete implementation but typed as interface
     interview_template_repository = providers.Factory(
         InterviewTemplateRepository,  # Concrete implementation
@@ -275,6 +331,17 @@ class Container(containers.DeclarativeContainer):
     # CompanyCandidate Repository
     company_candidate_repository = providers.Factory(
         CompanyCandidateRepository,
+        database=database
+    )
+
+    # CompanyWorkflow Repositories
+    company_workflow_repository = providers.Factory(
+        CompanyWorkflowRepository,
+        database=database
+    )
+
+    workflow_stage_repository = providers.Factory(
+        WorkflowStageRepository,
         database=database
     )
 
@@ -444,6 +511,12 @@ class Container(containers.DeclarativeContainer):
         company_repository=company_repository
     )
 
+    authenticate_company_user_query_handler = providers.Factory(
+        AuthenticateCompanyUserQueryHandler,
+        user_repository=user_repository,
+        company_user_repository=company_user_repository
+    )
+
     # Company User Query Handlers
     get_company_user_by_id_query_handler = providers.Factory(
         GetCompanyUserByIdQueryHandler,
@@ -484,6 +557,38 @@ class Container(containers.DeclarativeContainer):
     list_company_candidates_by_candidate_query_handler = providers.Factory(
         ListCompanyCandidatesByCandidateQueryHandler,
         repository=company_candidate_repository
+    )
+
+    # CompanyWorkflow Query Handlers
+    get_workflow_by_id_query_handler = providers.Factory(
+        GetWorkflowByIdQueryHandler,
+        repository=company_workflow_repository
+    )
+
+    list_workflows_by_company_query_handler = providers.Factory(
+        ListWorkflowsByCompanyQueryHandler,
+        repository=company_workflow_repository
+    )
+
+    # WorkflowStage Query Handlers
+    get_stage_by_id_query_handler = providers.Factory(
+        GetStageByIdQueryHandler,
+        repository=workflow_stage_repository
+    )
+
+    list_stages_by_workflow_query_handler = providers.Factory(
+        ListStagesByWorkflowQueryHandler,
+        repository=workflow_stage_repository
+    )
+
+    get_initial_stage_query_handler = providers.Factory(
+        GetInitialStageQueryHandler,
+        repository=workflow_stage_repository
+    )
+
+    get_final_stages_query_handler = providers.Factory(
+        GetFinalStagesQueryHandler,
+        repository=workflow_stage_repository
     )
 
     # Job Position Query Handlers
@@ -749,6 +854,73 @@ class Container(containers.DeclarativeContainer):
         repository=company_candidate_repository
     )
 
+    # CompanyWorkflow Command Handlers
+    create_workflow_command_handler = providers.Factory(
+        CreateWorkflowCommandHandler,
+        repository=company_workflow_repository
+    )
+
+    update_workflow_command_handler = providers.Factory(
+        UpdateWorkflowCommandHandler,
+        repository=company_workflow_repository
+    )
+
+    activate_workflow_command_handler = providers.Factory(
+        ActivateWorkflowCommandHandler,
+        repository=company_workflow_repository
+    )
+
+    deactivate_workflow_command_handler = providers.Factory(
+        DeactivateWorkflowCommandHandler,
+        repository=company_workflow_repository
+    )
+
+    archive_workflow_command_handler = providers.Factory(
+        ArchiveWorkflowCommandHandler,
+        repository=company_workflow_repository
+    )
+
+    set_as_default_workflow_command_handler = providers.Factory(
+        SetAsDefaultWorkflowCommandHandler,
+        repository=company_workflow_repository
+    )
+
+    unset_as_default_workflow_command_handler = providers.Factory(
+        UnsetAsDefaultWorkflowCommandHandler,
+        repository=company_workflow_repository
+    )
+
+    # WorkflowStage Command Handlers
+    create_stage_command_handler = providers.Factory(
+        CreateStageCommandHandler,
+        repository=workflow_stage_repository
+    )
+
+    update_stage_command_handler = providers.Factory(
+        UpdateStageCommandHandler,
+        repository=workflow_stage_repository
+    )
+
+    delete_stage_command_handler = providers.Factory(
+        DeleteStageCommandHandler,
+        repository=workflow_stage_repository
+    )
+
+    reorder_stages_command_handler = providers.Factory(
+        ReorderStagesCommandHandler,
+        repository=workflow_stage_repository
+    )
+
+    activate_stage_command_handler = providers.Factory(
+        ActivateStageCommandHandler,
+        repository=workflow_stage_repository
+    )
+
+    deactivate_stage_command_handler = providers.Factory(
+        DeactivateStageCommandHandler,
+        repository=workflow_stage_repository
+    )
+
     # Job Position Command Handlers
     create_job_position_command_handler = providers.Factory(
         CreateJobPositionCommandHandler,
@@ -1001,6 +1173,18 @@ class Container(containers.DeclarativeContainer):
 
     company_candidate_controller = providers.Factory(
         CompanyCandidateController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    company_workflow_controller = providers.Factory(
+        CompanyWorkflowController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    workflow_stage_controller = providers.Factory(
+        WorkflowStageController,
         command_bus=command_bus,
         query_bus=query_bus
     )

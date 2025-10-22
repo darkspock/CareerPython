@@ -1,0 +1,185 @@
+"""Workflow Stage Router."""
+from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+
+from dependency_injector.wiring import inject, Provide
+
+from core.container import Container
+from src.company_workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
+from src.company_workflow.presentation.schemas.create_stage_request import CreateStageRequest
+from src.company_workflow.presentation.schemas.update_stage_request import UpdateStageRequest
+from src.company_workflow.presentation.schemas.reorder_stages_request import ReorderStagesRequest
+from src.company_workflow.presentation.schemas.workflow_stage_response import WorkflowStageResponse
+
+
+router = APIRouter(
+    prefix="/api/workflow-stages",
+    tags=["workflow-stages"]
+)
+
+
+@router.post(
+    "/",
+    response_model=WorkflowStageResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new workflow stage"
+)
+@inject
+def create_stage(
+    request: CreateStageRequest,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Create a new workflow stage"""
+    try:
+        return controller.create_stage(request)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get(
+    "/{stage_id}",
+    response_model=WorkflowStageResponse,
+    summary="Get a stage by ID"
+)
+@inject
+def get_stage_by_id(
+    stage_id: str,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Get a stage by ID"""
+    result = controller.get_stage_by_id(stage_id)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Stage not found")
+    return result
+
+
+@router.get(
+    "/workflow/{workflow_id}",
+    response_model=List[WorkflowStageResponse],
+    summary="List all stages for a workflow"
+)
+@inject
+def list_stages_by_workflow(
+    workflow_id: str,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """List all stages for a workflow"""
+    return controller.list_stages_by_workflow(workflow_id)
+
+
+@router.get(
+    "/workflow/{workflow_id}/initial",
+    response_model=WorkflowStageResponse,
+    summary="Get the initial stage of a workflow"
+)
+@inject
+def get_initial_stage(
+    workflow_id: str,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Get the initial stage of a workflow"""
+    result = controller.get_initial_stage(workflow_id)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Initial stage not found")
+    return result
+
+
+@router.get(
+    "/workflow/{workflow_id}/final",
+    response_model=List[WorkflowStageResponse],
+    summary="Get all final stages of a workflow"
+)
+@inject
+def get_final_stages(
+    workflow_id: str,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Get all final stages of a workflow"""
+    return controller.get_final_stages(workflow_id)
+
+
+@router.put(
+    "/{stage_id}",
+    response_model=WorkflowStageResponse,
+    summary="Update stage information"
+)
+@inject
+def update_stage(
+    stage_id: str,
+    request: UpdateStageRequest,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Update stage information"""
+    try:
+        return controller.update_stage(stage_id, request)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.delete(
+    "/{stage_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a stage"
+)
+@inject
+def delete_stage(
+    stage_id: str,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Delete a stage"""
+    try:
+        controller.delete_stage(stage_id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post(
+    "/workflow/{workflow_id}/reorder",
+    response_model=List[WorkflowStageResponse],
+    summary="Reorder stages in a workflow"
+)
+@inject
+def reorder_stages(
+    workflow_id: str,
+    request: ReorderStagesRequest,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Reorder stages in a workflow"""
+    try:
+        return controller.reorder_stages(workflow_id, request)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post(
+    "/{stage_id}/activate",
+    response_model=WorkflowStageResponse,
+    summary="Activate a stage"
+)
+@inject
+def activate_stage(
+    stage_id: str,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Activate a stage"""
+    try:
+        return controller.activate_stage(stage_id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post(
+    "/{stage_id}/deactivate",
+    response_model=WorkflowStageResponse,
+    summary="Deactivate a stage"
+)
+@inject
+def deactivate_stage(
+    stage_id: str,
+    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+):
+    """Deactivate a stage"""
+    try:
+        return controller.deactivate_stage(stage_id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

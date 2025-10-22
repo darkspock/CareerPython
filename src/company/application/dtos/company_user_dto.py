@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, bool
+from typing import Dict
 
 
 @dataclass

@@ -6,10 +6,14 @@ La sección de empresas permite a las organizaciones gestionar candidatos para s
 
 ## Principios Fundamentales
 
-1. **Los datos son del candidato**: El candidato es el propietario de su información
-2. **Multi-empresa**: Un candidato puede estar vinculado a múltiples empresas
-3. **Ownership confirmado**: Cuando un usuario toma ownership, controla sus datos
-4. **Empresa como observador**: Una vez el usuario toma ownership, la empresa solo puede ver y comentar
+1. **Los datos son del candidato**: El candidato es el propietario absoluto de su información (Candidate)
+2. **Privacidad por defecto**: Los datos del perfil del candidato son PRIVADOS, la empresa NO puede verlos
+3. **CRM Desacoplado**: CompanyCandidate es un "Lead" independiente, NO es una relación con Candidate
+4. **Autorización explícita**: Solo cuando el candidato aplica formalmente (CompanyApplication) autoriza qué datos compartir
+5. **Contexto de candidatura**: Los datos se comparten POR candidatura, no globalmente
+6. **Dos flujos distintos**:
+   - **Flujo 1**: Candidato aplica → CompanyCandidate con candidate_id (datos copiados limitados)
+   - **Flujo 2**: Empresa agrega lead → CompanyCandidate sin candidate_id (empresa rellena lo que sabe)
 
 ## Modelo de Datos
 
@@ -57,44 +61,102 @@ CompanyUser:
 - **recruiter**: Puede crear candidatos, invitar, comentar
 - **viewer**: Solo visualización
 
-### 3. CompanyCandidate (Relación Empresa-Candidato)
+### 3. Position (Posición/Vacante)
 
-Tabla de relación entre empresa y candidato con control de ownership.
+Posiciones o vacantes abiertas por la empresa.
+
+```python
+Position:
+  - id: UUID
+  - company_id: UUID (FK → Company)
+  - title: String (ej: "Senior Backend Developer")
+  - description: Text
+  - department: String (opcional)
+  - location: String
+  - employment_type: Enum [full_time, part_time, contract, internship, temporary]
+  - remote_type: Enum [on_site, remote, hybrid]
+  - salary_range_min: Decimal (nullable)
+  - salary_range_max: Decimal (nullable)
+  - salary_currency: String (ej: "USD", "EUR")
+  - requirements: Text
+  - responsibilities: Text
+  - benefits: Text (opcional)
+  - status: Enum [draft, active, paused, closed, cancelled]
+  - workflow_id: UUID (FK → CompanyWorkflow, nullable - workflow por defecto para aplicaciones)
+  - created_by_user_id: UUID (FK → CompanyUser)
+  - published_at: DateTime (nullable)
+  - closed_at: DateTime (nullable)
+  - created_at: DateTime
+  - updated_at: DateTime
+```
+
+### 4. CompanyCandidate (Lead/Candidato en CRM de Empresa)
+
+**IMPORTANTE**: CompanyCandidate NO es una relación, es una entidad independiente tipo "Lead" en un CRM.
+Los datos del candidato registrado (Candidate) son PRIVADOS y la empresa NO puede verlos.
+
+Existen dos flujos de creación:
+
+**Flujo 1 - Candidato Aplica (candidate_id presente)**:
+- El candidato aplica a una posición/empresa
+- Se crea CompanyCandidate con candidate_id
+- Se COPIAN solo los datos básicos que el candidato autoriza compartir
+- Campos copiados: nombre, email, teléfono, país, linkedin
+- La empresa NO puede ver el perfil completo del candidato (education, experience, projects)
+
+**Flujo 2 - Empresa Agrega Lead (candidate_id = null)**:
+- La empresa agrega un lead manualmente (prospecto)
+- Se crea CompanyCandidate sin candidate_id
+- La empresa rellena los datos que tiene del lead
+- Se puede enviar invitación para que el lead se registre y vincule
 
 ```python
 CompanyCandidate:
   - id: UUID
   - company_id: UUID (FK → Company)
-  - candidate_id: UUID (FK → Candidate)
-  - status: Enum [pending_invitation, pending_confirmation, active, rejected, archived]
-  - ownership_status: Enum [company_owned, user_owned]
-  - created_by_user_id: UUID (FK → CompanyUser - quién creó la relación)
-  - workflow_id: UUID (FK → CompanyWorkflow, nullable - flujo de trabajo asignado)
-  - current_stage_id: UUID (FK → WorkflowStage, nullable - etapa actual del flujo)
-  - invited_at: DateTime
-  - confirmed_at: DateTime (cuando el usuario confirmó)
-  - rejected_at: DateTime
-  - archived_at: DateTime
-  - visibility_settings: JSON (qué puede ver la empresa)
-    {
-      "education": bool,
-      "experience": bool,
-      "projects": bool,
-      "skills": bool,
-      "certifications": bool,
-      "languages": bool,
-      "contact_info": bool
-    }
-  - tags: Array[String] (etiquetas privadas de la empresa)
-  - internal_notes: Text (notas internas de la empresa)
-  - position: String (posición para la que se considera)
+  - candidate_id: UUID (FK → Candidate, NULLABLE - solo si candidato aplicó)
+
+  # Datos básicos (copiados del candidato o ingresados por empresa)
+  - first_name: String
+  - last_name: String
+  - email: String
+  - phone: String (opcional)
+  - country: String (opcional)
+  - linkedin_url: String (opcional)
+
+  # Datos de gestión de la empresa (privados)
+  - source: Enum [application, manual_entry, referral, linkedin, other]
+  - status: Enum [lead, contacted, in_process, offer_made, hired, rejected, archived]
+  - created_by_user_id: UUID (FK → CompanyUser - quién lo agregó/gestionó)
+  - workflow_id: UUID (FK → CompanyWorkflow, nullable)
+  - current_stage_id: UUID (FK → WorkflowStage, nullable)
+
+  # Datos adicionales CRM
+  - tags: Array[String] (etiquetas privadas)
+  - internal_notes: Text (notas internas)
+  - position_interest: String (posición de interés)
   - department: String
   - priority: Enum [low, medium, high]
+  - salary_expectation: String (opcional)
+  - availability: String (opcional)
+
+  # Invitación (si es lead sin candidate_id)
+  - invitation_sent_at: DateTime (nullable)
+  - invitation_token: String (nullable - para vincular cuenta)
+  - invitation_expires_at: DateTime (nullable)
+
+  # Timestamps
   - created_at: DateTime
   - updated_at: DateTime
+  - archived_at: DateTime (soft delete)
 ```
 
-### 4. CandidateComment (Comentarios de Empresa)
+**Nota sobre privacidad**:
+- Los datos education, experience, projects, skills del Candidate son PRIVADOS
+- Solo se comparten cuando el candidato aplica a una candidatura (CompanyApplication)
+- CompanyCandidate es el "Lead" antes de la aplicación formal
+
+### 5. CandidateComment (Comentarios de Empresa)
 
 Comentarios que la empresa hace sobre un candidato.
 
@@ -111,43 +173,114 @@ CandidateComment:
   - deleted_at: DateTime (soft delete)
 ```
 
-### 5. CandidateInvitation (Invitaciones)
+### 6. CandidateInvitation (Invitaciones a Leads)
 
-Invitaciones pendientes para candidatos nuevos o confirmaciones para existentes.
+**SIMPLIFICADO**: Solo se usa para invitar leads (CompanyCandidate sin candidate_id) a registrarse.
+Ya NO se usa para vincular candidatos existentes, eso se maneja en el flujo de aplicación.
 
 ```python
 CandidateInvitation:
   - id: UUID
-  - email: String
+  - company_candidate_id: UUID (FK → CompanyCandidate - el lead que se invita)
+  - email: String (copiado de CompanyCandidate.email)
   - company_id: UUID (FK → Company)
-  - candidate_id: UUID (FK → Candidate, nullable)
   - invited_by_user_id: UUID (FK → CompanyUser)
-  - token: String (token único para aceptar/rechazar)
-  - invitation_type: Enum [new_user, existing_user]
-  - status: Enum [pending, accepted, rejected, expired]
-  - message: Text (mensaje personalizado de invitación)
-  - expires_at: DateTime
-  - accepted_at: DateTime
-  - rejected_at: DateTime
+  - token: String (token único para el link de registro)
+  - status: Enum [pending, accepted, rejected, expired, cancelled]
+  - message: Text (mensaje personalizado opcional)
+  - expires_at: DateTime (ej: 7 días)
+  - accepted_at: DateTime (nullable)
+  - rejected_at: DateTime (nullable)
   - created_at: DateTime
 ```
 
-### 6. CandidateAccessLog (Auditoría)
+**Flujo de invitación**:
+1. Empresa crea lead (CompanyCandidate sin candidate_id)
+2. Empresa envía invitación con link único
+3. Lead recibe email con link: `/register?invitation_token=xxx`
+4. Lead se registra, crea cuenta (Candidate)
+5. Sistema vincula: `CompanyCandidate.candidate_id = nuevo_candidate_id`
+6. Invitación pasa a status "accepted"
 
-Registro de accesos de empresas a perfiles de candidatos.
+### 7. CandidateAccessLog (Auditoría)
+
+Registro de accesos y acciones sobre CompanyCandidate (leads/candidatos del CRM).
+
+**NOTA**: Ya no registra acceso a datos privados del Candidate porque la empresa NO tiene acceso a ellos.
 
 ```python
 CandidateAccessLog:
   - id: UUID
   - company_candidate_id: UUID (FK → CompanyCandidate)
   - user_id: UUID (FK → CompanyUser)
-  - action: Enum [view_profile, view_education, view_experience, add_comment, update_tags]
+  - action: Enum [view_lead, update_lead, add_comment, change_stage, send_invitation, add_tags]
+  - details: JSON (detalles adicionales de la acción)
   - ip_address: String
   - user_agent: String
   - created_at: DateTime
 ```
 
-### 7. CompanyWorkflow (Flujos de Trabajo)
+### 8. CompanyApplication (Candidatura Formal - "Opportunity")
+
+**NUEVO CONCEPTO**: Esta es la candidatura formal a una posición específica.
+Es el equivalente a "Opportunity" en un CRM (Lead → Opportunity).
+
+CompanyCandidate es el "Lead", CompanyApplication es la "Candidatura/Opportunity".
+
+```python
+CompanyApplication:
+  - id: UUID
+  - company_candidate_id: UUID (FK → CompanyCandidate - el lead que aplica)
+  - candidate_id: UUID (FK → Candidate - debe existir)
+  - company_id: UUID (FK → Company)
+  - position_id: UUID (FK → Position - posición a la que aplica)
+
+  # Workflow
+  - workflow_id: UUID (FK → CompanyWorkflow, nullable)
+  - current_stage_id: UUID (FK → WorkflowStage, nullable)
+
+  # Datos compartidos por el candidato (autorización de visibilidad)
+  - shared_data: JSON
+    {
+      "basic_info": bool,      # nombre, email, teléfono, país, linkedin
+      "education": bool,       # títulos académicos
+      "experience": bool,      # experiencia laboral
+      "projects": bool,        # proyectos
+      "skills": bool,          # habilidades
+      "certifications": bool,  # certificaciones
+      "languages": bool,       # idiomas
+      "resume_url": string     # URL del CV específico compartido
+    }
+
+  # Estado de la candidatura
+  - status: Enum [active, offer_made, accepted, rejected, withdrawn, archived]
+  - applied_at: DateTime
+  - source: Enum [direct_application, invitation_response, referral, linkedin]
+
+  # Datos de seguimiento
+  - tags: Array[String]
+  - internal_notes: Text
+  - priority: Enum [low, medium, high]
+  - salary_offered: Decimal (nullable)
+
+  # Timestamps
+  - created_at: DateTime
+  - updated_at: DateTime
+  - archived_at: DateTime (soft delete)
+```
+
+**Diferencia entre CompanyCandidate y CompanyApplication**:
+- **CompanyCandidate** = Lead en CRM (prospect, contacto inicial, datos limitados)
+- **CompanyApplication** = Opportunity en CRM (candidatura formal a posición, con datos completos autorizados)
+
+**Flujo Lead → Application**:
+1. Empresa tiene lead (CompanyCandidate)
+2. Lead aplica a posición específica o empresa invita a candidatura
+3. Se crea CompanyApplication vinculado al CompanyCandidate
+4. Candidato autoriza qué datos compartir para esa candidatura específica
+5. Empresa puede ver datos autorizados SOLO en el contexto de esa application
+
+### 9. CompanyWorkflow (Flujos de Trabajo)
 
 Flujos de trabajo personalizables para diferentes tipos de procesos de selección.
 
@@ -164,7 +297,7 @@ CompanyWorkflow:
   - updated_at: DateTime
 ```
 
-### 8. WorkflowStage (Etapas del Flujo)
+### 10. WorkflowStage (Etapas del Flujo)
 
 Etapas/estados personalizados dentro de un flujo de trabajo.
 
@@ -186,12 +319,13 @@ WorkflowStage:
   - color: String (color hex para visualización, ej: "#4CAF50")
   - is_initial: Boolean (etapa inicial del flujo)
   - is_final: Boolean (etapa final - accepted/rejected/withdrawn)
+  - is_success: Boolean 
   - requires_action: Boolean (requiere acción del equipo)
   - created_at: DateTime
   - updated_at: DateTime
 ```
 
-### 9. WorkflowStageTransition (Transiciones entre Etapas)
+### 11. WorkflowStageTransition (Transiciones entre Etapas)
 
 Define las transiciones permitidas entre etapas.
 
@@ -206,7 +340,7 @@ WorkflowStageTransition:
   - created_at: DateTime
 ```
 
-### 10. CandidateStageHistory (Historial de Etapas)
+### 12. CandidateStageHistory (Historial de Etapas)
 
 Registro histórico de movimientos de candidatos por las etapas.
 
@@ -371,75 +505,189 @@ ORDER BY
 
 ## Flujos de Negocio
 
-### Flujo 1: Empresa crea candidato con email NO existente
+### Flujo 1: Empresa agrega Lead manualmente (sin candidate_id)
+
+**Caso**: La empresa tiene un prospecto (de LinkedIn, referido, etc.) que NO está registrado en la plataforma.
 
 ```
-1. Recruiter ingresa email y datos básicos del candidato
-2. Sistema verifica que el email NO existe en la plataforma
-3. Sistema crea:
-   - Candidate (con datos básicos)
-   - CompanyCandidate (status: pending_invitation, ownership: company_owned)
-   - CandidateInvitation (type: new_user, status: pending)
-4. Sistema envía email de invitación con token
-5. Candidato hace clic en link y se registra
-6. Sistema:
-   - Actualiza User con el email
-   - Vincula Candidate con User
-   - Actualiza CompanyCandidate (status: active, ownership: user_owned, confirmed_at: now)
-   - Actualiza CandidateInvitation (status: accepted, accepted_at: now)
-7. Empresa ahora tiene acceso de solo lectura + comentarios
+1. Recruiter ingresa datos del lead:
+   - Nombre, email, teléfono (opcional)
+   - País, LinkedIn (opcional)
+   - Posición de interés, departamento, prioridad
+   - Tags, notas internas
+   - Source: manual_entry, referral, linkedin, etc.
+
+2. Sistema crea:
+   - CompanyCandidate (candidate_id = NULL, status = lead)
+   - Los datos son ingresados/controlados por la empresa
+
+3. Recruiter puede:
+   - EDITAR todos los datos del lead (es company-owned)
+   - Agregar comentarios internos
+   - Mover por workflow (etapas de prospección)
+   - Enviar invitación para que se registre
+
+4. Si decide enviar invitación:
+   - Sistema crea CandidateInvitation con token único
+   - Envía email con link: /register?invitation_token=xxx
+   - CompanyCandidate.invitation_sent_at = now
+
+5. Si lead se registra:
+   - Lead completa registro → crea Candidate + User
+   - Sistema vincula: CompanyCandidate.candidate_id = nuevo_candidate_id
+   - Status puede cambiar a: contacted, in_process, etc.
+   - Los datos básicos del Candidate NO son visibles para la empresa
+   - CompanyCandidate sigue siendo independiente con sus datos CRM
+
+6. Si lead NO se registra:
+   - CompanyCandidate sigue como lead sin candidate_id
+   - Empresa sigue gestionándolo como prospecto en el CRM
 ```
 
-### Flujo 2: Empresa intenta crear candidato con email EXISTENTE
+**Importante**: Los datos del CompanyCandidate NO se sincronizan con Candidate. Son entidades separadas.
+
+### Flujo 2: Candidato aplica a posición (se crea CompanyCandidate con candidate_id)
+
+**Caso**: Un candidato registrado en la plataforma aplica a una posición de una empresa.
 
 ```
-1. Recruiter ingresa email que YA existe en la plataforma
-2. Sistema detecta que el email existe y tiene un User/Candidate
-3. Sistema crea:
-   - CompanyCandidate (status: pending_confirmation, ownership: user_owned)
-   - CandidateInvitation (type: existing_user, status: pending, candidate_id: existing_candidate)
-4. Sistema envía email de CONFIRMACIÓN al candidato
-   "La empresa X quiere agregarte a su sistema. ¿Aceptas?"
-5a. Candidato ACEPTA:
-   - CompanyCandidate (status: active, confirmed_at: now)
-   - CandidateInvitation (status: accepted, accepted_at: now)
-   - Empresa tiene acceso según visibility_settings
-5b. Candidato RECHAZA:
-   - CompanyCandidate (status: rejected, rejected_at: now)
-   - CandidateInvitation (status: rejected, rejected_at: now)
-   - Empresa NO tiene acceso al candidato
+1. Candidato navega a posición publicada
+2. Candidato hace clic en "Aplicar"
+3. Sistema muestra form para seleccionar:
+   - Qué datos básicos compartir (de los permitidos)
+   - Campos disponibles: nombre, email, teléfono, país, linkedin
+   - Por defecto: solo nombre, email, país
+
+4. Candidato confirma aplicación
+
+5. Sistema crea:
+   - CompanyCandidate con:
+     * candidate_id = candidato que aplicó
+     * company_id = empresa de la posición
+     * COPIA los datos básicos seleccionados (nombre, email, teléfono, país, linkedin)
+     * source = application
+     * status = lead (aún no es candidatura formal)
+
+6. Empresa ve nuevo lead en su CRM con:
+   - Datos básicos copiados
+   - Indicador de que es un candidato registrado (candidate_id presente)
+   - NO puede ver: education, experience, projects, skills
+
+7. Si empresa quiere avanzar con el candidato:
+   - Puede convertir el lead en candidatura formal
+   - Ver "Flujo 4: De Lead a Candidatura Formal (Application)"
 ```
 
-### Flujo 3: Candidato gestiona su privacidad
+**Importante**: Aplicar NO significa compartir todo el perfil. Solo datos básicos limitados.
+
+### Flujo 3: Empresa invita Lead a registrarse
 
 ```
-1. Candidato ve lista de empresas vinculadas
-2. Para cada empresa puede:
-   - Configurar visibility_settings (qué información compartir)
-   - Ver comentarios marcados como "shared_with_candidate"
-   - Revocar acceso (archiva la relación CompanyCandidate)
-   - Ver CandidateAccessLog (quién vio qué)
+1. Empresa tiene lead (CompanyCandidate sin candidate_id)
+2. Recruiter hace clic en "Enviar invitación"
+3. Sistema crea CandidateInvitation:
+   - company_candidate_id = lead
+   - token = UUID único
+   - expires_at = now + 7 días
+   - status = pending
+
+4. Sistema envía email al lead:
+   - Asunto: "Invitación de [Company] para unirte a la plataforma"
+   - Link: https://platform.com/register?invitation_token=xxx
+   - Mensaje personalizado (opcional)
+
+5a. Lead hace clic y se registra:
+   - Completa registro normal (Candidate + User)
+   - Sistema detecta invitation_token en querystring
+   - Vincula: CompanyCandidate.candidate_id = new_candidate_id
+   - CandidateInvitation.status = accepted
+   - Lead ahora puede aplicar formalmente a posiciones
+
+5b. Lead no responde:
+   - CandidateInvitation.status = expired (después de 7 días)
+   - CompanyCandidate sigue como lead sin candidate_id
+   - Empresa puede re-enviar invitación
+
+5c. Lead rechaza:
+   - Lead puede hacer clic en "No me interesa"
+   - CandidateInvitation.status = rejected
+   - CompanyCandidate.status = rejected
 ```
 
-### Flujo 4: Empresa gestiona candidatos
+### Flujo 4: De Lead a Candidatura Formal (Application)
+
+**Caso**: La empresa quiere mover un lead a candidatura formal para una posición específica.
 
 ```
-Cuando ownership_status = company_owned:
-  - Empresa puede EDITAR datos del candidato
-  - Empresa puede ELIMINAR candidato
-  - Empresa puede agregar comentarios privados
+1. Recruiter tiene lead en el CRM (CompanyCandidate)
+2. Recruiter hace clic en "Incluir en candidatura"
+3. Sistema muestra:
+   - Posiciones activas de la empresa
+   - Workflow a usar
 
-Cuando ownership_status = user_owned:
-  - Empresa puede VER datos (según visibility_settings)
-  - Empresa puede COMENTAR (privado o compartido)
-  - Empresa puede agregar TAGS internos
-  - Empresa puede actualizar INTERNAL_NOTES
-  - Empresa NO puede editar datos del candidato
+4. Recruiter selecciona posición y confirma
+
+5. Sistema verifica:
+   - CompanyCandidate tiene candidate_id? (está registrado?)
+   - Si NO: error, debe invitarse primero
+   - Si SÍ: continúa
+
+6. Sistema envía notificación al candidato:
+   - "La empresa X te invita a candidatura para [Position]"
+   - "¿Qué datos deseas compartir?"
+
+7. Candidato autoriza datos a compartir:
+   - Selecciona checkboxes:
+     □ Educación
+     □ Experiencia laboral
+     □ Proyectos
+     □ Habilidades
+     □ Certificaciones
+     □ Idiomas
+   - Selecciona CV específico a compartir
+
+8. Sistema crea CompanyApplication:
+   - company_candidate_id = lead
+   - candidate_id = candidato registrado
+   - position_id = posición seleccionada
+   - shared_data = JSON con permisos
+   - workflow_id = workflow de la posición
+   - current_stage_id = etapa inicial
+   - status = active
+
+9. Empresa ahora puede ver:
+   - Datos autorizados del Candidate (según shared_data)
+   - Solo en el contexto de esa application específica
+   - CV compartido
+
+10. CompanyCandidate.status puede cambiar a: in_process
 ```
 
-### Flujo 5: Gestión de Workflows y Movimiento de Candidatos
+**Importante**: Los datos privados del Candidate solo se comparten en el contexto de CompanyApplication, NO en CompanyCandidate.
 
-#### 5.1. Creación de Workflow
+### Flujo 5: Empresa gestiona Leads en CRM
+
+```
+Empresa puede:
+  - Ver lista de leads (CompanyCandidate)
+  - Filtrar por: status, source, tags, prioridad
+  - Ver dashboard Kanban por workflow stages
+  - EDITAR datos del lead (nombre, email, teléfono, país, linkedin, notas, tags)
+  - Agregar comentarios internos (CandidateComment)
+  - Mover entre stages de workflow (prospección)
+  - Enviar invitación a registrarse (si no tiene candidate_id)
+  - Convertir a candidatura formal (si tiene candidate_id)
+  - Archivar leads
+
+Empresa NO puede:
+  - Ver education, experience, projects del Candidate
+  - Editar datos privados del Candidate
+  - Ver otros CompanyCandidates del mismo Candidate en otras empresas
+```
+
+### Flujo 6: Gestión de Workflows y Movimiento de Leads
+
+#### 6.1. Creación de Workflow
 
 ```
 1. Admin de empresa crea nuevo Workflow
@@ -468,11 +716,11 @@ Cuando ownership_status = user_owned:
 5. Workflow queda activo y disponible
 ```
 
-#### 5.2. Asignación de Candidato a Workflow
+#### 6.2. Asignación de Lead a Workflow
 
 ```
-1. Al crear/agregar candidato a empresa:
-   - Si empresa tiene workflow por defecto:
+1. Al crear/agregar lead (CompanyCandidate):
+   - Si empresa tiene workflow por defecto para leads:
      - Asignar workflow_id
      - Asignar current_stage_id a la etapa inicial (is_initial = true)
    - Si no hay workflow por defecto:
@@ -483,15 +731,18 @@ Cuando ownership_status = user_owned:
 2. Sistema crea registro en CandidateStageHistory:
    - from_stage_id = null
    - to_stage_id = etapa inicial
-   - comment = "Candidato agregado al proceso"
+   - comment = "Lead agregado al proceso"
 ```
 
-#### 5.3. Movimiento de Candidato entre Etapas
+**Nota**: Los workflows para CompanyCandidate suelen ser de "prospección" (contacto inicial, calificación, etc.)
+Los workflows para CompanyApplication son de "selección" (entrevistas, evaluaciones, oferta, etc.)
+
+#### 6.3. Movimiento de Lead entre Etapas
 
 ```
-1. Recruiter selecciona candidato
+1. Recruiter selecciona lead (CompanyCandidate)
 2. Sistema muestra etapa actual y transiciones disponibles
-3. Recruiter selecciona acción (ej: "Aprobar para entrevista técnica")
+3. Recruiter selecciona acción (ej: "Pasar a Contactado", "Calificar", "Descartar")
 4. Si requiere comentario:
    - Sistema solicita comentario
    - Recruiter ingresa comentario
@@ -501,6 +752,7 @@ Cuando ownership_status = user_owned:
    - Comentario presente si es requerido
 6. Sistema actualiza CompanyCandidate:
    - current_stage_id = nueva etapa
+   - status = puede cambiar según la etapa (lead → contacted → in_process)
    - updated_at = now
 7. Sistema crea registro en CandidateStageHistory:
    - from_stage_id = etapa anterior
@@ -509,13 +761,13 @@ Cuando ownership_status = user_owned:
    - comment = comentario ingresado
    - duration_in_previous_stage = diferencia en minutos
    - created_at = now
-8. Sistema publica evento: CandidateStageChanged
-9. Si nueva etapa es final:
-   - Sistema puede enviar notificación al candidato
-   - Sistema puede archivar el candidato si es rejected/withdrawn
+8. Sistema publica evento: LeadStageChanged
+9. Si nueva etapa es final de "prospección":
+   - Puede convertirse en candidatura formal (si tiene candidate_id)
+   - O archivarse si no califica
 ```
 
-#### 5.4. Cambio de Workflow
+#### 6.4. Cambio de Workflow
 
 ```
 1. Recruiter decide cambiar candidato a otro workflow
@@ -535,27 +787,42 @@ Cuando ownership_status = user_owned:
 
 ## Estados y Transiciones
 
-### Estados de CompanyCandidate
+### Estados de CompanyCandidate (Lead)
 
 ```
-pending_invitation → (usuario se registra) → active
-pending_confirmation → (usuario acepta) → active
-pending_confirmation → (usuario rechaza) → rejected
-active → (empresa archiva) → archived
-active → (usuario revoca) → archived
+Nuevos estados basados en CRM:
+
+lead → contacted → in_process → offer_made → hired
+  ↓         ↓            ↓            ↓          ↓
+rejected  rejected    rejected    rejected   archived
 ```
 
-### Estados de Ownership
+**Estados explicados**:
+- `lead`: Prospecto inicial (nuevo en el sistema)
+- `contacted`: Ya se ha contactado al lead
+- `in_process`: En proceso de evaluación/candidatura formal activa
+- `offer_made`: Se ha hecho una oferta
+- `hired`: Contratado (estado final positivo)
+- `rejected`: Descartado/no califica (estado final negativo)
+- `archived`: Archivado (histórico, no activo)
+
+### Estados de CompanyApplication (Candidatura Formal)
 
 ```
-company_owned:
-  - Candidato creado por empresa, usuario NO ha reclamado ownership
-  - Empresa tiene control total
-
-user_owned:
-  - Usuario ha tomado ownership (registro o confirmación)
-  - Empresa solo lectura + comentarios
+active → offer_made → accepted
+  ↓           ↓           ↓
+rejected  rejected    archived
+  ↓           ↓
+withdrawn withdrawn
 ```
+
+**Estados explicados**:
+- `active`: Candidatura activa en proceso de selección
+- `offer_made`: Oferta enviada al candidato
+- `accepted`: Candidato aceptó la oferta (contratado - estado final positivo)
+- `rejected`: Empresa rechazó al candidato (estado final negativo)
+- `withdrawn`: Candidato se retiró del proceso (estado final)
+- `archived`: Candidatura archivada (proceso finalizado, histórico)
 
 ## Permisos y Reglas de Negocio
 
@@ -1030,3 +1297,243 @@ Si ya existen candidatos en el sistema:
     - Scripts de migración de datos
     - Despliegue a producción
     - Monitoreo y alertas
+
+---
+
+## 📊 Estado de Implementación
+
+**Última actualización**: 2025-10-22
+
+### ✅ Módulos Completados
+
+#### 1. Company (CRUD Básico) - ✅ COMPLETADO
+- ✅ Domain Layer: Entity, ValueObjects, Enums, Exceptions
+- ✅ Infrastructure: Repository, Model
+- ✅ Application: Commands (Create, Update, Suspend, Activate, Delete) + Queries (GetById, GetByDomain, List)
+- ✅ Presentation: Controller, Router, Schemas
+- ✅ Endpoints: 7 endpoints operativos
+- ✅ Migraciones: Tabla `companies` creada
+
+#### 2. CompanyUser (Gestión de Usuarios) - ✅ COMPLETADO
+- ✅ Domain Layer: Entity, ValueObjects, Enums, Exceptions
+- ✅ Infrastructure: Repository, Model
+- ✅ Application: Commands (Create, Update, UpdateRole, Activate, Deactivate, Remove) + Queries (GetById, GetByCompanyAndUser, ListByCompany)
+- ✅ Presentation: Controller, Router, Schemas
+- ✅ Authentication: Login endpoint `/company/auth/login` (OAuth2 compliant)
+- ✅ Endpoints: 8 endpoints + login
+- ✅ Migraciones: Tabla `company_users` creada
+- ✅ JWT Token con contexto de empresa (company_id, role)
+
+#### 3. CompanyCandidate (Relación Empresa-Candidato) - ✅ COMPLETADO
+- ✅ Domain Layer: Entity, 6 Enums, 5 ValueObjects, 7 Exceptions
+- ✅ Infrastructure: Repository, Model
+- ✅ Application:
+  - Commands (8): Create, Update, Confirm, Reject, Archive, TransferOwnership, AssignWorkflow, ChangeStage
+  - Queries (4): GetById, GetByCompanyAndCandidate, ListByCompany, ListByCandidate
+- ✅ Presentation: Controller, Router, Schemas, Mappers
+- ✅ Endpoints: 11 endpoints operativos
+- ✅ Migraciones: Tabla `company_candidates` creada
+- ✅ Business Logic: Ownership control, visibility settings, workflow integration
+
+#### 4. CompanyWorkflow (Flujos de Trabajo) - ✅ COMPLETADO
+- ✅ Domain Layer: Entity, 3 Enums, ValueObjects, Exceptions
+- ✅ Infrastructure: Repository, Model
+- ✅ Application:
+  - Commands (7): Create, Update, Activate, Deactivate, Archive, SetAsDefault, UnsetAsDefault
+  - Queries (2): GetById, ListByCompany
+- ✅ Presentation: Controller, Router, Schemas, Mappers
+- ✅ Endpoints: 10 endpoints operativos
+- ✅ Migraciones: Tabla `company_workflows` creada
+- ✅ Business Logic: Workflow status management, default workflow per company
+
+#### 5. WorkflowStage (Etapas de Flujo) - ✅ COMPLETADO
+- ✅ Domain Layer: Entity, 3 Enums, ValueObjects, Exceptions
+- ✅ Infrastructure: Repository, Model
+- ✅ Application:
+  - Commands (6): CreateStage, UpdateStage, DeleteStage, ReorderStages, ActivateStage, DeactivateStage
+  - Queries (4): GetStageById, ListStagesByWorkflow, GetInitialStage, GetFinalStages
+- ✅ Presentation: Controller, Router, Schemas, Mappers
+- ✅ Endpoints: 10 endpoints operativos
+- ✅ Migraciones: Tabla `workflow_stages` creada
+- ✅ Business Logic: Stage ordering, stage types (initial, intermediate, final)
+
+### 🔄 Módulos Pendientes
+
+#### 6. CandidateInvitation (Sistema de Invitaciones) - ⏳ PENDIENTE
+**Prioridad**: Alta
+- ❌ Domain Layer: Entity, Enums, ValueObjects, Exceptions
+- ❌ Infrastructure: Repository, Model
+- ❌ Application: Commands + Queries
+- ❌ Presentation: Controller, Router, Schemas
+- ❌ Email Service: Templates y envío
+- ❌ Token Management: Generación y validación
+- **Funcionalidad**: Invitar candidatos nuevos o existentes, aceptar/rechazar invitaciones
+
+#### 7. CandidateComment (Comentarios) - ⏳ PENDIENTE
+**Prioridad**: Alta
+- ❌ Domain Layer: Entity, Enums, ValueObjects, Exceptions
+- ❌ Infrastructure: Repository, Model
+- ❌ Application: Commands (Create, Update, Delete) + Queries (List, GetById)
+- ❌ Presentation: Controller, Router, Schemas
+- **Funcionalidad**: Comentarios privados/compartidos, soft delete, contexto (interview, screening)
+
+#### 8. CandidateAccessLog (Auditoría) - ⏳ PENDIENTE
+**Prioridad**: Media
+- ❌ Domain Layer: Entity, Enums, ValueObjects
+- ❌ Infrastructure: Repository, Model
+- ❌ Application: Commands (LogAccess) + Queries (ListLogs, GetLogsByCandidate)
+- ❌ Presentation: Controller, Router (solo admin)
+- **Funcionalidad**: GDPR compliance, tracking de accesos, reportes de auditoría
+
+### 📈 Estadísticas del Proyecto
+
+**Tablas Creadas**: 4/7 (57%)
+- ✅ companies
+- ✅ company_users
+- ✅ company_candidates
+- ✅ company_workflows
+- ✅ workflow_stages
+- ❌ candidate_invitations
+- ❌ candidate_comments
+- ❌ candidate_access_logs
+
+**Endpoints Implementados**: ~46 endpoints
+- Company: 7 endpoints
+- CompanyUser: 8 endpoints + login
+- CompanyCandidate: 11 endpoints
+- CompanyWorkflow: 10 endpoints
+- WorkflowStage: 10 endpoints
+
+**Arquitectura**: 100% Clean Architecture + CQRS
+- ✅ Separación de capas (Domain, Application, Infrastructure, Presentation)
+- ✅ Commands (write) separados de Queries (read)
+- ✅ Dependency Injection completo
+- ✅ Repository Pattern
+- ✅ Immutable Entities
+- ✅ Domain Events (preparado)
+
+**Testing**: ⏳ Pendiente
+- ❌ Unit Tests
+- ❌ Integration Tests
+- ❌ E2E Tests
+
+### 🔐 Sistema de Autenticación
+
+**Endpoints de Login Implementados**:
+- ✅ `POST /candidate/auth/login` - Autenticación de candidatos
+- ✅ `POST /admin/auth/login` - Autenticación de administradores
+- ✅ `POST /company/auth/login` - Autenticación de usuarios de empresa
+
+**Características**:
+- OAuth2PasswordRequestForm (estándar OAuth2)
+- JWT Tokens con contexto (user_id, company_id, role)
+- Bcrypt para passwords
+- Token expiration configurable
+
+### 📝 Próximos Pasos
+
+1. **Inmediato**:
+   - Implementar `CandidateInvitation` (crítico para onboarding)
+   - Implementar `CandidateComment` (funcionalidad core)
+
+2. **Corto Plazo**:
+   - Implementar `CandidateAccessLog` (GDPR compliance)
+   - Tests unitarios para módulos existentes
+
+3. **Mediano Plazo**:
+   - WorkflowStageTransition (lógica avanzada de workflows)
+   - Dashboard y analytics
+   - Email notifications
+
+4. **Largo Plazo**:
+   - Reporting avanzado
+   - Export de datos
+   - Integraciones (ATS externos)
+
+---
+
+## Development Status & Roadmap
+
+### 📊 Estado Actual
+
+**Backend**: Parcialmente implementado
+- ✅ Company, CompanyUser, CompanyWorkflow, WorkflowStage (completos)
+- ⚠️ CompanyCandidate (existente, requiere actualización)
+- ❌ Position (pendiente)
+- ❌ CompanyApplication (pendiente)
+- ❌ Lead (fuera de scope V1)
+
+**Frontend**: No existe implementación de dashboard de company
+- ❌ Login page para company users
+- ❌ Dashboard de ATS
+- ❌ Gestión de candidatos
+- ❌ Gestión de posiciones
+- ❌ Gestión de candidaturas
+- ❌ Kanban boards
+
+**Servicios existentes**:
+- `client-vite/src/services/companyService.ts` - Admin-focused (NO sirve para company dashboard)
+
+---
+
+### 🎯 Estrategia de Implementación
+
+**DECISIÓN**: Implementar **ATS (Gestión de Candidatos)** primero, dejar **Head Hunting** para V2.
+
+**Razón**:
+- ATS es el core product (gestión de candidaturas)
+- Head Hunting es un add-on premium
+- Queremos validar el producto base primero
+
+---
+
+### 📚 Documentación de Referencia
+
+#### Para Implementación Inmediata:
+📋 **[COMPANY_IMPLEMENTATION_ROADMAP.md](./COMPANY_IMPLEMENTATION_ROADMAP.md)** - Plan de desarrollo
+
+Este documento contiene:
+- ✅ Fases de desarrollo priorizadas (ATS primero)
+- ✅ Tareas detalladas por fase
+- ✅ Estimaciones de tiempo (37 días total)
+- ✅ Checklist completo
+- ✅ Cronograma
+- ✅ Definición de MVP
+
+#### Para Entender el Modelo Completo:
+📄 **[COMPANY_FINAL_MODEL.md](./COMPANY_FINAL_MODEL.md)** - Modelo de 3 niveles completo
+
+Este documento explica:
+- Lead → CompanyCandidate → CompanyApplication (3 niveles)
+- Dos productos: Head Hunting + ATS
+- Flujos de negocio detallados
+- GDPR compliance
+- Templates de email
+- Mockups de UI
+
+⚠️ **NOTA**: Head Hunting (Lead) está documentado pero NO se implementará en V1.
+
+#### Documentos Antiguos (referencia histórica):
+- ⚠️ [COMPANY_NEW_PARADIGM.md](./COMPANY_NEW_PARADIGM.md) - Cambio de paradigma (histórico)
+- ⚠️ [COMPANY_FRONTEND_TASKS.md](./COMPANY_FRONTEND_TASKS.md) - Tareas antiguas (desactualizado)
+
+---
+
+### 🚀 Próximo Paso
+
+**Fase 1**: CompanyCandidate Backend (3-4 días)
+- Actualizar entity existente
+- Añadir campos: `lead_id`, `source`, `resume_url`, etc.
+- Commands y Queries completos
+- API endpoints
+- Migration
+
+Ver detalles en: [COMPANY_IMPLEMENTATION_ROADMAP.md](./COMPANY_IMPLEMENTATION_ROADMAP.md)
+
+---
+
+**Notas de Implementación**:
+- Todos los handlers están registrados en `core/container.py`
+- Todos los routers están cableados en `main.py`
+- Las migraciones están en `alembic/versions/`
+- Versión actual de migración: `468a891f5208`

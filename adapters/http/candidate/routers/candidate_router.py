@@ -489,7 +489,6 @@ def candidate_login(
 
 
 @candidate_router.get("/auth/me", response_model=UserResponse)
-@inject
 def get_current_candidate_user(
         current_user: UserResponse = Depends(get_current_user)
 ) -> UserResponse:

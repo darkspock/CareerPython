@@ -24,19 +24,18 @@ router = APIRouter(prefix="/company", tags=["company-users"])
 @router.post("/{company_id}/users", response_model=CompanyUserResponse, status_code=201)
 @inject
 async def add_company_user(
-    company_id: str = Path(..., description="Company ID"),
-    request: AddCompanyUserRequest = ...,
+    company_id: str ,
     controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> CompanyUserResponse:
     """Add a user to a company"""
-    return controller.add_company_user(company_id, request)
+    return controller.add_company_user(company_id)
 
 
 @router.get("/{company_id}/users", response_model=List[CompanyUserResponse])
 @inject
 async def list_company_users(
-    company_id: str = Path(..., description="Company ID"),
-    active_only: bool = Query(False, description="Filter only active users"),
+    company_id: str,
+    active_only: bool,
     controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> List[CompanyUserResponse]:
     """List all users for a company"""
@@ -46,8 +45,8 @@ async def list_company_users(
 @router.get("/{company_id}/users/user/{user_id}", response_model=CompanyUserResponse)
 @inject
 async def get_company_user_by_company_and_user(
-    company_id: str = Path(..., description="Company ID"),
-    user_id: str = Path(..., description="User ID"),
+    company_id: str ,
+    user_id: str ,
     controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> CompanyUserResponse:
     """Get a company user by company and user IDs"""
@@ -57,7 +56,7 @@ async def get_company_user_by_company_and_user(
 @router.get("/users/{company_user_id}", response_model=CompanyUserResponse)
 @inject
 async def get_company_user_by_id(
-    company_user_id: str = Path(..., description="Company User ID"),
+    company_user_id: str ,
     controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> CompanyUserResponse:
     """Get a company user by ID"""
@@ -67,18 +66,18 @@ async def get_company_user_by_id(
 @router.put("/users/{company_user_id}", response_model=CompanyUserResponse)
 @inject
 async def update_company_user(
-    company_user_id: str = Path(..., description="Company User ID"),
-    request: UpdateCompanyUserRequest = ...,
+    company_user_id: str ,
+
     controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> CompanyUserResponse:
     """Update a company user"""
-    return controller.update_company_user(company_user_id, request)
+    return controller.update_company_user(company_user_id)
 
 
 @router.post("/users/{company_user_id}/activate", response_model=CompanyUserResponse)
 @inject
 async def activate_company_user(
-    company_user_id: str = Path(..., description="Company User ID"),
+    company_user_id: str ,
     controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> CompanyUserResponse:
     """Activate a company user"""
@@ -88,7 +87,7 @@ async def activate_company_user(
 @router.post("/users/{company_user_id}/deactivate", response_model=CompanyUserResponse)
 @inject
 async def deactivate_company_user(
-    company_user_id: str = Path(..., description="Company User ID"),
+    company_user_id: str ,
     controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> CompanyUserResponse:
     """Deactivate a company user"""
@@ -98,7 +97,7 @@ async def deactivate_company_user(
 @router.delete("/users/{company_user_id}", status_code=204)
 @inject
 async def remove_company_user(
-    company_user_id: str = Path(..., description="Company User ID"),
+    company_user_id: str ,
     controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> None:
     """Remove a user from a company"""

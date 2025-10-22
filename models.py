@@ -6,6 +6,8 @@ from src.job_position.infrastructure.models.job_position_model import JobPositio
 from src.company.infrastructure.models.company_model import CompanyModel
 from src.company.infrastructure.models.company_user_model import CompanyUserModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
+from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 from src.user.infrastructure.models.user_model import UserModel
 from src.user.infrastructure.models.user_asset_model import UserAssetModel
 from src.candidate.infrastructure.models.candidate_model import CandidateModel
@@ -24,6 +26,8 @@ __all__ = [
     "CompanyModel",
     "CompanyUserModel",
     "CompanyCandidateModel",
+    "CompanyWorkflowModel",
+    "WorkflowStageModel",
     "UserModel",
     "UserAssetModel",
     "CandidateModel",

@@ -1,9 +1,34 @@
 from dataclasses import dataclass
 
-from src.shared.application.command import Command
+from src.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
+from src.shared.application.command import Command, CommandHandler
+from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
+from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 
 
 @dataclass(frozen=True)
 class TransferOwnershipCommand(Command):
     """Command to transfer ownership from company to user"""
     id: str
+
+
+class TransferOwnershipCommandHandler(CommandHandler[TransferOwnershipCommand, None]):
+    """Handler for transferring ownership from company to user"""
+
+    def __init__(self, repository: CompanyCandidateRepositoryInterface):
+        self._repository = repository
+
+    def handle(self, command: TransferOwnershipCommand) -> None:
+        """Handle the transfer ownership command"""
+        # Get existing company candidate
+        company_candidate_id = CompanyCandidateId.from_string(command.id)
+        company_candidate = self._repository.get_by_id(company_candidate_id)
+
+        if not company_candidate:
+            raise CompanyCandidateNotFoundError(f"Company candidate with id {command.id} not found")
+
+        # Transfer ownership to user
+        transferred_candidate = company_candidate.transfer_ownership_to_user()
+
+        # Save to repository
+        self._repository.save(transferred_candidate)

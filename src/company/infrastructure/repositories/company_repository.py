@@ -2,7 +2,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 
 from src.company.domain.entities.company import Company
-from src.company.domain.enums import CompanyStatus
+from src.company.domain.enums import CompanyStatusEnum
 from src.company.domain.value_objects import CompanyId, CompanySettings
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.infrastructure.models.company_model import CompanyModel
@@ -42,7 +42,7 @@ class CompanyRepository(CompanyRepositoryInterface):
     def list_active(self) -> List[Company]:
         """List all active companies"""
         models = self.session.query(CompanyModel).filter(
-            CompanyModel.status == CompanyStatus.ACTIVE.value
+            CompanyModel.status == CompanyStatusEnum.ACTIVE.value
         ).all()
         return [self._to_domain(m) for m in models]
 
@@ -61,7 +61,7 @@ class CompanyRepository(CompanyRepositoryInterface):
             domain=model.domain,
             logo_url=model.logo_url,
             settings=CompanySettings.from_dict(model.settings or {}),
-            status=CompanyStatus(model.status),
+            status=CompanyStatusEnum(model.status),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

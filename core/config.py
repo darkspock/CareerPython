@@ -57,6 +57,23 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
     SUPPORT_EMAIL: str = "support@careerpython.com"
 
+    # Storage settings
+    STORAGE_TYPE: str = "local"  # Options: "local" or "s3"
+
+    # Local storage settings (for development)
+    LOCAL_STORAGE_PATH: str = "uploads"
+    LOCAL_STORAGE_URL: str = "http://localhost:8000/uploads"
+
+    # AWS S3 storage settings (for production)
+    AWS_S3_BUCKET: str = ""
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "us-east-1"
+
+    # Storage configuration
+    MAX_FILE_SIZE_MB: int = 10
+    ALLOWED_FILE_EXTENSIONS: str = ".pdf,.doc,.docx,.txt"
+
     auth: AuthSettings = AuthSettings()
 
     @property

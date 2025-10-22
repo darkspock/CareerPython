@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.company.domain.enums import CompanyStatus
+from src.company.domain.enums import CompanyStatusEnum
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError
 from src.company.domain.value_objects import CompanyId, CompanySettings
 
@@ -18,7 +18,7 @@ class Company:
     domain: str
     logo_url: Optional[str]
     settings: CompanySettings
-    status: CompanyStatus
+    status: CompanyStatusEnum
     created_at: datetime
     updated_at: datetime
 
@@ -68,7 +68,7 @@ class Company:
             domain=domain.strip().lower(),
             logo_url=logo_url,
             settings=company_settings,
-            status=CompanyStatus.ACTIVE,
+            status=CompanyStatusEnum.ACTIVE,
             created_at=now,
             updated_at=now,
         )
@@ -131,7 +131,7 @@ class Company:
         Raises:
             CompanyValidationError: If company is already deleted
         """
-        if self.status == CompanyStatus.DELETED:
+        if self.status == CompanyStatusEnum.DELETED:
             raise CompanyValidationError("Cannot suspend a deleted company")
 
         return Company(
@@ -140,7 +140,7 @@ class Company:
             domain=self.domain,
             logo_url=self.logo_url,
             settings=self.settings,
-            status=CompanyStatus.SUSPENDED,
+            status=CompanyStatusEnum.SUSPENDED,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -155,7 +155,7 @@ class Company:
         Raises:
             CompanyValidationError: If company is deleted
         """
-        if self.status == CompanyStatus.DELETED:
+        if self.status == CompanyStatusEnum.DELETED:
             raise CompanyValidationError("Cannot activate a deleted company")
 
         return Company(
@@ -164,7 +164,7 @@ class Company:
             domain=self.domain,
             logo_url=self.logo_url,
             settings=self.settings,
-            status=CompanyStatus.ACTIVE,
+            status=CompanyStatusEnum.ACTIVE,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -182,19 +182,19 @@ class Company:
             domain=self.domain,
             logo_url=self.logo_url,
             settings=self.settings,
-            status=CompanyStatus.DELETED,
+            status=CompanyStatusEnum.DELETED,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
 
     def is_active(self) -> bool:
         """Checks if company is active"""
-        return self.status == CompanyStatus.ACTIVE
+        return self.status == CompanyStatusEnum.ACTIVE
 
     def is_suspended(self) -> bool:
         """Checks if company is suspended"""
-        return self.status == CompanyStatus.SUSPENDED
+        return self.status == CompanyStatusEnum.SUSPENDED
 
     def is_deleted(self) -> bool:
         """Checks if company is deleted"""
-        return self.status == CompanyStatus.DELETED
+        return self.status == CompanyStatusEnum.DELETED

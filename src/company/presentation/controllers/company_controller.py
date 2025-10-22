@@ -19,7 +19,6 @@ from src.company.application.dtos.company_dto import CompanyDto
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError,
-    CompanyDomainAlreadyExistsError,
 )
 from src.company.presentation.mappers.company_mapper import CompanyResponseMapper
 from src.company.presentation.schemas.company_request import (

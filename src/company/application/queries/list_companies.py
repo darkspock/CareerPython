@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from src.company.application.dtos.company_dto import CompanyDto
 from src.company.application.mappers.company_mapper import CompanyMapper
-from src.company.domain.enums import CompanyStatus
+from src.company.domain.enums import CompanyStatusEnum
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.shared.application.query_bus import Query, QueryHandler
 
