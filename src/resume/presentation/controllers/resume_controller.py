@@ -114,7 +114,7 @@ class ResumeController:
                 general_data=request.general_data
             )
 
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Obtener el resume creado
             # Nota: En una implementación real, el command handler podría devolver el ID
@@ -191,7 +191,7 @@ class ResumeController:
                 preserve_ai_content=request.preserve_ai_content
             )
 
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Obtener el resume actualizado
             query = GetResumeByIdQuery(resume_id=resume_id_vo)
@@ -224,7 +224,7 @@ class ResumeController:
             resume_id_vo = ResumeId.from_string(resume_id)
 
             command = DeleteResumeCommand(resume_id=resume_id_vo)
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             return {
                 "id": resume_id,
@@ -282,7 +282,7 @@ class ResumeController:
                 section_order=request.section_order
             )
 
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Get updated resume
             query = GetResumeByIdQuery(resume_id=resume_id_vo)
@@ -326,7 +326,7 @@ class ResumeController:
                 section_order=request.section_order
             )
 
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Get updated resume
             query = GetResumeByIdQuery(resume_id=resume_id_vo)
@@ -367,7 +367,7 @@ class ResumeController:
                 section_key=request.section_key
             )
 
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Get updated resume
             query = GetResumeByIdQuery(resume_id=resume_id_vo)
@@ -408,7 +408,7 @@ class ResumeController:
                 sections_order=request.sections_order
             )
 
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Get updated resume
             query = GetResumeByIdQuery(resume_id=resume_id_vo)

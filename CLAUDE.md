@@ -173,8 +173,8 @@ Database Model → Repository → Domain Entity → Query Handler → DTO → Co
 # Command: CreateInterviewTemplateCommand
 # Handler: CreateInterviewTemplateCommandHandler
 
-class CreateInterviewTemplateCommandHandler(CommandHandler[CreateInterviewTemplateCommand, None]):
-    def handle(self, command: CreateInterviewTemplateCommand) -> None:
+class CreateInterviewTemplateCommandHandler(CommandHandler[CreateInterviewTemplateCommand]):
+    def execute(self, command: CreateInterviewTemplateCommand) -> None:
         # Implementation - NO return value
         pass
 ```
@@ -220,7 +220,7 @@ Controller → Query/Command → Handler → Repository Interface → Repository
 # 1. Controller receives request
 def get_template(template_id: str) -> InterviewTemplateResponse:
     query = GetInterviewTemplateByIdQuery(template_id)
-    dto = query_bus.execute(query)  # Returns DTO
+    dto = query_bus.query(query)  # Returns DTO
     return InterviewTemplateResponse.from_dto(dto)  # Converts DTO to Response
 
 # 2. Query Handler
@@ -245,12 +245,12 @@ def create_template(request: CreateInterviewTemplateRequest) -> InterviewTemplat
 
     # Separate query to get created entity
     query = GetInterviewTemplateByIdQuery(command.template_id)
-    dto = query_bus.execute(query)
+    dto = query_bus.query(query)
     return InterviewTemplateMapper.dto_to_response(dto)
 
 # 2. Command Handler
 class CreateInterviewTemplateCommandHandler:
-    def handle(self, command) -> None:  # NO return value
+    def execute(self, command) -> None:  # NO return value
         entity = InterviewTemplate.create(...)  # Create Entity
         repository.save(entity)  # Save Entity
         # NO return statement
@@ -266,7 +266,7 @@ def get_template(self, template_id: str):
 
 **❌ Returning values from commands**:
 ```python
-def handle(self, command: CreateTemplateCommand) -> InterviewTemplate:  # FORBIDDEN
+def execute(self, command: CreateTemplateCommand) -> InterviewTemplate:  # FORBIDDEN
     return self.repository.save(entity)
 ```
 
@@ -279,21 +279,21 @@ def handle(self, query: GetTemplateQuery) -> InterviewTemplate:  # FORBIDDEN
 **❌ Controllers working with entities**:
 ```python
 def create_template(self, request) -> InterviewTemplate:  # FORBIDDEN
-    entity = self.query_bus.execute(query)
+    entity = self.query_bus.query(query)
     return entity
 ```
 
 **❌ Using from_dto() methods in Response classes**:
 ```python
 def get_template(self, template_id: str) -> InterviewTemplateResponse:
-    dto = self.query_bus.execute(query)
+    dto = self.query_bus.query(query)
     return InterviewTemplateResponse.from_dto(dto)  # FORBIDDEN
 ```
 
 **✅ CORRECT - Using Mapper pattern**:
 ```python
 def get_template(self, template_id: str) -> InterviewTemplateResponse:
-    dto = self.query_bus.execute(query)
+    dto = self.query_bus.query(query)
     return InterviewTemplateMapper.dto_to_response(dto)  # CORRECT
 ```
 

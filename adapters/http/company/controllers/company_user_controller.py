@@ -16,18 +16,21 @@ from src.company.application.queries import (
     ListCompanyUsersByCompanyQuery,
 )
 from src.company.application.dtos.company_user_dto import CompanyUserDto
+from src.company.domain import CompanyUserRole, CompanyId
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError,
 )
-from src.company.presentation.mappers.company_user_mapper import CompanyUserResponseMapper
-from src.company.presentation.schemas.company_user_request import (
+from adapters.http.company.mappers.company_user_mapper import CompanyUserResponseMapper
+from adapters.http.company.schemas.company_user_request import (
     AddCompanyUserRequest,
     UpdateCompanyUserRequest,
 )
-from src.company.presentation.schemas.company_user_response import CompanyUserResponse
+from adapters.http.company.schemas.company_user_response import CompanyUserResponse
+from src.company.domain.value_objects import CompanyUserId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
+from src.user.domain.value_objects.UserId import UserId
 
 
 class CompanyUserController:
@@ -49,17 +52,17 @@ class CompanyUserController:
 
             # Execute command
             command = AddCompanyUserCommand(
-                id=company_user_id,
-                company_id=company_id,
-                user_id=request.user_id,
-                role=request.role,
+                id=CompanyUserId.from_string(company_user_id),
+                company_id=CompanyId.from_string(company_id),
+                user_id=UserId.from_string(request.user_id),
+                role=CompanyUserRole(request.role),
                 permissions=request.permissions,
             )
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Query to get created company user
             query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
-            dto: Optional[CompanyUserDto] = self.query_bus.execute(query)
+            dto: Optional[CompanyUserDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -89,7 +92,7 @@ class CompanyUserController:
         """Get a company user by ID"""
         try:
             query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
-            dto: Optional[CompanyUserDto] = self.query_bus.execute(query)
+            dto: Optional[CompanyUserDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -118,7 +121,7 @@ class CompanyUserController:
                 company_id=company_id,
                 user_id=user_id
             )
-            dto: Optional[CompanyUserDto] = self.query_bus.execute(query)
+            dto: Optional[CompanyUserDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -147,7 +150,7 @@ class CompanyUserController:
                 company_id=company_id,
                 active_only=active_only
             )
-            dtos: List[CompanyUserDto] = self.query_bus.execute(query)
+            dtos: List[CompanyUserDto] = self.query_bus.query(query)
 
             return [CompanyUserResponseMapper.dto_to_response(dto) for dto in dtos]
 
@@ -166,15 +169,15 @@ class CompanyUserController:
         try:
             # Execute command
             command = UpdateCompanyUserCommand(
-                id=company_user_id,
-                role=request.role,
+                id=CompanyUserId.from_string(company_user_id),
+                role=CompanyUserRole(request.role),
                 permissions=request.permissions,
             )
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Query to get updated company user
             query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
-            dto: Optional[CompanyUserDto] = self.query_bus.execute(query)
+            dto: Optional[CompanyUserDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -204,12 +207,12 @@ class CompanyUserController:
         """Activate a company user"""
         try:
             # Execute command
-            command = ActivateCompanyUserCommand(id=company_user_id)
-            self.command_bus.execute(command)
+            command = ActivateCompanyUserCommand(id=CompanyUserId.from_string(company_user_id))
+            self.command_bus.dispatch(command)
 
             # Query to get updated company user
             query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
-            dto: Optional[CompanyUserDto] = self.query_bus.execute(query)
+            dto: Optional[CompanyUserDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -234,12 +237,12 @@ class CompanyUserController:
         """Deactivate a company user"""
         try:
             # Execute command
-            command = DeactivateCompanyUserCommand(id=company_user_id)
-            self.command_bus.execute(command)
+            command = DeactivateCompanyUserCommand(id=CompanyUserId.from_string(company_user_id))
+            self.command_bus.dispatch(command)
 
             # Query to get updated company user
             query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
-            dto: Optional[CompanyUserDto] = self.query_bus.execute(query)
+            dto: Optional[CompanyUserDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -264,7 +267,7 @@ class CompanyUserController:
         """Remove a user from a company"""
         try:
             command = RemoveCompanyUserCommand(id=company_user_id)
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
         except CompanyNotFoundError as e:
             raise HTTPException(

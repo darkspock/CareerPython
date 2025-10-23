@@ -4,7 +4,7 @@ from typing import Optional, Dict, List
 
 import ulid
 
-from src.shared.application.command import Command, CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
 from src.company_candidate.domain.entities.company_candidate import CompanyCandidate
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
@@ -30,13 +30,13 @@ class CreateCompanyCandidateCommand(Command):
     internal_notes: str = ""
 
 
-class CreateCompanyCandidateCommandHandler(CommandHandler[CreateCompanyCandidateCommand, None]):
+class CreateCompanyCandidateCommandHandler(CommandHandler):
     """Handler for creating a new company candidate relationship"""
 
     def __init__(self, repository: CompanyCandidateRepositoryInterface):
         self._repository = repository
 
-    def handle(self, command: CreateCompanyCandidateCommand) -> None:
+    def execute(self, command: CreateCompanyCandidateCommand) -> None:
         """Handle the create company candidate command"""
         # Parse visibility settings or use default
         visibility_settings = VisibilitySettings.from_dict(command.visibility_settings) if command.visibility_settings else VisibilitySettings.default()

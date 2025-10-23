@@ -16,17 +16,18 @@ from src.company.application.queries import (
     ListCompaniesQuery,
 )
 from src.company.application.dtos.company_dto import CompanyDto
+from src.company.domain import CompanyId
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
-    CompanyValidationError,
+    CompanyValidationError, CompanyDomainAlreadyExistsError,
 )
-from src.company.presentation.mappers.company_mapper import CompanyResponseMapper
-from src.company.presentation.schemas.company_request import (
+from adapters.http.company.mappers.company_mapper import CompanyResponseMapper
+from adapters.http.company.schemas.company_request import (
     CreateCompanyRequest,
     UpdateCompanyRequest,
     SuspendCompanyRequest,
 )
-from src.company.presentation.schemas.company_response import CompanyResponse
+from adapters.http.company.schemas.company_response import CompanyResponse
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 
@@ -52,11 +53,11 @@ class CompanyController:
                 logo_url=request.logo_url,
                 settings=request.settings,
             )
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Query to get created company
-            query = GetCompanyByIdQuery(company_id=company_id)
-            dto: Optional[CompanyDto] = self.query_bus.execute(query)
+            query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -85,8 +86,8 @@ class CompanyController:
     def get_company_by_id(self, company_id: str) -> CompanyResponse:
         """Get a company by ID"""
         try:
-            query = GetCompanyByIdQuery(company_id=company_id)
-            dto: Optional[CompanyDto] = self.query_bus.execute(query)
+            query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -108,7 +109,7 @@ class CompanyController:
         """Get a company by domain"""
         try:
             query = GetCompanyByDomainQuery(domain=domain)
-            dto: Optional[CompanyDto] = self.query_bus.execute(query)
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -130,7 +131,7 @@ class CompanyController:
         """List all companies"""
         try:
             query = ListCompaniesQuery(active_only=active_only)
-            dtos: List[CompanyDto] = self.query_bus.execute(query)
+            dtos: List[CompanyDto] = self.query_bus.query(query)
 
             return [CompanyResponseMapper.dto_to_response(dto) for dto in dtos]
 
@@ -151,11 +152,11 @@ class CompanyController:
                 logo_url=request.logo_url,
                 settings=request.settings,
             )
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Query to get updated company
-            query = GetCompanyByIdQuery(company_id=company_id)
-            dto: Optional[CompanyDto] = self.query_bus.execute(query)
+            query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -186,16 +187,16 @@ class CompanyController:
                 detail=f"Failed to update company: {str(e)}"
             )
 
-    def suspend_company(self, company_id: str, request: SuspendCompanyRequest) -> CompanyResponse:
+    def suspend_company(self, company_id: str, reason: str) -> CompanyResponse:
         """Suspend a company"""
         try:
             # Execute command
-            command = SuspendCompanyCommand(id=company_id, reason=request.reason)
-            self.command_bus.execute(command)
+            command = SuspendCompanyCommand(id=CompanyId.from_string(company_id), reason=reason)
+            self.command_bus.dispatch(command)
 
             # Query to get updated company
-            query = GetCompanyByIdQuery(company_id=company_id)
-            dto: Optional[CompanyDto] = self.query_bus.execute(query)
+            query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -216,16 +217,16 @@ class CompanyController:
                 detail=f"Failed to suspend company: {str(e)}"
             )
 
-    def activate_company(self, company_id: str) -> CompanyResponse:
+    def activate_company(self, company_id: CompanyId) -> CompanyResponse:
         """Activate a company"""
         try:
             # Execute command
-            command = ActivateCompanyCommand(id=company_id)
-            self.command_bus.execute(command)
+            command = ActivateCompanyCommand(id=company_id,activated_by='')
+            self.command_bus.dispatch(command)
 
             # Query to get updated company
             query = GetCompanyByIdQuery(company_id=company_id)
-            dto: Optional[CompanyDto] = self.query_bus.execute(query)
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -250,7 +251,7 @@ class CompanyController:
         """Delete a company (soft delete)"""
         try:
             command = DeleteCompanyCommand(id=company_id)
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
         except CompanyNotFoundError as e:
             raise HTTPException(

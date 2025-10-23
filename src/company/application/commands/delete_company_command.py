@@ -3,12 +3,13 @@ from dataclasses import dataclass
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
+from src.shared.application.command_bus import Command
 
 
 @dataclass
-class DeleteCompanyCommand:
+class DeleteCompanyCommand(Command):
     """Command to delete a company (soft delete)"""
-    id: str
+    id: CompanyId
 
 
 class DeleteCompanyCommandHandler:
@@ -17,9 +18,9 @@ class DeleteCompanyCommandHandler:
     def __init__(self, repository: CompanyRepositoryInterface):
         self.repository = repository
 
-    def handle(self, command: DeleteCompanyCommand) -> None:
+    def execute(self, command: DeleteCompanyCommand) -> None:
         """Execute the command - NO return value"""
-        company_id = CompanyId.from_string(command.id)
+        company_id = command.id
         company = self.repository.get_by_id(company_id)
 
         if not company:

@@ -40,14 +40,14 @@ class CompanyWorkflowController:
         self._command_bus.dispatch(command)
 
         query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
     def get_workflow_by_id(self, workflow_id: str) -> Optional[CompanyWorkflowResponse]:
         """Get a workflow by ID"""
         query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         if not dto:
             return None
@@ -57,7 +57,7 @@ class CompanyWorkflowController:
     def list_workflows_by_company(self, company_id: str) -> List[CompanyWorkflowResponse]:
         """List all workflows for a company"""
         query = ListWorkflowsByCompanyQuery(company_id=company_id)
-        dtos = self._query_bus.dispatch(query)
+        dtos = self._query_bus.query(query)
 
         return [CompanyWorkflowResponseMapper.dto_to_response(dto) for dto in dtos]
 
@@ -72,7 +72,7 @@ class CompanyWorkflowController:
         self._command_bus.dispatch(command)
 
         query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
@@ -82,7 +82,7 @@ class CompanyWorkflowController:
         self._command_bus.dispatch(command)
 
         query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
@@ -92,7 +92,7 @@ class CompanyWorkflowController:
         self._command_bus.dispatch(command)
 
         query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
@@ -102,7 +102,7 @@ class CompanyWorkflowController:
         self._command_bus.dispatch(command)
 
         query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
@@ -112,7 +112,7 @@ class CompanyWorkflowController:
         self._command_bus.dispatch(command)
 
         query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
@@ -122,6 +122,6 @@ class CompanyWorkflowController:
         self._command_bus.dispatch(command)
 
         query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)

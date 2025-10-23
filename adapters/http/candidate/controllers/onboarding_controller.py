@@ -70,7 +70,7 @@ class OnboardingController:
             )
 
             # Execute command
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             # Start PDF analysis if PDF was uploaded
             analysis_job_id = None
@@ -231,7 +231,7 @@ class OnboardingController:
                 analysis_results=analysis_results
             )
 
-            self.command_bus.execute(populate_command)
+            self.command_bus.dispatch(populate_command)
             self.logger.info(f"Candidate {candidate_id} populated from PDF analysis results")
 
         except Exception as e:

@@ -131,7 +131,7 @@ class InterviewTemplateController:
         )
 
         # Execute command (no return value)
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
 
         # Handle sections if provided during creation
         if template_data.sections is not None:
@@ -152,7 +152,7 @@ class InterviewTemplateController:
                     legal_notice=section_data.get('legal_notice'),
                     created_by=current_admin_id
                 )
-                self.command_bus.execute(section_create_command)
+                self.command_bus.dispatch(section_create_command)
 
         # Query the created entity with sections
         query = GetInterviewTemplateFullByIdQuery(template_id)
@@ -201,7 +201,7 @@ class InterviewTemplateController:
             tags=template_data.tags,
             template_metadata=template_data.template_metadata
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
 
         # Handle sections if provided
         if template_data.sections is not None:
@@ -224,7 +224,7 @@ class InterviewTemplateController:
                         legal_notice=section_data.get('legal_notice'),
                         updated_by=current_admin_id
                     )
-                    self.command_bus.execute(section_update_command)
+                    self.command_bus.dispatch(section_update_command)
                 else:
                     # Create new section
                     section_create_command = CreateInterviewTemplateSectionCommand(
@@ -242,7 +242,7 @@ class InterviewTemplateController:
                         legal_notice=section_data.get('legal_notice'),
                         created_by=current_admin_id
                     )
-                    self.command_bus.execute(section_create_command)
+                    self.command_bus.dispatch(section_create_command)
 
         # Return the full template with sections
         query = GetInterviewTemplateFullByIdQuery(id=InterviewTemplateId.from_string(template_id))
@@ -265,7 +265,7 @@ class InterviewTemplateController:
             enabled_by=current_admin_id,
             enable_reason=enable_reason
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template enabled successfully"}
 
     def disable_interview_template(
@@ -284,7 +284,7 @@ class InterviewTemplateController:
             disable_reason=disable_reason,
             force_disable=force_disable
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template disabled successfully"}
 
     def delete_interview_template(
@@ -306,7 +306,7 @@ class InterviewTemplateController:
             delete_reason=delete_reason,
             force_delete=force_delete
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template deleted successfully"}
 
     # Interview Template Section Methods
@@ -335,7 +335,7 @@ class InterviewTemplateController:
             legal_notice=getattr(section_data, 'legal_notice', None),
             created_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template section created successfully", "id": str(section_id)}
 
     def update_interview_template_section(
@@ -359,7 +359,7 @@ class InterviewTemplateController:
             legal_notice=getattr(section_data, 'legal_notice', None),
             updated_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template section updated successfully"}
 
     def enable_interview_template_section(
@@ -374,7 +374,7 @@ class InterviewTemplateController:
             section_id=InterviewTemplateSectionId.from_string(section_id),
             enabled_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template section enabled successfully"}
 
     def disable_interview_template_section(
@@ -389,7 +389,7 @@ class InterviewTemplateController:
             section_id=InterviewTemplateSectionId.from_string(section_id),
             disabled_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template section disabled successfully"}
 
     def delete_interview_template_section(
@@ -407,7 +407,7 @@ class InterviewTemplateController:
             section_id=InterviewTemplateSectionId.from_string(section_id),
             deleted_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template section deleted successfully"}
 
     def move_section_up(
@@ -424,7 +424,7 @@ class InterviewTemplateController:
             section_id=InterviewTemplateSectionId.from_string(section_id),
             moved_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Section moved up successfully"}
 
     def move_section_down(
@@ -441,7 +441,7 @@ class InterviewTemplateController:
             section_id=InterviewTemplateSectionId.from_string(section_id),
             moved_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Section moved down successfully"}
 
     def get_questions_by_section(self, section_id: str) -> List[InterviewTemplateQuestionResponse]:
@@ -497,7 +497,7 @@ class InterviewTemplateController:
             allow_ai_followup=getattr(question_data, 'allow_ai_followup', False),
             legal_notice=getattr(question_data, 'legal_notice', None)
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template question created successfully", "id": str(question_id)}
 
     def update_interview_template_question(
@@ -523,7 +523,7 @@ class InterviewTemplateController:
             legal_notice=getattr(question_data, 'legal_notice', None),
             updated_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template question updated successfully"}
 
     def enable_interview_template_question(
@@ -538,7 +538,7 @@ class InterviewTemplateController:
             question_id=InterviewTemplateQuestionId.from_string(question_id),
             enabled_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template question enabled successfully"}
 
     def disable_interview_template_question(
@@ -553,7 +553,7 @@ class InterviewTemplateController:
             question_id=InterviewTemplateQuestionId.from_string(question_id),
             disabled_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template question disabled successfully"}
 
     def delete_interview_template_question(
@@ -569,5 +569,5 @@ class InterviewTemplateController:
             question_id=InterviewTemplateQuestionId.from_string(question_id),
             deleted_by=current_admin_id
         )
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
         return {"message": "Interview template question deleted successfully"}

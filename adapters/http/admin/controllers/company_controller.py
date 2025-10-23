@@ -6,21 +6,15 @@ from adapters.http.admin.schemas.company import (
     CompanyCreate, CompanyUpdate, CompanyResponse, CompanyListResponse,
     CompanyStatsResponse, CompanyActionResponse
 )
-from src.company.application.commands.activate_company import ActivateCompanyCommand
-from src.company.application.commands.approve_company import ApproveCompanyCommand
-# Company commands
-from src.company.application.commands.create_company import CreateCompanyCommand
-from src.company.application.commands.deactivate_company import DeactivateCompanyCommand
-from src.company.application.commands.delete_company import DeleteCompanyCommand
-from src.company.application.commands.reject_company import RejectCompanyCommand
-from src.company.application.commands.update_company import UpdateCompanyCommand
+from src.company.application.commands import CreateCompanyCommand, UpdateCompanyCommand, ActivateCompanyCommand, \
+    SuspendCompanyCommand, DeleteCompanyCommand
 # DTOs and schemas
 from src.company.application.queries.dtos.company_dto import CompanyDto
 from src.company.application.queries.get_companies_stats import GetCompaniesStatsQuery
 from src.company.application.queries.get_company_by_id import GetCompanyByIdQuery
 # Company queries
 from src.company.application.queries.list_companies import ListCompaniesQuery
-from src.company.domain import Company
+from src.company.domain import Company, CompanyId
 # Domain enums
 from src.company.domain.enums.company_status import CompanyStatusEnum
 from src.shared.application.command_bus import CommandBus
@@ -111,7 +105,7 @@ class CompanyController:
             logger.error(f"Error getting company stats: {str(e)}")
             raise
 
-    def get_company_by_id(self, company_id: str) -> CompanyResponse:
+    def get_company_by_id(self, company_id: CompanyId) -> CompanyResponse:
         """Get a specific company by ID"""
         try:
             query = GetCompanyByIdQuery(company_id=company_id)
@@ -151,7 +145,7 @@ class CompanyController:
             self.command_bus.dispatch(command)
 
             # Get the created company
-            return self.get_company_by_id(company_id.value)
+            return self.get_company_by_id(company_id)
 
         except Exception as e:
             logger.error(f"Error creating company: {str(e)}")
@@ -159,14 +153,14 @@ class CompanyController:
 
     def update_company(
             self,
-            company_id: str,
+            company_id: CompanyId,
             company_data: CompanyUpdate,
             current_admin_id: str
     ) -> CompanyResponse:
         """Update an existing company"""
         try:
             command = UpdateCompanyCommand(
-                company_id=company_id,
+                id=company_id,
                 name=company_data.name,
                 sector=company_data.sector,
                 size=company_data.size,
@@ -185,10 +179,10 @@ class CompanyController:
             logger.error(f"Error updating company {company_id}: {str(e)}")
             raise
 
-    def approve_company(self, company_id: str, current_admin_id: str) -> CompanyActionResponse:
+    def approve_company(self, company_id: CompanyId, current_admin_id: str) -> CompanyActionResponse:
         """Approve a pending company"""
         try:
-            command = ApproveCompanyCommand(company_id=company_id, approved_by=current_admin_id)
+            command = ActivateCompanyCommand(id=company_id, activated_by=current_admin_id)
             self.command_bus.dispatch(command)
 
             # Get the updated company to return in response
@@ -206,16 +200,14 @@ class CompanyController:
 
     def reject_company(
             self,
-            company_id: str,
-            current_admin_id: str,
+            company_id: CompanyId,
             reason: Optional[str] = None
     ) -> CompanyActionResponse:
         """Reject a pending company"""
         try:
-            command = RejectCompanyCommand(
-                company_id=company_id,
-                rejected_by=current_admin_id,
-                rejection_reason=reason or "No reason provided"
+            command = SuspendCompanyCommand(
+                id=company_id,
+                reason=reason or "No reason provided"
             )
             self.command_bus.dispatch(command)
 
@@ -232,10 +224,10 @@ class CompanyController:
             logger.error(f"Error rejecting company {company_id}: {str(e)}")
             raise
 
-    def activate_company(self, company_id: str, current_admin_id: str) -> CompanyActionResponse:
+    def activate_company(self, company_id: CompanyId) -> CompanyActionResponse:
         """Activate an inactive company"""
         try:
-            command = ActivateCompanyCommand(company_id=company_id, activated_by=current_admin_id)
+            command = SuspendCompanyCommand(id=company_id)
             self.command_bus.dispatch(command)
 
             # Get the updated company to return in response
@@ -251,10 +243,10 @@ class CompanyController:
             logger.error(f"Error activating company {company_id}: {str(e)}")
             raise
 
-    def deactivate_company(self, company_id: str, current_admin_id: str) -> CompanyActionResponse:
+    def deactivate_company(self, company_id: CompanyId, current_admin_id: str) -> CompanyActionResponse:
         """Deactivate an active company"""
         try:
-            command = DeactivateCompanyCommand(company_id=company_id, deactivated_by=current_admin_id)
+            command = SuspendCompanyCommand(id=company_id)
             self.command_bus.dispatch(command)
 
             # Get the updated company to return in response
@@ -270,10 +262,10 @@ class CompanyController:
             logger.error(f"Error deactivating company {company_id}: {str(e)}")
             raise
 
-    def delete_company(self, company_id: str, current_admin_id: str) -> CompanyActionResponse:
+    def delete_company(self, company_id: CompanyId, current_admin_id: str) -> CompanyActionResponse:
         """Delete a company"""
         try:
-            command = DeleteCompanyCommand(company_id=company_id)
+            command = DeleteCompanyCommand(id=company_id)
             self.command_bus.dispatch(command)
 
             return CompanyActionResponse(

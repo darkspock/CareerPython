@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from src.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
-from src.shared.application.command import Command, CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 
@@ -12,13 +12,13 @@ class ArchiveCompanyCandidateCommand(Command):
     id: str
 
 
-class ArchiveCompanyCandidateCommandHandler(CommandHandler[ArchiveCompanyCandidateCommand, None]):
+class ArchiveCompanyCandidateCommandHandler(CommandHandler):
     """Handler for archiving a company candidate relationship"""
 
     def __init__(self, repository: CompanyCandidateRepositoryInterface):
         self._repository = repository
 
-    def handle(self, command: ArchiveCompanyCandidateCommand) -> None:
+    def execute(self, command: ArchiveCompanyCandidateCommand) -> None:
         """Handle the archive company candidate command"""
         # Get existing company candidate
         company_candidate_id = CompanyCandidateId.from_string(command.id)

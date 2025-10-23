@@ -258,7 +258,7 @@ class JobPositionController:
                 application_email=position_data.application_email
             )
 
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             return JobPositionActionResponse(
                 success=True,
@@ -370,7 +370,7 @@ class JobPositionController:
                 application_email=position_data.application_email if position_data.application_email is not None else current_dto.application_email
             )
 
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             return JobPositionActionResponse(
                 success=True,
@@ -389,7 +389,7 @@ class JobPositionController:
         """Delete a job position"""
         try:
             command = DeleteJobPositionCommand(id=JobPositionId.from_string(position_id))
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             return JobPositionActionResponse(
                 success=True,

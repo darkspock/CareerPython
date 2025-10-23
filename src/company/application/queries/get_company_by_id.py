@@ -3,15 +3,15 @@ from typing import Optional
 
 from src.company.application.dtos.company_dto import CompanyDto
 from src.company.application.mappers.company_mapper import CompanyMapper
-from src.company.domain.value_objects import CompanyId
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
+from src.company.domain.value_objects import CompanyId
 from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass
 class GetCompanyByIdQuery(Query):
     """Query to get a company by ID"""
-    company_id: str
+    company_id: CompanyId
 
 
 class GetCompanyByIdQueryHandler(QueryHandler[GetCompanyByIdQuery, Optional[CompanyDto]]):
@@ -22,7 +22,7 @@ class GetCompanyByIdQueryHandler(QueryHandler[GetCompanyByIdQuery, Optional[Comp
 
     def handle(self, query: GetCompanyByIdQuery) -> Optional[CompanyDto]:
         """Execute the query - returns DTO or None"""
-        company_id = CompanyId.from_string(query.company_id)
+        company_id = query.company_id
         company = self.company_repository.get_by_id(company_id)
 
         if not company:

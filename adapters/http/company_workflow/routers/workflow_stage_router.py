@@ -1,16 +1,15 @@
 """Workflow Stage Router."""
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from typing import List, Optional
 
 from dependency_injector.wiring import inject, Provide
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from core.container import Container
 from src.company_workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
 from src.company_workflow.presentation.schemas.create_stage_request import CreateStageRequest
-from src.company_workflow.presentation.schemas.update_stage_request import UpdateStageRequest
 from src.company_workflow.presentation.schemas.reorder_stages_request import ReorderStagesRequest
+from src.company_workflow.presentation.schemas.update_stage_request import UpdateStageRequest
 from src.company_workflow.presentation.schemas.workflow_stage_response import WorkflowStageResponse
-
 
 router = APIRouter(
     prefix="/api/workflow-stages",
@@ -26,9 +25,9 @@ router = APIRouter(
 )
 @inject
 def create_stage(
-    request: CreateStageRequest,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        request: CreateStageRequest,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> WorkflowStageResponse:
     """Create a new workflow stage"""
     try:
         return controller.create_stage(request)
@@ -43,9 +42,9 @@ def create_stage(
 )
 @inject
 def get_stage_by_id(
-    stage_id: str,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        stage_id: str,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> Optional[WorkflowStageResponse]:
     """Get a stage by ID"""
     result = controller.get_stage_by_id(stage_id)
     if not result:
@@ -60,9 +59,9 @@ def get_stage_by_id(
 )
 @inject
 def list_stages_by_workflow(
-    workflow_id: str,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        workflow_id: str,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> List[WorkflowStageResponse]:
     """List all stages for a workflow"""
     return controller.list_stages_by_workflow(workflow_id)
 
@@ -74,9 +73,9 @@ def list_stages_by_workflow(
 )
 @inject
 def get_initial_stage(
-    workflow_id: str,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        workflow_id: str,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> Optional[WorkflowStageResponse]:
     """Get the initial stage of a workflow"""
     result = controller.get_initial_stage(workflow_id)
     if not result:
@@ -91,9 +90,9 @@ def get_initial_stage(
 )
 @inject
 def get_final_stages(
-    workflow_id: str,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        workflow_id: str,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> List[WorkflowStageResponse]:
     """Get all final stages of a workflow"""
     return controller.get_final_stages(workflow_id)
 
@@ -105,10 +104,10 @@ def get_final_stages(
 )
 @inject
 def update_stage(
-    stage_id: str,
-    request: UpdateStageRequest,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        stage_id: str,
+        request: UpdateStageRequest,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> WorkflowStageResponse:
     """Update stage information"""
     try:
         return controller.update_stage(stage_id, request)
@@ -123,9 +122,9 @@ def update_stage(
 )
 @inject
 def delete_stage(
-    stage_id: str,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        stage_id: str,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> None:
     """Delete a stage"""
     try:
         controller.delete_stage(stage_id)
@@ -140,10 +139,10 @@ def delete_stage(
 )
 @inject
 def reorder_stages(
-    workflow_id: str,
-    request: ReorderStagesRequest,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        workflow_id: str,
+        request: ReorderStagesRequest,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> List[WorkflowStageResponse]:
     """Reorder stages in a workflow"""
     try:
         return controller.reorder_stages(workflow_id, request)
@@ -158,9 +157,9 @@ def reorder_stages(
 )
 @inject
 def activate_stage(
-    stage_id: str,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        stage_id: str,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> WorkflowStageResponse:
     """Activate a stage"""
     try:
         return controller.activate_stage(stage_id)
@@ -175,9 +174,9 @@ def activate_stage(
 )
 @inject
 def deactivate_stage(
-    stage_id: str,
-    controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
-):
+        stage_id: str,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> WorkflowStageResponse:
     """Deactivate a stage"""
     try:
         return controller.deactivate_stage(stage_id)

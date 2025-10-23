@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.shared.application.query import Query, QueryHandler
+from src.shared.application.query_bus import Query, QueryHandler
 from src.company_workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
 from src.company_workflow.application.mappers.workflow_stage_mapper import WorkflowStageMapper
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface

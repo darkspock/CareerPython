@@ -80,7 +80,7 @@ class UserController:
                     id=new_user_id,
                     email=request.email
                 )
-                self.command_bus.execute(command)
+                self.command_bus.dispatch(command)
 
                 # Get the created user
                 user_query = GetUserByEmailQuery(email=request.email)
@@ -108,7 +108,7 @@ class UserController:
         try:
             # Execute the request password reset command
             command = RequestPasswordResetCommand(email=request.email)
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
             success = True  # If no exception was thrown, it succeeded
 
             if success:
@@ -136,7 +136,7 @@ class UserController:
                 reset_token=request.reset_token,
                 new_password=request.new_password
             )
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
             success = True  # If no exception was thrown, it succeeded
 
             if success:
@@ -189,7 +189,7 @@ class UserController:
         """Update user's preferred language"""
         try:
             command = UpdateUserLanguageCommand(user_id=user_id, language_code=language_code)
-            self.command_bus.execute(command)
+            self.command_bus.dispatch(command)
 
             return {
                 "message": "Language preference updated successfully",

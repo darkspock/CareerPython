@@ -781,7 +781,7 @@ ALLOWED_RESUME_TYPES=application/pdf
 
 ```python
 from dataclasses import dataclass
-from src.shared.application.command import Command, CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler
 from src.shared.domain.infrastructure.storage_service_interface import (
     StorageServiceInterface,
     StorageType,
@@ -797,7 +797,7 @@ class UploadCandidateResumeCommand(Command):
     content_type: str
 
 
-class UploadCandidateResumeCommandHandler(CommandHandler[UploadCandidateResumeCommand, None]):
+class UploadCandidateResumeCommandHandler(CommandHandler[UploadCandidateResumeCommand]):
     def __init__(
         self,
         storage_service: StorageServiceInterface,
@@ -806,7 +806,7 @@ class UploadCandidateResumeCommandHandler(CommandHandler[UploadCandidateResumeCo
         self.storage_service = storage_service
         self.repository = repository
 
-    def handle(self, command: UploadCandidateResumeCommand) -> None:
+    def execute(self, command: UploadCandidateResumeCommand) -> None:
         # Buscar candidato
         candidate = self.repository.get_by_id(command.candidate_id)
         if not candidate:

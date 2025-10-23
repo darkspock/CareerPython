@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.shared.application.query import Query, QueryHandler
+from src.shared.application.query_bus import Query, QueryHandler
 from src.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
 from src.company_candidate.application.mappers.company_candidate_mapper import CompanyCandidateMapper
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface

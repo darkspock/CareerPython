@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.shared.application.command import Command, CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler
 from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
@@ -14,13 +14,13 @@ class UpdateWorkflowCommand(Command):
     description: str
 
 
-class UpdateWorkflowCommandHandler(CommandHandler[UpdateWorkflowCommand, None]):
+class UpdateWorkflowCommandHandler(CommandHandler[UpdateWorkflowCommand]):
     """Handler for updating workflow information"""
 
     def __init__(self, repository: CompanyWorkflowRepositoryInterface):
         self._repository = repository
 
-    def handle(self, command: UpdateWorkflowCommand) -> None:
+    def execute(self, command: UpdateWorkflowCommand) -> None:
         """Handle the update workflow command"""
         workflow_id = CompanyWorkflowId.from_string(command.id)
         workflow = self._repository.get_by_id(workflow_id)

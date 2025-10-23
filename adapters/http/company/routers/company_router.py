@@ -5,21 +5,21 @@ import logging
 from typing import List, Annotated, Optional
 
 from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, Path, Query, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from core.container import Container
-from src.shared.application.query_bus import QueryBus
-from src.company.presentation.controllers.company_controller import CompanyController
-from src.company.presentation.schemas.company_request import (
+from adapters.http.company.controllers.company_controller import CompanyController
+from adapters.http.company.schemas.company_request import (
     CreateCompanyRequest,
     UpdateCompanyRequest,
-    SuspendCompanyRequest,
 )
-from src.company.presentation.schemas.company_response import CompanyResponse
+from adapters.http.company.schemas.company_response import CompanyResponse
 from adapters.http.shared.schemas.token import Token
-from src.company.application.queries.authenticate_company_user_query import AuthenticateCompanyUserQuery
+from core.container import Container
 from src.company.application.dtos.auth_dto import AuthenticatedCompanyUserDto
+from src.company.application.queries.authenticate_company_user_query import AuthenticateCompanyUserQuery
+from src.company.domain import CompanyId
+from src.shared.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)
 
@@ -30,8 +30,8 @@ router = APIRouter(prefix="/company", tags=["company"])
 @router.post("", response_model=CompanyResponse, status_code=201)
 @inject
 async def create_company(
-    request: CreateCompanyRequest,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        request: CreateCompanyRequest,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> CompanyResponse:
     """Create a new company"""
     return controller.create_company(request)
@@ -40,8 +40,8 @@ async def create_company(
 @router.get("/{company_id}", response_model=CompanyResponse)
 @inject
 async def get_company_by_id(
-    company_id: str ,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        company_id: str,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> CompanyResponse:
     """Get a company by ID"""
     return controller.get_company_by_id(company_id)
@@ -50,8 +50,8 @@ async def get_company_by_id(
 @router.get("/domain/{domain}", response_model=CompanyResponse)
 @inject
 async def get_company_by_domain(
-    domain: str ,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        domain: str,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> CompanyResponse:
     """Get a company by domain"""
     return controller.get_company_by_domain(domain)
@@ -60,8 +60,8 @@ async def get_company_by_domain(
 @router.get("", response_model=List[CompanyResponse])
 @inject
 async def list_companies(
-    active_only: bool ,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        active_only: bool,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> List[CompanyResponse]:
     """List all companies"""
     return controller.list_companies(active_only)
@@ -70,9 +70,9 @@ async def list_companies(
 @router.put("/{company_id}", response_model=CompanyResponse)
 @inject
 async def update_company(
-    company_id: str,
-    request: UpdateCompanyRequest,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        company_id: str,
+        request: UpdateCompanyRequest,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> CompanyResponse:
     """Update a company"""
     return controller.update_company(company_id, request)
@@ -81,28 +81,29 @@ async def update_company(
 @router.post("/{company_id}/suspend", response_model=CompanyResponse)
 @inject
 async def suspend_company(
-    company_id,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        company_id: str,
+        reason: str,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> CompanyResponse:
     """Suspend a company"""
-    return controller.suspend_company(company_id)
+    return controller.suspend_company(company_id, reason)
 
 
 @router.post("/{company_id}/activate", response_model=CompanyResponse)
 @inject
 async def activate_company(
-    company_id: str ,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        company_id: str,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> CompanyResponse:
     """Activate a company"""
-    return controller.activate_company(company_id)
+    return controller.activate_company(CompanyId.from_string(company_id))
 
 
 @router.delete("/{company_id}", status_code=204)
 @inject
 async def delete_company(
-    company_id: str ,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        company_id: str,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> None:
     """Delete a company (soft delete)"""
     controller.delete_company(company_id)
@@ -111,8 +112,8 @@ async def delete_company(
 @router.post("/auth/login", response_model=Token)
 @inject
 async def company_login(
-    query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
-    form_data: OAuth2PasswordRequestForm = Depends(),
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
+        form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Token:
     """Authenticate company user and return JWT token"""
     try:

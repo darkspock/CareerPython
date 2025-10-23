@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
-from src.shared.application.command import Command, CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 
@@ -15,13 +15,13 @@ class AssignWorkflowCommand(Command):
     initial_stage_id: Optional[str] = None
 
 
-class AssignWorkflowCommandHandler(CommandHandler[AssignWorkflowCommand, None]):
+class AssignWorkflowCommandHandler(CommandHandler[AssignWorkflowCommand]):
     """Handler for assigning a workflow to a company candidate"""
 
     def __init__(self, repository: CompanyCandidateRepositoryInterface):
         self._repository = repository
 
-    def handle(self, command: AssignWorkflowCommand) -> None:
+    def execute(self, command: AssignWorkflowCommand) -> None:
         """Handle the assign workflow command"""
         # Get existing company candidate
         company_candidate_id = CompanyCandidateId.from_string(command.id)

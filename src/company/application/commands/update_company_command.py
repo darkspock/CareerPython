@@ -4,10 +4,11 @@ from typing import Optional, Dict, Any
 from src.company.domain.value_objects import CompanyId, CompanySettings
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
+from src.shared.application.command_bus import CommandHandler, Command
 
 
 @dataclass
-class UpdateCompanyCommand:
+class UpdateCompanyCommand(Command):
     """Command to update a company"""
     id: str
     name: str
@@ -16,13 +17,13 @@ class UpdateCompanyCommand:
     settings: Dict[str, Any]
 
 
-class UpdateCompanyCommandHandler:
+class UpdateCompanyCommandHandler(CommandHandler):
     """Handler for updating a company"""
 
     def __init__(self, repository: CompanyRepositoryInterface):
         self.repository = repository
 
-    def handle(self, command: UpdateCompanyCommand) -> None:
+    def execute(self, command: UpdateCompanyCommand) -> None:
         """Execute the command - NO return value"""
         company_id = CompanyId.from_string(command.id)
         company = self.repository.get_by_id(company_id)

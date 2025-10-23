@@ -6,23 +6,24 @@ from src.company.domain.value_objects import CompanyUserId
 from src.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError, CompanyValidationError
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
-class UpdateCompanyUserCommand:
+class UpdateCompanyUserCommand(Command):
     """Command to update a company user"""
-    id: str
-    role: str
+    id: CompanyUserId
+    role: CompanyUserRole
     permissions: Dict[str, bool]
 
 
-class UpdateCompanyUserCommandHandler:
+class UpdateCompanyUserCommandHandler(CommandHandler):
     """Handler for updating a company user"""
 
     def __init__(self, repository: CompanyUserRepositoryInterface):
         self.repository = repository
 
-    def handle(self, command: UpdateCompanyUserCommand) -> None:
+    def execute(self, command: UpdateCompanyUserCommand) -> None:
         """Execute the command - NO return value"""
         company_user_id = CompanyUserId.from_string(command.id)
         company_user = self.repository.get_by_id(company_user_id)

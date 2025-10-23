@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.shared.application.query import Query, QueryHandler
+from src.shared.application.query_bus import Query, QueryHandler
 from src.company.application.dtos.auth_dto import AuthenticatedCompanyUserDto
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface

@@ -229,7 +229,7 @@ class PopulateCandidateFromPdfAnalysisCommandHandler(CommandHandler[PopulateCand
                     end_date=end_date
                 )
 
-                self.command_bus.execute(experience_command)
+                self.command_bus.dispatch(experience_command)
                 self.logger.info(f"✅ Created experience: {job_title} at {company}")
 
         except Exception as e:
@@ -272,7 +272,7 @@ class PopulateCandidateFromPdfAnalysisCommandHandler(CommandHandler[PopulateCand
                     description=edu_data.get("description", "")
                 )
 
-                self.command_bus.execute(education_command)
+                self.command_bus.dispatch(education_command)
                 self.logger.info(f"✅ Created education: {degree} at {institution}")
 
         except Exception as e:
@@ -314,7 +314,7 @@ class PopulateCandidateFromPdfAnalysisCommandHandler(CommandHandler[PopulateCand
                     end_date=end_date
                 )
 
-                self.command_bus.execute(project_command)
+                self.command_bus.dispatch(project_command)
                 self.logger.info(f"✅ Created project: {name}")
 
         except Exception as e:

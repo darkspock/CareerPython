@@ -7,26 +7,28 @@ from src.company.domain.value_objects import CompanyId, CompanyUserId
 from src.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError
+from src.shared.application.command_bus import Command, CommandHandler
+from src.staff.domain.enums.staff_enums import RoleEnum
 from src.user.domain.value_objects.UserId import UserId
 
 
 @dataclass
-class AddCompanyUserCommand:
+class AddCompanyUserCommand(Command):
     """Command to add a user to a company"""
-    id: str
-    company_id: str
-    user_id: str
-    role: str
+    id: CompanyUserId
+    company_id: CompanyId
+    user_id: UserId
+    role: CompanyUserRole
     permissions: Optional[Dict[str, bool]] = None
 
 
-class AddCompanyUserCommandHandler:
+class AddCompanyUserCommandHandler(CommandHandler):
     """Handler for adding a user to a company"""
 
     def __init__(self, repository: CompanyUserRepositoryInterface):
         self.repository = repository
 
-    def handle(self, command: AddCompanyUserCommand) -> None:
+    def execute(self, command: AddCompanyUserCommand) -> None:
         """Execute the command - NO return value"""
         # Convert role string to enum
         try:
@@ -41,9 +43,9 @@ class AddCompanyUserCommandHandler:
 
         # Create company user using entity factory method
         company_user = CompanyUser.create(
-            id=CompanyUserId.from_string(command.id),
-            company_id=CompanyId.from_string(command.company_id),
-            user_id=UserId(command.user_id),
+            id=command.id,
+            company_id=command.company_id,
+            user_id=command.user_id,
             role=role,
             permissions=permissions,
         )

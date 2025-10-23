@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from src.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
-from src.shared.application.command import Command, CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 
@@ -13,13 +13,13 @@ class ChangeStageCommand(Command):
     new_stage_id: str
 
 
-class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand, None]):
+class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
     """Handler for changing the workflow stage of a company candidate"""
 
     def __init__(self, repository: CompanyCandidateRepositoryInterface):
         self._repository = repository
 
-    def handle(self, command: ChangeStageCommand) -> None:
+    def execute(self, command: ChangeStageCommand) -> None:
         """Handle the change stage command"""
         # Get existing company candidate
         company_candidate_id = CompanyCandidateId.from_string(command.id)

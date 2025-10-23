@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from src.company.domain.value_objects import CompanyUserId
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
+from src.shared.application.command_bus import Command
 
 
 @dataclass
-class DeactivateCompanyUserCommand:
+class DeactivateCompanyUserCommand(Command):
     """Command to deactivate a company user"""
-    id: str
-
+    id: CompanyUserId
 
 class DeactivateCompanyUserCommandHandler:
     """Handler for deactivating a company user"""
@@ -17,7 +17,7 @@ class DeactivateCompanyUserCommandHandler:
     def __init__(self, repository: CompanyUserRepositoryInterface):
         self.repository = repository
 
-    def handle(self, command: DeactivateCompanyUserCommand) -> None:
+    def execute(self, command: DeactivateCompanyUserCommand) -> None:
         """Execute the command - NO return value"""
         company_user_id = CompanyUserId.from_string(command.id)
         company_user = self.repository.get_by_id(company_user_id)

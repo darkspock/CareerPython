@@ -5,10 +5,11 @@ from src.company.domain.entities.company import Company
 from src.company.domain.value_objects import CompanyId, CompanySettings
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
-class CreateCompanyCommand:
+class CreateCompanyCommand(Command):
     """Command to create a new company"""
     id: str
     name: str
@@ -17,13 +18,13 @@ class CreateCompanyCommand:
     settings: Optional[Dict[str, Any]] = None
 
 
-class CreateCompanyCommandHandler:
+class CreateCompanyCommandHandler(CommandHandler):
     """Handler for creating a company"""
 
     def __init__(self, repository: CompanyRepositoryInterface):
         self.repository = repository
 
-    def handle(self, command: CreateCompanyCommand) -> None:
+    def execute(self, command: CreateCompanyCommand) -> None:
         """Execute the command - NO return value"""
         # Check if domain already exists
         existing = self.repository.get_by_domain(command.domain)

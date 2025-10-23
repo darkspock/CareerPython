@@ -11,7 +11,6 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Security, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
-from core.container import Container
 from adapters.http.admin.controllers.admin_candidate_controller import AdminCandidateController
 from adapters.http.admin.controllers.company_controller import CompanyController
 from adapters.http.admin.controllers.enum_controller import EnumController, EnumMetadataResponse
@@ -42,6 +41,8 @@ from adapters.http.admin.schemas.job_position import (
 )
 from adapters.http.shared.schemas.token import Token
 from adapters.http.shared.schemas.user import UserResponse
+from core.container import Container
+from src.company.domain import CompanyId
 from src.shared.application.query_bus import QueryBus
 from src.user.application.queries.authenticate_user_query import AuthenticateUserQuery
 from src.user.application.queries.dtos.auth_dto import CurrentUserDto, AuthenticatedUserDto
@@ -428,7 +429,7 @@ def get_company(
         controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
 ) -> CompanyResponse:
     """Get a specific company by ID"""
-    return controller.get_company_by_id(company_id)
+    return controller.get_company_by_id(CompanyId.from_string(company_id))
 
 
 @router.post("/companies", response_model=CompanyResponse)
@@ -472,7 +473,7 @@ def update_company(
 ) -> CompanyResponse:
     """Update an existing company"""
     return controller.update_company(
-        company_id=company_id,
+        company_id=CompanyId(company_id),
         company_data=company_data,
         current_admin_id=current_admin.id
     )
@@ -486,7 +487,7 @@ def approve_company(
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> CompanyActionResponse:
     """Approve a pending company"""
-    return controller.approve_company(company_id=company_id, current_admin_id=current_admin.id)
+    return controller.approve_company(company_id=CompanyId.from_string(company_id), current_admin_id=current_admin.id)
 
 
 @router.post("/companies/{company_id}/reject", response_model=CompanyActionResponse)
@@ -499,8 +500,7 @@ def reject_company(
 ) -> CompanyActionResponse:
     """Reject a pending company"""
     return controller.reject_company(
-        company_id=company_id,
-        current_admin_id=current_admin.id,
+        company_id=CompanyId.from_string(company_id),
         reason=status_update.reason
     )
 
@@ -513,7 +513,7 @@ def activate_company(
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> CompanyActionResponse:
     """Activate an inactive company"""
-    return controller.activate_company(company_id=company_id, current_admin_id=current_admin.id)
+    return controller.activate_company(company_id=CompanyId.from_string(company_id))
 
 
 @router.post("/companies/{company_id}/deactivate", response_model=CompanyActionResponse)
@@ -524,7 +524,7 @@ def deactivate_company(
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> CompanyActionResponse:
     """Deactivate an active company"""
-    return controller.deactivate_company(company_id=company_id, current_admin_id=current_admin.id)
+    return controller.deactivate_company(company_id=CompanyId.from_string(company_id), current_admin_id=current_admin.id)
 
 
 @router.delete("/companies/{company_id}", response_model=CompanyActionResponse)
@@ -535,7 +535,7 @@ def delete_company(
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> CompanyActionResponse:
     """Delete a company"""
-    return controller.delete_company(company_id=company_id, current_admin_id=current_admin.id)
+    return controller.delete_company(company_id=CompanyId.from_string(company_id), current_admin_id=current_admin.id)
 
 
 # Job Position Management Endpoints

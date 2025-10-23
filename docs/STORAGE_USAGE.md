@@ -70,7 +70,7 @@ class UploadCandidateResumeCommandHandler:
         self.storage_service = storage_service
         self.repository = repository
 
-    def handle(self, command: UploadCandidateResumeCommand) -> None:
+    def execute(self, command: UploadCandidateResumeCommand) -> None:
         # Upload file
         uploaded_file: UploadedFile = self.storage_service.upload_file(
             file_content=command.file_content,

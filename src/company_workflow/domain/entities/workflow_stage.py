@@ -23,9 +23,8 @@ class WorkflowStage:
     created_at: datetime
     updated_at: datetime
 
-    @classmethod
+    @staticmethod
     def create(
-        cls,
         id: WorkflowStageId,
         workflow_id: CompanyWorkflowId,
         name: str,
@@ -33,7 +32,8 @@ class WorkflowStage:
         stage_type: StageType,
         order: int,
         required_outcome: Optional[StageOutcome] = None,
-        estimated_duration_days: Optional[int] = None
+        estimated_duration_days: Optional[int] = None,
+        is_active: bool = True
     ) -> "WorkflowStage":
         """Factory method to create a new workflow stage"""
         if not name:
@@ -44,7 +44,7 @@ class WorkflowStage:
             raise ValueError("Estimated duration must be non-negative")
 
         now = datetime.utcnow()
-        return cls(
+        return WorkflowStage(
             id=id,
             workflow_id=workflow_id,
             name=name,
@@ -53,7 +53,7 @@ class WorkflowStage:
             order=order,
             required_outcome=required_outcome,
             estimated_duration_days=estimated_duration_days,
-            is_active=True,
+            is_active=is_active,
             created_at=now,
             updated_at=now
         )

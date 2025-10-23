@@ -47,14 +47,14 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return WorkflowStageResponseMapper.dto_to_response(dto)
 
     def get_stage_by_id(self, stage_id: str) -> Optional[WorkflowStageResponse]:
         """Get a stage by ID."""
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         if not dto:
             return None
@@ -64,14 +64,14 @@ class WorkflowStageController:
     def list_stages_by_workflow(self, workflow_id: str) -> List[WorkflowStageResponse]:
         """List all stages for a workflow."""
         query = ListStagesByWorkflowQuery(workflow_id=workflow_id)
-        dtos = self._query_bus.dispatch(query)
+        dtos = self._query_bus.query(query)
 
         return [WorkflowStageResponseMapper.dto_to_response(dto) for dto in dtos]
 
     def get_initial_stage(self, workflow_id: str) -> Optional[WorkflowStageResponse]:
         """Get the initial stage of a workflow."""
         query = GetInitialStageQuery(workflow_id=workflow_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         if not dto:
             return None
@@ -81,7 +81,7 @@ class WorkflowStageController:
     def get_final_stages(self, workflow_id: str) -> List[WorkflowStageResponse]:
         """Get all final stages of a workflow."""
         query = GetFinalStagesQuery(workflow_id=workflow_id)
-        dtos = self._query_bus.dispatch(query)
+        dtos = self._query_bus.query(query)
 
         return [WorkflowStageResponseMapper.dto_to_response(dto) for dto in dtos]
 
@@ -98,7 +98,7 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return WorkflowStageResponseMapper.dto_to_response(dto)
 
@@ -117,7 +117,7 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = ListStagesByWorkflowQuery(workflow_id=workflow_id)
-        dtos = self._query_bus.dispatch(query)
+        dtos = self._query_bus.query(query)
 
         return [WorkflowStageResponseMapper.dto_to_response(dto) for dto in dtos]
 
@@ -127,7 +127,7 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return WorkflowStageResponseMapper.dto_to_response(dto)
 
@@ -137,6 +137,6 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.dispatch(query)
+        dto = self._query_bus.query(query)
 
         return WorkflowStageResponseMapper.dto_to_response(dto)

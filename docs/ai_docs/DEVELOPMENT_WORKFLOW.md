@@ -533,13 +533,13 @@ class CreateCompanyCommand(Command):
     domain: str
     logo_url: Optional[str] = None
 
-class CreateCompanyCommandHandler(CommandHandler[CreateCompanyCommand, None]):
+class CreateCompanyCommandHandler(CommandHandler[CreateCompanyCommand]):
     """Handler para crear empresa"""
 
     def __init__(self, repository: CompanyRepositoryInterface):
         self.repository = repository
 
-    def handle(self, command: CreateCompanyCommand) -> None:
+    def execute(self, command: CreateCompanyCommand) -> None:
         """Ejecuta el comando - NO retorna valor"""
         # Validaciones de negocio adicionales
         existing = self.repository.get_by_domain(command.domain)
@@ -686,12 +686,12 @@ class CompanyController:
         )
 
         # Ejecutar comando (no retorna valor)
-        self.command_bus.execute(command)
+        self.command_bus.dispatch(command)
 
         # Query separado para obtener la empresa creada
         # (en producción, el command podría retornar el ID)
         query = GetCompanyByIdQuery(company_id=command.company_id)
-        dto = self.query_bus.execute(query)
+        dto = self.query_bus.query(query)
 
         # Convertir DTO a Response usando mapper
         return CompanyResponseMapper.dto_to_response(dto)
@@ -699,7 +699,7 @@ class CompanyController:
     def get_company(self, company_id: str) -> Optional[CompanyResponse]:
         """Obtiene una empresa por ID"""
         query = GetCompanyByIdQuery(company_id=company_id)
-        dto = self.query_bus.execute(query)
+        dto = self.query_bus.query(query)
 
         if not dto:
             return None

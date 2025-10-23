@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.shared.application.command import Command, CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler
 from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
 from src.company_workflow.domain.entities.company_workflow import CompanyWorkflow
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
@@ -17,13 +17,13 @@ class CreateWorkflowCommand(Command):
     is_default: bool = False
 
 
-class CreateWorkflowCommandHandler(CommandHandler[CreateWorkflowCommand, None]):
+class CreateWorkflowCommandHandler(CommandHandler[CreateWorkflowCommand]):
     """Handler for creating a new workflow"""
 
     def __init__(self, repository: CompanyWorkflowRepositoryInterface):
         self._repository = repository
 
-    def handle(self, command: CreateWorkflowCommand) -> None:
+    def execute(self, command: CreateWorkflowCommand) -> None:
         """Handle the create workflow command"""
         workflow = CompanyWorkflow.create(
             id=CompanyWorkflowId.from_string(command.id),

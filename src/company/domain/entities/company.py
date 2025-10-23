@@ -24,12 +24,12 @@ class Company:
 
     @classmethod
     def create(
-        cls,
-        id: CompanyId,
-        name: str,
-        domain: str,
-        logo_url: Optional[str] = None,
-        settings: Optional[CompanySettings] = None,
+            cls,
+            id: CompanyId,
+            name: str,
+            domain: str,
+            logo_url: Optional[str] = None,
+            settings: Optional[CompanySettings] = None,
     ) -> "Company":
         """
         Factory method to create a new company
@@ -74,11 +74,11 @@ class Company:
         )
 
     def update(
-        self,
-        name: str,
-        domain: str,
-        logo_url: Optional[str],
-        settings: CompanySettings,
+            self,
+            name: str,
+            domain: str,
+            logo_url: Optional[str],
+            settings: CompanySettings,
     ) -> "Company":
         """
         Updates the company with new values
@@ -145,12 +145,9 @@ class Company:
             updated_at=datetime.utcnow(),
         )
 
-    def activate(self) -> "Company":
+    def activate(self) -> None:
         """
         Activates the company
-
-        Returns:
-            Company: New instance with ACTIVE status
 
         Raises:
             CompanyValidationError: If company is deleted
@@ -158,34 +155,16 @@ class Company:
         if self.status == CompanyStatusEnum.DELETED:
             raise CompanyValidationError("Cannot activate a deleted company")
 
-        return Company(
-            id=self.id,
-            name=self.name,
-            domain=self.domain,
-            logo_url=self.logo_url,
-            settings=self.settings,
-            status=CompanyStatusEnum.ACTIVE,
-            created_at=self.created_at,
-            updated_at=datetime.utcnow(),
-        )
+        self.status = CompanyStatusEnum.ACTIVE
 
-    def delete(self) -> "Company":
+    def delete(self) -> None:
         """
         Marks the company as deleted (soft delete)
 
         Returns:
             Company: New instance with DELETED status
         """
-        return Company(
-            id=self.id,
-            name=self.name,
-            domain=self.domain,
-            logo_url=self.logo_url,
-            settings=self.settings,
-            status=CompanyStatusEnum.DELETED,
-            created_at=self.created_at,
-            updated_at=datetime.utcnow(),
-        )
+        self.status = CompanyStatusEnum.DELETED
 
     def is_active(self) -> bool:
         """Checks if company is active"""
@@ -198,3 +177,4 @@ class Company:
     def is_deleted(self) -> bool:
         """Checks if company is deleted"""
         return self.status == CompanyStatusEnum.DELETED
+

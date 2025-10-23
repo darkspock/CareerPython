@@ -105,7 +105,7 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
                     phone=extracted_data.get("phone", "") if extracted_data else "",
                     linkedin_url=extracted_data.get("linkedin_url", "") if extracted_data else "",
                 )
-                self.command_bus.execute(candidate_command)
+                self.command_bus.dispatch(candidate_command)
                 self.logger.info(f"Created candidate for user {command.email}")
 
             # Store candidate_id in command for later use
@@ -118,7 +118,7 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
                 #     job_position_id=command.job_position_id,
                 #     notes="Application created during onboarding process"
                 # )
-                # self.command_bus.execute(application_command)
+                # self.command_bus.dispatch(application_command)
                 self.logger.info(f"Job application for position {command.job_position_id} will be created later")
 
             # 6. Send password reset email for new users
@@ -208,7 +208,7 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
             )
 
             # Execute command - this will start the Dramatiq actor
-            self.command_bus.execute(analysis_command)
+            self.command_bus.dispatch(analysis_command)
 
             self.logger.info(
                 f"Started PDF analysis job {job_id} for candidate {candidate_id} and asset {user_asset_id}")
@@ -237,7 +237,7 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
                 }
             )
 
-            self.command_bus.execute(email_command)
+            self.command_bus.dispatch(email_command)
 
         except Exception as e:
             self.logger.error(f"❌ Error sending password reset email: {str(e)}", exc_info=True)
