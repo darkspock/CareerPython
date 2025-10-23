@@ -5,7 +5,7 @@ import logging
 from typing import List, Annotated, Optional
 
 from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordRequestForm
 
 from adapters.http.company.controllers.company_controller import CompanyController
@@ -60,11 +60,29 @@ async def get_company_by_domain(
 @router.get("", response_model=List[CompanyResponse])
 @inject
 async def list_companies(
-        active_only: bool,
         controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        search_term: Optional[str] = Query(None, description="Search companies by name or domain"),
+        status_filter: Optional[str] = Query(None, description="Filter by status"),
+        limit: int = Query(100, ge=1, le=1000, description="Maximum number of results"),
+        offset: int = Query(0, ge=0, description="Number of results to skip"),
 ) -> List[CompanyResponse]:
     """List all companies"""
-    return controller.list_companies(active_only)
+    from src.company.domain.enums import CompanyStatusEnum
+
+    # Convert status string to enum if provided
+    status_enum = None
+    if status_filter:
+        try:
+            status_enum = CompanyStatusEnum(status_filter.upper())
+        except ValueError:
+            pass
+
+    return controller.list_companies(
+        search_term=search_term,
+        status_filter=status_enum,
+        limit=limit,
+        offset=offset
+    )
 
 
 @router.put("/{company_id}", response_model=CompanyResponse)

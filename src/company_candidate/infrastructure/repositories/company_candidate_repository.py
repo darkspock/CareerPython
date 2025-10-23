@@ -53,6 +53,11 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             position=model.position,
             department=model.department,
             priority=CandidatePriority(model.priority),
+            lead_id=model.lead_id,
+            source=model.source,
+            resume_url=model.resume_url,
+            resume_uploaded_by=CompanyUserId.from_string(model.resume_uploaded_by) if model.resume_uploaded_by else None,
+            resume_uploaded_at=model.resume_uploaded_at,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -78,6 +83,11 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             position=entity.position,
             department=entity.department,
             priority=entity.priority.value,
+            lead_id=entity.lead_id,
+            source=entity.source,
+            resume_url=entity.resume_url,
+            resume_uploaded_by=str(entity.resume_uploaded_by) if entity.resume_uploaded_by else None,
+            resume_uploaded_at=entity.resume_uploaded_at,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
@@ -106,6 +116,11 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             model.position = company_candidate.position
             model.department = company_candidate.department
             model.priority = company_candidate.priority.value
+            model.lead_id = company_candidate.lead_id
+            model.source = company_candidate.source
+            model.resume_url = company_candidate.resume_url
+            model.resume_uploaded_by = str(company_candidate.resume_uploaded_by) if company_candidate.resume_uploaded_by else None
+            model.resume_uploaded_at = company_candidate.resume_uploaded_at
             model.updated_at = company_candidate.updated_at
         else:
             # Create new

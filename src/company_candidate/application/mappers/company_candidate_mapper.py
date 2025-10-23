@@ -27,6 +27,11 @@ class CompanyCandidateMapper:
             position=entity.position,
             department=entity.department,
             priority=entity.priority.value,
+            lead_id=entity.lead_id,
+            source=entity.source,
+            resume_url=entity.resume_url,
+            resume_uploaded_by=str(entity.resume_uploaded_by) if entity.resume_uploaded_by else None,
+            resume_uploaded_at=entity.resume_uploaded_at,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )

@@ -9,7 +9,7 @@ from src.company_candidate.domain.value_objects.company_candidate_id import Comp
 @dataclass(frozen=True)
 class ArchiveCompanyCandidateCommand(Command):
     """Command to archive a company candidate relationship"""
-    id: str
+    id: CompanyCandidateId
 
 
 class ArchiveCompanyCandidateCommandHandler(CommandHandler):
@@ -21,7 +21,7 @@ class ArchiveCompanyCandidateCommandHandler(CommandHandler):
     def execute(self, command: ArchiveCompanyCandidateCommand) -> None:
         """Handle the archive company candidate command"""
         # Get existing company candidate
-        company_candidate_id = CompanyCandidateId.from_string(command.id)
+        company_candidate_id = command.id
         company_candidate = self._repository.get_by_id(company_candidate_id)
 
         if not company_candidate:

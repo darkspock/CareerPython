@@ -18,6 +18,7 @@ from src.company_candidate.application.queries.list_company_candidates_by_candid
     ListCompanyCandidatesByCandidateQuery
 from src.company_candidate.application.queries.list_company_candidates_by_company import \
     ListCompanyCandidatesByCompanyQuery
+from src.company_candidate.domain.value_objects import CompanyCandidateId
 from src.company_candidate.presentation.mappers.company_candidate_mapper import CompanyCandidateResponseMapper
 from src.company_candidate.presentation.schemas.assign_workflow_request import AssignWorkflowRequest
 from src.company_candidate.presentation.schemas.change_stage_request import ChangeStageRequest
@@ -55,7 +56,7 @@ class CompanyCandidateController:
         self._command_bus.dispatch(command)
 
         # Query to get the created company candidate
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")
@@ -64,7 +65,7 @@ class CompanyCandidateController:
 
     def get_company_candidate_by_id(self, company_candidate_id: str) -> Optional[CompanyCandidateResponse]:
         """Get a company candidate by ID"""
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
 
         if not dto:
@@ -116,7 +117,7 @@ class CompanyCandidateController:
         self._command_bus.dispatch(command)
 
         # Query to get the updated company candidate
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")
@@ -124,11 +125,11 @@ class CompanyCandidateController:
 
     def confirm_company_candidate(self, company_candidate_id: str) -> CompanyCandidateResponse:
         """Candidate confirms/accepts company invitation"""
-        command = ConfirmCompanyCandidateCommand(id=company_candidate_id)
+        command = ConfirmCompanyCandidateCommand(id=CompanyCandidateId(company_candidate_id))
         self._command_bus.dispatch(command)
 
         # Query to get the confirmed company candidate
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")
@@ -136,11 +137,11 @@ class CompanyCandidateController:
 
     def reject_company_candidate(self, company_candidate_id: str) -> CompanyCandidateResponse:
         """Candidate rejects/declines company invitation"""
-        command = RejectCompanyCandidateCommand(id=company_candidate_id)
+        command = RejectCompanyCandidateCommand(id=CompanyCandidateId(company_candidate_id))
         self._command_bus.dispatch(command)
 
         # Query to get the rejected company candidate
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")
@@ -148,11 +149,11 @@ class CompanyCandidateController:
 
     def archive_company_candidate(self, company_candidate_id: str) -> CompanyCandidateResponse:
         """Archive a company candidate relationship"""
-        command = ArchiveCompanyCandidateCommand(id=company_candidate_id)
+        command = ArchiveCompanyCandidateCommand(id=CompanyCandidateId(company_candidate_id))
         self._command_bus.dispatch(command)
 
         # Query to get the archived company candidate
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")
@@ -164,7 +165,7 @@ class CompanyCandidateController:
         self._command_bus.dispatch(command)
 
         # Query to get the updated company candidate
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")

@@ -35,8 +35,6 @@ class CompanyController:
             self,
             search_term: Optional[str] = None,
             status: Optional[str] = None,
-            sector: Optional[str] = None,
-            location: Optional[str] = None,
             page: Optional[int] = None,
             page_size: Optional[int] = None
     ) -> CompanyListResponse:
@@ -58,21 +56,18 @@ class CompanyController:
             # Execute query
             query = ListCompaniesQuery(
                 status=status_enum,
-                sector=sector,
-                location=location,
                 search_term=search_term,
                 limit=page_size,
                 offset=offset
             )
 
-            companies: List[Company] = self.query_bus.query(query)
+            company_dtos: List[CompanyDto] = self.query_bus.query(query)
 
-            # Convert to DTOs and then to response models
-            company_dtos = [CompanyDto.from_entity(company) for company in companies]
+            # Convert DTOs to response models
             company_responses = [self._dto_to_response(dto) for dto in company_dtos]
 
             # Get total count (for now, we'll use the returned count)
-            total = len(companies)  # This should ideally come from a separate count query
+            total = len(company_dtos)  # This should ideally come from a separate count query
             total_pages = (total + page_size - 1) // page_size
 
             return CompanyListResponse(
@@ -131,15 +126,11 @@ class CompanyController:
             company_id = CompanyId.generate()
 
             command = CreateCompanyCommand(
-                id=company_id,
-                user_id=UserId.from_string_or_null(company_data.user_id),
+                id=str(company_id),
                 name=company_data.name,
-                sector=company_data.sector,
-                size=company_data.size,
-                location=company_data.location,
-                website=company_data.website,
-                culture=company_data.culture,
-                external_data=company_data.external_data
+                domain=company_data.domain,
+                logo_url=company_data.logo_url,
+                settings=company_data.settings
             )
 
             self.command_bus.dispatch(command)
@@ -160,14 +151,11 @@ class CompanyController:
         """Update an existing company"""
         try:
             command = UpdateCompanyCommand(
-                id=company_id,
+                id=str(company_id),
                 name=company_data.name,
-                sector=company_data.sector,
-                size=company_data.size,
-                location=company_data.location,
-                website=company_data.website,
-                culture=company_data.culture,
-                external_data=company_data.external_data
+                domain=company_data.domain,
+                logo_url=company_data.logo_url,
+                settings=company_data.settings or {}
             )
 
             self.command_bus.dispatch(command)
@@ -280,17 +268,4 @@ class CompanyController:
 
     def _dto_to_response(self, dto: CompanyDto) -> CompanyResponse:
         """Convert CompanyDto to CompanyResponse"""
-        return CompanyResponse(
-            id=dto.id.value,
-            user_id=dto.user_id.value if dto.user_id else None,
-            name=dto.name,
-            sector=dto.sector,
-            size=dto.size,
-            location=dto.location,
-            website=dto.website,
-            culture=dto.culture,
-            external_data=dto.external_data,
-            status=dto.status,
-            created_at=dto.created_at,
-            updated_at=dto.updated_at
-        )
+        return CompanyResponse(**dto.__dict__)

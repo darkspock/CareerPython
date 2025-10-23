@@ -24,5 +24,11 @@ class CompanyCandidateDto:
     position: Optional[str]
     department: Optional[str]
     priority: str
+    # Resume fields
+    lead_id: Optional[str]
+    source: str
+    resume_url: Optional[str]
+    resume_uploaded_by: Optional[str]
+    resume_uploaded_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime

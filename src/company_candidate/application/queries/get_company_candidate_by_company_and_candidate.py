@@ -12,8 +12,8 @@ from src.candidate.domain.value_objects.candidate_id import CandidateId
 @dataclass(frozen=True)
 class GetCompanyCandidateByCompanyAndCandidateQuery(Query):
     """Query to get a company candidate by company ID and candidate ID"""
-    company_id: str
-    candidate_id: str
+    company_id: CompanyId
+    candidate_id: CandidateId
 
 
 class GetCompanyCandidateByCompanyAndCandidateQueryHandler(QueryHandler[GetCompanyCandidateByCompanyAndCandidateQuery, Optional[CompanyCandidateDto]]):
@@ -24,10 +24,7 @@ class GetCompanyCandidateByCompanyAndCandidateQueryHandler(QueryHandler[GetCompa
 
     def handle(self, query: GetCompanyCandidateByCompanyAndCandidateQuery) -> Optional[CompanyCandidateDto]:
         """Handle the get company candidate by company and candidate query"""
-        company_id = CompanyId.from_string(query.company_id)
-        candidate_id = CandidateId.from_string(query.candidate_id)
-
-        company_candidate = self._repository.get_by_company_and_candidate(company_id, candidate_id)
+        company_candidate = self._repository.get_by_company_and_candidate(query.company_id, query.candidate_id)
 
         if not company_candidate:
             return None

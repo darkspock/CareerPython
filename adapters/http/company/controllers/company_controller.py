@@ -16,7 +16,7 @@ from src.company.application.queries import (
     ListCompaniesQuery,
 )
 from src.company.application.dtos.company_dto import CompanyDto
-from src.company.domain import CompanyId
+from src.company.domain import CompanyId, CompanyStatusEnum
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError, CompanyDomainAlreadyExistsError,
@@ -127,10 +127,21 @@ class CompanyController:
                 detail=f"Failed to retrieve company: {str(e)}"
             )
 
-    def list_companies(self, active_only: bool = False) -> List[CompanyResponse]:
+    def list_companies(
+        self,
+        search_term: Optional[str] = None,
+        status_filter: Optional[CompanyStatusEnum] = None,
+        limit: int = 100,
+        offset: int = 0
+    ) -> List[CompanyResponse]:
         """List all companies"""
         try:
-            query = ListCompaniesQuery(active_only=active_only)
+            query = ListCompaniesQuery(
+                status=status_filter,
+                search_term=search_term,
+                limit=limit,
+                offset=offset
+            )
             dtos: List[CompanyDto] = self.query_bus.query(query)
 
             return [CompanyResponseMapper.dto_to_response(dto) for dto in dtos]
@@ -250,7 +261,7 @@ class CompanyController:
     def delete_company(self, company_id: str) -> None:
         """Delete a company (soft delete)"""
         try:
-            command = DeleteCompanyCommand(id=company_id)
+            command = DeleteCompanyCommand(id=CompanyId(company_id))
             self.command_bus.dispatch(command)
 
         except CompanyNotFoundError as e:

@@ -7,44 +7,44 @@ from pydantic import BaseModel, Field, field_validator
 class CompanyBase(BaseModel):
     """Base company schema"""
     name: str = Field(..., min_length=1, max_length=200, description="Company name")
-    sector: Optional[str] = Field(None, max_length=100, description="Company sector/industry")
-    size: Optional[int] = Field(None, ge=1, description="Number of employees")
-    location: Optional[str] = Field(None, max_length=200, description="Company location")
-    website: Optional[str] = Field(None, max_length=500, description="Company website URL")
-    culture: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Company culture information")
-    external_data: Optional[Dict[str, Any]] = Field(default_factory=dict, description="External data")
+    domain: str = Field(..., min_length=3, max_length=200, description="Company domain (e.g., company.com)")
+    logo_url: Optional[str] = Field(None, max_length=500, description="Company logo URL")
+    settings: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Company settings")
 
-    @field_validator('website')
+    @field_validator('domain')
     @classmethod
-    def validate_website(cls, v: Optional[str]) -> Optional[str]:
-        """Simply return the website as-is without validation"""
-        if not v:
-            return v
-        # Just return the value as-is, no validation
-        return v.strip() if v else v
+    def validate_domain(cls, v: str) -> str:
+        """Validate domain format"""
+        if "@" in v:
+            raise ValueError("Domain must not contain @")
+        return v.strip().lower()
 
 
 class CompanyCreate(CompanyBase):
     """Schema for creating a company"""
-    user_id: Optional[str] = Field(None, description="User ID who owns the company (optional)")
+    pass
 
 
 class CompanyUpdate(BaseModel):
     """Schema for updating a company"""
-    name: Optional[str] = Field(None, min_length=1, max_length=200, description="Company name")
-    sector: Optional[str] = Field(None, max_length=255)
-    size: Optional[int] = Field(None, ge=1)
-    location: Optional[str] = Field(None, max_length=255)
-    website: Optional[str] = Field(None, max_length=500)
-    culture: Optional[Dict[str, Any]] = None
-    external_data: Optional[Dict[str, Any]] = None
+    name: str = Field(None, min_length=1, max_length=200, description="Company name")
+    domain: Optional[str] = Field(None, min_length=3, max_length=200, description="Company domain")
+    logo_url: Optional[str] = Field(None, max_length=500, description="Company logo URL")
+    settings: Optional[Dict[str, Any]] = Field(None, description="Company settings")
+
+    @field_validator('domain')
+    @classmethod
+    def validate_domain(cls, v: Optional[str]) -> Optional[str]:
+        """Validate domain format"""
+        if v and "@" in v:
+            raise ValueError("Domain must not contain @")
+        return v.strip().lower() if v else v
 
 
 class CompanyResponse(CompanyBase):
     """Schema for company response"""
     id: str = Field(..., description="Company ID")
-    user_id: Optional[str] = Field(None, description="User ID who owns the company (optional)")
-    status: str = Field(..., description="Company approval status")
+    status: str = Field(..., description="Company status")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 

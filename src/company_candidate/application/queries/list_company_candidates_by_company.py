@@ -11,7 +11,7 @@ from src.company.domain.value_objects.company_id import CompanyId
 @dataclass(frozen=True)
 class ListCompanyCandidatesByCompanyQuery(Query):
     """Query to list all company candidates for a specific company"""
-    company_id: str
+    company_id: CompanyId
 
 
 class ListCompanyCandidatesByCompanyQueryHandler(QueryHandler[ListCompanyCandidatesByCompanyQuery, List[CompanyCandidateDto]]):
@@ -22,7 +22,6 @@ class ListCompanyCandidatesByCompanyQueryHandler(QueryHandler[ListCompanyCandida
 
     def handle(self, query: ListCompanyCandidatesByCompanyQuery) -> List[CompanyCandidateDto]:
         """Handle the list company candidates by company query"""
-        company_id = CompanyId.from_string(query.company_id)
-        company_candidates = self._repository.list_by_company(company_id)
+        company_candidates = self._repository.list_by_company(query.company_id)
 
         return [CompanyCandidateMapper.entity_to_dto(cc) for cc in company_candidates]

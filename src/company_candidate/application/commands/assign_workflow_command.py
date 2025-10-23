@@ -10,8 +10,8 @@ from src.company_candidate.domain.value_objects.company_candidate_id import Comp
 @dataclass(frozen=True)
 class AssignWorkflowCommand(Command):
     """Command to assign a workflow to a company candidate"""
-    id: str
-    workflow_id: str
+    id: CompanyCandidateId
+    workflow_id: CompanyCandidateId
     initial_stage_id: Optional[str] = None
 
 
@@ -24,7 +24,7 @@ class AssignWorkflowCommandHandler(CommandHandler[AssignWorkflowCommand]):
     def execute(self, command: AssignWorkflowCommand) -> None:
         """Handle the assign workflow command"""
         # Get existing company candidate
-        company_candidate_id = CompanyCandidateId.from_string(command.id)
+        company_candidate_id = command.id
         company_candidate = self._repository.get_by_id(company_candidate_id)
 
         if not company_candidate:

@@ -18,16 +18,20 @@ from src.company_candidate.domain.enums.candidate_priority import CandidatePrior
 @dataclass(frozen=True)
 class CreateCompanyCandidateCommand(Command):
     """Command to create a new company candidate relationship"""
-    id: str
-    company_id: str
-    candidate_id: str
-    created_by_user_id: str
+    id: CompanyCandidateId
+    company_id: CompanyId
+    candidate_id: CandidateId
+    created_by_user_id: CompanyUserId
+    source: str
     position: Optional[str] = None
     department: Optional[str] = None
-    priority: str = "medium"
+    priority: CandidatePriority = CandidatePriority.MEDIUM
     visibility_settings: Optional[Dict[str, bool]] = None
     tags: Optional[List[str]] = None
     internal_notes: str = ""
+    lead_id: Optional[str] = None
+    resume_url: Optional[str] = None
+    resume_uploaded_by: Optional[CompanyUserId] = None
 
 
 class CreateCompanyCandidateCommandHandler(CommandHandler):
@@ -43,16 +47,20 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
 
         # Create the company candidate entity
         company_candidate = CompanyCandidate.create(
-            id=CompanyCandidateId.from_string(command.id),
-            company_id=CompanyId.from_string(command.company_id),
-            candidate_id=CandidateId.from_string(command.candidate_id),
-            created_by_user_id=CompanyUserId.from_string(command.created_by_user_id),
+            id=command.id,
+            company_id=command.company_id,
+            candidate_id=command.candidate_id,
+            created_by_user_id=command.created_by_user_id,
+            source=command.source,
             position=command.position,
             department=command.department,
-            priority=CandidatePriority(command.priority),
+            priority=command.priority,
             visibility_settings=visibility_settings,
             tags=command.tags or [],
-            internal_notes=command.internal_notes
+            internal_notes=command.internal_notes,
+            lead_id=command.lead_id,
+            resume_url=command.resume_url,
+            resume_uploaded_by=command.resume_uploaded_by
         )
 
         # Save to repository

@@ -397,8 +397,6 @@ def list_companies(
         controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
         search_term: Optional[str] = Query(None, description="Search in company names"),
         status: Optional[str] = Query(None, description="Filter by status"),
-        sector: Optional[str] = Query(None, description="Filter by sector"),
-        location: Optional[str] = Query(None, description="Filter by location"),
         page: Optional[int] = Query(1, ge=1, description="Page number"),
         page_size: Optional[int] = Query(10, ge=1, le=100, description="Items per page")
 ) -> CompanyListResponse:
@@ -406,8 +404,6 @@ def list_companies(
     return controller.list_companies(
         search_term=search_term,
         status=status,
-        sector=sector,
-        location=location,
         page=page,
         page_size=page_size
     )

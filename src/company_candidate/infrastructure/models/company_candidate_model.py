@@ -73,6 +73,16 @@ class CompanyCandidateModel(Base):
         nullable=False,
         default=CandidatePriority.MEDIUM.value
     )
+    # Resume fields
+    lead_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
+    source: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    resume_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    resume_uploaded_by: Mapped[Optional[str]] = mapped_column(
+        String,
+        ForeignKey("company_users.id"),
+        nullable=True
+    )
+    resume_uploaded_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,

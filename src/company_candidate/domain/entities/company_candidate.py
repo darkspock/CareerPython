@@ -44,6 +44,12 @@ class CompanyCandidate:
     position: Optional[str]
     department: Optional[str]
     priority: CandidatePriority
+    # Resume fields
+    lead_id: Optional[str]  # Will be replaced with LeadId value object when Lead entity is created
+    source: str  # Origin of candidate: "job_application", "manual_import", "referral", etc.
+    resume_url: Optional[str]  # S3 path or URL to uploaded resume
+    resume_uploaded_by: Optional[CompanyUserId]  # User who uploaded the resume
+    resume_uploaded_at: Optional[datetime]  # When resume was uploaded
     created_at: datetime
     updated_at: datetime
 
@@ -54,6 +60,7 @@ class CompanyCandidate:
         company_id: CompanyId,
         candidate_id: CandidateId,
         created_by_user_id: CompanyUserId,
+        source: str,
         position: Optional[str] = None,
         department: Optional[str] = None,
         priority: CandidatePriority = CandidatePriority.MEDIUM,
@@ -61,6 +68,9 @@ class CompanyCandidate:
         tags: Optional[List[str]] = None,
         internal_notes: str = "",
         ownership_status: OwnershipStatus = OwnershipStatus.COMPANY_OWNED,
+        lead_id: Optional[str] = None,
+        resume_url: Optional[str] = None,
+        resume_uploaded_by: Optional[CompanyUserId] = None,
     ) -> "CompanyCandidate":
         """
         Factory method to create a new company-candidate relationship
@@ -70,6 +80,7 @@ class CompanyCandidate:
             company_id: Company ID
             candidate_id: Candidate ID
             created_by_user_id: User who created this relationship
+            source: Origin of candidate (e.g., "job_application", "manual_import", "referral")
             position: Position the candidate is being considered for
             department: Department within the company
             priority: Priority level (LOW, MEDIUM, HIGH)
@@ -77,6 +88,9 @@ class CompanyCandidate:
             tags: Internal tags for organization
             internal_notes: Internal notes about the candidate
             ownership_status: Who owns the data (company or user)
+            lead_id: Optional Lead ID that originated this candidate
+            resume_url: Optional resume file URL/path
+            resume_uploaded_by: Optional user who uploaded the resume
 
         Returns:
             CompanyCandidate: New company-candidate relationship
@@ -94,6 +108,9 @@ class CompanyCandidate:
         if not created_by_user_id:
             raise CompanyCandidateValidationError("created_by_user_id is required")
 
+        if not source:
+            raise CompanyCandidateValidationError("source is required")
+
         # Default values
         now = datetime.utcnow()
 
@@ -110,6 +127,9 @@ class CompanyCandidate:
             initial_status = CompanyCandidateStatus.ACTIVE
         else:
             initial_status = CompanyCandidateStatus.PENDING_CONFIRMATION
+
+        # Set resume_uploaded_at if resume_url is provided
+        resume_uploaded_at_value = now if resume_url else None
 
         return cls(
             id=id,
@@ -130,6 +150,11 @@ class CompanyCandidate:
             position=position,
             department=department,
             priority=priority,
+            lead_id=lead_id,
+            source=source,
+            resume_url=resume_url,
+            resume_uploaded_by=resume_uploaded_by,
+            resume_uploaded_at=resume_uploaded_at_value,
             created_at=now,
             updated_at=now,
         )
@@ -177,6 +202,55 @@ class CompanyCandidate:
             position=position,
             department=department,
             priority=priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=self.resume_url,
+            resume_uploaded_by=self.resume_uploaded_by,
+            resume_uploaded_at=self.resume_uploaded_at,
+            created_at=self.created_at,
+            updated_at=datetime.utcnow(),
+        )
+
+    def update_resume(
+        self,
+        resume_url: str,
+        uploaded_by: CompanyUserId,
+    ) -> "CompanyCandidate":
+        """
+        Updates the resume for this candidate
+        Returns a new instance (immutability)
+
+        Args:
+            resume_url: New resume URL/path
+            uploaded_by: User who uploaded the resume
+
+        Returns:
+            CompanyCandidate: New instance with updated resume
+        """
+        return CompanyCandidate(
+            id=self.id,
+            company_id=self.company_id,
+            candidate_id=self.candidate_id,
+            status=self.status,
+            ownership_status=self.ownership_status,
+            created_by_user_id=self.created_by_user_id,
+            workflow_id=self.workflow_id,
+            current_stage_id=self.current_stage_id,
+            invited_at=self.invited_at,
+            confirmed_at=self.confirmed_at,
+            rejected_at=self.rejected_at,
+            archived_at=self.archived_at,
+            visibility_settings=self.visibility_settings,
+            tags=self.tags,
+            internal_notes=self.internal_notes,
+            position=self.position,
+            department=self.department,
+            priority=self.priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=resume_url,
+            resume_uploaded_by=uploaded_by,
+            resume_uploaded_at=datetime.utcnow(),
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -218,6 +292,11 @@ class CompanyCandidate:
             position=self.position,
             department=self.department,
             priority=self.priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=self.resume_url,
+            resume_uploaded_by=self.resume_uploaded_by,
+            resume_uploaded_at=self.resume_uploaded_at,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -251,6 +330,11 @@ class CompanyCandidate:
             position=self.position,
             department=self.department,
             priority=self.priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=self.resume_url,
+            resume_uploaded_by=self.resume_uploaded_by,
+            resume_uploaded_at=self.resume_uploaded_at,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -284,6 +368,11 @@ class CompanyCandidate:
             position=self.position,
             department=self.department,
             priority=self.priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=self.resume_url,
+            resume_uploaded_by=self.resume_uploaded_by,
+            resume_uploaded_at=self.resume_uploaded_at,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -323,6 +412,11 @@ class CompanyCandidate:
             position=self.position,
             department=self.department,
             priority=self.priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=self.resume_url,
+            resume_uploaded_by=self.resume_uploaded_by,
+            resume_uploaded_at=self.resume_uploaded_at,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -357,6 +451,11 @@ class CompanyCandidate:
             position=self.position,
             department=self.department,
             priority=self.priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=self.resume_url,
+            resume_uploaded_by=self.resume_uploaded_by,
+            resume_uploaded_at=self.resume_uploaded_at,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -398,6 +497,11 @@ class CompanyCandidate:
             position=self.position,
             department=self.department,
             priority=self.priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=self.resume_url,
+            resume_uploaded_by=self.resume_uploaded_by,
+            resume_uploaded_at=self.resume_uploaded_at,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
