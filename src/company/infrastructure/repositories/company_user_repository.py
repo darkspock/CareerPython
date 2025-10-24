@@ -64,6 +64,13 @@ class CompanyUserRepository(CompanyUserRepositoryInterface):
         ).delete()
         self.session.flush()
 
+    def get_by_user_id(self, user_id: UserId) -> Optional[CompanyUser]:
+        """Get a company user by user ID"""
+        model = self.session.query(CompanyUserModel).filter(
+            CompanyUserModel.user_id == str(user_id)
+        ).first()
+        return self._to_domain(model) if model else None
+
     def _to_domain(self, model: CompanyUserModel) -> CompanyUser:
         """Convert model to domain entity"""
         return CompanyUser(

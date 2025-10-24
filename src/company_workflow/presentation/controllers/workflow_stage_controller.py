@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
+from src.company_workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
 from src.company_workflow.application.commands.create_stage_command import CreateStageCommand
 from src.company_workflow.application.commands.update_stage_command import UpdateStageCommand
 from src.company_workflow.application.commands.delete_stage_command import DeleteStageCommand
@@ -47,14 +48,17 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.query(query)
+        dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Stage not found after creation")
 
         return WorkflowStageResponseMapper.dto_to_response(dto)
 
     def get_stage_by_id(self, stage_id: str) -> Optional[WorkflowStageResponse]:
         """Get a stage by ID."""
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.query(query)
+        dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
 
         if not dto:
             return None
@@ -64,14 +68,14 @@ class WorkflowStageController:
     def list_stages_by_workflow(self, workflow_id: str) -> List[WorkflowStageResponse]:
         """List all stages for a workflow."""
         query = ListStagesByWorkflowQuery(workflow_id=workflow_id)
-        dtos = self._query_bus.query(query)
+        dtos: List[WorkflowStageDto] = self._query_bus.query(query)
 
         return [WorkflowStageResponseMapper.dto_to_response(dto) for dto in dtos]
 
     def get_initial_stage(self, workflow_id: str) -> Optional[WorkflowStageResponse]:
         """Get the initial stage of a workflow."""
         query = GetInitialStageQuery(workflow_id=workflow_id)
-        dto = self._query_bus.query(query)
+        dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
 
         if not dto:
             return None
@@ -81,7 +85,7 @@ class WorkflowStageController:
     def get_final_stages(self, workflow_id: str) -> List[WorkflowStageResponse]:
         """Get all final stages of a workflow."""
         query = GetFinalStagesQuery(workflow_id=workflow_id)
-        dtos = self._query_bus.query(query)
+        dtos: List[WorkflowStageDto] = self._query_bus.query(query)
 
         return [WorkflowStageResponseMapper.dto_to_response(dto) for dto in dtos]
 
@@ -91,6 +95,7 @@ class WorkflowStageController:
             id=stage_id,
             name=request.name,
             description=request.description,
+            stage_type=request.stage_type,
             required_outcome=request.required_outcome,
             estimated_duration_days=request.estimated_duration_days
         )
@@ -98,7 +103,10 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.query(query)
+        dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Stage not found after update")
 
         return WorkflowStageResponseMapper.dto_to_response(dto)
 
@@ -117,7 +125,7 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = ListStagesByWorkflowQuery(workflow_id=workflow_id)
-        dtos = self._query_bus.query(query)
+        dtos: List[WorkflowStageDto] = self._query_bus.query(query)
 
         return [WorkflowStageResponseMapper.dto_to_response(dto) for dto in dtos]
 
@@ -127,7 +135,10 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.query(query)
+        dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Stage not found after activation")
 
         return WorkflowStageResponseMapper.dto_to_response(dto)
 
@@ -137,6 +148,9 @@ class WorkflowStageController:
         self._command_bus.dispatch(command)
 
         query = GetStageByIdQuery(id=stage_id)
-        dto = self._query_bus.query(query)
+        dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Stage not found after deactivation")
 
         return WorkflowStageResponseMapper.dto_to_response(dto)

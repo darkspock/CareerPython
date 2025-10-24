@@ -2,6 +2,9 @@ from typing import List, Optional
 
 import ulid
 
+from src.candidate.domain.value_objects import CandidateId
+from src.company.domain import CompanyId
+from src.company.domain.value_objects import CompanyUserId
 from src.company_candidate.application.commands.archive_company_candidate_command import ArchiveCompanyCandidateCommand
 from src.company_candidate.application.commands.assign_workflow_command import AssignWorkflowCommand
 from src.company_candidate.application.commands.change_stage_command import ChangeStageCommand
@@ -18,6 +21,7 @@ from src.company_candidate.application.queries.list_company_candidates_by_candid
     ListCompanyCandidatesByCandidateQuery
 from src.company_candidate.application.queries.list_company_candidates_by_company import \
     ListCompanyCandidatesByCompanyQuery
+from src.company_candidate.domain.enums import CandidatePriority
 from src.company_candidate.domain.value_objects import CompanyCandidateId
 from src.company_candidate.presentation.mappers.company_candidate_mapper import CompanyCandidateResponseMapper
 from src.company_candidate.presentation.schemas.assign_workflow_request import AssignWorkflowRequest
@@ -25,6 +29,8 @@ from src.company_candidate.presentation.schemas.change_stage_request import Chan
 from src.company_candidate.presentation.schemas.company_candidate_response import CompanyCandidateResponse
 from src.company_candidate.presentation.schemas.create_company_candidate_request import CreateCompanyCandidateRequest
 from src.company_candidate.presentation.schemas.update_company_candidate_request import UpdateCompanyCandidateRequest
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 
@@ -41,13 +47,14 @@ class CompanyCandidateController:
         company_candidate_id = str(ulid.new())
 
         command = CreateCompanyCandidateCommand(
-            id=company_candidate_id,
-            company_id=request.company_id,
-            candidate_id=request.candidate_id,
-            created_by_user_id=request.created_by_user_id,
+            id=CompanyCandidateId.from_string(company_candidate_id),
+            company_id=CompanyId.from_string(request.company_id),
+            candidate_id=CandidateId.from_string(request.candidate_id),
+            created_by_user_id=CompanyUserId.from_string(request.created_by_user_id),
             position=request.position,
+            source=request.source,
             department=request.department,
-            priority=request.priority,
+            priority=CandidatePriority(request.priority),
             visibility_settings=request.visibility_settings,
             tags=request.tags,
             internal_notes=request.internal_notes
@@ -77,8 +84,8 @@ class CompanyCandidateController:
         CompanyCandidateResponse]:
         """Get a company candidate by company ID and candidate ID"""
         query = GetCompanyCandidateByCompanyAndCandidateQuery(
-            company_id=company_id,
-            candidate_id=candidate_id
+            company_id=CompanyId.from_string(company_id),
+            candidate_id=CandidateId.from_string(candidate_id)
         )
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
 
@@ -89,14 +96,14 @@ class CompanyCandidateController:
 
     def list_company_candidates_by_company(self, company_id: str) -> List[CompanyCandidateResponse]:
         """List all company candidates for a specific company"""
-        query = ListCompanyCandidatesByCompanyQuery(company_id=company_id)
+        query = ListCompanyCandidatesByCompanyQuery(company_id=CompanyId.from_string(company_id))
         dtos: List[CompanyCandidateDto] = self._query_bus.query(query)
 
         return [CompanyCandidateResponseMapper.dto_to_response(dto) for dto in dtos]
 
     def list_company_candidates_by_candidate(self, candidate_id: str) -> List[CompanyCandidateResponse]:
         """List all company candidates for a specific candidate"""
-        query = ListCompanyCandidatesByCandidateQuery(candidate_id=candidate_id)
+        query = ListCompanyCandidatesByCandidateQuery(candidate_id=CandidateId(candidate_id))
         dtos: List[CompanyCandidateDto] = self._query_bus.query(query)
 
         return [CompanyCandidateResponseMapper.dto_to_response(dto) for dto in dtos]
@@ -105,10 +112,10 @@ class CompanyCandidateController:
                                  request: UpdateCompanyCandidateRequest) -> CompanyCandidateResponse:
         """Update company candidate information"""
         command = UpdateCompanyCandidateCommand(
-            id=company_candidate_id,
+            id=CompanyCandidateId.from_string(company_candidate_id),
             position=request.position,
             department=request.department,
-            priority=request.priority,
+            priority=CandidatePriority(request.priority) if request.priority else None,
             visibility_settings=request.visibility_settings,
             tags=request.tags,
             internal_notes=request.internal_notes
@@ -161,7 +168,7 @@ class CompanyCandidateController:
 
     def transfer_ownership(self, company_candidate_id: str) -> CompanyCandidateResponse:
         """Transfer ownership from company to user"""
-        command = TransferOwnershipCommand(id=company_candidate_id)
+        command = TransferOwnershipCommand(id=CompanyCandidateId.from_string(company_candidate_id))
         self._command_bus.dispatch(command)
 
         # Query to get the updated company candidate
@@ -174,15 +181,15 @@ class CompanyCandidateController:
     def assign_workflow(self, company_candidate_id: str, request: AssignWorkflowRequest) -> CompanyCandidateResponse:
         """Assign a workflow to a company candidate"""
         command = AssignWorkflowCommand(
-            id=company_candidate_id,
-            workflow_id=request.workflow_id,
-            initial_stage_id=request.initial_stage_id
+            id=CompanyCandidateId.from_string(company_candidate_id),
+            workflow_id=CompanyWorkflowId.from_string(request.workflow_id),
+            initial_stage_id=WorkflowStageId.from_string(request.initial_stage_id)
         )
 
         self._command_bus.dispatch(command)
 
         # Query to get the updated company candidate
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId.from_string(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")
@@ -192,14 +199,14 @@ class CompanyCandidateController:
     def change_stage(self, company_candidate_id: str, request: ChangeStageRequest) -> CompanyCandidateResponse:
         """Change the workflow stage of a company candidate"""
         command = ChangeStageCommand(
-            id=company_candidate_id,
-            new_stage_id=request.new_stage_id
+            id=CompanyCandidateId.from_string(company_candidate_id),
+            new_stage_id=WorkflowStageId.from_string(request.new_stage_id)
         )
 
         self._command_bus.dispatch(command)
 
         # Query to get the updated company candidate
-        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
+        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId.from_string(company_candidate_id))
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")

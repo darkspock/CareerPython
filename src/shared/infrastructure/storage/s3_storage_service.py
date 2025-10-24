@@ -8,8 +8,8 @@ import os
 from datetime import datetime
 from typing import Optional
 
-import boto3
-from botocore.exceptions import ClientError
+import boto3  # type: ignore[import-untyped]
+from botocore.exceptions import ClientError  # type: ignore[import-untyped]
 
 from src.shared.domain.infrastructure.storage_service_interface import (
     StorageConfig,
@@ -168,7 +168,7 @@ class S3StorageService(StorageServiceInterface):
             Presigned URL for temporary access
         """
         try:
-            url = self.s3_client.generate_presigned_url(
+            url:str = self.s3_client.generate_presigned_url(
                 'get_object',
                 Params={
                     'Bucket': self.bucket_name,
@@ -233,7 +233,7 @@ class S3StorageService(StorageServiceInterface):
                 Bucket=self.bucket_name,
                 Key=file_path
             )
-            return response['ContentLength']
+            return int(response['ContentLength'])
         except ClientError as e:
             if e.response['Error']['Code'] == '404':
                 raise FileNotFoundError(f"File not found in S3: {file_path}")

@@ -33,9 +33,9 @@ class UploadedFile:
 class StorageConfig:
     """Configuration for storage service."""
     max_file_size_mb: int = 10
-    allowed_extensions: list[str] = None
+    allowed_extensions: list[str] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.allowed_extensions is None:
             self.allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
 
@@ -148,6 +148,7 @@ class StorageServiceInterface(ABC):
 
         # Check file extension
         file_ext = '.' + filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+        assert config.allowed_extensions is not None, "allowed_extensions should be set in __post_init__"
         if file_ext not in config.allowed_extensions:
             raise ValueError(
                 f"File extension {file_ext} not allowed. "
@@ -192,5 +193,6 @@ class StorageServiceInterface(ABC):
             return f"company/{company_id}/documents/{safe_filename}"
         elif storage_type == StorageType.INTERVIEW_ATTACHMENT:
             return f"company/{company_id}/interviews/{entity_id}/{safe_filename}"
-        else:
-            return f"company/{company_id}/other/{safe_filename}"
+
+        # All enum values are covered above
+        raise ValueError(f"Unknown storage type: {storage_type}")

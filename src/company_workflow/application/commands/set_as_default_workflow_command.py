@@ -3,14 +3,16 @@ from dataclasses import dataclass
 from src.shared.application.command_bus import Command, CommandHandler
 from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
 from src.company_workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company.domain.value_objects.company_id import CompanyId
 
 
 @dataclass(frozen=True)
 class SetAsDefaultWorkflowCommand(Command):
     """Command to set a workflow as default for a company."""
 
-    workflow_id: str
-    company_id: str
+    workflow_id: CompanyWorkflowId
+    company_id: CompanyId
 
 
 class SetAsDefaultWorkflowCommandHandler(CommandHandler[SetAsDefaultWorkflowCommand]):
@@ -36,7 +38,7 @@ class SetAsDefaultWorkflowCommandHandler(CommandHandler[SetAsDefaultWorkflowComm
 
         # Get current default workflow (if any) and unset it
         current_default = self.repository.get_default_by_company(command.company_id)
-        if current_default and current_default.id.value != command.workflow_id:
+        if current_default and current_default.id != command.workflow_id:
             unset_workflow = current_default.unset_as_default()
             self.repository.save(unset_workflow)
 

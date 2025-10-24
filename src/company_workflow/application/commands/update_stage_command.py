@@ -5,6 +5,7 @@ from src.shared.application.command_bus import Command, CommandHandler
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.domain.enums.stage_outcome import StageOutcome
+from src.company_workflow.domain.enums.stage_type import StageType
 from src.company_workflow.domain.exceptions.stage_not_found import StageNotFound
 
 
@@ -15,6 +16,7 @@ class UpdateStageCommand(Command):
     id: str
     name: str
     description: str
+    stage_type: str
     required_outcome: Optional[str] = None
     estimated_duration_days: Optional[int] = None
 
@@ -45,9 +47,12 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
         if command.required_outcome:
             required_outcome = StageOutcome(command.required_outcome)
 
+        stage_type = StageType(command.stage_type)
+
         updated_stage = stage.update(
             name=command.name,
             description=command.description,
+            stage_type=stage_type,
             required_outcome=required_outcome,
             estimated_duration_days=command.estimated_duration_days
         )

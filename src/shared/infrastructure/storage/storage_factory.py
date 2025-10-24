@@ -37,7 +37,8 @@ class StorageFactory:
             ValueError: If storage_type is invalid or required env vars are missing
         """
         # Get storage type from parameter or environment
-        storage_type = storage_type or os.getenv("STORAGE_TYPE", "local")
+        if storage_type is None:
+            storage_type = os.getenv("STORAGE_TYPE", "local")
         storage_type = storage_type.lower()
 
         # Create config if not provided

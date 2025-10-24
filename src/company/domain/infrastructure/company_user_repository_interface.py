@@ -43,3 +43,8 @@ class CompanyUserRepositoryInterface(ABC):
     def delete(self, company_user_id: CompanyUserId) -> None:
         """Delete a company user"""
         pass
+
+    @abstractmethod
+    def get_by_user_id(self, user_id: UserId) -> Optional[CompanyUser]:
+        """Get a company user by user ID"""
+        pass

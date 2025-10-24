@@ -1,18 +1,19 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
 from src.shared.application.command_bus import Command, CommandHandler
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass(frozen=True)
 class AssignWorkflowCommand(Command):
     """Command to assign a workflow to a company candidate"""
     id: CompanyCandidateId
-    workflow_id: CompanyCandidateId
-    initial_stage_id: Optional[str] = None
+    workflow_id: CompanyWorkflowId
+    initial_stage_id: WorkflowStageId
 
 
 class AssignWorkflowCommandHandler(CommandHandler[AssignWorkflowCommand]):

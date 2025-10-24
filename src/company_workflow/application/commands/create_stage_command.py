@@ -2,8 +2,13 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
+from src.company_workflow.domain.enums.stage_outcome import StageOutcome
+from src.company_workflow.domain.enums.stage_type import StageType
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared.application.command_bus import Command, CommandHandler
 
 
@@ -35,8 +40,8 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
         Args:
             command: The create stage command
         """
-        stage_id = WorkflowStageId.from_string(command.id)
-        workflow_id = CompanyWorkflowId.from_string(command.workflow_id)
+        stage_id = WorkflowStageId(command.id)
+        workflow_id = CompanyWorkflowId(command.workflow_id)
         stage_type = StageType(command.stage_type)
 
         required_outcome = None

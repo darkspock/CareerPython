@@ -7,7 +7,7 @@ class CandidateCommentId:
     """Value object for CandidateComment ID"""
     value: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate ID format"""
         if not self.value:
             raise ValueError("CandidateCommentId cannot be empty")

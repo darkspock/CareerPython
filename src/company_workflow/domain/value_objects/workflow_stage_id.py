@@ -7,7 +7,7 @@ class WorkflowStageId:
     """Value object for workflow stage ID"""
     value: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.value:
             raise ValueError("Workflow stage ID cannot be empty")
 

@@ -3,13 +3,14 @@ from dataclasses import dataclass
 from src.shared.application.command_bus import Command, CommandHandler
 from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
 from src.company_workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 
 
 @dataclass(frozen=True)
 class UnsetAsDefaultWorkflowCommand(Command):
     """Command to unset a workflow as default."""
 
-    workflow_id: str
+    workflow_id: CompanyWorkflowId
 
 
 class UnsetAsDefaultWorkflowCommandHandler(CommandHandler[UnsetAsDefaultWorkflowCommand]):

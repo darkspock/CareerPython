@@ -27,8 +27,8 @@ class CompanyCreate(CompanyBase):
 
 class CompanyUpdate(BaseModel):
     """Schema for updating a company"""
-    name: str = Field(None, min_length=1, max_length=200, description="Company name")
-    domain: Optional[str] = Field(None, min_length=3, max_length=200, description="Company domain")
+    name: str = Field(..., min_length=1, max_length=200, description="Company name")
+    domain: str = Field(..., min_length=3, max_length=200, description="Company domain")
     logo_url: Optional[str] = Field(None, max_length=500, description="Company logo URL")
     settings: Optional[Dict[str, Any]] = Field(None, description="Company settings")
 

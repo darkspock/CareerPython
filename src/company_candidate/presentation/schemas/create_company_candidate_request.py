@@ -6,6 +6,7 @@ class CreateCompanyCandidateRequest(BaseModel):
     """Request schema for creating a company candidate relationship"""
     company_id: str = Field(..., description="Company ID")
     candidate_id: str = Field(..., description="Candidate ID")
+    source: str = Field(..., description="Source of the relationship")
     created_by_user_id: str = Field(..., description="Company user ID who created this relationship")
     position: Optional[str] = Field(None, description="Position/role for the candidate")
     department: Optional[str] = Field(None, description="Department")

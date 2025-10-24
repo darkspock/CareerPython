@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
@@ -12,7 +12,7 @@ from src.company_workflow.domain.enums.stage_outcome import StageOutcome
 class WorkflowStageRepository(WorkflowStageRepositoryInterface):
     """Repository implementation for workflow stage operations"""
 
-    def __init__(self, database):
+    def __init__(self, database: Any) -> None:
         self._database = database
 
     def save(self, stage: WorkflowStage) -> None:
@@ -47,6 +47,26 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
         with self._database.get_session() as session:
             session.query(WorkflowStageModel).filter_by(id=str(stage_id)).delete()
             session.commit()
+
+    def get_initial_stage(self, workflow_id: CompanyWorkflowId) -> Optional[WorkflowStage]:
+        """Get the initial stage of a workflow"""
+        with self._database.get_session() as session:
+            model = session.query(WorkflowStageModel).filter_by(
+                workflow_id=str(workflow_id),
+                stage_type=StageType.INITIAL.value
+            ).first()
+            if model:
+                return self._to_domain(model)
+            return None
+
+    def get_final_stages(self, workflow_id: CompanyWorkflowId) -> List[WorkflowStage]:
+        """Get all final stages of a workflow"""
+        with self._database.get_session() as session:
+            models = session.query(WorkflowStageModel).filter_by(
+                workflow_id=str(workflow_id),
+                stage_type=StageType.FINAL.value
+            ).all()
+            return [self._to_domain(model) for model in models]
 
     def _to_domain(self, model: WorkflowStageModel) -> WorkflowStage:
         """Convert model to domain entity"""

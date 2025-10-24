@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
+from .. import CompanyStatusEnum
 from ..entities.company import Company
 from ..value_objects.company_id import CompanyId
 
@@ -36,4 +37,19 @@ class CompanyRepositoryInterface(ABC):
     @abstractmethod
     def delete(self, company_id: CompanyId) -> None:
         """Delete a company"""
+        pass
+
+    @abstractmethod
+    def count_by_status(self, status: CompanyStatusEnum) -> int:
+        """Count companies by status"""
+        pass
+
+    @abstractmethod
+    def count_total(self) -> int:
+        """Count total companies"""
+        pass
+
+    @abstractmethod
+    def count_recent(self, days: int = 30) -> int:
+        """Count companies created in last N days"""
         pass

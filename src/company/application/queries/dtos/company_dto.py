@@ -4,42 +4,32 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 
 from src.company.domain.entities.company import Company
-from src.company.domain.value_objects.company_id import CompanyId
-from src.user.domain.value_objects.UserId import UserId
 
 
 @dataclass
 class CompanyDto:
     """Data transfer object for Company"""
-    id: CompanyId
+    id: str
     name: str
-    user_id: Optional[UserId]
+    domain: str
+    logo_url: Optional[str]
+    settings: Dict[str, Any]
+    status: str
     created_at: datetime
     updated_at: datetime
-    sector: Optional[str] = None
-    size: Optional[int] = None
-    location: Optional[str] = None
-    website: Optional[str] = None
-    culture: Optional[Dict[str, Any]] = None
-    external_data: Optional[Dict[str, Any]] = None
-    status: str = "PENDING"
 
     @classmethod
     def from_entity(cls, company: Company) -> "CompanyDto":
         """Convert Company entity to DTO"""
         return cls(
-            id=company.id,
+            id=str(company.id),
             name=company.name,
-            user_id=company.user_id,
+            domain=company.domain,
+            logo_url=company.logo_url,
+            settings=company.settings.to_dict(),
+            status=company.status.value,
             created_at=company.created_at,
-            updated_at=company.updated_at,
-            sector=company.sector,
-            size=company.size,
-            location=company.location,
-            website=company.website,
-            culture=company.culture,
-            external_data=company.external_data,
-            status=company.status.value
+            updated_at=company.updated_at
         )
 
 

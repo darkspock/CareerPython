@@ -12,7 +12,7 @@ class UpdateCompanyCommand(Command):
     """Command to update a company"""
     id: str
     name: str
-    domain: Optional[str]
+    domain: str
     logo_url: Optional[str]
     settings: Dict[str, Any]
 

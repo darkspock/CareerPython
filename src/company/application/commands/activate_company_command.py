@@ -21,14 +21,14 @@ class ActivateCompanyCommandHandler(CommandHandler):
 
     def execute(self, command: ActivateCompanyCommand) -> None:
         """Execute the command - NO return value"""
-        company_id = CompanyId.from_string(command.id)
+        company_id = command.id
         company = self.repository.get_by_id(company_id)
 
         if not company:
             raise CompanyNotFoundError(f"Company with id {command.id} not found")
 
-        # Activate using entity method (returns new instance)
-        activated_company = company.activate()
+        # Activate using entity method (mutates state)
+        company.activate()
 
         # Persist
-        self.repository.save(activated_company)
+        self.repository.save(company)

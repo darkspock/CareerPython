@@ -25,8 +25,7 @@ class UpdateCompanyUserCommandHandler(CommandHandler):
 
     def execute(self, command: UpdateCompanyUserCommand) -> None:
         """Execute the command - NO return value"""
-        company_user_id = CompanyUserId.from_string(command.id)
-        company_user = self.repository.get_by_id(company_user_id)
+        company_user = self.repository.get_by_id(command.id)
 
         if not company_user:
             raise CompanyNotFoundError(f"Company user with id {command.id} not found")

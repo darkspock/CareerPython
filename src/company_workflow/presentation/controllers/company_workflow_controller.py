@@ -1,6 +1,9 @@
 import ulid
 from typing import List, Optional
 
+from src.company_workflow.application.dtos.company_workflow_dto import CompanyWorkflowDto
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company.domain.value_objects.company_id import CompanyId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.company_workflow.application.commands.create_workflow_command import CreateWorkflowCommand
@@ -39,15 +42,18 @@ class CompanyWorkflowController:
 
         self._command_bus.dispatch(command)
 
-        query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.query(query)
+        query = GetWorkflowByIdQuery(id=CompanyWorkflowId.from_string(workflow_id))
+        dto: Optional[CompanyWorkflowDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Workflow not found after creation")
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
     def get_workflow_by_id(self, workflow_id: str) -> Optional[CompanyWorkflowResponse]:
         """Get a workflow by ID"""
-        query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.query(query)
+        query = GetWorkflowByIdQuery(id=CompanyWorkflowId.from_string(workflow_id))
+        dto: Optional[CompanyWorkflowDto] = self._query_bus.query(query)
 
         if not dto:
             return None
@@ -57,7 +63,7 @@ class CompanyWorkflowController:
     def list_workflows_by_company(self, company_id: str) -> List[CompanyWorkflowResponse]:
         """List all workflows for a company"""
         query = ListWorkflowsByCompanyQuery(company_id=company_id)
-        dtos = self._query_bus.query(query)
+        dtos: List[CompanyWorkflowDto] = self._query_bus.query(query)
 
         return [CompanyWorkflowResponseMapper.dto_to_response(dto) for dto in dtos]
 
@@ -71,8 +77,11 @@ class CompanyWorkflowController:
 
         self._command_bus.dispatch(command)
 
-        query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.query(query)
+        query = GetWorkflowByIdQuery(id=CompanyWorkflowId.from_string(workflow_id))
+        dto: Optional[CompanyWorkflowDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Workflow not found after update")
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
@@ -81,47 +90,66 @@ class CompanyWorkflowController:
         command = ActivateWorkflowCommand(id=workflow_id)
         self._command_bus.dispatch(command)
 
-        query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.query(query)
+        query = GetWorkflowByIdQuery(id=CompanyWorkflowId.from_string(workflow_id))
+        dto: Optional[CompanyWorkflowDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Workflow not found after activation")
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
     def deactivate_workflow(self, workflow_id: str) -> CompanyWorkflowResponse:
         """Deactivate a workflow"""
-        command = DeactivateWorkflowCommand(workflow_id=workflow_id)
+        command = DeactivateWorkflowCommand(workflow_id=CompanyWorkflowId.from_string(workflow_id))
         self._command_bus.dispatch(command)
 
-        query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.query(query)
+        query = GetWorkflowByIdQuery(id=CompanyWorkflowId.from_string(workflow_id))
+        dto: Optional[CompanyWorkflowDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Workflow not found after deactivation")
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
     def archive_workflow(self, workflow_id: str) -> CompanyWorkflowResponse:
         """Archive a workflow"""
-        command = ArchiveWorkflowCommand(workflow_id=workflow_id)
+        command = ArchiveWorkflowCommand(workflow_id=CompanyWorkflowId.from_string(workflow_id))
         self._command_bus.dispatch(command)
 
-        query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.query(query)
+        query = GetWorkflowByIdQuery(id=CompanyWorkflowId.from_string(workflow_id))
+        dto: Optional[CompanyWorkflowDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Workflow not found after archiving")
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
     def set_as_default_workflow(self, workflow_id: str, company_id: str) -> CompanyWorkflowResponse:
         """Set a workflow as default for a company"""
-        command = SetAsDefaultWorkflowCommand(workflow_id=workflow_id, company_id=company_id)
+        command = SetAsDefaultWorkflowCommand(
+            workflow_id=CompanyWorkflowId.from_string(workflow_id),
+            company_id=CompanyId.from_string(company_id)
+        )
         self._command_bus.dispatch(command)
 
-        query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.query(query)
+        query = GetWorkflowByIdQuery(id=CompanyWorkflowId.from_string(workflow_id))
+        dto: Optional[CompanyWorkflowDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Workflow not found after setting as default")
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
 
     def unset_as_default_workflow(self, workflow_id: str) -> CompanyWorkflowResponse:
         """Unset a workflow as default"""
-        command = UnsetAsDefaultWorkflowCommand(workflow_id=workflow_id)
+        command = UnsetAsDefaultWorkflowCommand(workflow_id=CompanyWorkflowId.from_string(workflow_id))
         self._command_bus.dispatch(command)
 
-        query = GetWorkflowByIdQuery(id=workflow_id)
-        dto = self._query_bus.query(query)
+        query = GetWorkflowByIdQuery(id=CompanyWorkflowId.from_string(workflow_id))
+
+        dto: Optional[CompanyWorkflowDto] = self._query_bus.query(query)
+
+        if not dto:
+            raise Exception("Workflow not found after unsetting as default")
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)

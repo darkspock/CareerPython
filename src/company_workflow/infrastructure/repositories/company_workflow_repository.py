@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from src.company_workflow.domain.entities.company_workflow import CompanyWorkflow
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
@@ -11,7 +11,7 @@ from src.company_workflow.domain.enums.workflow_status import WorkflowStatus
 class CompanyWorkflowRepository(CompanyWorkflowRepositoryInterface):
     """Repository implementation for company workflow operations"""
 
-    def __init__(self, database):
+    def __init__(self, database: Any) -> None:
         self._database = database
 
     def save(self, workflow: CompanyWorkflow) -> None:

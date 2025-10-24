@@ -18,6 +18,8 @@ from src.company_candidate.domain.exceptions import (
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass
@@ -32,8 +34,8 @@ class CompanyCandidate:
     status: CompanyCandidateStatus
     ownership_status: OwnershipStatus
     created_by_user_id: CompanyUserId
-    workflow_id: Optional[str]  # Will be replaced with WorkflowId value object later
-    current_stage_id: Optional[str]  # Will be replaced with StageId value object later
+    workflow_id: Optional[CompanyWorkflowId]
+    current_stage_id: Optional[WorkflowStageId]
     invited_at: datetime
     confirmed_at: Optional[datetime]
     rejected_at: Optional[datetime]
@@ -421,7 +423,7 @@ class CompanyCandidate:
             updated_at=datetime.utcnow(),
         )
 
-    def assign_workflow(self, workflow_id: str, initial_stage_id: str) -> "CompanyCandidate":
+    def assign_workflow(self, workflow_id: CompanyWorkflowId, initial_stage_id: WorkflowStageId) -> "CompanyCandidate":
         """
         Assigns a workflow and initial stage to this candidate
 
@@ -460,7 +462,7 @@ class CompanyCandidate:
             updated_at=datetime.utcnow(),
         )
 
-    def change_stage(self, new_stage_id: str) -> "CompanyCandidate":
+    def change_stage(self, new_stage_id: WorkflowStageId) -> "CompanyCandidate":
         """
         Moves the candidate to a new stage in the workflow
 

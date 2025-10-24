@@ -19,6 +19,8 @@ from src.company_candidate.infrastructure.models.company_candidate_model import 
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from core.database import SQLAlchemyDatabase
 
 
@@ -41,8 +43,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             status=CompanyCandidateStatus(model.status),
             ownership_status=OwnershipStatus(model.ownership_status),
             created_by_user_id=CompanyUserId.from_string(model.created_by_user_id),
-            workflow_id=model.workflow_id,
-            current_stage_id=model.current_stage_id,
+            workflow_id=CompanyWorkflowId.from_string(model.workflow_id) if model.workflow_id else None,
+            current_stage_id=WorkflowStageId.from_string(model.current_stage_id) if model.current_stage_id else None,
             invited_at=model.invited_at,
             confirmed_at=model.confirmed_at,
             rejected_at=model.rejected_at,
@@ -71,8 +73,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             status=entity.status.value,
             ownership_status=entity.ownership_status.value,
             created_by_user_id=str(entity.created_by_user_id),
-            workflow_id=entity.workflow_id,
-            current_stage_id=entity.current_stage_id,
+            workflow_id=str(entity.workflow_id) if entity.workflow_id else None,
+            current_stage_id=str(entity.current_stage_id) if entity.current_stage_id else None,
             invited_at=entity.invited_at,
             confirmed_at=entity.confirmed_at,
             rejected_at=entity.rejected_at,
@@ -104,8 +106,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             model.status = company_candidate.status.value
             model.ownership_status = company_candidate.ownership_status.value
             model.created_by_user_id = str(company_candidate.created_by_user_id)
-            model.workflow_id = company_candidate.workflow_id
-            model.current_stage_id = company_candidate.current_stage_id
+            model.workflow_id = str(company_candidate.workflow_id) if company_candidate.workflow_id else None
+            model.current_stage_id = str(company_candidate.current_stage_id) if company_candidate.current_stage_id else None
             model.invited_at = company_candidate.invited_at
             model.confirmed_at = company_candidate.confirmed_at
             model.rejected_at = company_candidate.rejected_at

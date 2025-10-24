@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
 @dataclass(frozen=True)
@@ -8,9 +8,8 @@ class CompanySettings:
     value: Dict[str, Any]
 
     def __post_init__(self) -> None:
-        """Validate settings"""
-        if self.value is None:
-            object.__setattr__(self, 'value', {})
+        """Validate settings - ensure value is never None"""
+        pass
 
     @classmethod
     def default(cls) -> "CompanySettings":

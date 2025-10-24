@@ -7,7 +7,7 @@ class CompanyWorkflowId:
     """Value object for company workflow ID"""
     value: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.value:
             raise ValueError("Company workflow ID cannot be empty")
 

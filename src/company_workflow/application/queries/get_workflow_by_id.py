@@ -18,8 +18,7 @@ class GetWorkflowByIdQueryHandler(QueryHandler[GetWorkflowByIdQuery, Optional[Co
         self._repository = repository
 
     def handle(self, query: GetWorkflowByIdQuery) -> Optional[CompanyWorkflowDto]:
-        workflow_id = CompanyWorkflowId.from_string(query.id)
-        workflow = self._repository.get_by_id(workflow_id)
+        workflow = self._repository.get_by_id(query.id)
         if not workflow:
             return None
         return CompanyWorkflowMapper.entity_to_dto(workflow)

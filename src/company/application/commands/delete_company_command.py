@@ -26,8 +26,8 @@ class DeleteCompanyCommandHandler:
         if not company:
             raise CompanyNotFoundError(f"Company with id {command.id} not found")
 
-        # Delete using entity method (returns new instance)
-        deleted_company = company.delete()
+        # Delete using entity method (mutates state)
+        company.delete()
 
         # Persist (soft delete)
-        self.repository.save(deleted_company)
+        self.repository.save(company)

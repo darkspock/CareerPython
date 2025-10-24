@@ -28,3 +28,13 @@ class WorkflowStageRepositoryInterface(ABC):
     def delete(self, stage_id: WorkflowStageId) -> None:
         """Delete a stage"""
         pass
+
+    @abstractmethod
+    def get_initial_stage(self, workflow_id: CompanyWorkflowId) -> Optional[WorkflowStage]:
+        """Get the initial stage of a workflow"""
+        pass
+
+    @abstractmethod
+    def get_final_stages(self, workflow_id: CompanyWorkflowId) -> List[WorkflowStage]:
+        """Get all final stages of a workflow"""
+        pass

@@ -1,5 +1,7 @@
 from typing import Optional, List
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from src.company.domain.entities.company import Company
 from src.company.domain.enums import CompanyStatusEnum
@@ -52,6 +54,23 @@ class CompanyRepository(CompanyRepositoryInterface):
             CompanyModel.id == str(company_id)
         ).delete()
         self.session.flush()
+
+    def count_by_status(self, status: CompanyStatusEnum) -> int:
+        """Count companies by status"""
+        return self.session.query(func.count(CompanyModel.id)).filter(
+            CompanyModel.status == status.value
+        ).scalar() or 0
+
+    def count_total(self) -> int:
+        """Count total companies"""
+        return self.session.query(func.count(CompanyModel.id)).scalar() or 0
+
+    def count_recent(self, days: int = 30) -> int:
+        """Count companies created in last N days"""
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        return self.session.query(func.count(CompanyModel.id)).filter(
+            CompanyModel.created_at >= cutoff_date
+        ).scalar() or 0
 
     def _to_domain(self, model: CompanyModel) -> Company:
         """Convert model to domain entity"""
