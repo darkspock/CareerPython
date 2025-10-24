@@ -1,12 +1,14 @@
 """Update Stage Command."""
 from dataclasses import dataclass
 from typing import Optional
-from src.shared.application.command_bus import Command, CommandHandler
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+
 from src.company_workflow.domain.enums.stage_outcome import StageOutcome
 from src.company_workflow.domain.enums.stage_type import StageType
 from src.company_workflow.domain.exceptions.stage_not_found import StageNotFound
+from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)

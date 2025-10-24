@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 
+
 class CreateWorkflowRequest(BaseModel):
     """Request schema for creating a workflow"""
     company_id: str = Field(..., description="Company ID")

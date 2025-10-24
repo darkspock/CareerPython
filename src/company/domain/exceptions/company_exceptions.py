@@ -19,6 +19,7 @@ class CompanyValidationError(DomainException):
     """Raised when company data validation fails"""
     pass
 
+
 class CompanyDomainAlreadyExistsError(DomainException):
     """Raised when trying to create a company domain that already exists"""
     pass

@@ -177,4 +177,3 @@ class Company:
     def is_deleted(self) -> bool:
         """Checks if company is deleted"""
         return self.status == CompanyStatusEnum.DELETED
-

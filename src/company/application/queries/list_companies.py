@@ -37,8 +37,8 @@ class ListCompaniesQueryHandler(QueryHandler[ListCompaniesQuery, List[CompanyDto
         if query.search_term:
             search_lower = query.search_term.lower()
             companies = [c for c in companies if
-                        search_lower in c.name.lower() or
-                        search_lower in c.domain.lower()]
+                         search_lower in c.name.lower() or
+                         search_lower in c.domain.lower()]
 
         # Apply pagination
         start = query.offset

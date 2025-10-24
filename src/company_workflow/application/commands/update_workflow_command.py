@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 
-from src.shared.application.command_bus import Command, CommandHandler
-from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
+from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
+    CompanyWorkflowRepositoryInterface
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)

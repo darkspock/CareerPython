@@ -1,18 +1,16 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional, Dict, List
 
-import ulid
-
-from src.shared.application.command_bus import Command, CommandHandler
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
-from src.company_candidate.domain.entities.company_candidate import CompanyCandidate
-from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
-from src.company.domain.value_objects.company_id import CompanyId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company.domain.value_objects.company_id import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
-from src.company_candidate.domain.value_objects.visibility_settings import VisibilitySettings
+from src.company_candidate.domain.entities.company_candidate import CompanyCandidate
 from src.company_candidate.domain.enums.candidate_priority import CandidatePriority
+from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
+    CompanyCandidateRepositoryInterface
+from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_candidate.domain.value_objects.visibility_settings import VisibilitySettings
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -43,7 +41,8 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
     def execute(self, command: CreateCompanyCandidateCommand) -> None:
         """Handle the create company candidate command"""
         # Parse visibility settings or use default
-        visibility_settings = VisibilitySettings.from_dict(command.visibility_settings) if command.visibility_settings else VisibilitySettings.default()
+        visibility_settings = VisibilitySettings.from_dict(
+            command.visibility_settings) if command.visibility_settings else VisibilitySettings.default()
 
         # Create the company candidate entity
         company_candidate = CompanyCandidate.create(

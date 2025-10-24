@@ -4,7 +4,6 @@ This implementation stores files in Amazon S3.
 Suitable for production environments.
 """
 
-import os
 from datetime import datetime
 from typing import Optional
 
@@ -23,12 +22,12 @@ class S3StorageService(StorageServiceInterface):
     """AWS S3 implementation of StorageServiceInterface."""
 
     def __init__(
-        self,
-        bucket_name: str,
-        aws_access_key_id: Optional[str] = None,
-        aws_secret_access_key: Optional[str] = None,
-        region_name: str = "us-east-1",
-        config: Optional[StorageConfig] = None
+            self,
+            bucket_name: str,
+            aws_access_key_id: Optional[str] = None,
+            aws_secret_access_key: Optional[str] = None,
+            region_name: str = "us-east-1",
+            config: Optional[StorageConfig] = None
     ):
         """Initialize S3 storage service.
 
@@ -75,13 +74,13 @@ class S3StorageService(StorageServiceInterface):
                 raise Exception(f"Error accessing S3 bucket: {str(e)}")
 
     def upload_file(
-        self,
-        file_content: bytes,
-        filename: str,
-        content_type: str,
-        storage_type: StorageType,
-        entity_id: str,
-        company_id: str,
+            self,
+            file_content: bytes,
+            filename: str,
+            content_type: str,
+            storage_type: StorageType,
+            entity_id: str,
+            company_id: str,
     ) -> UploadedFile:
         """Upload a file to S3.
 
@@ -154,9 +153,9 @@ class S3StorageService(StorageServiceInterface):
         return f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{file_path}"
 
     def get_presigned_url(
-        self,
-        file_path: str,
-        expiration: int = 3600
+            self,
+            file_path: str,
+            expiration: int = 3600
     ) -> str:
         """Generate a presigned URL for temporary access to a file.
 
@@ -168,7 +167,7 @@ class S3StorageService(StorageServiceInterface):
             Presigned URL for temporary access
         """
         try:
-            url:str = self.s3_client.generate_presigned_url(
+            url: str = self.s3_client.generate_presigned_url(
                 'get_object',
                 Params={
                     'Bucket': self.bucket_name,

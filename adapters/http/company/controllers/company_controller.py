@@ -1,8 +1,14 @@
 from typing import List, Optional
-import ulid
 
+import ulid
 from fastapi import HTTPException, status
 
+from adapters.http.company.mappers.company_mapper import CompanyResponseMapper
+from adapters.http.company.schemas.company_request import (
+    CreateCompanyRequest,
+    UpdateCompanyRequest,
+)
+from adapters.http.company.schemas.company_response import CompanyResponse
 from src.company.application.commands import (
     CreateCompanyCommand,
     UpdateCompanyCommand,
@@ -10,24 +16,17 @@ from src.company.application.commands import (
     ActivateCompanyCommand,
     DeleteCompanyCommand,
 )
+from src.company.application.dtos.company_dto import CompanyDto
 from src.company.application.queries import (
     GetCompanyByIdQuery,
     GetCompanyByDomainQuery,
     ListCompaniesQuery,
 )
-from src.company.application.dtos.company_dto import CompanyDto
 from src.company.domain import CompanyId, CompanyStatusEnum
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError, CompanyDomainAlreadyExistsError,
 )
-from adapters.http.company.mappers.company_mapper import CompanyResponseMapper
-from adapters.http.company.schemas.company_request import (
-    CreateCompanyRequest,
-    UpdateCompanyRequest,
-    SuspendCompanyRequest,
-)
-from adapters.http.company.schemas.company_response import CompanyResponse
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 
@@ -128,11 +127,11 @@ class CompanyController:
             )
 
     def list_companies(
-        self,
-        search_term: Optional[str] = None,
-        status_filter: Optional[CompanyStatusEnum] = None,
-        limit: int = 100,
-        offset: int = 0
+            self,
+            search_term: Optional[str] = None,
+            status_filter: Optional[CompanyStatusEnum] = None,
+            limit: int = 100,
+            offset: int = 0
     ) -> List[CompanyResponse]:
         """List all companies"""
         try:
@@ -232,7 +231,7 @@ class CompanyController:
         """Activate a company"""
         try:
             # Execute command
-            command = ActivateCompanyCommand(id=company_id,activated_by='')
+            command = ActivateCompanyCommand(id=company_id, activated_by='')
             self.command_bus.dispatch(command)
 
             # Query to get updated company

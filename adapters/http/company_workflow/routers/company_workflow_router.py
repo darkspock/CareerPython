@@ -25,7 +25,7 @@ router = APIRouter(
 def create_workflow(
         request: CreateWorkflowRequest,
         controller: CompanyWorkflowController = Depends(Provide[Container.company_workflow_controller])
-)-> CompanyWorkflowResponse:
+) -> CompanyWorkflowResponse:
     """Create a new workflow"""
     try:
         return controller.create_workflow(request)
