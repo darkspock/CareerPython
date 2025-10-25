@@ -92,6 +92,15 @@ export default function WorkflowsSettingsPage() {
     navigate('/company/workflows/create');
   };
 
+  const handleViewWorkflow = (workflowId: string) => {
+    // TODO: Implement view workflow page
+    alert('View workflow page not implemented yet');
+  };
+
+  const handleEditWorkflow = (workflowId: string) => {
+    navigate(`/company/workflows/${workflowId}/edit`);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -180,20 +189,39 @@ export default function WorkflowsSettingsPage() {
                 <div className="grid grid-cols-2 gap-4 mb-4 py-4 border-t border-b border-gray-200">
                   <div>
                     <p className="text-2xl font-bold text-gray-900">
-                      {workflow.stages?.length || 0}
+                      {workflow.active_candidate_count || 0}
                     </p>
-                    <p className="text-sm text-gray-600">Stages</p>
+                    <p className="text-sm text-gray-600">Active Candidates</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-gray-900">
-                      {workflow.candidate_count || 0}
+                      {workflow.active_position_count || 0}
                     </p>
-                    <p className="text-sm text-gray-600">Candidates</p>
+                    <p className="text-sm text-gray-600">Active Open Positions</p>
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2">
+                  {/* View and Edit buttons - always visible */}
+                  <button
+                    onClick={() => handleViewWorkflow(workflow.id)}
+                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                    title="View workflow"
+                  >
+                    <Eye className="w-4 h-4 mx-auto" />
+                  </button>
+                  {workflow.status !== 'ARCHIVED' && (
+                    <button
+                      onClick={() => handleEditWorkflow(workflow.id)}
+                      className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
+                      title="Edit workflow"
+                    >
+                      <Edit className="w-4 h-4 mx-auto" />
+                    </button>
+                  )}
+
+                  {/* Status-based actions */}
                   {!workflow.is_default && workflow.status === 'ACTIVE' && (
                     <button
                       onClick={() => handleSetDefault(workflow.id)}

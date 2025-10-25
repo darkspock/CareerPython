@@ -111,6 +111,21 @@ from src.company.infrastructure.repositories.company_user_repository import Comp
 from adapters.http.company.controllers.company_controller import CompanyController as CompanyManagementController
 from adapters.http.company.controllers.company_user_controller import CompanyUserController
 
+# CompanyRole Application Layer - Commands
+from src.company_role.application.commands.create_role_command import CreateRoleCommandHandler
+from src.company_role.application.commands.update_role_command import UpdateRoleCommandHandler
+from src.company_role.application.commands.delete_role_command import DeleteRoleCommandHandler
+
+# CompanyRole Application Layer - Queries
+from src.company_role.application.queries.get_role_by_id import GetRoleByIdQueryHandler
+from src.company_role.application.queries.list_roles_by_company import ListRolesByCompanyQueryHandler
+
+# CompanyRole Infrastructure
+from src.company_role.infrastructure.repositories.company_role_repository import CompanyRoleRepository
+
+# CompanyRole Presentation Controllers
+from adapters.http.company.controllers.company_role_controller import CompanyRoleController
+
 # CompanyCandidate Application Layer - Commands
 from src.company_candidate.application.commands.create_company_candidate_command import CreateCompanyCandidateCommandHandler
 from src.company_candidate.application.commands.update_company_candidate_command import UpdateCompanyCandidateCommandHandler
@@ -329,6 +344,12 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
+    # CompanyRole Repository
+    company_role_repository = providers.Factory(
+        CompanyRoleRepository,
+        database=database
+    )
+
     # CompanyCandidate Repository
     company_candidate_repository = providers.Factory(
         CompanyCandidateRepository,
@@ -537,6 +558,17 @@ class Container(containers.DeclarativeContainer):
     get_companies_stats_query_handler = providers.Factory(
         GetCompaniesStatsQueryHandler,
         company_repository=company_repository
+    )
+
+    # CompanyRole Query Handlers
+    get_role_by_id_query_handler = providers.Factory(
+        GetRoleByIdQueryHandler,
+        repository=company_role_repository
+    )
+
+    list_roles_by_company_query_handler = providers.Factory(
+        ListRolesByCompanyQueryHandler,
+        repository=company_role_repository
     )
 
     # CompanyCandidate Query Handlers
@@ -817,6 +849,22 @@ class Container(containers.DeclarativeContainer):
     remove_company_user_command_handler = providers.Factory(
         RemoveCompanyUserCommandHandler,
         repository=company_user_repository
+    )
+
+    # CompanyRole Command Handlers
+    create_role_command_handler = providers.Factory(
+        CreateRoleCommandHandler,
+        repository=company_role_repository
+    )
+
+    update_role_command_handler = providers.Factory(
+        UpdateRoleCommandHandler,
+        repository=company_role_repository
+    )
+
+    delete_role_command_handler = providers.Factory(
+        DeleteRoleCommandHandler,
+        repository=company_role_repository
     )
 
     # CompanyCandidate Command Handlers
@@ -1179,6 +1227,12 @@ class Container(containers.DeclarativeContainer):
         query_bus=query_bus
     )
 
+    company_role_controller = providers.Factory(
+        CompanyRoleController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
     company_candidate_controller = providers.Factory(
         CompanyCandidateController,
         command_bus=command_bus,
@@ -1188,7 +1242,8 @@ class Container(containers.DeclarativeContainer):
     company_workflow_controller = providers.Factory(
         CompanyWorkflowController,
         command_bus=command_bus,
-        query_bus=query_bus
+        query_bus=query_bus,
+        database=database
     )
 
     workflow_stage_controller = providers.Factory(

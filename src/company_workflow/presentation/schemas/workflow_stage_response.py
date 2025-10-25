@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
+from decimal import Decimal
 
 
 class WorkflowStageResponse(BaseModel):
@@ -11,9 +12,15 @@ class WorkflowStageResponse(BaseModel):
     description: str
     stage_type: str
     order: int
-    required_outcome: Optional[str]
+    allow_skip: bool
     estimated_duration_days: Optional[int]
     is_active: bool
+    default_role_ids: Optional[List[str]]
+    default_assigned_users: Optional[List[str]]
+    email_template_id: Optional[str]
+    custom_email_text: Optional[str]
+    deadline_days: Optional[int]
+    estimated_cost: Optional[Decimal]
     created_at: datetime
     updated_at: datetime
 

@@ -1,0 +1,19 @@
+"""Create Role Request Schema."""
+from typing import Optional
+from pydantic import BaseModel, Field
+
+
+class CreateRoleRequest(BaseModel):
+    """Request schema for creating a company role."""
+
+    name: str = Field(..., min_length=1, max_length=100, description="Role name")
+    description: Optional[str] = Field(None, description="Role description")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "Senior Backend Engineer",
+                "description": "Responsible for backend systems and API development"
+            }
+        }
+    }

@@ -1490,7 +1490,7 @@ Si ya existen candidatos en el sistema:
 ### 📚 Documentación de Referencia
 
 #### Para Implementación Inmediata:
-📋 **[COMPANY_IMPLEMENTATION_ROADMAP.md](./COMPANY_IMPLEMENTATION_ROADMAP.md)** - Plan de desarrollo
+📋 **[COMPANY_IMPLEMENTATION_ROADMAP.md](COMPANY_IMPLEMENTATION_ROADMAP.md)** - Plan de desarrollo
 
 Este documento contiene:
 - ✅ Fases de desarrollo priorizadas (ATS primero)
@@ -1501,7 +1501,7 @@ Este documento contiene:
 - ✅ Definición de MVP
 
 #### Para Entender el Modelo Completo:
-📄 **[COMPANY_FINAL_MODEL.md](./COMPANY_FINAL_MODEL.md)** - Modelo de 3 niveles completo
+📄 **[COMPANY_FINAL_MODEL.md](COMPANY_FINAL_MODEL.md)** - Modelo de 3 niveles completo
 
 Este documento explica:
 - Lead → CompanyCandidate → CompanyApplication (3 niveles)
@@ -1514,8 +1514,8 @@ Este documento explica:
 ⚠️ **NOTA**: Head Hunting (Lead) está documentado pero NO se implementará en V1.
 
 #### Documentos Antiguos (referencia histórica):
-- ⚠️ [COMPANY_NEW_PARADIGM.md](./COMPANY_NEW_PARADIGM.md) - Cambio de paradigma (histórico)
-- ⚠️ [COMPANY_FRONTEND_TASKS.md](./COMPANY_FRONTEND_TASKS.md) - Tareas antiguas (desactualizado)
+- ⚠️ [COMPANY_NEW_PARADIGM.md](COMPANY_NEW_PARADIGM.md) - Cambio de paradigma (histórico)
+- ⚠️ [COMPANY_FRONTEND_TASKS.md](COMPANY_FRONTEND_TASKS.md) - Tareas antiguas (desactualizado)
 
 ---
 
@@ -1528,7 +1528,7 @@ Este documento explica:
 - API endpoints
 - Migration
 
-Ver detalles en: [COMPANY_IMPLEMENTATION_ROADMAP.md](./COMPANY_IMPLEMENTATION_ROADMAP.md)
+Ver detalles en: [COMPANY_IMPLEMENTATION_ROADMAP.md](COMPANY_IMPLEMENTATION_ROADMAP.md)
 
 ---
 

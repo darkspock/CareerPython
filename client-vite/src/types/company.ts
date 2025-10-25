@@ -213,3 +213,34 @@ export const formatCompanySize = (size: CompanySize): string => {
   };
   return sizeMap[size] || size;
 };
+
+// Company Role types
+export interface CompanyRole {
+  id: string;
+  company_id: string;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateRoleRequest {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateRoleRequest {
+  name: string;
+  description?: string;
+}
+
+export interface RoleFormData {
+  name: string;
+  description: string;
+}
+
+export interface RoleValidationErrors {
+  name?: string;
+  description?: string;
+}

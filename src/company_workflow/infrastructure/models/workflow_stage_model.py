@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
-from sqlalchemy import String, Integer, Boolean, Enum as SQLEnum, ForeignKey
+from typing import Optional, Any
+from sqlalchemy import String, Integer, Boolean, Enum as SQLEnum, ForeignKey, JSON, Text, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base
 from src.company_workflow.domain.enums.stage_type import StageType
-from src.company_workflow.domain.enums.stage_outcome import StageOutcome
 
 
 @dataclass
@@ -24,11 +23,17 @@ class WorkflowStageModel(Base):
         default=StageType.CUSTOM.value
     )
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
-    required_outcome: Mapped[Optional[str]] = mapped_column(
-        SQLEnum(StageOutcome, native_enum=False, length=20),
-        nullable=True
-    )
+    allow_skip: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     estimated_duration_days: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    # New fields for Phase 2
+    default_role_ids: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # Array of role IDs
+    default_assigned_users: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # Array of user IDs
+    email_template_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # FK to email_templates
+    custom_email_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    deadline_days: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Days to complete stage
+    estimated_cost: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), nullable=True)  # Cost tracking
+
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

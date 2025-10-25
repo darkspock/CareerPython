@@ -16,6 +16,7 @@ from adapters.http.candidate.routers.file_router import file_router
 from adapters.http.candidate.routers.job_router import job_router
 from adapters.http.company.routers.company_router import router as company_router
 from adapters.http.company.routers.company_user_router import router as company_user_router
+from adapters.http.company.routers.company_role_router import router as company_role_router
 from adapters.http.company.routers.company_candidate_application_router import router as company_candidate_application_router
 from adapters.http.company.routers.enum_router import router as company_enum_router
 from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
@@ -58,6 +59,7 @@ app.include_router(file_router)  # File operations (PDF analysis)
 app.include_router(job_router)  # Job status polling for frontend
 app.include_router(company_router)  # Company management
 app.include_router(company_user_router)  # Company user management
+app.include_router(company_role_router)  # Company role management
 app.include_router(company_candidate_application_router)  # Company candidate application management
 app.include_router(company_enum_router)  # Company enums
 app.include_router(company_candidate_router)  # Company candidate management
@@ -101,6 +103,7 @@ container.wire(modules=[
     "adapters.http.candidate.routers.job_router",
     "adapters.http.company.routers.company_router",
     "adapters.http.company.routers.company_user_router",
+    "adapters.http.company.routers.company_role_router",
     "adapters.http.company.routers.company_candidate_application_router",
     "adapters.http.company_candidate.routers.company_candidate_router",
     "adapters.http.company_workflow.routers.company_workflow_router",

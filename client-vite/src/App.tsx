@@ -67,10 +67,13 @@ import AddCandidatePage from './pages/company/AddCandidatePage';
 import CandidateDetailPage from './pages/company/CandidateDetailPage';
 import EditCandidatePage from './pages/company/EditCandidatePage';
 import WorkflowsSettingsPage from './pages/company/WorkflowsSettingsPage';
+import CompanySettingsPage from './pages/company/CompanySettingsPage';
+import CompanyRolesPage from './pages/company/CompanyRolesPage';
 import PositionsListPage from './pages/company/PositionsListPage';
 import WorkflowBoardPage from './pages/company/WorkflowBoardPage';
 import CreatePositionPage from './pages/company/CreatePositionPage';
 import CreateWorkflowPage from './pages/company/CreateWorkflowPage';
+import EditWorkflowPage from './pages/company/EditWorkflowPage';
 import PositionDetailPage from './pages/company/PositionDetailPage';
 import EditPositionPage from './pages/company/EditPositionPage';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -198,7 +201,11 @@ function App() {
                           <Route path="positions/:id" element={<PositionDetailPage />} />
                           <Route path="positions/:id/edit" element={<EditPositionPage />} />
                           <Route path="workflows/create" element={<CreateWorkflowPage />} />
-                          <Route path="settings" element={<WorkflowsSettingsPage />} />
+                          <Route path="workflows/:workflowId/edit" element={<EditWorkflowPage />} />
+                          <Route path="settings" element={<CompanySettingsPage />} />
+                          <Route path="settings/workflows" element={<WorkflowsSettingsPage />} />
+                          <Route path="settings/workflows/create" element={<CreateWorkflowPage />} />
+                          <Route path="settings/roles" element={<CompanyRolesPage />} />
                           <Route index element={<CompanyDashboardPage />} />
                         </Route>
                       </Routes>

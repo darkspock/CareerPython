@@ -15,9 +15,15 @@ class WorkflowStageMapper:
             description=entity.description,
             stage_type=entity.stage_type.value,
             order=entity.order,
-            required_outcome=entity.required_outcome.value if entity.required_outcome else None,
+            allow_skip=entity.allow_skip,
             estimated_duration_days=entity.estimated_duration_days,
             is_active=entity.is_active,
+            default_role_ids=entity.default_role_ids,
+            default_assigned_users=entity.default_assigned_users,
+            email_template_id=entity.email_template_id,
+            custom_email_text=entity.custom_email_text,
+            deadline_days=entity.deadline_days,
+            estimated_cost=entity.estimated_cost,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

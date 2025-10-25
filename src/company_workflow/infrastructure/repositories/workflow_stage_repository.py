@@ -6,7 +6,6 @@ from src.company_workflow.domain.value_objects.company_workflow_id import Compan
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 from src.company_workflow.domain.enums.stage_type import StageType
-from src.company_workflow.domain.enums.stage_outcome import StageOutcome
 
 
 class WorkflowStageRepository(WorkflowStageRepositoryInterface):
@@ -70,6 +69,13 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
 
     def _to_domain(self, model: WorkflowStageModel) -> WorkflowStage:
         """Convert model to domain entity"""
+        from decimal import Decimal
+        from typing import cast
+
+        # Handle JSON fields that can be lists or None
+        default_role_ids = cast(list[str], model.default_role_ids) if model.default_role_ids else []
+        default_assigned_users = cast(list[str], model.default_assigned_users) if model.default_assigned_users else []
+
         return WorkflowStage(
             id=WorkflowStageId.from_string(model.id),
             workflow_id=CompanyWorkflowId.from_string(model.workflow_id),
@@ -77,9 +83,15 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             description=model.description,
             stage_type=StageType(model.stage_type),
             order=model.order,
-            required_outcome=StageOutcome(model.required_outcome) if model.required_outcome else None,
+            allow_skip=model.allow_skip,
             estimated_duration_days=model.estimated_duration_days,
             is_active=model.is_active,
+            default_role_ids=default_role_ids,
+            default_assigned_users=default_assigned_users,
+            email_template_id=model.email_template_id,
+            custom_email_text=model.custom_email_text,
+            deadline_days=model.deadline_days,
+            estimated_cost=Decimal(str(model.estimated_cost)) if model.estimated_cost is not None else None,
             created_at=model.created_at,
             updated_at=model.updated_at
         )
@@ -93,9 +105,15 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             description=entity.description,
             stage_type=entity.stage_type.value,
             order=entity.order,
-            required_outcome=entity.required_outcome.value if entity.required_outcome else None,
+            allow_skip=entity.allow_skip,
             estimated_duration_days=entity.estimated_duration_days,
             is_active=entity.is_active,
+            default_role_ids=entity.default_role_ids,
+            default_assigned_users=entity.default_assigned_users,
+            email_template_id=entity.email_template_id,
+            custom_email_text=entity.custom_email_text,
+            deadline_days=entity.deadline_days,
+            estimated_cost=float(entity.estimated_cost) if entity.estimated_cost is not None else None,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

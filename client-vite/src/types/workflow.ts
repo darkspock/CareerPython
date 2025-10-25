@@ -2,7 +2,7 @@
 
 export type WorkflowStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
 
-export type StageType = 'INITIAL' | 'INTERMEDIATE' | 'FINAL' | 'CUSTOM';
+export type StageType = 'initial' | 'intermediate' | 'final' | 'custom';
 
 export interface CompanyWorkflow {
   id: string;
@@ -17,6 +17,8 @@ export interface CompanyWorkflow {
   // Expanded data
   stages?: WorkflowStage[];
   candidate_count?: number;
+  active_candidate_count?: number;
+  active_position_count?: number;
 }
 
 export interface WorkflowStage {
@@ -27,8 +29,14 @@ export interface WorkflowStage {
   stage_type: StageType;
   order: number;
   is_active: boolean;
-  required_outcome: string | null;
+  allow_skip: boolean;
   estimated_duration_days: number | null;
+  default_role_ids: string[] | null;
+  default_assigned_users: string[] | null;
+  email_template_id: string | null;
+  custom_email_text: string | null;
+  deadline_days: number | null;
+  estimated_cost: string | null;
   created_at: string;
   updated_at: string;
 
@@ -58,8 +66,14 @@ export interface CreateStageRequest {
   stage_type: StageType;
   order?: number;
   is_active?: boolean;
-  required_outcome?: string;
+  allow_skip?: boolean;
   estimated_duration_days?: number;
+  default_role_ids?: string[];
+  default_assigned_users?: string[];
+  email_template_id?: string;
+  custom_email_text?: string;
+  deadline_days?: number;
+  estimated_cost?: string;
 }
 
 export interface UpdateStageRequest {
@@ -68,8 +82,14 @@ export interface UpdateStageRequest {
   stage_type?: StageType;
   order?: number;
   is_active?: boolean;
-  required_outcome?: string;
+  allow_skip?: boolean;
   estimated_duration_days?: number;
+  default_role_ids?: string[];
+  default_assigned_users?: string[];
+  email_template_id?: string;
+  custom_email_text?: string;
+  deadline_days?: number;
+  estimated_cost?: string;
 }
 
 export interface ReorderStagesRequest {
@@ -88,10 +108,10 @@ export const getWorkflowStatusColor = (status: WorkflowStatus): string => {
 
 export const getStageTypeColor = (type: StageType): string => {
   switch (type) {
-    case 'INITIAL': return 'bg-blue-100 text-blue-800';
-    case 'INTERMEDIATE': return 'bg-yellow-100 text-yellow-800';
-    case 'FINAL': return 'bg-green-100 text-green-800';
-    case 'CUSTOM': return 'bg-purple-100 text-purple-800';
+    case 'initial': return 'bg-blue-100 text-blue-800';
+    case 'intermediate': return 'bg-yellow-100 text-yellow-800';
+    case 'final': return 'bg-green-100 text-green-800';
+    case 'custom': return 'bg-purple-100 text-purple-800';
     default: return 'bg-gray-100 text-gray-800';
   }
 };

@@ -34,11 +34,17 @@ Individual stage within a workflow.
 - `workflow_id`: Parent workflow
 - `name`: Stage name (e.g., "HR Interview", "Technical Test")
 - `description`: What happens in this stage
-- `stage_type`: Type of stage (screening, interview, assessment, offer, final)
+- `stage_type`: Type of stage (initial, intermediate, final, custom)
 - `order`: Position in workflow (0, 1, 2, ...)
 - `required_outcome`: What outcome is needed to proceed? (optional)
 - `estimated_duration_days`: How long candidates typically stay here
 - `is_active`: Can candidates be in this stage?
+- **`default_roles`**: Array of role names that should be assigned to this stage (e.g., ["Tech Lead", "HR Manager"])
+- **`default_assigned_users`**: Array of user IDs that are always assigned to this stage (optional)
+- **`email_template_id`**: Default email template to use when candidate enters stage (optional)
+- **`custom_email_text`**: Additional text to include in email template (optional)
+- **`deadline_days`**: Number of days to complete this stage (optional, for task priority)
+- **`estimated_cost`**: Estimated cost for completing this stage (optional, for ROI tracking)
 
 ### 3. **Position** (Job Posting)
 A job opening with assigned workflow.
@@ -116,6 +122,8 @@ A formal application to a specific position.
 - `shared_data`: JSON with authorization of what candidate data to share
 - `status`: active, offer_made, accepted, rejected, withdrawn
 - `applied_at`, `tags`, `internal_notes`, `priority`
+- **`stage_entered_at`**: When candidate entered current stage (for deadline tracking)
+- **`stage_deadline`**: Calculated deadline for current stage (stage_entered_at + deadline_days)
 
 **Key Behavior**:
 - Created when candidate applies or company adds candidate to position
@@ -124,6 +132,45 @@ A formal application to a specific position.
 - Only data in `shared_data` is visible to company
 - Candidate can withdraw anytime
 - Company can move through stages (if assigned)
+- When moving to new stage, `stage_entered_at` is updated and deadline is recalculated
+
+### 7. **Task Management System**
+A system for tracking user assignments and work items.
+
+**Concepts**:
+- **Task**: A candidate application in a stage that requires action from a user
+- **Task Priority**: Calculated based on multiple factors
+- **Task Assignment**: Can be direct (specific user) or indirect (any user with matching role)
+
+**Priority Calculation**:
+```
+Priority Score = Base Priority + Deadline Weight + Position Weight + Candidate Weight
+
+Where:
+- Base Priority = 100
+- Deadline Weight =
+  * Overdue (past deadline): +50
+  * Due today: +30
+  * Due in 1-2 days: +20
+  * Due in 3-5 days: +10
+  * Due in 6+ days: 0
+- Position Weight = position.priority * 10 (0-50)
+- Candidate Weight = candidate.priority * 5 (0-25)
+
+Maximum Priority = 225
+```
+
+**Task States**:
+- `pending`: Waiting for user action
+- `in_progress`: User has started working on it
+- `completed`: Moved to next stage or final outcome
+- `blocked`: Cannot proceed (missing info, etc.)
+
+**User Task Dashboard**:
+Users see tasks in this order:
+1. **Directly Assigned**: Applications where user is specifically assigned to current stage
+2. **Role-Based**: Applications in stages matching user's roles, not yet assigned to specific person
+3. Sorted by: Priority (desc), then Stage Entered Date (asc)
 
 ---
 
@@ -635,27 +682,234 @@ stages:
 
 ## Implementation Notes
 
-### Phase 1.5 Tasks
+### Current Status (Phase 1 - Basic Workflows)
 
-1. **Backend**:
-   - Add `workflow_id` to Position entity and model
-   - Add `default_workflow_id` to Company entity
-   - Create PositionStageAssignment entity + full module
-   - Update CompanyApplication with permission checks
-   - Create seeder for predefined workflows
-   - API endpoints for stage assignments
+**Completed**:
+- ✅ CompanyWorkflow entity and CRUD operations
+- ✅ WorkflowStage entity and CRUD operations
+- ✅ Basic workflow UI (Create/Edit/List workflows)
+- ✅ Stage ordering with up/down buttons
+- ✅ Set default workflow per company
+- ✅ Workflow status management (Active/Inactive/Archived)
 
-2. **Frontend**:
-   - Position form: workflow selector + stage assignment editor
-   - Application kanban: permission-aware stage transitions
-   - Settings page: manage workflows and templates
-   - User assignment UI components
+**Partially Completed**:
+- ⚠️ WorkflowStage has `required_outcome` and `estimated_duration_days` fields in DB but not exposed in UI
+- ⚠️ No connection between workflows and positions yet
+- ⚠️ No user assignments to stages
 
-3. **Migrations**:
-   - Add workflow_id to positions table
-   - Add default_workflow_id to companies table
-   - Create position_stage_assignments table
-   - Seed predefined workflows
+### Phase 2: Enhanced Stage Configuration
+
+**Backend Tasks**:
+1. **Add new fields to WorkflowStage**:
+   - [ ] Add `default_roles` (JSONB array) - roles that should be assigned
+   - [ ] Add `default_assigned_users` (JSONB array) - user IDs always assigned
+   - [ ] Add `email_template_id` (FK to email_templates, nullable)
+   - [ ] Add `custom_email_text` (TEXT, nullable)
+   - [ ] Add `deadline_days` (INTEGER, nullable) - days to complete stage
+   - [ ] Add `estimated_cost` (DECIMAL, nullable) - cost tracking
+   - [ ] Create migration for new fields
+
+2. **Update WorkflowStage entity**:
+   - [ ] Add new properties to domain entity
+   - [ ] Update factory methods to handle new fields
+   - [ ] Update mapper to include new fields in DTO
+   - [ ] Update repository to persist new fields
+
+3. **Create/Update Commands**:
+   - [ ] Update CreateStageCommand with new fields
+   - [ ] Update UpdateStageCommand with new fields
+   - [ ] Update command handlers
+
+**Frontend Tasks**:
+1. **Update Stage Form (Create/Edit)**:
+   - [ ] Add "Required Outcome" field (dropdown)
+   - [ ] Add "Estimated Duration (days)" field (number input)
+   - [ ] Add "Deadline (days)" field (number input)
+   - [ ] Add "Estimated Cost" field (currency input)
+   - [ ] Add "Default Roles" field (multi-select or tags)
+   - [ ] Add "Email Template" field (dropdown, optional)
+   - [ ] Add "Custom Email Text" field (textarea, optional)
+   - [ ] Update form validation
+   - [ ] Update API calls to include new fields
+
+2. **Update Workflow Display**:
+   - [ ] Show additional stage details in workflow view
+   - [ ] Display costs summary for entire workflow
+   - [ ] Display estimated timeline for workflow
+
+### Phase 3: Position-Workflow Integration
+
+**Backend Tasks**:
+1. **Update Position Entity**:
+   - [ ] Add `workflow_id` field (FK to company_workflows)
+   - [ ] Add validation: workflow must belong to same company
+   - [ ] Add default: use company's default_workflow if not specified
+   - [ ] Create migration
+
+2. **Create PositionStageAssignment Module**:
+   - [ ] Create domain entity `PositionStageAssignment`
+   - [ ] Create value objects (PositionStageAssignmentId)
+   - [ ] Create repository interface and implementation
+   - [ ] Create commands: AssignUsersToStageCommand, RemoveUserFromStageCommand
+   - [ ] Create queries: ListStageAssignmentsQuery, GetAssignedUsersQuery
+   - [ ] Create command/query handlers
+   - [ ] Create DTOs and mappers
+   - [ ] Create API controller
+   - [ ] Create router with endpoints
+   - [ ] Add to dependency injection container
+   - [ ] Create migration for table
+
+3. **Update Position Creation Flow**:
+   - [ ] Modify CreatePositionCommand to accept workflow_id
+   - [ ] When position created with workflow, auto-create stage assignments based on `default_assigned_users`
+   - [ ] Create command: CopyWorkflowToPositionCommand (creates initial assignments)
+
+**Frontend Tasks**:
+1. **Position Form Updates**:
+   - [ ] Add "Workflow" selector in position creation form
+   - [ ] Load company workflows for dropdown
+   - [ ] Add stage assignment step after basic info
+   - [ ] Show workflow stages with user multi-select for each
+   - [ ] Pre-populate with default_assigned_users from workflow
+   - [ ] Allow editing assignments before creating position
+
+2. **Position Management**:
+   - [ ] Display assigned workflow in position detail view
+   - [ ] Add "Edit Stage Assignments" button in position detail
+   - [ ] Create stage assignments editor modal/page
+   - [ ] Show current assignments with ability to add/remove users
+
+### Phase 4: Application Processing with Permissions
+
+**Backend Tasks**:
+1. **Update CompanyApplication Entity**:
+   - [ ] Add `stage_entered_at` (DATETIME)
+   - [ ] Add `stage_deadline` (DATETIME, calculated)
+   - [ ] Add method: `calculate_stage_deadline()` using workflow stage's deadline_days
+   - [ ] Add method: `move_to_stage()` that updates stage_entered_at and recalculates deadline
+   - [ ] Create migration
+
+2. **Create Permission System**:
+   - [ ] Create service: StagePermissionService
+   - [ ] Method: `can_user_process_stage(user_id, application_id)` → bool
+   - [ ] Method: `get_assigned_users_for_stage(position_id, stage_id)` → List[UserId]
+   - [ ] Integrate permission checks in ChangeStageCommand handler
+   - [ ] Return 403 Forbidden if user not authorized
+
+3. **Update ChangeStageCommand**:
+   - [ ] Add permission validation before allowing stage change
+   - [ ] Update stage_entered_at when stage changes
+   - [ ] Recalculate stage_deadline
+   - [ ] Emit domain event: ApplicationStageChangedEvent
+
+**Frontend Tasks**:
+1. **Workflow Board/Kanban**:
+   - [ ] Check permissions before showing "Move" button
+   - [ ] Call permission check API endpoint
+   - [ ] Disable stage transitions if user not assigned
+   - [ ] Show tooltip explaining why action is disabled
+   - [ ] Handle 403 errors gracefully with user-friendly message
+
+2. **Application Detail View**:
+   - [ ] Display stage deadline
+   - [ ] Show visual indicator if deadline approaching/overdue
+   - [ ] Display assigned users for current stage
+   - [ ] Show stage history with timestamps
+
+### Phase 5: Task Management System
+
+**Backend Tasks**:
+1. **Create Task Domain**:
+   - [ ] Create entity: Task (or use CompanyApplication directly)
+   - [ ] Add computed property: `priority_score` (calculated)
+   - [ ] Add method: `calculate_priority()` based on deadline, position, candidate
+   - [ ] Add field to CompanyApplication: `task_status` (pending/in_progress/completed/blocked)
+
+2. **Create Task Queries**:
+   - [ ] Query: GetMyTasksQuery (returns applications assigned to user)
+   - [ ] Query: GetRoleTasksQuery (returns applications matching user's roles, unassigned)
+   - [ ] Sort by priority, then stage_entered_at
+   - [ ] Add filters: priority range, stage, position
+   - [ ] Create query handler with optimized SQL
+
+3. **Create CompanyUser Role System** (if not exists):
+   - [ ] Add `roles` field to CompanyUser (JSONB array)
+   - [ ] Common roles: "HR Manager", "Tech Lead", "Recruiter", "Hiring Manager"
+   - [ ] Create role assignment commands
+   - [ ] Update user management to assign roles
+
+4. **Task API Endpoints**:
+   - [ ] GET /api/company-users/{user_id}/tasks/assigned (direct assignments)
+   - [ ] GET /api/company-users/{user_id}/tasks/available (role-based, unassigned)
+   - [ ] GET /api/company-users/{user_id}/tasks/all (combined view)
+   - [ ] POST /api/applications/{app_id}/claim (user claims task)
+   - [ ] POST /api/applications/{app_id}/unclaim (user releases task)
+   - [ ] PUT /api/applications/{app_id}/task-status (update status)
+
+**Frontend Tasks**:
+1. **User Dashboard**:
+   - [ ] Create "My Tasks" page
+   - [ ] Section 1: Directly Assigned (applications in stages where I'm assigned)
+   - [ ] Section 2: Available Tasks (applications in stages matching my roles)
+   - [ ] Display priority indicator (color coded)
+   - [ ] Display deadline with urgency indicator
+   - [ ] Display position and candidate name
+   - [ ] Quick actions: View, Claim, Move to Next Stage
+   - [ ] Filters: by stage, by priority, by deadline
+   - [ ] Sort options
+
+2. **Task Indicators**:
+   - [ ] Badge showing task count in navigation
+   - [ ] Highlight overdue tasks in red
+   - [ ] Highlight due-today tasks in orange
+   - [ ] Show estimated time remaining
+
+### Phase 6: Email Integration
+
+**Backend Tasks**:
+1. **Create Email Template System** (if not exists):
+   - [ ] Entity: EmailTemplate (id, company_id, name, subject, body, variables)
+   - [ ] Templates can have placeholders: {{candidate_name}}, {{position_title}}, etc.
+   - [ ] CRUD operations for email templates
+   - [ ] Default templates seeded for common scenarios
+
+2. **Stage Transition Email**:
+   - [ ] When application moves to new stage, check if stage has email_template_id
+   - [ ] If yes, render template with custom_email_text appended
+   - [ ] Send email to candidate
+   - [ ] Log email sent in application history
+   - [ ] Create event handler: OnApplicationStageChanged → SendStageEmailHandler
+
+**Frontend Tasks**:
+1. **Email Template Management**:
+   - [ ] Create email templates CRUD UI
+   - [ ] Template editor with variable helpers
+   - [ ] Preview functionality
+   - [ ] Test send feature
+
+2. **Workflow Stage Email Configuration**:
+   - [ ] In stage edit form, show email template selector
+   - [ ] Preview selected template
+   - [ ] Add custom text field
+   - [ ] Preview final email with custom text
+
+### Phase 7: Analytics & Reporting
+
+**Backend Tasks**:
+1. **Workflow Analytics Queries**:
+   - [ ] Average time per stage
+   - [ ] Conversion rate per stage
+   - [ ] Total applications per workflow
+   - [ ] Bottleneck detection (stages taking longest)
+   - [ ] Cost per hire calculation (sum of stage costs)
+
+**Frontend Tasks**:
+1. **Analytics Dashboard**:
+   - [ ] Workflow performance metrics
+   - [ ] Stage conversion funnel visualization
+   - [ ] Time-in-stage charts
+   - [ ] Cost tracking per workflow
+   - [ ] Export reports
 
 ### Testing Strategy
 

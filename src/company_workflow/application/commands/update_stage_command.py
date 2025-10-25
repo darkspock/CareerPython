@@ -1,8 +1,8 @@
 """Update Stage Command."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
+from decimal import Decimal
 
-from src.company_workflow.domain.enums.stage_outcome import StageOutcome
 from src.company_workflow.domain.enums.stage_type import StageType
 from src.company_workflow.domain.exceptions.stage_not_found import StageNotFound
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
@@ -19,8 +19,14 @@ class UpdateStageCommand(Command):
     name: str
     description: str
     stage_type: str
-    required_outcome: Optional[str] = None
+    allow_skip: bool = False
     estimated_duration_days: Optional[int] = None
+    default_role_ids: Optional[List[str]] = None
+    default_assigned_users: Optional[List[str]] = None
+    email_template_id: Optional[str] = None
+    custom_email_text: Optional[str] = None
+    deadline_days: Optional[int] = None
+    estimated_cost: Optional[Decimal] = None
 
 
 class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
@@ -45,18 +51,20 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
         if not stage:
             raise StageNotFound(f"Stage with id {command.id} not found")
 
-        required_outcome = None
-        if command.required_outcome:
-            required_outcome = StageOutcome(command.required_outcome)
-
         stage_type = StageType(command.stage_type)
 
         updated_stage = stage.update(
             name=command.name,
             description=command.description,
             stage_type=stage_type,
-            required_outcome=required_outcome,
-            estimated_duration_days=command.estimated_duration_days
+            allow_skip=command.allow_skip,
+            estimated_duration_days=command.estimated_duration_days,
+            default_role_ids=command.default_role_ids,
+            default_assigned_users=command.default_assigned_users,
+            email_template_id=command.email_template_id,
+            custom_email_text=command.custom_email_text,
+            deadline_days=command.deadline_days,
+            estimated_cost=command.estimated_cost
         )
 
         self.repository.save(updated_stage)

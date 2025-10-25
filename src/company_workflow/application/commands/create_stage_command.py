@@ -1,9 +1,9 @@
 """Create Stage Command."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
+from decimal import Decimal
 
 from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
-from src.company_workflow.domain.enums.stage_outcome import StageOutcome
 from src.company_workflow.domain.enums.stage_type import StageType
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
@@ -22,9 +22,15 @@ class CreateStageCommand(Command):
     description: str
     stage_type: str
     order: int
-    required_outcome: Optional[str] = None
+    allow_skip: bool = False
     estimated_duration_days: Optional[int] = None
     is_active: bool = True
+    default_role_ids: Optional[List[str]] = None
+    default_assigned_users: Optional[List[str]] = None
+    email_template_id: Optional[str] = None
+    custom_email_text: Optional[str] = None
+    deadline_days: Optional[int] = None
+    estimated_cost: Optional[Decimal] = None
 
 
 class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
@@ -44,10 +50,6 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
         workflow_id = CompanyWorkflowId(command.workflow_id)
         stage_type = StageType(command.stage_type)
 
-        required_outcome = None
-        if command.required_outcome:
-            required_outcome = StageOutcome(command.required_outcome)
-
         stage = WorkflowStage.create(
             id=stage_id,
             workflow_id=workflow_id,
@@ -55,9 +57,15 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
             description=command.description,
             stage_type=stage_type,
             order=command.order,
-            required_outcome=required_outcome,
+            allow_skip=command.allow_skip,
             estimated_duration_days=command.estimated_duration_days,
-            is_active=command.is_active
+            is_active=command.is_active,
+            default_role_ids=command.default_role_ids,
+            default_assigned_users=command.default_assigned_users,
+            email_template_id=command.email_template_id,
+            custom_email_text=command.custom_email_text,
+            deadline_days=command.deadline_days,
+            estimated_cost=command.estimated_cost
         )
 
         self.repository.save(stage)

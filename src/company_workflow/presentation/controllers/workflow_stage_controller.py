@@ -40,9 +40,15 @@ class WorkflowStageController:
             description=request.description,
             stage_type=request.stage_type,
             order=request.order,
-            required_outcome=request.required_outcome,
+            allow_skip=request.allow_skip,
             estimated_duration_days=request.estimated_duration_days,
-            is_active=request.is_active
+            is_active=request.is_active,
+            default_role_ids=request.default_role_ids,
+            default_assigned_users=request.default_assigned_users,
+            email_template_id=request.email_template_id,
+            custom_email_text=request.custom_email_text,
+            deadline_days=request.deadline_days,
+            estimated_cost=request.estimated_cost
         )
 
         self._command_bus.dispatch(command)
@@ -96,8 +102,14 @@ class WorkflowStageController:
             name=request.name,
             description=request.description,
             stage_type=request.stage_type,
-            required_outcome=request.required_outcome,
-            estimated_duration_days=request.estimated_duration_days
+            allow_skip=request.allow_skip,
+            estimated_duration_days=request.estimated_duration_days,
+            default_role_ids=request.default_role_ids,
+            default_assigned_users=request.default_assigned_users,
+            email_template_id=request.email_template_id,
+            custom_email_text=request.custom_email_text,
+            deadline_days=request.deadline_days,
+            estimated_cost=request.estimated_cost
         )
 
         self._command_bus.dispatch(command)

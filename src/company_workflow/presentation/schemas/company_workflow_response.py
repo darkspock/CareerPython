@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional, List
 
 
 class CompanyWorkflowResponse(BaseModel):
@@ -12,6 +13,12 @@ class CompanyWorkflowResponse(BaseModel):
     is_default: bool
     created_at: datetime
     updated_at: datetime
+
+    # Optional enriched fields (populated when needed)
+    stages: Optional[List[dict]] = None  # Will contain WorkflowStageResponse data
+    candidate_count: Optional[int] = None
+    active_candidate_count: Optional[int] = None
+    active_position_count: Optional[int] = None
 
     class Config:
         from_attributes = True

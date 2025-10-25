@@ -876,6 +876,30 @@ export const api = {
       body: JSON.stringify({ language_code: languageCode }),
     }),
 
+  // Company Roles API
+  listCompanyRoles: (companyId: string, activeOnly: boolean = false) =>
+    ApiClient.authenticatedRequest(`/companies/${companyId}/roles?active_only=${activeOnly}`),
+
+  getCompanyRole: (companyId: string, roleId: string) =>
+    ApiClient.authenticatedRequest(`/companies/${companyId}/roles/${roleId}`),
+
+  createCompanyRole: (companyId: string, data: { name: string; description?: string }) =>
+    ApiClient.authenticatedRequest(`/companies/${companyId}/roles`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateCompanyRole: (companyId: string, roleId: string, data: { name: string; description?: string }) =>
+    ApiClient.authenticatedRequest(`/companies/${companyId}/roles/${roleId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteCompanyRole: (companyId: string, roleId: string) =>
+    ApiClient.authenticatedRequest(`/companies/${companyId}/roles/${roleId}`, {
+      method: 'DELETE',
+    }),
+
   // Generic authenticated request
   authenticatedRequest: (endpoint: string, options?: RequestInit) =>
     ApiClient.authenticatedRequest(endpoint, options),

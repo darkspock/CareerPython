@@ -15,9 +15,15 @@ class WorkflowStageResponseMapper:
             description=dto.description,
             stage_type=dto.stage_type,
             order=dto.order,
-            required_outcome=dto.required_outcome,
+            allow_skip=dto.allow_skip,
             estimated_duration_days=dto.estimated_duration_days,
             is_active=dto.is_active,
+            default_role_ids=dto.default_role_ids,
+            default_assigned_users=dto.default_assigned_users,
+            email_template_id=dto.email_template_id,
+            custom_email_text=dto.custom_email_text,
+            deadline_days=dto.deadline_days,
+            estimated_cost=dto.estimated_cost,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
