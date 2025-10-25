@@ -6,9 +6,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import HomePage from './pages/HomePage';
 import LandingPage from './pages/LandingPage';
 import CandidatesPage from './pages/CandidatesPage';
-// REMOVED: LoginPage - using specific CandidateLoginPage and AdminLoginPage instead
+// REMOVED: LoginPage - using specific CandidateLoginPage, AdminLoginPage, and CompanyLoginPage instead
 import CandidateLoginPage from './pages/CandidateLoginPage';
 import AdminLoginPage from './pages/AdminLoginPage';
+import CompanyLoginPage from './pages/CompanyLoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
@@ -100,12 +101,14 @@ function App() {
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/candidate/dashboard" element={<HomePage />} />
                         <Route path="/candidate/search" element={<CandidatesPage />} />
-                        {/* REMOVED: /auth/login - using specific /candidate/auth/login and /admin/auth/login instead */}
+                        {/* REMOVED: /auth/login - using specific /candidate/auth/login, /admin/auth/login, and /company/auth/login instead */}
                         <Route path="/candidate/auth/login" element={<CandidateLoginPage />} />
                         <Route path="/admin/auth/login" element={<AdminLoginPage />} />
+                        <Route path="/company/auth/login" element={<CompanyLoginPage />} />
                         {/* Redirect common login paths for convenience */}
                         <Route path="/admin/login" element={<Navigate to="/admin/auth/login" replace />} />
                         <Route path="/candidate/login" element={<Navigate to="/candidate/auth/login" replace />} />
+                        <Route path="/company/login" element={<Navigate to="/company/auth/login" replace />} />
                         <Route path="/candidate/auth/register" element={<RegisterPage />} />
                         <Route path="/candidate/reset-password" element={<ResetPasswordPage />} />
                         <Route path="/candidate/onboarding/complete-profile" element={<CompleteProfilePage />} />

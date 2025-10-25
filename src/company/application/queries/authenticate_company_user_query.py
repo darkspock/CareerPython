@@ -4,6 +4,7 @@ from typing import Optional
 
 from src.shared.application.query_bus import Query, QueryHandler
 from src.company.application.dtos.auth_dto import AuthenticatedCompanyUserDto
+from src.company.domain.enums import CompanyUserStatus
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.user.domain.services.password_service import PasswordService
@@ -54,7 +55,7 @@ class AuthenticateCompanyUserQueryHandler(QueryHandler[AuthenticateCompanyUserQu
             return None
 
         # Check if company user is active
-        if company_user.status.value != "ACTIVE":
+        if company_user.status != CompanyUserStatus.ACTIVE:
             return None
 
         # Create access token with company context
