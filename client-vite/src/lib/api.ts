@@ -15,13 +15,13 @@ export class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const response = await fetch(url, {
+      ...options,
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
-      ...options,
     });
 
     if (!response.ok) {

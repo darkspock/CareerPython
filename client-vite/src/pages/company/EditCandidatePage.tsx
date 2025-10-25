@@ -1,18 +1,25 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, X, Plus } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import type { Priority } from '../../types/companyCandidate';
 
-export default function AddCandidatePage() {
+export default function EditCandidatePage() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [candidateInfo, setCandidateInfo] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
+
   const [formData, setFormData] = useState({
-    candidate_name: '',
-    candidate_email: '',
-    candidate_phone: '',
+    position: '',
+    department: '',
     priority: 'medium' as Priority,
     tags: [] as string[],
     internal_notes: '',
@@ -20,14 +27,38 @@ export default function AddCandidatePage() {
 
   const [tagInput, setTagInput] = useState('');
 
-  const getCompanyId = () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
+  useEffect(() => {
+    if (id) {
+      loadCandidate();
+    }
+  }, [id]);
+
+  const loadCandidate = async () => {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.company_id;
-    } catch {
-      return null;
+      setLoadingData(true);
+      const candidate = await companyCandidateService.getById(id!);
+
+      // Set candidate basic info (read-only)
+      setCandidateInfo({
+        name: candidate.candidate_name || 'N/A',
+        email: candidate.candidate_email || 'N/A',
+        phone: candidate.candidate_phone || 'N/A',
+      });
+
+      // Set editable form data
+      setFormData({
+        position: '', // This field doesn't exist in the response, keeping empty
+        department: '', // This field doesn't exist in the response, keeping empty
+        priority: candidate.priority,
+        tags: candidate.tags || [],
+        internal_notes: candidate.internal_notes || '',
+      });
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load candidate');
+      console.error('Error loading candidate:', err);
+    } finally {
+      setLoadingData(false);
     }
   };
 
@@ -48,76 +79,51 @@ export default function AddCandidatePage() {
     });
   };
 
-  const getCompanyUserId = () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.company_user_id || payload.sub; // Try company_user_id first, fallback to sub
-    } catch {
-      return null;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const companyId = getCompanyId();
-    const companyUserId = getCompanyUserId();
-
-    if (!companyId) {
-      setError('Company ID not found');
-      return;
-    }
-
-    if (!companyUserId) {
-      setError('Company User ID not found');
-      return;
-    }
-
-    if (!formData.candidate_name || !formData.candidate_email) {
-      setError('Candidate name and email are required');
-      return;
-    }
-
     try {
       setLoading(true);
 
-      await companyCandidateService.create({
-        company_id: companyId,
-        candidate_name: formData.candidate_name,
-        candidate_email: formData.candidate_email,
-        candidate_phone: formData.candidate_phone || undefined,
-        created_by_user_id: companyUserId,
-        source: 'manual_import', // Source indicating manual addition by company
+      await companyCandidateService.update(id!, {
+        position: formData.position || undefined,
+        department: formData.department || undefined,
         priority: formData.priority,
         tags: formData.tags,
         internal_notes: formData.internal_notes || undefined,
       });
 
-      navigate('/company/candidates');
+      navigate(`/company/candidates/${id}`);
     } catch (err: any) {
-      setError(err.message || 'Failed to add candidate');
-      console.error('Error adding candidate:', err);
+      setError(err.message || 'Failed to update candidate');
+      console.error('Error updating candidate:', err);
     } finally {
       setLoading(false);
     }
   };
+
+  if (loadingData) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
       {/* Header */}
       <div className="mb-6">
         <button
-          onClick={() => navigate('/company/candidates')}
+          onClick={() => navigate(`/company/candidates/${id}`)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Candidates
+          Back to Candidate
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">Add New Candidate</h1>
-        <p className="text-gray-600 mt-1">Create a new candidate profile</p>
+        <h1 className="text-2xl font-bold text-gray-900">Edit Candidate</h1>
+        <p className="text-gray-600 mt-1">Update candidate information</p>
       </div>
 
       {/* Error Message */}
@@ -130,57 +136,64 @@ export default function AddCandidatePage() {
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-          {/* Basic Information */}
+          {/* Candidate Basic Info (Read-only) */}
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Candidate</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-1">
+                  Name
+                </label>
+                <p className="text-sm text-gray-900">{candidateInfo.name}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-1">
+                  Email
+                </label>
+                <p className="text-sm text-gray-900">{candidateInfo.email}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-1">
+                  Phone
+                </label>
+                <p className="text-sm text-gray-900">{candidateInfo.phone}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Company-Candidate Relationship Information (Editable) */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Candidate Information</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Position & Department</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Name */}
-              <div className="md:col-span-2">
+              {/* Position */}
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name <span className="text-red-500">*</span>
+                  Position
                 </label>
                 <input
                   type="text"
-                  required
-                  value={formData.candidate_name}
+                  value={formData.position}
                   onChange={(e) =>
-                    setFormData({ ...formData, candidate_name: e.target.value })
+                    setFormData({ ...formData, position: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="John Doe"
+                  placeholder="e.g., Senior Software Engineer"
                 />
               </div>
 
-              {/* Email */}
+              {/* Department */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email <span className="text-red-500">*</span>
+                  Department
                 </label>
                 <input
-                  type="email"
-                  required
-                  value={formData.candidate_email}
+                  type="text"
+                  value={formData.department}
                   onChange={(e) =>
-                    setFormData({ ...formData, candidate_email: e.target.value })
+                    setFormData({ ...formData, department: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  value={formData.candidate_phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, candidate_phone: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="+1 234 567 8900"
+                  placeholder="e.g., Engineering"
                 />
               </div>
 
@@ -275,7 +288,7 @@ export default function AddCandidatePage() {
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
-              onClick={() => navigate('/company/candidates')}
+              onClick={() => navigate(`/company/candidates/${id}`)}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             >
               Cancel
@@ -286,7 +299,7 @@ export default function AddCandidatePage() {
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-5 h-5" />
-              {loading ? 'Adding...' : 'Add Candidate'}
+              {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>

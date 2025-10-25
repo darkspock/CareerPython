@@ -63,6 +63,7 @@ class AuthenticateCompanyUserQueryHandler(QueryHandler[AuthenticateCompanyUserQu
             "sub": user.email,
             "user_id": user.id.value,
             "company_id": company_user.company_id.value,
+            "company_user_id": company_user.id.value,
             "role": company_user.role.value
         })
 

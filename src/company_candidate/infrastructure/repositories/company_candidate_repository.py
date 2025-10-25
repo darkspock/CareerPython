@@ -12,10 +12,16 @@ from src.company_candidate.domain.value_objects import (
     CompanyCandidateId,
     VisibilitySettings,
 )
+from src.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
+    CompanyCandidateWithCandidateReadModel
+)
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import (
     CompanyCandidateRepositoryInterface
 )
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+from src.candidate.infrastructure.models.candidate_model import CandidateModel
+from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
+from src.job_position.infrastructure.models.job_position_model import JobPositionModel
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
@@ -180,3 +186,74 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         session = self._get_session()
         session.query(CompanyCandidateModel).filter_by(id=str(company_candidate_id)).delete()
         session.commit()
+
+    def list_by_company_with_candidate_info(self, company_id: CompanyId) -> List[CompanyCandidateWithCandidateReadModel]:
+        """
+        List all company candidates for a company with candidate basic info and position.
+        Uses SQL JOIN for efficient data retrieval.
+        """
+        session = self._get_session()
+
+        # Perform JOINs between company_candidates, candidates, candidate_applications, and job_positions
+        results = session.query(
+            CompanyCandidateModel,
+            CandidateModel.name,
+            CandidateModel.email,
+            CandidateModel.phone,
+            CandidateApplicationModel.job_position_id,
+            CandidateApplicationModel.application_status,
+            JobPositionModel.title
+        ).join(
+            CandidateModel,
+            CompanyCandidateModel.candidate_id == CandidateModel.id
+        ).outerjoin(
+            CandidateApplicationModel,
+            CompanyCandidateModel.candidate_id == CandidateApplicationModel.candidate_id
+        ).outerjoin(
+            JobPositionModel,
+            CandidateApplicationModel.job_position_id == JobPositionModel.id
+        ).filter(
+            CompanyCandidateModel.company_id == str(company_id)
+        ).all()
+
+        # Convert to read models
+        read_models = []
+        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title in results:
+            read_model = CompanyCandidateWithCandidateReadModel(
+                id=cc_model.id,
+                company_id=cc_model.company_id,
+                candidate_id=cc_model.candidate_id,
+                status=cc_model.status,
+                ownership_status=cc_model.ownership_status,
+                created_by_user_id=cc_model.created_by_user_id,
+                workflow_id=cc_model.workflow_id,
+                current_stage_id=cc_model.current_stage_id,
+                invited_at=cc_model.invited_at,
+                confirmed_at=cc_model.confirmed_at,
+                rejected_at=cc_model.rejected_at,
+                archived_at=cc_model.archived_at,
+                visibility_settings=cc_model.visibility_settings or {},
+                tags=cc_model.tags or [],
+                internal_notes=cc_model.internal_notes or '',
+                position=cc_model.position,
+                department=cc_model.department,
+                priority=cc_model.priority,
+                lead_id=cc_model.lead_id,
+                source=cc_model.source,
+                resume_url=cc_model.resume_url,
+                resume_uploaded_by=cc_model.resume_uploaded_by,
+                resume_uploaded_at=cc_model.resume_uploaded_at,
+                created_at=cc_model.created_at,
+                updated_at=cc_model.updated_at,
+                # Candidate info from JOIN
+                candidate_name=candidate_name,
+                candidate_email=candidate_email,
+                candidate_phone=candidate_phone,
+                # Job position info from candidate_application JOIN
+                job_position_id=job_position_id,
+                job_position_title=job_position_title,
+                application_status=application_status,
+            )
+            read_models.append(read_model)
+
+        return read_models

@@ -6,7 +6,7 @@ import { companyWorkflowService } from '../../services/companyWorkflowService';
 interface StageFormData {
   name: string;
   description: string;
-  stage_type: 'INITIAL' | 'INTERMEDIATE' | 'FINAL' | 'CUSTOM';
+  stage_type: 'initial' | 'intermediate' | 'final' | 'custom';
   order: number;
 }
 
@@ -19,10 +19,10 @@ export default function CreateWorkflowPage() {
   const [workflowDescription, setWorkflowDescription] = useState('');
   const [isDefault, setIsDefault] = useState(false);
   const [stages, setStages] = useState<StageFormData[]>([
-    { name: 'Applied', description: 'Candidate has applied', stage_type: 'INITIAL', order: 1 },
-    { name: 'Screening', description: 'Initial screening', stage_type: 'INTERMEDIATE', order: 2 },
-    { name: 'Interview', description: 'Interview stage', stage_type: 'INTERMEDIATE', order: 3 },
-    { name: 'Offer', description: 'Offer extended', stage_type: 'FINAL', order: 4 },
+    { name: 'Applied', description: 'Candidate has applied', stage_type: 'initial', order: 1 },
+    { name: 'Screening', description: 'Initial screening', stage_type: 'intermediate', order: 2 },
+    { name: 'Interview', description: 'Interview stage', stage_type: 'intermediate', order: 3 },
+    { name: 'Offer', description: 'Offer extended', stage_type: 'final', order: 4 },
   ]);
 
   const getCompanyId = () => {
@@ -40,7 +40,7 @@ export default function CreateWorkflowPage() {
     const newOrder = stages.length + 1;
     setStages([
       ...stages,
-      { name: '', description: '', stage_type: 'INTERMEDIATE', order: newOrder },
+      { name: '', description: '', stage_type: 'intermediate', order: newOrder },
     ]);
   };
 
@@ -245,10 +245,10 @@ export default function CreateWorkflowPage() {
                       onChange={(e) => handleStageChange(index, 'stage_type', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <option value="INITIAL">Initial</option>
-                      <option value="INTERMEDIATE">Intermediate</option>
-                      <option value="FINAL">Final</option>
-                      <option value="CUSTOM">Custom</option>
+                      <option value="initial">Initial</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="final">Final</option>
+                      <option value="custom">Custom</option>
                     </select>
                   </div>
 

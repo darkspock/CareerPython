@@ -65,6 +65,7 @@ import CompanyLayout from './components/company/CompanyLayout';
 import CandidatesListPage from './pages/company/CandidatesListPage';
 import AddCandidatePage from './pages/company/AddCandidatePage';
 import CandidateDetailPage from './pages/company/CandidateDetailPage';
+import EditCandidatePage from './pages/company/EditCandidatePage';
 import WorkflowsSettingsPage from './pages/company/WorkflowsSettingsPage';
 import PositionsListPage from './pages/company/PositionsListPage';
 import WorkflowBoardPage from './pages/company/WorkflowBoardPage';
@@ -190,6 +191,7 @@ function App() {
                           <Route path="candidates" element={<CandidatesListPage />} />
                           <Route path="candidates/add" element={<AddCandidatePage />} />
                           <Route path="candidates/:id" element={<CandidateDetailPage />} />
+                          <Route path="candidates/:id/edit" element={<EditCandidatePage />} />
                           <Route path="workflow-board" element={<WorkflowBoardPage />} />
                           <Route path="positions" element={<PositionsListPage />} />
                           <Route path="positions/create" element={<CreatePositionPage />} />

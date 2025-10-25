@@ -3,6 +3,7 @@ from typing import Optional, List
 
 from ..entities.company_candidate import CompanyCandidate
 from ..value_objects import CompanyCandidateId
+from ..read_models.company_candidate_with_candidate_read_model import CompanyCandidateWithCandidateReadModel
 from src.company.domain.value_objects import CompanyId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
 
@@ -47,4 +48,12 @@ class CompanyCandidateRepositoryInterface(ABC):
     @abstractmethod
     def delete(self, company_candidate_id: CompanyCandidateId) -> None:
         """Delete a company candidate relationship"""
+        pass
+
+    @abstractmethod
+    def list_by_company_with_candidate_info(self, company_id: CompanyId) -> List[CompanyCandidateWithCandidateReadModel]:
+        """
+        List all company candidates for a company with candidate basic info.
+        Returns read models (not entities) with data from both tables via JOIN.
+        """
         pass

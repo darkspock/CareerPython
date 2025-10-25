@@ -126,6 +126,7 @@ from src.company_candidate.application.queries.get_company_candidate_by_id impor
 from src.company_candidate.application.queries.get_company_candidate_by_company_and_candidate import GetCompanyCandidateByCompanyAndCandidateQueryHandler
 from src.company_candidate.application.queries.list_company_candidates_by_company import ListCompanyCandidatesByCompanyQueryHandler
 from src.company_candidate.application.queries.list_company_candidates_by_candidate import ListCompanyCandidatesByCandidateQueryHandler
+from src.company_candidate.application.queries.list_company_candidates_with_candidate_info import ListCompanyCandidatesWithCandidateInfoQueryHandler
 
 # CompanyCandidate Infrastructure
 from src.company_candidate.infrastructure.repositories.company_candidate_repository import CompanyCandidateRepository
@@ -556,6 +557,11 @@ class Container(containers.DeclarativeContainer):
 
     list_company_candidates_by_candidate_query_handler = providers.Factory(
         ListCompanyCandidatesByCandidateQueryHandler,
+        repository=company_candidate_repository
+    )
+
+    list_company_candidates_with_candidate_info_query_handler = providers.Factory(
+        ListCompanyCandidatesWithCandidateInfoQueryHandler,
         repository=company_candidate_repository
     )
 

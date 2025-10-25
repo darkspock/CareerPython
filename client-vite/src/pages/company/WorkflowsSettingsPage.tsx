@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Settings, Archive, Trash2, Star, CheckCircle } from 'lucide-react';
+import { Plus, Settings, Archive, Trash2, Star, CheckCircle, Eye, Edit } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import type { CompanyWorkflow } from '../../types/workflow';
 import { getWorkflowStatusColor } from '../../types/workflow';

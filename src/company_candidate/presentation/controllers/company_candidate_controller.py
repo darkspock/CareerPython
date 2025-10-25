@@ -57,27 +57,47 @@ class CompanyCandidateController:
             if not request.candidate_name or not request.candidate_email:
                 raise ValueError("candidate_name and candidate_email are required when creating new candidate")
 
-            # Generate new candidate ID
-            new_candidate_id = CandidateId.generate()
+            # Try to create a new candidate
+            # If email already exists, we'll catch the exception and search for the existing candidate
+            try:
+                # Generate new candidate ID
+                new_candidate_id = CandidateId.generate()
 
-            # Use a special system user ID for company-created candidates without user accounts
-            # This represents candidates that haven't registered yet
-            system_user_id = UserId.from_string("01H0000000000000000000000")  # Special system user ID
+                # Use a special system user ID for company-created candidates without user accounts
+                # This represents candidates that haven't registered yet
+                system_user_id = UserId.from_string("01H0000000000000000000000")  # Special system user ID
 
-            # Create candidate with minimal required data and placeholder values
-            create_candidate_cmd = CreateCandidateCommand(
-                id=new_candidate_id,
-                name=request.candidate_name,
-                email=request.candidate_email,
-                phone=request.candidate_phone or "",
-                user_id=system_user_id,
-                date_of_birth=date(1900, 1, 1),  # Placeholder, can be updated later
-                city="Unknown",  # Placeholder, can be updated later
-                country="Unknown",  # Placeholder, can be updated later
-            )
-            self._command_bus.dispatch(create_candidate_cmd)
+                # Create candidate with minimal required data and placeholder values
+                create_candidate_cmd = CreateCandidateCommand(
+                    id=new_candidate_id,
+                    name=request.candidate_name,
+                    email=request.candidate_email,
+                    phone=request.candidate_phone or "",
+                    user_id=system_user_id,
+                    date_of_birth=date(1900, 1, 1),  # Placeholder, can be updated later
+                    city="Unknown",  # Placeholder, can be updated later
+                    country="Unknown",  # Placeholder, can be updated later
+                )
+                self._command_bus.dispatch(create_candidate_cmd)
+                candidate_id_to_use = str(new_candidate_id.value)
 
-            candidate_id_to_use = str(new_candidate_id.value)
+            except Exception as e:
+                # If candidate creation fails due to duplicate email, search for existing candidate
+                if "email ya está registrado" in str(e) or "already exists" in str(e).lower():
+                    # Search for existing candidate by email using admin query
+                    from src.candidate.application.queries.admin_list_candidates import AdminListCandidatesQuery
+                    search_query = AdminListCandidatesQuery(email=request.candidate_email, limit=1)
+                    candidates = self._query_bus.query(search_query)
+
+                    if candidates and len(candidates) > 0:
+                        # Use the existing candidate
+                        candidate_id_to_use = candidates[0].id
+                    else:
+                        # Email error but candidate not found - re-raise original exception
+                        raise e
+                else:
+                    # Different error - re-raise
+                    raise e
 
         # Create company-candidate relationship
         company_candidate_id = CompanyCandidateId.generate()
@@ -113,7 +133,19 @@ class CompanyCandidateController:
         if not dto:
             return None
 
-        return CompanyCandidateResponseMapper.dto_to_response(dto)
+        # Get candidate basic info
+        from src.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery
+        candidate_query = GetCandidateByIdQuery(id=CandidateId.from_string(dto.candidate_id))
+        candidate_dto = self._query_bus.query(candidate_query)
+
+        # Create response with combined data
+        response = CompanyCandidateResponseMapper.dto_to_response(dto)
+        if candidate_dto:
+            response.candidate_name = candidate_dto.name
+            response.candidate_email = candidate_dto.email
+            response.candidate_phone = candidate_dto.phone
+
+        return response
 
     def get_company_candidate_by_company_and_candidate(self, company_id: str, candidate_id: str) -> Optional[
         CompanyCandidateResponse]:
@@ -130,11 +162,51 @@ class CompanyCandidateController:
         return CompanyCandidateResponseMapper.dto_to_response(dto)
 
     def list_company_candidates_by_company(self, company_id: str) -> List[CompanyCandidateResponse]:
-        """List all company candidates for a specific company"""
-        query = ListCompanyCandidatesByCompanyQuery(company_id=CompanyId.from_string(company_id))
-        dtos: List[CompanyCandidateDto] = self._query_bus.query(query)
+        """List all company candidates for a specific company with candidate info"""
+        from src.company_candidate.application.queries.list_company_candidates_with_candidate_info import (
+            ListCompanyCandidatesWithCandidateInfoQuery
+        )
 
-        return [CompanyCandidateResponseMapper.dto_to_response(dto) for dto in dtos]
+        # Use new query that returns read models with candidate info
+        query = ListCompanyCandidatesWithCandidateInfoQuery(company_id=company_id)
+        read_models = self._query_bus.query(query)
+
+        # Map read models directly to response
+        responses = []
+        for read_model in read_models:
+            response = CompanyCandidateResponse(
+                id=read_model.id,
+                company_id=read_model.company_id,
+                candidate_id=read_model.candidate_id,
+                status=read_model.status,
+                ownership_status=read_model.ownership_status,
+                created_by_user_id=read_model.created_by_user_id,
+                workflow_id=read_model.workflow_id,
+                current_stage_id=read_model.current_stage_id,
+                invited_at=read_model.invited_at,
+                confirmed_at=read_model.confirmed_at,
+                rejected_at=read_model.rejected_at,
+                archived_at=read_model.archived_at,
+                visibility_settings=read_model.visibility_settings,
+                tags=read_model.tags,
+                internal_notes=read_model.internal_notes,
+                position=read_model.position,
+                department=read_model.department,
+                priority=read_model.priority,
+                created_at=read_model.created_at,
+                updated_at=read_model.updated_at,
+                # Include candidate info from read model
+                candidate_name=read_model.candidate_name,
+                candidate_email=read_model.candidate_email,
+                candidate_phone=read_model.candidate_phone,
+                # Include job position info from read model
+                job_position_id=read_model.job_position_id,
+                job_position_title=read_model.job_position_title,
+                application_status=read_model.application_status,
+            )
+            responses.append(response)
+
+        return responses
 
     def list_company_candidates_by_candidate(self, candidate_id: str) -> List[CompanyCandidateResponse]:
         """List all company candidates for a specific candidate"""

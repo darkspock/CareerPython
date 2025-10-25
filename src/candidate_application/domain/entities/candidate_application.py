@@ -59,12 +59,13 @@ class CandidateApplication:
             notes: Optional[str] = None
     ) -> 'CandidateApplication':
         """Factory method para crear una nueva aplicación"""
+        now = datetime.utcnow()
         return CandidateApplication(
             id=id,
             candidate_id=candidate_id,
             job_position_id=job_position_id,
             application_status=ApplicationStatusEnum.APPLIED,
-            applied_at=datetime.utcnow(),
-            updated_at=None,
+            applied_at=now,
+            updated_at=now,  # Set updated_at to creation time
             notes=notes
         )

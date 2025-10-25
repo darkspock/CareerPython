@@ -1,10 +1,16 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Dict
 
 
-class CompanyCandidateResponse(BaseModel):
-    """Company candidate API response schema"""
+@dataclass
+class CompanyCandidateWithCandidateReadModel:
+    """
+    Read model for company candidate with candidate basic info.
+    Used for efficient queries with JOIN between company_candidates and candidates tables.
+    This is NOT a domain entity - it's a read-only data structure for queries.
+    """
+    # Company Candidate fields
     id: str
     company_id: str
     candidate_id: str
@@ -23,16 +29,20 @@ class CompanyCandidateResponse(BaseModel):
     position: Optional[str]
     department: Optional[str]
     priority: str
+    lead_id: Optional[str]
+    source: str
+    resume_url: Optional[str]
+    resume_uploaded_by: Optional[str]
+    resume_uploaded_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
-    # Candidate basic info (optional, populated when needed)
-    candidate_name: Optional[str] = None
-    candidate_email: Optional[str] = None
-    candidate_phone: Optional[str] = None
-    # Job position info (optional, populated from candidate_application)
+
+    # Candidate basic info (from JOIN)
+    candidate_name: str
+    candidate_email: str
+    candidate_phone: str
+
+    # Job position info (from candidate_application JOIN)
     job_position_id: Optional[str] = None
     job_position_title: Optional[str] = None
     application_status: Optional[str] = None
-
-    class Config:
-        from_attributes = True

@@ -10,7 +10,15 @@ import {
   Trash2,
   Archive,
   UserPlus,
-  Tag
+  Tag,
+  Briefcase,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  AlertCircle,
+  Flag,
+  Building2,
+  User
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import type { CompanyCandidate } from '../../types/companyCandidate';
@@ -19,6 +27,53 @@ import {
   getPriorityColor,
   getOwnershipColor
 } from '../../types/companyCandidate';
+import { Tooltip } from '../../components/ui/Tooltip';
+
+// Helper functions for icons
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'ACTIVE':
+      return null; // Don't show icon for active status
+    case 'PENDING_INVITATION':
+      return <Clock className="w-4 h-4 text-yellow-600" />;
+    case 'PENDING_CONFIRMATION':
+      return <AlertCircle className="w-4 h-4 text-blue-600" />;
+    case 'REJECTED':
+      return <XCircle className="w-4 h-4 text-red-600" />;
+    case 'ARCHIVED':
+      return <Archive className="w-4 h-4 text-gray-600" />;
+    default:
+      return <AlertCircle className="w-4 h-4 text-gray-600" />;
+  }
+};
+
+const getPriorityIcon = (priority: string) => {
+  switch (priority) {
+    case 'high':
+      return <Flag className="w-4 h-4 text-red-600" />;
+    case 'medium':
+      return null; // Don't show icon for medium priority
+    case 'low':
+      return <Flag className="w-4 h-4 text-green-600" />;
+    default:
+      return null;
+  }
+};
+
+const getOwnershipIcon = (ownership: string) => {
+  switch (ownership) {
+    case 'COMPANY_OWNED':
+      return <Building2 className="w-4 h-4 text-blue-600" />;
+    case 'USER_OWNED':
+      return <User className="w-4 h-4 text-purple-600" />;
+    default:
+      return <User className="w-4 h-4 text-gray-600" />;
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  return status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+};
 
 export default function CandidatesListPage() {
   const navigate = useNavigate();
@@ -28,6 +83,12 @@ export default function CandidatesListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [priorityFilter, setPriorityFilter] = useState<string>('');
+
+  // Modal state for assigning position
+  const [showPositionModal, setShowPositionModal] = useState(false);
+  const [selectedCandidateForPosition, setSelectedCandidateForPosition] = useState<CompanyCandidate | null>(null);
+  const [positions, setPositions] = useState<any[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(false);
 
   // Get company_id from JWT token
   const getCompanyId = () => {
@@ -73,6 +134,60 @@ export default function CandidatesListPage() {
       loadCandidates();
     } catch (err: any) {
       alert('Failed to archive candidate: ' + err.message);
+    }
+  };
+
+  const handleOpenPositionModal = async (candidate: CompanyCandidate) => {
+    setSelectedCandidateForPosition(candidate);
+    setShowPositionModal(true);
+
+    // Load open positions
+    try {
+      setLoadingPositions(true);
+      const companyId = getCompanyId();
+      if (!companyId) return;
+
+      // Import PositionService dynamically to avoid circular dependencies
+      const { PositionService } = await import('../../services/positionService');
+      const response = await PositionService.getPositions({
+        company_id: companyId,
+        status: 'OPEN' // Only show open positions
+      });
+      setPositions(response.positions || []);
+    } catch (err: any) {
+      console.error('Error loading positions:', err);
+      setPositions([]);
+    } finally {
+      setLoadingPositions(false);
+    }
+  };
+
+  const handleAssignPosition = async (positionId: string) => {
+    if (!selectedCandidateForPosition) return;
+
+    try {
+      // Import ApiClient
+      const { ApiClient } = await import('../../lib/api');
+
+      // Create candidate_application via company endpoint
+      await ApiClient.post('/api/company/candidate-applications/', {
+        candidate_id: selectedCandidateForPosition.candidate_id,
+        job_position_id: positionId,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+
+      // Close modal and reload candidates
+      setShowPositionModal(false);
+      setSelectedCandidateForPosition(null);
+      loadCandidates();
+
+      alert('Position assigned successfully!');
+    } catch (err: any) {
+      alert('Failed to assign position: ' + err.message);
+      console.error('Error assigning position:', err);
     }
   };
 
@@ -190,28 +305,22 @@ export default function CandidatesListPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+            <table className="w-[90%]">
+                <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-3 w-[50px] max-w-[50px] min-w-[50px]">
+                    {/* Empty header for icons column */}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                     Candidate
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                    Position / Stage
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Priority
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ownership
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stage
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Tags
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                     Actions
                   </th>
                 </tr>
@@ -219,50 +328,73 @@ export default function CandidatesListPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCandidates.map((candidate) => (
                   <tr key={candidate.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
+                    <td className="px-2 py-4 whitespace-nowrap w-[50px] max-w-[50px] min-w-[50px]">
+                      <div className="flex items-center gap-1 justify-center">
+                        {getStatusIcon(candidate.status) && (
+                          <Tooltip text={getStatusLabel(candidate.status)}>
+                            {getStatusIcon(candidate.status)}
+                          </Tooltip>
+                        )}
+                        {getPriorityIcon(candidate.priority) && (
+                          <Tooltip text={candidate.priority.charAt(0).toUpperCase() + candidate.priority.slice(1)}>
+                            {getPriorityIcon(candidate.priority)}
+                          </Tooltip>
+                        )}
+                        {candidate.ownership_status === 'COMPANY_OWNED' && (
+                          <Tooltip text="Company Owned">
+                            {getOwnershipIcon(candidate.ownership_status)}
+                          </Tooltip>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="min-w-[200px] max-w-[300px]">
+                        <div className="text-sm font-medium text-gray-900 truncate">
                           {candidate.candidate_name || 'N/A'}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 truncate">
                           {candidate.candidate_email || 'N/A'}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getCandidateStatusColor(
-                          candidate.status
-                        )}`}
-                      >
-                        {candidate.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
-                          candidate.priority
-                        )}`}
-                      >
-                        {candidate.priority}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getOwnershipColor(
-                          candidate.ownership_status
-                        )}`}
-                      >
-                        {candidate.ownership_status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {candidate.stage_name || 'No stage'}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {candidate.workflow_name || ''}
-                      </div>
+                    <td className="px-6 py-4">
+                      {candidate.job_position_title ? (
+                        <>
+                          <button
+                            onClick={() => navigate(`/company/positions/${candidate.job_position_id}`)}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-left"
+                          >
+                            {candidate.job_position_title}
+                          </button>
+                          {candidate.application_status && (
+                            <div className="text-xs text-gray-500">
+                              Status: {candidate.application_status}
+                            </div>
+                          )}
+                          {candidate.workflow_id && candidate.current_stage_id && (
+                            <div className="text-xs text-gray-500">
+                              {candidate.stage_name} - {candidate.workflow_name}
+                            </div>
+                          )}
+                        </>
+                      ) : candidate.workflow_id && candidate.current_stage_id ? (
+                        <>
+                          <div className="text-sm text-gray-900">
+                            {candidate.stage_name || 'No stage'}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {candidate.workflow_name || ''}
+                          </div>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => handleOpenPositionModal(candidate)}
+                          className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors whitespace-nowrap"
+                        >
+                          <Briefcase className="w-3 h-3" />
+                          Assign Position
+                        </button>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
@@ -283,27 +415,30 @@ export default function CandidatesListPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => navigate(`/company/candidates/${candidate.id}`)}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="View details"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => navigate(`/company/candidates/${candidate.id}/edit`)}
-                          className="text-green-600 hover:text-green-900"
-                          title="Edit"
-                        >
-                          <Edit className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleArchive(candidate.id)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Archive"
-                        >
-                          <Archive className="w-5 h-5" />
-                        </button>
+                        <Tooltip text="View candidate details">
+                          <button
+                            onClick={() => navigate(`/company/candidates/${candidate.id}`)}
+                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                        </Tooltip>
+                        <Tooltip text="Edit candidate">
+                          <button
+                            onClick={() => navigate(`/company/candidates/${candidate.id}/edit`)}
+                            className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                          >
+                            <Edit className="w-5 h-5" />
+                          </button>
+                        </Tooltip>
+                        <Tooltip text="Archive candidate">
+                          <button
+                            onClick={() => handleArchive(candidate.id)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                          >
+                            <Archive className="w-5 h-5" />
+                          </button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>
@@ -318,6 +453,83 @@ export default function CandidatesListPage() {
       {filteredCandidates.length > 0 && (
         <div className="mt-4 text-sm text-gray-600">
           Showing {filteredCandidates.length} of {candidates.length} candidates
+        </div>
+      )}
+
+      {/* Assign Position Modal */}
+      {showPositionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Assign Position</h2>
+              {selectedCandidateForPosition && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Select an open position for {selectedCandidateForPosition.candidate_name}
+                </p>
+              )}
+            </div>
+
+            {/* Modal Body */}
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              {loadingPositions ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : positions.length === 0 ? (
+                <div className="text-center py-12">
+                  <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No open positions available</p>
+                  <button
+                    onClick={() => navigate('/company/positions/create')}
+                    className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  >
+                    Create a new position
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {positions.map((position) => (
+                    <button
+                      key={position.id}
+                      onClick={() => handleAssignPosition(position.id)}
+                      className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">{position.title}</h3>
+                          <p className="text-sm text-gray-600 mt-1">{position.department || 'No department'}</p>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                            <span>{position.location || 'Remote'}</span>
+                            <span>•</span>
+                            <span>{position.work_location || 'Full-time'}</span>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                            Open
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => {
+                  setShowPositionModal(false);
+                  setSelectedCandidateForPosition(null);
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

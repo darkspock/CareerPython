@@ -25,7 +25,7 @@ class CandidateApplicationModel(Base):
     candidate_id: Mapped[str] = mapped_column(String, ForeignKey("candidates.id"), nullable=False, index=True)
     job_position_id: Mapped[str] = mapped_column(String, ForeignKey("job_positions.id"), nullable=False, index=True)
     application_status: Mapped[ApplicationStatusEnum] = mapped_column(
-        Enum(ApplicationStatusEnum),
+        Enum(ApplicationStatusEnum, values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=ApplicationStatusEnum.APPLIED,
         index=True

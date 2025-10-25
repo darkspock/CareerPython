@@ -9,7 +9,7 @@ export type CompanyCandidateStatus =
 
 export type OwnershipStatus = 'COMPANY_OWNED' | 'USER_OWNED';
 
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
+export type Priority = 'low' | 'medium' | 'high';
 
 export interface VisibilitySettings {
   show_personal_info: boolean;
@@ -46,6 +46,10 @@ export interface CompanyCandidate {
   candidate_phone?: string;
   workflow_name?: string;
   stage_name?: string;
+  // Job position data (from candidate_application)
+  job_position_id?: string;
+  job_position_title?: string;
+  application_status?: string;
 }
 
 export interface CreateCompanyCandidateRequest {
@@ -102,9 +106,9 @@ export const getCandidateStatusColor = (status: CompanyCandidateStatus): string 
 
 export const getPriorityColor = (priority: Priority): string => {
   switch (priority) {
-    case 'HIGH': return 'bg-red-100 text-red-800';
-    case 'MEDIUM': return 'bg-yellow-100 text-yellow-800';
-    case 'LOW': return 'bg-green-100 text-green-800';
+    case 'high': return 'bg-red-100 text-red-800';
+    case 'medium': return 'bg-yellow-100 text-yellow-800';
+    case 'low': return 'bg-green-100 text-green-800';
     default: return 'bg-gray-100 text-gray-800';
   }
 };

@@ -35,18 +35,20 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
 
     def _to_model(self, entity: CandidateApplication) -> CandidateApplicationModel:
         """Convierte entidad de dominio a modelo de SQLAlchemy"""
+        from datetime import datetime
         return CandidateApplicationModel(
             id=entity.id.value,
             candidate_id=entity.candidate_id.value,
             job_position_id=entity.job_position_id.value,
-            application_status=entity.application_status,
+            application_status=entity.application_status,  # SQLAlchemy will handle enum conversion
             applied_at=entity.applied_at,
-            updated_at=entity.updated_at,
+            updated_at=datetime.utcnow(),  # Always set to current time when saving
             notes=entity.notes
         )
 
     def save(self, candidate_application: CandidateApplication) -> None:
         """Guardar una aplicación"""
+        from datetime import datetime
         session: Session = self.database.get_session()
         try:
             existing_model = session.query(CandidateApplicationModel).filter_by(
@@ -57,9 +59,9 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
                 # Update existing
                 existing_model.candidate_id = candidate_application.candidate_id.value
                 existing_model.job_position_id = candidate_application.job_position_id.value
-                existing_model.application_status = candidate_application.application_status
+                existing_model.application_status = candidate_application.application_status  # SQLAlchemy handles enum
                 existing_model.applied_at = candidate_application.applied_at
-                existing_model.updated_at = candidate_application.updated_at
+                existing_model.updated_at = datetime.utcnow()  # Always set to current time
                 existing_model.notes = candidate_application.notes
             else:
                 # Create new

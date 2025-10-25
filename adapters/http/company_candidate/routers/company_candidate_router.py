@@ -24,14 +24,17 @@ router = APIRouter(
     summary="Create a new company candidate relationship"
 )
 @inject
-def create_company_candidate(
+async def create_company_candidate(
         request: CreateCompanyCandidateRequest,
         controller: CompanyCandidateController = Depends(Provide[Container.company_candidate_controller])
 ) -> CompanyCandidateResponse:
     """Create a new company candidate relationship"""
+    print(f"[DEBUG] Received request type: {type(request)}")
+    print(f"[DEBUG] Request data: {request}")
     try:
         return controller.create_company_candidate(request)
     except Exception as e:
+        print(f"[DEBUG] Error: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
