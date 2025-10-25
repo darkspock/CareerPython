@@ -934,7 +934,9 @@ class Container(containers.DeclarativeContainer):
 
     delete_job_position_command_handler = providers.Factory(
         DeleteJobPositionCommandHandler,
-        job_position_repository=job_position_repository
+        job_position_repository=job_position_repository,
+        candidate_application_repository= candidate_application_repository,
+
     )
 
     # Buses - MOVED BEFORE HANDLERS

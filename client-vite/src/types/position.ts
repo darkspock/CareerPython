@@ -212,3 +212,38 @@ export interface PositionFormData {
   languages_required: Array<{language: string, level: string}>; // Language dropdown pairs
   desired_roles: string[]; // Multiselect desired roles
 }
+
+// Helper functions for status and type display
+export function getStatusColor(status: string): string {
+  const colors: Record<string, string> = {
+    'pending': 'bg-yellow-100 text-yellow-800',
+    'approved': 'bg-blue-100 text-blue-800',
+    'rejected': 'bg-red-100 text-red-800',
+    'open': 'bg-green-100 text-green-800',
+    'closed': 'bg-gray-100 text-gray-800',
+    'paused': 'bg-orange-100 text-orange-800',
+  };
+  return colors[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
+}
+
+export function getContractTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    'full_time': 'Full Time',
+    'part_time': 'Part Time',
+    'contract': 'Contract',
+    'freelance': 'Freelance',
+    'internship': 'Internship',
+    'temporary': 'Temporary',
+  };
+  return labels[type] || type;
+}
+
+export function getWorkLocationLabel(type: string): string {
+  const labels: Record<string, string> = {
+    'remote': 'Remote',
+    'on_site': 'On-site',
+    'hybrid': 'Hybrid',
+    'flexible': 'Flexible',
+  };
+  return labels[type] || type;
+}

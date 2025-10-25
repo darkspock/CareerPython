@@ -10,6 +10,7 @@ import CandidatesPage from './pages/CandidatesPage';
 import CandidateLoginPage from './pages/CandidateLoginPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import CompanyLoginPage from './pages/CompanyLoginPage';
+import CompanyDashboardPage from './pages/CompanyDashboardPage';
 import RegisterPage from './pages/RegisterPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
@@ -57,6 +58,20 @@ import AITestPage from './pages/AITestPage';
 // Import admin components
 import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute';
 import AdminLayout from './components/admin/AdminLayout';
+
+// Import company components
+import ProtectedCompanyRoute from './components/company/ProtectedCompanyRoute';
+import CompanyLayout from './components/company/CompanyLayout';
+import CandidatesListPage from './pages/company/CandidatesListPage';
+import AddCandidatePage from './pages/company/AddCandidatePage';
+import CandidateDetailPage from './pages/company/CandidateDetailPage';
+import WorkflowsSettingsPage from './pages/company/WorkflowsSettingsPage';
+import PositionsListPage from './pages/company/PositionsListPage';
+import WorkflowBoardPage from './pages/company/WorkflowBoardPage';
+import CreatePositionPage from './pages/company/CreatePositionPage';
+import CreateWorkflowPage from './pages/company/CreateWorkflowPage';
+import PositionDetailPage from './pages/company/PositionDetailPage';
+import EditPositionPage from './pages/company/EditPositionPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import UsersManagement from './components/admin/UsersManagement';
 import CandidatesManagement from './components/admin/CandidatesManagement';
@@ -105,6 +120,7 @@ function App() {
                         <Route path="/candidate/auth/login" element={<CandidateLoginPage />} />
                         <Route path="/admin/auth/login" element={<AdminLoginPage />} />
                         <Route path="/company/auth/login" element={<CompanyLoginPage />} />
+                        <Route path="/company/dashboard" element={<CompanyDashboardPage />} />
                         {/* Redirect common login paths for convenience */}
                         <Route path="/admin/login" element={<Navigate to="/admin/auth/login" replace />} />
                         <Route path="/candidate/login" element={<Navigate to="/candidate/auth/login" replace />} />
@@ -162,6 +178,26 @@ function App() {
                           <Route path="interview-templates/create" element={<InterviewTemplateEditor />} />
                           <Route path="interview-templates/edit/:templateId" element={<InterviewTemplateEditor />} />
                           <Route index element={<AdminDashboard />} />
+                        </Route>
+
+                        {/* Company Routes */}
+                        <Route path="/company/*" element={
+                          <ProtectedCompanyRoute>
+                            <CompanyLayout />
+                          </ProtectedCompanyRoute>
+                        }>
+                          <Route path="dashboard" element={<CompanyDashboardPage />} />
+                          <Route path="candidates" element={<CandidatesListPage />} />
+                          <Route path="candidates/add" element={<AddCandidatePage />} />
+                          <Route path="candidates/:id" element={<CandidateDetailPage />} />
+                          <Route path="workflow-board" element={<WorkflowBoardPage />} />
+                          <Route path="positions" element={<PositionsListPage />} />
+                          <Route path="positions/create" element={<CreatePositionPage />} />
+                          <Route path="positions/:id" element={<PositionDetailPage />} />
+                          <Route path="positions/:id/edit" element={<EditPositionPage />} />
+                          <Route path="workflows/create" element={<CreateWorkflowPage />} />
+                          <Route path="settings" element={<WorkflowsSettingsPage />} />
+                          <Route index element={<CompanyDashboardPage />} />
                         </Route>
                       </Routes>
                     </div>

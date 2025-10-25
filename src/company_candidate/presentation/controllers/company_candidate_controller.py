@@ -1,9 +1,12 @@
 from typing import List, Optional
+from datetime import date
 
 import ulid
 
+from src.candidate.application.commands import CreateCandidateCommand
 from src.candidate.domain.value_objects import CandidateId
 from src.company.domain import CompanyId
+from src.user.domain.value_objects.UserId import UserId
 from src.company.domain.value_objects import CompanyUserId
 from src.company_candidate.application.commands.archive_company_candidate_command import ArchiveCompanyCandidateCommand
 from src.company_candidate.application.commands.assign_workflow_command import AssignWorkflowCommand
@@ -44,12 +47,44 @@ class CompanyCandidateController:
 
     def create_company_candidate(self, request: CreateCompanyCandidateRequest) -> CompanyCandidateResponse:
         """Create a new company candidate relationship"""
-        company_candidate_id = str(ulid.new())
 
+        # Determine candidate_id: either use existing or create new candidate
+        if request.candidate_id:
+            # Use existing candidate
+            candidate_id_to_use = request.candidate_id
+        else:
+            # Create new candidate with minimal data
+            if not request.candidate_name or not request.candidate_email:
+                raise ValueError("candidate_name and candidate_email are required when creating new candidate")
+
+            # Generate new candidate ID
+            new_candidate_id = CandidateId.generate()
+
+            # Use a special system user ID for company-created candidates without user accounts
+            # This represents candidates that haven't registered yet
+            system_user_id = UserId.from_string("01H0000000000000000000000")  # Special system user ID
+
+            # Create candidate with minimal required data and placeholder values
+            create_candidate_cmd = CreateCandidateCommand(
+                id=new_candidate_id,
+                name=request.candidate_name,
+                email=request.candidate_email,
+                phone=request.candidate_phone or "",
+                user_id=system_user_id,
+                date_of_birth=date(1900, 1, 1),  # Placeholder, can be updated later
+                city="Unknown",  # Placeholder, can be updated later
+                country="Unknown",  # Placeholder, can be updated later
+            )
+            self._command_bus.dispatch(create_candidate_cmd)
+
+            candidate_id_to_use = str(new_candidate_id.value)
+
+        # Create company-candidate relationship
+        company_candidate_id = CompanyCandidateId.generate()
         command = CreateCompanyCandidateCommand(
-            id=CompanyCandidateId.from_string(company_candidate_id),
+            id=company_candidate_id,
             company_id=CompanyId.from_string(request.company_id),
-            candidate_id=CandidateId.from_string(request.candidate_id),
+            candidate_id=CandidateId.from_string(candidate_id_to_use),
             created_by_user_id=CompanyUserId.from_string(request.created_by_user_id),
             position=request.position,
             source=request.source,
@@ -63,7 +98,7 @@ class CompanyCandidateController:
         self._command_bus.dispatch(command)
 
         # Query to get the created company candidate
-        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
+        query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
         if not dto:
             raise Exception("Company candidate not found")

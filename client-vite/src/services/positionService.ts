@@ -32,8 +32,13 @@ export class PositionService {
 
     const endpoint = `${this.BASE_PATH}${queryParams.toString() ? `?${queryParams}` : ''}`;
 
+    console.log('[PositionService] Fetching from endpoint:', endpoint);
+    console.log('[PositionService] Filters:', filters);
+
     try {
       const response = await api.authenticatedRequest(endpoint);
+      console.log('[PositionService] Raw API response:', response);
+
       return {
         positions: response.positions || [],
         total: response.total || 0,
@@ -42,7 +47,7 @@ export class PositionService {
         total_pages: response.total_pages || 0
       };
     } catch (error) {
-      console.error('Error fetching positions:', error);
+      console.error('[PositionService] Error fetching positions:', error);
       throw error;
     }
   }

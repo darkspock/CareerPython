@@ -5,8 +5,14 @@ from typing import Optional, Dict, List
 class CreateCompanyCandidateRequest(BaseModel):
     """Request schema for creating a company candidate relationship"""
     company_id: str = Field(..., description="Company ID")
-    candidate_id: str = Field(..., description="Candidate ID")
-    source: str = Field(..., description="Source of the relationship")
+
+    # Either provide existing candidate_id OR candidate details to create new candidate
+    candidate_id: Optional[str] = Field(None, description="Existing Candidate ID")
+    candidate_name: Optional[str] = Field(None, description="Candidate name (for new candidate creation)")
+    candidate_email: Optional[str] = Field(None, description="Candidate email (for new candidate creation)")
+    candidate_phone: Optional[str] = Field(None, description="Candidate phone (for new candidate creation)")
+
+    source: str = Field(default="manual_import", description="Source of the relationship")
     created_by_user_id: str = Field(..., description="Company user ID who created this relationship")
     position: Optional[str] = Field(None, description="Position/role for the candidate")
     department: Optional[str] = Field(None, description="Department")
