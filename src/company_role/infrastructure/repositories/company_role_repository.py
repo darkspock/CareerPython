@@ -58,7 +58,8 @@ class CompanyRoleRepository(CompanyRoleRepositoryInterface):
             )
             if exclude_id:
                 query = query.filter(CompanyRoleModel.id != str(exclude_id))
-            return MixedHelper.get_boolean(session.query(query.exists()).scalar())
+            result: bool = MixedHelper.get_boolean(session.query(query.exists()).scalar())
+            return result
 
     def _to_domain(self, model: CompanyRoleModel) -> CompanyRole:
         """Convert model to domain entity."""
