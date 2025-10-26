@@ -1,15 +1,17 @@
 """Company Role Controller."""
 from typing import List, Optional
 
-from src.company_role.application.commands.create_role_command import CreateRoleCommand
-from src.company_role.application.commands.update_role_command import UpdateRoleCommand
-from src.company_role.application.commands.delete_role_command import DeleteRoleCommand
-from src.company_role.application.queries.get_role_by_id import GetRoleByIdQuery
-from src.company_role.application.queries.list_roles_by_company import ListRolesByCompanyQuery
-from adapters.http.company.schemas.create_role_request import CreateRoleRequest
-from adapters.http.company.schemas.update_role_request import UpdateRoleRequest
-from adapters.http.company.schemas.role_response import RoleResponse
 from adapters.http.company.mappers.role_response_mapper import RoleResponseMapper
+from adapters.http.company.schemas.create_role_request import CreateRoleRequest
+from adapters.http.company.schemas.role_response import RoleResponse
+from adapters.http.company.schemas.update_role_request import UpdateRoleRequest
+from src.company_role.application.commands.create_role_command import CreateRoleCommand
+from src.company_role.application.commands.delete_role_command import DeleteRoleCommand
+from src.company_role.application.commands.update_role_command import UpdateRoleCommand
+from src.company_role.application.dtos.company_role_dto import CompanyRoleDto
+from src.company_role.application.queries.get_role_by_id import GetCompanyRoleByIdQuery
+from src.company_role.application.queries.list_roles_by_company import ListRolesByCompanyQuery
+from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 
@@ -23,26 +25,27 @@ class CompanyRoleController:
 
     def create_role(self, company_id: str, request: CreateRoleRequest) -> RoleResponse:
         """Create a new company role."""
+        id = CompanyRoleId.generate()
         command = CreateRoleCommand(
+            id=id,
             company_id=company_id,
             name=request.name,
             description=request.description
         )
         self.command_bus.execute(command)
 
-        # Query the created role
-        query = GetRoleByIdQuery(id=command.id if hasattr(command, 'id') else '')
-        dto = self.query_bus.query(query)
+        query = GetCompanyRoleByIdQuery(id=id)
+        dto: Optional[CompanyRoleDto] = self.query_bus.query(query)
 
         if not dto:
             raise ValueError("Failed to retrieve created role")
 
         return RoleResponseMapper.dto_to_response(dto)
 
-    def get_role(self, role_id: str) -> Optional[RoleResponse]:
+    def get_role(self, role_id: CompanyRoleId) -> Optional[RoleResponse]:
         """Get a role by ID."""
-        query = GetRoleByIdQuery(id=role_id)
-        dto = self.query_bus.query(query)
+        query = GetCompanyRoleByIdQuery(id=role_id)
+        dto: Optional[CompanyRoleDto] = self.query_bus.query(query)
 
         if not dto:
             return None
@@ -52,11 +55,11 @@ class CompanyRoleController:
     def list_roles(self, company_id: str, active_only: bool = False) -> List[RoleResponse]:
         """List all roles for a company."""
         query = ListRolesByCompanyQuery(company_id=company_id, active_only=active_only)
-        dtos = self.query_bus.query(query)
+        dtos: List[CompanyRoleDto] = self.query_bus.query(query)
 
         return [RoleResponseMapper.dto_to_response(dto) for dto in dtos]
 
-    def update_role(self, role_id: str, request: UpdateRoleRequest) -> RoleResponse:
+    def update_role(self, role_id: CompanyRoleId, request: UpdateRoleRequest) -> RoleResponse:
         """Update a company role."""
         command = UpdateRoleCommand(
             id=role_id,
@@ -66,8 +69,8 @@ class CompanyRoleController:
         self.command_bus.execute(command)
 
         # Query the updated role
-        query = GetRoleByIdQuery(id=role_id)
-        dto = self.query_bus.query(query)
+        query = GetCompanyRoleByIdQuery(id=role_id)
+        dto: Optional[CompanyRoleDto] = self.query_bus.query(query)
 
         if not dto:
             raise ValueError("Failed to retrieve updated role")

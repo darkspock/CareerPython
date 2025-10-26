@@ -6,6 +6,7 @@ from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company.domain.value_objects.company_id import CompanyId
 from src.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
 from src.company_role.infrastructure.models.company_role_model import CompanyRoleModel
+from src.shared.infrastructure.helpers.mixed_helper import MixedHelper
 
 
 class CompanyRoleRepository(CompanyRoleRepositoryInterface):
@@ -57,7 +58,7 @@ class CompanyRoleRepository(CompanyRoleRepositoryInterface):
             )
             if exclude_id:
                 query = query.filter(CompanyRoleModel.id != str(exclude_id))
-            return session.query(query.exists()).scalar()
+            return MixedHelper.get_boolean(session.query(query.exists()).scalar())
 
     def _to_domain(self, model: CompanyRoleModel) -> CompanyRole:
         """Convert model to domain entity."""

@@ -174,7 +174,7 @@ export default function CreateWorkflowPage() {
         });
       }
 
-      navigate('/company/settings');
+      navigate('/company/settings/workflows');
     } catch (err: any) {
       setError(err.message || 'Failed to create workflow');
       console.error('Error creating workflow:', err);

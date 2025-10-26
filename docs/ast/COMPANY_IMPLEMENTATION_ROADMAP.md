@@ -6,7 +6,7 @@
 ## 📚 Documentación Relacionada
 
 - **[RESUME_SHARING_STRATEGY.md](../old/RESUME_SHARING_STRATEGY.md)** - Estrategia híbrida de compartir resumes (structured data + PDF)
-- **[WORKFLOW_SYSTEM_ARCHITECTURE.md](../WORKFLOW_SYSTEM_ARCHITECTURE.md)** - Sistema de workflows y permisos
+- **[WORKFLOW_SYSTEM_ARCHITECTURE.md](../old/WORKFLOW_SYSTEM_ARCHITECTURE.md)** - Sistema de workflows y permisos
 - **[STORAGE_USAGE.md](../old/STORAGE_USAGE.md)** - Guía de uso del servicio de almacenamiento
 - **[COMPANY_NEW_PARADIGM.md](COMPANY_NEW_PARADIGM.md)** - Paradigma de privacidad y modelo CRM
 

@@ -8,6 +8,8 @@ from src.company.infrastructure.models.company_user_model import CompanyUserMode
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
 from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+from src.company_workflow.infrastructure.models.custom_field_model import CustomFieldModel
+from src.company_workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
 from src.user.infrastructure.models.user_model import UserModel
 from src.user.infrastructure.models.user_asset_model import UserAssetModel
 from src.candidate.infrastructure.models.candidate_model import CandidateModel
@@ -28,6 +30,8 @@ __all__ = [
     "CompanyCandidateModel",
     "CompanyWorkflowModel",
     "WorkflowStageModel",
+    "CustomFieldModel",
+    "FieldConfigurationModel",
     "UserModel",
     "UserAssetModel",
     "CandidateModel",

@@ -13,10 +13,10 @@ from src.shared.application.command_bus import Command, CommandHandler
 @dataclass(frozen=True)
 class CreateRoleCommand(Command):
     """Command to create a new company role."""
+    id: CompanyRoleId
     company_id: str
     name: str
     description: Optional[str] = None
-    id: Optional[str] = None  # Optional ID for retrieval after creation
 
 
 class CreateRoleCommandHandler(CommandHandler[CreateRoleCommand]):

@@ -15,6 +15,17 @@ class MixedHelper:
         return str(value)
 
     @staticmethod
+    def get_boolean(value: Any) -> bool:
+        """Convert any value to boolean"""
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() in ('true', '1', 'yes', 'on')
+        if isinstance(value, (int, float)):
+            return bool(value)
+        return bool(value)
+
+    @staticmethod
     def enum_list_to_string_list(enum_list: List[Any]) -> List[str]:
         """Convert list of enums to list of strings"""
         return [MixedHelper.getString(enum_item) for enum_item in enum_list]

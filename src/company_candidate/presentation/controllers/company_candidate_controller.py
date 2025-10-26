@@ -1,12 +1,10 @@
-from typing import List, Optional
 from datetime import date
-
-import ulid
+from typing import List, Optional
 
 from src.candidate.application.commands import CreateCandidateCommand
+from src.candidate.application.queries.shared.candidate_dto import CandidateDto
 from src.candidate.domain.value_objects import CandidateId
 from src.company.domain import CompanyId
-from src.user.domain.value_objects.UserId import UserId
 from src.company.domain.value_objects import CompanyUserId
 from src.company_candidate.application.commands.archive_company_candidate_command import ArchiveCompanyCandidateCommand
 from src.company_candidate.application.commands.assign_workflow_command import AssignWorkflowCommand
@@ -22,9 +20,9 @@ from src.company_candidate.application.queries.get_company_candidate_by_company_
 from src.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQuery
 from src.company_candidate.application.queries.list_company_candidates_by_candidate import \
     ListCompanyCandidatesByCandidateQuery
-from src.company_candidate.application.queries.list_company_candidates_by_company import \
-    ListCompanyCandidatesByCompanyQuery
 from src.company_candidate.domain.enums import CandidatePriority
+from src.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import \
+    CompanyCandidateWithCandidateReadModel
 from src.company_candidate.domain.value_objects import CompanyCandidateId
 from src.company_candidate.presentation.mappers.company_candidate_mapper import CompanyCandidateResponseMapper
 from src.company_candidate.presentation.schemas.assign_workflow_request import AssignWorkflowRequest
@@ -36,6 +34,7 @@ from src.company_workflow.domain.value_objects.company_workflow_id import Compan
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
+from src.user.domain.value_objects.UserId import UserId
 
 
 class CompanyCandidateController:
@@ -87,11 +86,11 @@ class CompanyCandidateController:
                     # Search for existing candidate by email using admin query
                     from src.candidate.application.queries.admin_list_candidates import AdminListCandidatesQuery
                     search_query = AdminListCandidatesQuery(email=request.candidate_email, limit=1)
-                    candidates = self._query_bus.query(search_query)
+                    candidates: List[CandidateDto] = self._query_bus.query(search_query)
 
                     if candidates and len(candidates) > 0:
                         # Use the existing candidate
-                        candidate_id_to_use = candidates[0].id
+                        candidate_id_to_use = candidates[0].id.value
                     else:
                         # Email error but candidate not found - re-raise original exception
                         raise e
@@ -136,7 +135,7 @@ class CompanyCandidateController:
         # Get candidate basic info
         from src.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery
         candidate_query = GetCandidateByIdQuery(id=CandidateId.from_string(dto.candidate_id))
-        candidate_dto = self._query_bus.query(candidate_query)
+        candidate_dto: Optional[CandidateDto] = self._query_bus.query(candidate_query)
 
         # Create response with combined data
         response = CompanyCandidateResponseMapper.dto_to_response(dto)
@@ -169,7 +168,7 @@ class CompanyCandidateController:
 
         # Use new query that returns read models with candidate info
         query = ListCompanyCandidatesWithCandidateInfoQuery(company_id=company_id)
-        read_models = self._query_bus.query(query)
+        read_models: List[CompanyCandidateWithCandidateReadModel] = self._query_bus.query(query)
 
         # Map read models directly to response
         responses = []

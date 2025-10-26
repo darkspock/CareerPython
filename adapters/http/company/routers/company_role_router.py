@@ -10,6 +10,7 @@ from adapters.http.company.schemas.update_role_request import UpdateRoleRequest
 from adapters.http.company.schemas.role_response import RoleResponse
 from core.container import Container
 from src.company_role.domain.exceptions.role_not_found import RoleNotFound
+from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 
 router = APIRouter(prefix="/companies/{company_id}/roles", tags=["Company Roles"])
 
@@ -60,7 +61,7 @@ def get_role(
     controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
 ) -> RoleResponse:
     """Get a specific role by ID."""
-    role = controller.get_role(role_id)
+    role = controller.get_role(CompanyRoleId.from_string(role_id))
     if not role:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -76,14 +77,13 @@ def get_role(
 )
 @inject
 def update_role(
-    company_id: str,
     role_id: str,
     request: UpdateRoleRequest,
     controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
 ) -> RoleResponse:
     """Update an existing role."""
     try:
-        return controller.update_role(role_id, request)
+        return controller.update_role(CompanyRoleId.from_string(role_id), request)
     except RoleNotFound as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except ValueError as e:

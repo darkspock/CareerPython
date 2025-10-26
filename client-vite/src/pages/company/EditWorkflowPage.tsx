@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, X, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowLeft, Save, Plus, X, Trash2, ArrowUp, ArrowDown, Settings } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import { api } from '../../lib/api';
-import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow';
+import type { CompanyWorkflow, WorkflowStage, CustomField, FieldConfiguration } from '../../types/workflow';
 import type { CompanyRole } from '../../types/company';
+import { CustomFieldEditor, FieldVisibilityMatrix } from '../../components/workflow';
 
 interface StageFormData {
   id?: string;
@@ -35,6 +36,12 @@ export default function EditWorkflowPage() {
   const [workflowDescription, setWorkflowDescription] = useState('');
   const [stages, setStages] = useState<StageFormData[]>([]);
   const [deletedStageIds, setDeletedStageIds] = useState<string[]>([]);
+  const [advancedModalOpen, setAdvancedModalOpen] = useState(false);
+  const [selectedStageIndex, setSelectedStageIndex] = useState<number | null>(null);
+
+  // Custom fields state
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [fieldConfigurations, setFieldConfigurations] = useState<FieldConfiguration[]>([]);
 
   useEffect(() => {
     loadWorkflow();
@@ -177,6 +184,16 @@ export default function EditWorkflowPage() {
     setStages(newStages);
   };
 
+  const openAdvancedSettings = (index: number) => {
+    setSelectedStageIndex(index);
+    setAdvancedModalOpen(true);
+  };
+
+  const closeAdvancedSettings = () => {
+    setAdvancedModalOpen(false);
+    setSelectedStageIndex(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -259,11 +276,11 @@ export default function EditWorkflowPage() {
 
       if (stageIds.length > 0) {
         await companyWorkflowService.reorderStages(workflowId, {
-          stage_ids: stageIds,
+          stage_ids_in_order: stageIds,
         });
       }
 
-      navigate('/company/settings');
+      navigate('/company/settings/workflows');
     } catch (err: any) {
       setError(err.message || 'Failed to update workflow');
       console.error('Error updating workflow:', err);
@@ -293,7 +310,7 @@ export default function EditWorkflowPage() {
       {/* Header */}
       <div className="mb-6">
         <button
-          onClick={() => navigate('/company/settings')}
+          onClick={() => navigate('/company/settings/workflows')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -461,105 +478,19 @@ export default function EditWorkflowPage() {
                     />
                   </div>
 
-                  {/* Allow Skip */}
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id={`allow_skip_${index}`}
-                      checked={stage.allow_skip || false}
-                      onChange={(e) => handleStageChange(index, 'allow_skip', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor={`allow_skip_${index}`} className="text-sm font-medium text-gray-700">
-                      Allow skipping this stage (optional)
-                    </label>
-                  </div>
-
-                  {/* Estimated Duration Days */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Duration (days)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={stage.estimated_duration_days || ''}
-                      onChange={(e) => handleStageChange(index, 'estimated_duration_days', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., 3"
-                    />
-                  </div>
-
-                  {/* Deadline Days */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Deadline (days)</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={stage.deadline_days || ''}
-                      onChange={(e) => handleStageChange(index, 'deadline_days', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., 5"
-                    />
-                  </div>
-
-                  {/* Estimated Cost */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Cost</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={stage.estimated_cost || ''}
-                      onChange={(e) => handleStageChange(index, 'estimated_cost', e.target.value || undefined)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., 100.00"
-                    />
-                  </div>
-
-                  {/* Default Roles */}
+                  {/* Advanced Settings Button */}
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Default Roles</label>
-                    {loadingRoles ? (
-                      <div className="text-sm text-gray-500">Loading roles...</div>
-                    ) : roles.length === 0 ? (
-                      <div className="text-sm text-gray-500">
-                        No roles available. <a href="/company/settings/roles" className="text-blue-600 hover:underline">Create roles first</a>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 p-4 border border-gray-300 rounded-lg bg-gray-50">
-                        {roles.map((role) => (
-                          <label key={role.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={(stage.default_role_ids || []).includes(role.id)}
-                              onChange={(e) => {
-                                const currentRoles = stage.default_role_ids || [];
-                                const newRoles = e.target.checked
-                                  ? [...currentRoles, role.id]
-                                  : currentRoles.filter(id => id !== role.id);
-                                handleStageChange(index, 'default_role_ids', newRoles.length > 0 ? newRoles : undefined);
-                              }}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700">{role.name}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                    <p className="mt-1 text-xs text-gray-500">Select one or more roles to assign to this stage</p>
-                  </div>
-
-                  {/* Active Toggle */}
-                  <div className="md:col-span-2 flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id={`is_active_${index}`}
-                      checked={stage.is_active}
-                      onChange={(e) => handleStageChange(index, 'is_active', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor={`is_active_${index}`} className="text-sm font-medium text-gray-700">
-                      Stage is active
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => openAdvancedSettings(index)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg border border-blue-200 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Advanced Settings
+                      {(stage.allow_skip || stage.default_role_ids?.length || stage.estimated_duration_days || stage.deadline_days || stage.estimated_cost) && (
+                        <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">Configured</span>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -567,11 +498,47 @@ export default function EditWorkflowPage() {
           </div>
         </div>
 
+        {/* Custom Fields */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <CustomFieldEditor
+            workflowId={workflowId!}
+            onFieldsChange={setCustomFields}
+          />
+        </div>
+
+        {/* Field Visibility Matrix */}
+        {customFields.length > 0 && stages.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <FieldVisibilityMatrix
+              workflowId={workflowId!}
+              stages={stages.map((s, idx) => ({
+                ...s,
+                id: s.id || `temp-${idx}`,
+                workflow_id: workflowId!,
+                description: s.description || null,
+                is_active: s.is_active ?? true,
+                allow_skip: s.allow_skip ?? false,
+                estimated_duration_days: s.estimated_duration_days ?? null,
+                default_role_ids: s.default_role_ids ?? null,
+                default_assigned_users: s.default_assigned_users ?? null,
+                email_template_id: s.email_template_id ?? null,
+                custom_email_text: s.custom_email_text ?? null,
+                deadline_days: s.deadline_days ?? null,
+                estimated_cost: s.estimated_cost ?? null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              } as WorkflowStage))}
+              fields={customFields}
+              onConfigurationsChange={setFieldConfigurations}
+            />
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={() => navigate('/company/settings')}
+            onClick={() => navigate('/company/settings/workflows')}
             className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Cancel
@@ -586,6 +553,152 @@ export default function EditWorkflowPage() {
           </button>
         </div>
       </form>
+
+      {/* Advanced Settings Modal */}
+      {advancedModalOpen && selectedStageIndex !== null && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Background overlay */}
+            <div
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+              onClick={closeAdvancedSettings}
+            ></div>
+
+            {/* Modal panel */}
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+              <div className="bg-white px-6 py-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Advanced Settings - {stages[selectedStageIndex].name || 'New Stage'}
+                  </h3>
+                  <button
+                    onClick={closeAdvancedSettings}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Advanced Settings Form */}
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {/* Allow Skip */}
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id={`modal_allow_skip`}
+                      checked={stages[selectedStageIndex].allow_skip || false}
+                      onChange={(e) => handleStageChange(selectedStageIndex, 'allow_skip', e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor={`modal_allow_skip`} className="text-sm font-medium text-gray-700">
+                      Allow skipping this stage (optional)
+                    </label>
+                  </div>
+
+                  {/* Estimated Duration Days */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Duration (days)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={stages[selectedStageIndex].estimated_duration_days || ''}
+                      onChange={(e) => handleStageChange(selectedStageIndex, 'estimated_duration_days', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 3"
+                    />
+                  </div>
+
+                  {/* Deadline Days */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Deadline (days)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={stages[selectedStageIndex].deadline_days || ''}
+                      onChange={(e) => handleStageChange(selectedStageIndex, 'deadline_days', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 5"
+                    />
+                  </div>
+
+                  {/* Estimated Cost */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Cost</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={stages[selectedStageIndex].estimated_cost || ''}
+                      onChange={(e) => handleStageChange(selectedStageIndex, 'estimated_cost', e.target.value || undefined)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 100.00"
+                    />
+                  </div>
+
+                  {/* Default Roles */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Default Roles</label>
+                    {loadingRoles ? (
+                      <div className="text-sm text-gray-500">Loading roles...</div>
+                    ) : roles.length === 0 ? (
+                      <div className="text-sm text-gray-500">
+                        No roles available. <a href="/company/settings/roles" className="text-blue-600 hover:underline">Create roles first</a>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 p-4 border border-gray-300 rounded-lg bg-gray-50 max-h-48 overflow-y-auto">
+                        {roles.map((role) => (
+                          <label key={role.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                            <input
+                              type="checkbox"
+                              checked={(stages[selectedStageIndex].default_role_ids || []).includes(role.id)}
+                              onChange={(e) => {
+                                const currentRoles = stages[selectedStageIndex].default_role_ids || [];
+                                const newRoles = e.target.checked
+                                  ? [...currentRoles, role.id]
+                                  : currentRoles.filter(id => id !== role.id);
+                                handleStageChange(selectedStageIndex, 'default_role_ids', newRoles.length > 0 ? newRoles : undefined);
+                              }}
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{role.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-gray-500">Select one or more roles to assign to this stage</p>
+                  </div>
+
+                  {/* Active Toggle */}
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id={`modal_is_active`}
+                      checked={stages[selectedStageIndex].is_active}
+                      onChange={(e) => handleStageChange(selectedStageIndex, 'is_active', e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor={`modal_is_active`} className="text-sm font-medium text-gray-700">
+                      Stage is active
+                    </label>
+                  </div>
+                </div>
+
+                {/* Modal Actions */}
+                <div className="mt-6 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={closeAdvancedSettings}
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,7 +11,7 @@ from src.shared.application.command_bus import Command, CommandHandler
 @dataclass(frozen=True)
 class UpdateRoleCommand(Command):
     """Command to update a company role."""
-    id: str
+    id: CompanyRoleId
     name: str
     description: Optional[str] = None
 
@@ -24,7 +24,7 @@ class UpdateRoleCommandHandler(CommandHandler[UpdateRoleCommand]):
 
     def execute(self, command: UpdateRoleCommand) -> None:
         """Handle the update role command."""
-        role_id = CompanyRoleId.from_string(command.id)
+        role_id = command.id
         role = self.repository.get_by_id(role_id)
 
         if not role:

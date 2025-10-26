@@ -117,7 +117,7 @@ from src.company_role.application.commands.update_role_command import UpdateRole
 from src.company_role.application.commands.delete_role_command import DeleteRoleCommandHandler
 
 # CompanyRole Application Layer - Queries
-from src.company_role.application.queries.get_role_by_id import GetRoleByIdQueryHandler
+from src.company_role.application.queries.get_role_by_id import GetCompanyRoleByIdQueryHandler
 from src.company_role.application.queries.list_roles_by_company import ListRolesByCompanyQueryHandler
 
 # CompanyRole Infrastructure
@@ -163,6 +163,12 @@ from src.company_workflow.application.commands.delete_stage_command import Delet
 from src.company_workflow.application.commands.reorder_stages_command import ReorderStagesCommandHandler
 from src.company_workflow.application.commands.activate_stage_command import ActivateStageCommandHandler
 from src.company_workflow.application.commands.deactivate_stage_command import DeactivateStageCommandHandler
+from src.company_workflow.application.commands.create_custom_field_command import CreateCustomFieldCommandHandler
+from src.company_workflow.application.commands.update_custom_field_command import UpdateCustomFieldCommandHandler
+from src.company_workflow.application.commands.delete_custom_field_command import DeleteCustomFieldCommandHandler
+from src.company_workflow.application.commands.reorder_custom_field_command import ReorderCustomFieldCommandHandler
+from src.company_workflow.application.commands.configure_stage_field_command import ConfigureStageFieldCommandHandler
+from src.company_workflow.application.commands.update_field_visibility_command import UpdateFieldVisibilityCommandHandler
 
 # CompanyWorkflow Application Layer - Queries
 from src.company_workflow.application.queries.get_workflow_by_id import GetWorkflowByIdQueryHandler
@@ -171,14 +177,21 @@ from src.company_workflow.application.queries.get_stage_by_id import GetStageByI
 from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQueryHandler
 from src.company_workflow.application.queries.get_initial_stage import GetInitialStageQueryHandler
 from src.company_workflow.application.queries.get_final_stages import GetFinalStagesQueryHandler
+from src.company_workflow.application.queries.get_custom_field_by_id import GetCustomFieldByIdQueryHandler
+from src.company_workflow.application.queries.list_custom_fields_by_workflow import ListCustomFieldsByWorkflowQueryHandler
+from src.company_workflow.application.queries.list_field_configurations_by_stage import ListFieldConfigurationsByStageQueryHandler
+from src.company_workflow.application.queries.get_field_configuration_by_id import GetFieldConfigurationByIdQueryHandler
 
 # CompanyWorkflow Infrastructure
 from src.company_workflow.infrastructure.repositories.company_workflow_repository import CompanyWorkflowRepository
 from src.company_workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
+from src.company_workflow.infrastructure.repositories.custom_field_repository import CustomFieldRepository
+from src.company_workflow.infrastructure.repositories.field_configuration_repository import FieldConfigurationRepository
 
 # CompanyWorkflow Presentation Controllers
 from src.company_workflow.presentation.controllers.company_workflow_controller import CompanyWorkflowController
 from src.company_workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
+from src.company_workflow.presentation.controllers.custom_field_controller import CustomFieldController
 
 # Job Position Application Layer
 from src.job_position.application.commands.create_job_position import CreateJobPositionCommandHandler
@@ -364,6 +377,16 @@ class Container(containers.DeclarativeContainer):
 
     workflow_stage_repository = providers.Factory(
         WorkflowStageRepository,
+        database=database
+    )
+
+    custom_field_repository = providers.Factory(
+        CustomFieldRepository,
+        database=database
+    )
+
+    field_configuration_repository = providers.Factory(
+        FieldConfigurationRepository,
         database=database
     )
 
@@ -562,7 +585,7 @@ class Container(containers.DeclarativeContainer):
 
     # CompanyRole Query Handlers
     get_role_by_id_query_handler = providers.Factory(
-        GetRoleByIdQueryHandler,
+        GetCompanyRoleByIdQueryHandler,
         repository=company_role_repository
     )
 
@@ -627,6 +650,28 @@ class Container(containers.DeclarativeContainer):
     get_final_stages_query_handler = providers.Factory(
         GetFinalStagesQueryHandler,
         repository=workflow_stage_repository
+    )
+
+    # CustomField Query Handlers
+    get_custom_field_by_id_query_handler = providers.Factory(
+        GetCustomFieldByIdQueryHandler,
+        repository=custom_field_repository
+    )
+
+    list_custom_fields_by_workflow_query_handler = providers.Factory(
+        ListCustomFieldsByWorkflowQueryHandler,
+        repository=custom_field_repository
+    )
+
+    # FieldConfiguration Query Handlers
+    list_field_configurations_by_stage_query_handler = providers.Factory(
+        ListFieldConfigurationsByStageQueryHandler,
+        repository=field_configuration_repository
+    )
+
+    get_field_configuration_by_id_query_handler = providers.Factory(
+        GetFieldConfigurationByIdQueryHandler,
+        repository=field_configuration_repository
     )
 
     # Job Position Query Handlers
@@ -975,6 +1020,38 @@ class Container(containers.DeclarativeContainer):
         repository=workflow_stage_repository
     )
 
+    # CustomField Command Handlers
+    create_custom_field_command_handler = providers.Factory(
+        CreateCustomFieldCommandHandler,
+        repository=custom_field_repository
+    )
+
+    update_custom_field_command_handler = providers.Factory(
+        UpdateCustomFieldCommandHandler,
+        repository=custom_field_repository
+    )
+
+    delete_custom_field_command_handler = providers.Factory(
+        DeleteCustomFieldCommandHandler,
+        repository=custom_field_repository
+    )
+
+    reorder_custom_field_command_handler = providers.Factory(
+        ReorderCustomFieldCommandHandler,
+        repository=custom_field_repository
+    )
+
+    # FieldConfiguration Command Handlers
+    configure_stage_field_command_handler = providers.Factory(
+        ConfigureStageFieldCommandHandler,
+        repository=field_configuration_repository
+    )
+
+    update_field_visibility_command_handler = providers.Factory(
+        UpdateFieldVisibilityCommandHandler,
+        repository=field_configuration_repository
+    )
+
     # Job Position Command Handlers
     create_job_position_command_handler = providers.Factory(
         CreateJobPositionCommandHandler,
@@ -1248,6 +1325,12 @@ class Container(containers.DeclarativeContainer):
 
     workflow_stage_controller = providers.Factory(
         WorkflowStageController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    custom_field_controller = providers.Factory(
+        CustomFieldController,
         command_bus=command_bus,
         query_bus=query_bus
     )

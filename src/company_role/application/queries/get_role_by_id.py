@@ -10,20 +10,20 @@ from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
-class GetRoleByIdQuery(Query):
+class GetCompanyRoleByIdQuery(Query):
     """Query to get a role by ID."""
-    id: str
+    id: CompanyRoleId
 
 
-class GetRoleByIdQueryHandler(QueryHandler[GetRoleByIdQuery, Optional[CompanyRoleDto]]):
+class GetCompanyRoleByIdQueryHandler(QueryHandler[GetCompanyRoleByIdQuery, Optional[CompanyRoleDto]]):
     """Handler for getting a role by ID."""
 
     def __init__(self, repository: CompanyRoleRepositoryInterface):
         self.repository = repository
 
-    def handle(self, query: GetRoleByIdQuery) -> Optional[CompanyRoleDto]:
+    def handle(self, query: GetCompanyRoleByIdQuery) -> Optional[CompanyRoleDto]:
         """Handle the get role by ID query."""
-        role_id = CompanyRoleId.from_string(query.id)
+        role_id = query.id
         role = self.repository.get_by_id(role_id)
 
         if not role:
