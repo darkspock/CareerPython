@@ -5,14 +5,15 @@ Phase 8: Controller for talent pool operations
 
 from typing import List, Optional
 
-from core.cqrs.command_bus import CommandBus
-from core.cqrs.query_bus import QueryBus
+from src.shared.application.command_bus import CommandBus
+from src.shared.application.query_bus import QueryBus
 from src.talent_pool.application.commands.add_to_talent_pool_command import AddToTalentPoolCommand
 from src.talent_pool.application.commands.update_talent_pool_entry_command import UpdateTalentPoolEntryCommand
 from src.talent_pool.application.commands.remove_from_talent_pool_command import RemoveFromTalentPoolCommand
 from src.talent_pool.application.commands.change_talent_pool_entry_status_command import (
     ChangeTalentPoolEntryStatusCommand,
 )
+from src.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEntryDto
 from src.talent_pool.application.queries.list_talent_pool_entries_query import ListTalentPoolEntriesQuery
 from src.talent_pool.application.queries.get_talent_pool_entry_by_id_query import GetTalentPoolEntryByIdQuery
 from src.talent_pool.application.queries.search_talent_pool_query import SearchTalentPoolQuery
@@ -85,7 +86,7 @@ class TalentPoolController:
             Talent pool entry response or None
         """
         query = GetTalentPoolEntryByIdQuery(entry_id=entry_id)
-        dto = self._query_bus.query(query)
+        dto:Optional[TalentPoolEntryDto] = self._query_bus.query(query)
 
         if not dto:
             return None
@@ -117,7 +118,7 @@ class TalentPoolController:
             tags=tags,
             min_rating=min_rating,
         )
-        dtos = self._query_bus.query(query)
+        dtos:List[TalentPoolEntryDto] = self._query_bus.query(query)
         return [TalentPoolMapper.dto_to_response(dto) for dto in dtos]
 
     def search_entries(
@@ -148,7 +149,7 @@ class TalentPoolController:
             tags=tags,
             min_rating=min_rating,
         )
-        dtos = self._query_bus.query(query)
+        dtos: List[TalentPoolEntryDto] = self._query_bus.query(query)
         return [TalentPoolMapper.dto_to_response(dto) for dto in dtos]
 
     def update_entry(

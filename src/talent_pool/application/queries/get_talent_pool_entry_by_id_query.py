@@ -6,8 +6,7 @@ Phase 8: Query to get a talent pool entry by ID
 from dataclasses import dataclass
 from typing import Optional
 
-from core.cqrs.query import Query
-from core.cqrs.query_handler import QueryHandler
+from src.shared.application.query_bus import Query, QueryHandler
 from src.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
 from src.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (
     TalentPoolEntryRepositoryInterface,

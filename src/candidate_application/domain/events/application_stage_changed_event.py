@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Optional
 from datetime import datetime
 
-from core.event_bus import DomainEvent
+from src.shared.domain.events.domain_event import DomainEvent
 
 
 @dataclass(frozen=True)
@@ -27,7 +27,7 @@ class ApplicationStageChangedEvent(DomainEvent):
     changed_at: datetime
     changed_by_user_id: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self)->None:
         """Validate event data"""
         if not self.application_id:
             raise ValueError("application_id is required")

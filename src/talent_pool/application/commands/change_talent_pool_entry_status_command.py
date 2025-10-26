@@ -5,8 +5,7 @@ Phase 8: Command to change talent pool entry status
 
 from dataclasses import dataclass
 
-from core.cqrs.command import Command
-from core.cqrs.command_handler import CommandHandler
+from src.shared.application.command_bus import CommandHandler, Command
 from src.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
 from src.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 from src.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (

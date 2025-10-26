@@ -6,10 +6,14 @@ Phase 9: HTTP controller for analytics endpoints
 from typing import List, Optional
 from datetime import datetime
 
-from core.query_bus import QueryBus
+from src.shared.application.query_bus import QueryBus
 from src.workflow_analytics.application.queries import (
     GetWorkflowAnalyticsQuery,
     GetStageBottlenecksQuery
+)
+from src.workflow_analytics.application.dtos import (
+    WorkflowAnalyticsDto,
+    StageBottleneckDto
 )
 from src.workflow_analytics.presentation.schemas import (
     WorkflowAnalyticsResponse,
@@ -50,7 +54,7 @@ class WorkflowAnalyticsController:
             date_range_end=date_range_end
         )
 
-        dto = self._query_bus.query(query)
+        dto: WorkflowAnalyticsDto = self._query_bus.query(query)
         return WorkflowAnalyticsMapper.analytics_to_response(dto)
 
     def get_stage_bottlenecks(
@@ -82,5 +86,5 @@ class WorkflowAnalyticsController:
             min_bottleneck_score=min_bottleneck_score
         )
 
-        dtos = self._query_bus.query(query)
+        dtos: List[StageBottleneckDto] = self._query_bus.query(query)
         return WorkflowAnalyticsMapper.bottlenecks_to_response(dtos)

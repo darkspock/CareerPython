@@ -16,7 +16,7 @@ class EmailTemplateId:
     @staticmethod
     def generate() -> 'EmailTemplateId':
         """Generate a new unique email template ID"""
-        return EmailTemplateId(str(ulid.ULID()))
+        return EmailTemplateId.generate()
 
     @staticmethod
     def from_string(value: str) -> 'EmailTemplateId':

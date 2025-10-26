@@ -6,8 +6,7 @@ Phase 8: Command to add a candidate to company's talent pool
 from dataclasses import dataclass
 from typing import Optional, List
 
-from core.cqrs.command import Command
-from core.cqrs.command_handler import CommandHandler
+from src.shared.application.command_bus import CommandHandler, Command
 from src.talent_pool.domain.entities.talent_pool_entry import TalentPoolEntry
 from src.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 from src.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (

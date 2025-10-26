@@ -4,19 +4,23 @@ Phase 9: Query for identifying workflow stage bottlenecks
 """
 
 from dataclasses import dataclass
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast
 
-from core.query_handler import QueryHandler
-from src.workflow_analytics.application.dtos import StageBottleneckDto
-from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
+    CompanyWorkflowRepositoryInterface
+from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from core.database import Database
+from src.shared.application.query_bus import Query, QueryHandler
+from src.workflow_analytics.application.dtos import StageBottleneckDto
+
+if TYPE_CHECKING:
+    from core.database import SQLAlchemyDatabase
 
 
 @dataclass
-class GetStageBottlenecksQuery:
+class GetStageBottlenecksQuery(Query):
     """
     Query to identify bottlenecks in a workflow's stages.
 
@@ -33,10 +37,10 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
     """Handler for GetStageBottlenecksQuery"""
 
     def __init__(
-        self,
-        database: Database,
-        workflow_repository: CompanyWorkflowRepositoryInterface,
-        stage_repository: WorkflowStageRepositoryInterface
+            self,
+            database: "SQLAlchemyDatabase",
+            workflow_repository: CompanyWorkflowRepositoryInterface,
+            stage_repository: WorkflowStageRepositoryInterface
     ):
         self._database = database
         self._workflow_repository = workflow_repository
@@ -60,7 +64,6 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
 
         with self._database.get_session() as session:
             from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
-            from src.company_candidate.domain.enums import CompanyCandidateStatus
 
             # Base query with date filtering
             base_query = session.query(CompanyCandidateModel).filter(
@@ -82,7 +85,7 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
                 return []
 
             # Calculate metrics for each stage
-            stage_metrics = []
+            stage_metrics: List[Dict[str, Any]] = []
 
             for stage in stages:
                 stage_id = str(stage.id)
@@ -93,8 +96,8 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
                 ).count()
 
                 # For conversion, find next stage
-                next_stage_idx = stage.stage_order + 1
-                next_stages = [s for s in stages if s.stage_order == next_stage_idx]
+                next_stage_idx = stage.order + 1
+                next_stages = [s for s in stages if s.order == next_stage_idx]
 
                 moved_to_next = 0
                 if next_stages:
@@ -127,19 +130,20 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
 
             # Identify bottlenecks
             for metric in stage_metrics:
-                if metric['total_count'] == 0:
+                if cast(int, metric['total_count']) == 0:
                     continue
 
-                stage = metric['stage']
-                conversion_rate = metric['conversion_rate']
-                current_count = metric['current_count']
-                total_count = metric['total_count']
+                from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
+                stage = cast(WorkflowStage, metric['stage'])
+                conversion_rate = cast(float, metric['conversion_rate'])
+                current_count = cast(int, metric['current_count'])
+                total_count = cast(int, metric['total_count'])
 
                 # Calculate variance
                 conversion_variance = 0.0
                 if expected_conversion > 0:
                     conversion_variance = (
-                        (conversion_rate - expected_conversion) / expected_conversion * 100
+                            (conversion_rate - expected_conversion) / expected_conversion * 100
                     )
 
                 # Calculate bottleneck score
@@ -178,9 +182,9 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
                 # Only include if meets minimum score threshold
                 if score >= query.min_bottleneck_score and reasons:
                     bottlenecks.append(StageBottleneckDto(
-                        stage_id=metric['stage_id'],
+                        stage_id=cast(str, metric['stage_id']),
                         stage_name=stage.name,
-                        stage_order=stage.stage_order,
+                        stage_order=stage.order,
                         current_applications=current_count,
                         average_time_hours=0.0,  # Would need timestamp tracking
                         expected_time_hours=0.0,

@@ -6,8 +6,7 @@ Phase 8: Command to update talent pool entry
 from dataclasses import dataclass
 from typing import Optional, List
 
-from core.cqrs.command import Command
-from core.cqrs.command_handler import CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler
 from src.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
 from src.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (
     TalentPoolEntryRepositoryInterface,

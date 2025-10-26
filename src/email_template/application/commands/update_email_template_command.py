@@ -6,8 +6,8 @@ Phase 7: Command to update an existing email template
 from dataclasses import dataclass
 from typing import List, Optional
 
-from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
+from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.shared.application.command_bus import Command, CommandHandler
 
 
@@ -38,7 +38,7 @@ class UpdateEmailTemplateCommandHandler(CommandHandler[UpdateEmailTemplateComman
             raise ValueError(f"Email template not found: {command.template_id}")
 
         # Update the template
-        updated_template = template.update(
+        template.update(
             template_name=command.template_name,
             subject=command.subject,
             body_html=command.body_html,
@@ -47,4 +47,4 @@ class UpdateEmailTemplateCommandHandler(CommandHandler[UpdateEmailTemplateComman
         )
 
         # Save changes
-        self._repository.save(updated_template)
+        self._repository.save(template)

@@ -176,6 +176,13 @@ class TalentPoolEntryRepository(TalentPoolEntryRepositoryInterface):
 
     def _to_domain(self, model: TalentPoolEntryModel) -> TalentPoolEntry:
         """Convert model to domain entity"""
+        # Assert required fields are not None
+        assert model.id is not None, "Model id cannot be None"
+        assert model.company_id is not None, "Model company_id cannot be None"
+        assert model.candidate_id is not None, "Model candidate_id cannot be None"
+        assert model.created_at is not None, "Model created_at cannot be None"
+        assert model.updated_at is not None, "Model updated_at cannot be None"
+
         return TalentPoolEntry._from_repository(
             id=TalentPoolEntryId.from_string(model.id),
             company_id=model.company_id,

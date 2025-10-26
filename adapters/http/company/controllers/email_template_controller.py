@@ -7,19 +7,20 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
+from src.email_template.application.commands.activate_email_template_command import ActivateEmailTemplateCommand
+from src.email_template.application.commands.create_email_template_command import CreateEmailTemplateCommand
+from src.email_template.application.commands.deactivate_email_template_command import DeactivateEmailTemplateCommand
+from src.email_template.application.commands.delete_email_template_command import DeleteEmailTemplateCommand
+from src.email_template.application.commands.update_email_template_command import UpdateEmailTemplateCommand
+from src.email_template.application.dtos.email_template_dto import EmailTemplateDto
+from src.email_template.application.queries.get_email_template_by_id_query import GetEmailTemplateByIdQuery
+from src.email_template.application.queries.get_email_templates_by_trigger_query import GetEmailTemplatesByTriggerQuery
+from src.email_template.application.queries.list_email_templates_by_stage_query import ListEmailTemplatesByStageQuery
+from src.email_template.application.queries.list_email_templates_by_workflow_query import \
+    ListEmailTemplatesByWorkflowQuery
+from src.email_template.domain.enums.trigger_event import TriggerEvent
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
-from src.email_template.application.commands.create_email_template_command import CreateEmailTemplateCommand
-from src.email_template.application.commands.update_email_template_command import UpdateEmailTemplateCommand
-from src.email_template.application.commands.delete_email_template_command import DeleteEmailTemplateCommand
-from src.email_template.application.commands.activate_email_template_command import ActivateEmailTemplateCommand
-from src.email_template.application.commands.deactivate_email_template_command import DeactivateEmailTemplateCommand
-from src.email_template.application.queries.get_email_template_by_id_query import GetEmailTemplateByIdQuery
-from src.email_template.application.queries.list_email_templates_by_workflow_query import ListEmailTemplatesByWorkflowQuery
-from src.email_template.application.queries.list_email_templates_by_stage_query import ListEmailTemplatesByStageQuery
-from src.email_template.application.queries.get_email_templates_by_trigger_query import GetEmailTemplatesByTriggerQuery
-from src.email_template.application.dtos.email_template_dto import EmailTemplateDto
-from src.email_template.domain.enums.trigger_event import TriggerEvent
 
 logger = logging.getLogger(__name__)
 
@@ -28,25 +29,25 @@ class EmailTemplateController:
     """Controller for managing email templates"""
 
     def __init__(
-        self,
-        command_bus: CommandBus,
-        query_bus: QueryBus
+            self,
+            command_bus: CommandBus,
+            query_bus: QueryBus
     ):
         self._command_bus = command_bus
         self._query_bus = query_bus
 
     def create_template(
-        self,
-        workflow_id: str,
-        template_name: str,
-        template_key: str,
-        subject: str,
-        body_html: str,
-        trigger_event: TriggerEvent,
-        available_variables: List[str],
-        stage_id: Optional[str] = None,
-        body_text: Optional[str] = None,
-        is_active: bool = True
+            self,
+            workflow_id: str,
+            template_name: str,
+            template_key: str,
+            subject: str,
+            body_html: str,
+            trigger_event: TriggerEvent,
+            available_variables: List[str],
+            stage_id: Optional[str] = None,
+            body_text: Optional[str] = None,
+            is_active: bool = True
     ) -> dict:
         """Create a new email template
 
@@ -95,13 +96,13 @@ class EmailTemplateController:
             raise HTTPException(status_code=500, detail=f"Error creating email template: {str(e)}")
 
     def update_template(
-        self,
-        template_id: str,
-        template_name: str,
-        subject: str,
-        body_html: str,
-        available_variables: List[str],
-        body_text: Optional[str] = None
+            self,
+            template_id: str,
+            template_name: str,
+            subject: str,
+            body_html: str,
+            available_variables: List[str],
+            body_text: Optional[str] = None
     ) -> dict:
         """Update an existing email template
 
@@ -226,7 +227,7 @@ class EmailTemplateController:
         """
         try:
             query = GetEmailTemplateByIdQuery(template_id=template_id)
-            template = self._query_bus.query(query)
+            template: Optional[EmailTemplateDto] = self._query_bus.query(query)
 
             if not template:
                 raise HTTPException(status_code=404, detail=f"Email template not found: {template_id}")
@@ -240,9 +241,9 @@ class EmailTemplateController:
             raise HTTPException(status_code=500, detail=f"Error retrieving email template: {str(e)}")
 
     def list_templates_by_workflow(
-        self,
-        workflow_id: str,
-        active_only: bool = False
+            self,
+            workflow_id: str,
+            active_only: bool = False
     ) -> List[EmailTemplateDto]:
         """List all email templates for a workflow
 
@@ -259,7 +260,7 @@ class EmailTemplateController:
                 active_only=active_only
             )
 
-            templates = self._query_bus.query(query)
+            templates: List[EmailTemplateDto] = self._query_bus.query(query)
             return templates
 
         except Exception as e:
@@ -267,9 +268,9 @@ class EmailTemplateController:
             raise HTTPException(status_code=500, detail=f"Error listing templates: {str(e)}")
 
     def list_templates_by_stage(
-        self,
-        stage_id: str,
-        active_only: bool = False
+            self,
+            stage_id: str,
+            active_only: bool = False
     ) -> List[EmailTemplateDto]:
         """List all email templates for a stage
 
@@ -286,7 +287,7 @@ class EmailTemplateController:
                 active_only=active_only
             )
 
-            templates = self._query_bus.query(query)
+            templates: List[EmailTemplateDto] = self._query_bus.query(query)
             return templates
 
         except Exception as e:
@@ -294,11 +295,11 @@ class EmailTemplateController:
             raise HTTPException(status_code=500, detail=f"Error listing templates: {str(e)}")
 
     def get_templates_by_trigger(
-        self,
-        workflow_id: str,
-        trigger_event: TriggerEvent,
-        stage_id: Optional[str] = None,
-        active_only: bool = True
+            self,
+            workflow_id: str,
+            trigger_event: TriggerEvent,
+            stage_id: Optional[str] = None,
+            active_only: bool = True
     ) -> List[EmailTemplateDto]:
         """Get templates by trigger event
 
@@ -319,7 +320,7 @@ class EmailTemplateController:
                 active_only=active_only
             )
 
-            templates = self._query_bus.query(query)
+            templates: List[EmailTemplateDto] = self._query_bus.query(query)
             return templates
 
         except Exception as e:

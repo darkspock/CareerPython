@@ -6,7 +6,7 @@ Phase 7: Event handler that sends emails when application stage changes
 import logging
 from typing import Dict, Any
 
-from core.event_bus import EventHandler
+from core.event import EventHandler
 from src.candidate_application.domain.events.application_stage_changed_event import ApplicationStageChangedEvent
 from src.email_template.domain.enums.trigger_event import TriggerEvent
 from src.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
@@ -82,7 +82,7 @@ class SendStageTransitionEmailHandler(EventHandler[ApplicationStageChangedEvent]
 
                     # Send email via command bus
                     send_email_command = SendEmailCommand(
-                        to_email=event.candidate_email,
+                        recipient_email=event.candidate_email,
                         subject=subject,
                         body_html=body_html,
                         body_text=body_text,

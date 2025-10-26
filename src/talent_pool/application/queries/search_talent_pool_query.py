@@ -6,8 +6,7 @@ Phase 8: Query to search talent pool entries
 from dataclasses import dataclass
 from typing import Optional, List
 
-from core.cqrs.query import Query
-from core.cqrs.query_handler import QueryHandler
+from src.shared.application.query_bus import QueryHandler, Query
 from src.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 from src.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (
     TalentPoolEntryRepositoryInterface,
@@ -16,6 +15,7 @@ from src.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEnt
 
 
 @dataclass(frozen=True)
+
 class SearchTalentPoolQuery(Query):
     """Query to search talent pool entries"""
 

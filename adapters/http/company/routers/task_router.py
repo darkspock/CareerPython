@@ -33,10 +33,10 @@ class UnclaimTaskRequest(BaseModel):
 @router.get("/my-tasks", status_code=status.HTTP_200_OK)
 @inject
 def get_my_assigned_tasks(
+    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])],
     user_id: str = Query(..., description="User ID to get tasks for"),  # TODO: Get from auth token/session
     stage_id: Optional[str] = Query(None, description="Filter by specific stage ID"),
     limit: Optional[int] = Query(None, description="Limit number of results", ge=1, le=100),
-    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])]
 ) -> List[CandidateApplicationDto]:
     """
     Get all tasks assigned to the current user.

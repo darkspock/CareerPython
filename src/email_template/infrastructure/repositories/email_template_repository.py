@@ -147,6 +147,18 @@ class EmailTemplateRepository(EmailTemplateRepositoryInterface):
 
     def _create_entity_from_model(self, model: EmailTemplateModel) -> EmailTemplate:
         """Convert SQLAlchemy model to domain entity"""
+        # Assert required fields are not None
+        assert model.id is not None, "Model id cannot be None"
+        assert model.workflow_id is not None, "Model workflow_id cannot be None"
+        assert model.template_name is not None, "Model template_name cannot be None"
+        assert model.template_key is not None, "Model template_key cannot be None"
+        assert model.subject is not None, "Model subject cannot be None"
+        assert model.body_html is not None, "Model body_html cannot be None"
+        assert model.available_variables is not None, "Model available_variables cannot be None"
+        assert model.is_active is not None, "Model is_active cannot be None"
+        assert model.created_at is not None, "Model created_at cannot be None"
+        assert model.updated_at is not None, "Model updated_at cannot be None"
+
         return EmailTemplate._from_repository(
             id=EmailTemplateId.from_string(model.id),
             workflow_id=model.workflow_id,

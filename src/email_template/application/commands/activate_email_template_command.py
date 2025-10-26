@@ -31,7 +31,7 @@ class ActivateEmailTemplateCommandHandler(CommandHandler[ActivateEmailTemplateCo
             raise ValueError(f"Email template not found: {command.template_id}")
 
         # Activate the template
-        activated_template = template.activate()
+        template.activate()
 
         # Save changes
-        self._repository.save(activated_template)
+        self._repository.save(template)

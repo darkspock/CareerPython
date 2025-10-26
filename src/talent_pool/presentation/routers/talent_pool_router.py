@@ -4,8 +4,9 @@ Phase 8: FastAPI router for talent pool endpoints
 """
 
 from typing import List, Optional, Annotated
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+
 from dependency_injector.wiring import inject, Provide
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from core.container import Container
 from src.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
@@ -17,7 +18,6 @@ from src.talent_pool.presentation.schemas.talent_pool_schemas import (
     TalentPoolEntryResponse,
 )
 
-
 router = APIRouter(
     prefix="/api/company/talent-pool",
     tags=["company-talent-pool"],
@@ -27,10 +27,10 @@ router = APIRouter(
 @router.post("/{company_id}", status_code=status.HTTP_201_CREATED)
 @inject
 def add_to_talent_pool(
-    company_id: str,
-    request: AddToTalentPoolRequest,
-    controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
-):
+        company_id: str,
+        request: AddToTalentPoolRequest,
+        controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+) -> dict:
     """Add a candidate to the company's talent pool"""
     try:
         return controller.add_to_talent_pool(
@@ -51,11 +51,11 @@ def add_to_talent_pool(
 @router.get("/{company_id}/entries")
 @inject
 def list_talent_pool_entries(
-    company_id: str,
-    status_filter: Optional[TalentPoolStatus] = Query(None, alias="status"),
-    tags: Optional[List[str]] = Query(None),
-    min_rating: Optional[int] = Query(None, ge=1, le=5),
-    controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+        company_id: str,
+        controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+        status_filter: Optional[TalentPoolStatus] = Query(None, alias="status"),
+        tags: Optional[List[str]] = Query(None),
+        min_rating: Optional[int] = Query(None, ge=1, le=5),
 ) -> List[TalentPoolEntryResponse]:
     """List talent pool entries for a company with optional filters"""
     return controller.list_entries(
@@ -69,12 +69,12 @@ def list_talent_pool_entries(
 @router.get("/{company_id}/search")
 @inject
 def search_talent_pool(
-    company_id: str,
-    search_term: Optional[str] = Query(None),
-    status_filter: Optional[TalentPoolStatus] = Query(None, alias="status"),
-    tags: Optional[List[str]] = Query(None),
-    min_rating: Optional[int] = Query(None, ge=1, le=5),
-    controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+        company_id: str,
+        controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+        search_term: Optional[str] = Query(None),
+        status_filter: Optional[TalentPoolStatus] = Query(None, alias="status"),
+        tags: Optional[List[str]] = Query(None),
+        min_rating: Optional[int] = Query(None, ge=1, le=5),
 ) -> List[TalentPoolEntryResponse]:
     """Search talent pool entries"""
     return controller.search_entries(
@@ -89,8 +89,8 @@ def search_talent_pool(
 @router.get("/entries/{entry_id}")
 @inject
 def get_talent_pool_entry(
-    entry_id: str,
-    controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+        entry_id: str,
+        controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
 ) -> TalentPoolEntryResponse:
     """Get a talent pool entry by ID"""
     entry = controller.get_entry_by_id(entry_id)
@@ -102,10 +102,10 @@ def get_talent_pool_entry(
 @router.put("/entries/{entry_id}")
 @inject
 def update_talent_pool_entry(
-    entry_id: str,
-    request: UpdateTalentPoolEntryRequest,
-    controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
-):
+        entry_id: str,
+        request: UpdateTalentPoolEntryRequest,
+        controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+) -> dict:
     """Update a talent pool entry"""
     try:
         return controller.update_entry(
@@ -122,10 +122,10 @@ def update_talent_pool_entry(
 @router.patch("/entries/{entry_id}/status")
 @inject
 def change_talent_pool_entry_status(
-    entry_id: str,
-    request: ChangeTalentPoolStatusRequest,
-    controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
-):
+        entry_id: str,
+        request: ChangeTalentPoolStatusRequest,
+        controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+) -> dict:
     """Change talent pool entry status"""
     try:
         return controller.change_status(entry_id=entry_id, new_status=request.status)
@@ -136,9 +136,9 @@ def change_talent_pool_entry_status(
 @router.delete("/entries/{entry_id}")
 @inject
 def remove_from_talent_pool(
-    entry_id: str,
-    controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
-):
+        entry_id: str,
+        controller: Annotated[TalentPoolController, Depends(Provide[Container.talent_pool_controller])],
+) -> dict:
     """Remove a candidate from the talent pool"""
     try:
         return controller.remove_from_talent_pool(entry_id=entry_id)

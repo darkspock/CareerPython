@@ -3,15 +3,15 @@ Router for email template operations
 Phase 7: Email Integration System
 """
 from typing import Annotated, Optional, List
+
+from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from dependency_injector.wiring import inject, Provide
 
-from core.container import Container
 from adapters.http.company.controllers.email_template_controller import EmailTemplateController
+from core.container import Container
 from src.email_template.application.dtos.email_template_dto import EmailTemplateDto
 from src.email_template.domain.enums.trigger_event import TriggerEvent
-
 
 router = APIRouter(
     prefix="/api/company/email-templates",
@@ -45,8 +45,8 @@ class UpdateEmailTemplateRequest(BaseModel):
 @router.post("/", status_code=status.HTTP_201_CREATED)
 @inject
 def create_email_template(
-    request: CreateEmailTemplateRequest,
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        request: CreateEmailTemplateRequest,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
 ) -> dict:
     """
     Create a new email template.
@@ -79,8 +79,8 @@ def create_email_template(
 @router.get("/{template_id}", status_code=status.HTTP_200_OK)
 @inject
 def get_email_template(
-    template_id: str,
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        template_id: str,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
 ) -> EmailTemplateDto:
     """
     Get an email template by ID.
@@ -89,6 +89,11 @@ def get_email_template(
     """
     try:
         template = controller.get_template_by_id(template_id)
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Email template not found"
+            )
         return template
 
     except HTTPException:
@@ -103,9 +108,9 @@ def get_email_template(
 @router.put("/{template_id}", status_code=status.HTTP_200_OK)
 @inject
 def update_email_template(
-    template_id: str,
-    request: UpdateEmailTemplateRequest,
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        template_id: str,
+        request: UpdateEmailTemplateRequest,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
 ) -> dict:
     """
     Update an existing email template.
@@ -133,8 +138,8 @@ def update_email_template(
 @router.delete("/{template_id}", status_code=status.HTTP_200_OK)
 @inject
 def delete_email_template(
-    template_id: str,
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        template_id: str,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
 ) -> dict:
     """
     Delete an email template.
@@ -155,8 +160,8 @@ def delete_email_template(
 @router.post("/{template_id}/activate", status_code=status.HTTP_200_OK)
 @inject
 def activate_email_template(
-    template_id: str,
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        template_id: str,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
 ) -> dict:
     """
     Activate an email template.
@@ -177,8 +182,8 @@ def activate_email_template(
 @router.post("/{template_id}/deactivate", status_code=status.HTTP_200_OK)
 @inject
 def deactivate_email_template(
-    template_id: str,
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        template_id: str,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
 ) -> dict:
     """
     Deactivate an email template.
@@ -199,9 +204,9 @@ def deactivate_email_template(
 @router.get("/workflow/{workflow_id}", status_code=status.HTTP_200_OK)
 @inject
 def list_templates_by_workflow(
-    workflow_id: str,
-    active_only: bool = Query(False, description="Return only active templates"),
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        workflow_id: str,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])],
+        active_only: bool = Query(False, description="Return only active templates"),
 ) -> List[EmailTemplateDto]:
     """
     List all email templates for a workflow.
@@ -225,9 +230,9 @@ def list_templates_by_workflow(
 @router.get("/stage/{stage_id}", status_code=status.HTTP_200_OK)
 @inject
 def list_templates_by_stage(
-    stage_id: str,
-    active_only: bool = Query(False, description="Return only active templates"),
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        stage_id: str,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])],
+        active_only: bool = Query(False, description="Return only active templates"),
 ) -> List[EmailTemplateDto]:
     """
     List all email templates for a stage.
@@ -251,11 +256,11 @@ def list_templates_by_stage(
 @router.get("/trigger/{workflow_id}/{trigger_event}", status_code=status.HTTP_200_OK)
 @inject
 def get_templates_by_trigger(
-    workflow_id: str,
-    trigger_event: TriggerEvent,
-    stage_id: Optional[str] = Query(None, description="Filter by stage ID"),
-    active_only: bool = Query(True, description="Return only active templates"),
-    controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])]
+        workflow_id: str,
+        trigger_event: TriggerEvent,
+        controller: Annotated[EmailTemplateController, Depends(Provide[Container.email_template_controller])],
+        stage_id: Optional[str] = Query(None, description="Filter by stage ID"),
+        active_only: bool = Query(True, description="Return only active templates"),
 ) -> List[EmailTemplateDto]:
     """
     Get templates by trigger event.

@@ -3,11 +3,11 @@ Workflow Analytics Router
 Phase 9: FastAPI routes for workflow analytics
 """
 
-from typing import Annotated, List, Optional
 from datetime import datetime
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Depends, Query
 from dependency_injector.wiring import inject, Provide
+from fastapi import APIRouter, Depends, Query
 
 from core.container import Container
 from src.workflow_analytics.presentation.controllers import WorkflowAnalyticsController
@@ -25,13 +25,14 @@ router = APIRouter(
 @router.get("/{workflow_id}/analytics", response_model=WorkflowAnalyticsResponse)
 @inject
 def get_workflow_analytics(
-    workflow_id: str,
-    date_range_start: Optional[datetime] = Query(None, description="Start date for filtering applications"),
-    date_range_end: Optional[datetime] = Query(None, description="End date for filtering applications"),
-    controller: Annotated[
-        WorkflowAnalyticsController,
-        Depends(Provide[Container.workflow_analytics_controller])
-    ] = None,
+        workflow_id: str,
+        controller: Annotated[
+            WorkflowAnalyticsController,
+            Depends(Provide[Container.workflow_analytics_controller])
+        ],
+        date_range_start: Optional[datetime] = Query(None, description="Start date for filtering applications"),
+        date_range_end: Optional[datetime] = Query(None, description="End date for filtering applications"),
+
 ) -> WorkflowAnalyticsResponse:
     """
     Get comprehensive analytics for a workflow.
@@ -55,19 +56,20 @@ def get_workflow_analytics(
 @router.get("/{workflow_id}/bottlenecks", response_model=List[StageBottleneckResponse])
 @inject
 def get_stage_bottlenecks(
-    workflow_id: str,
-    date_range_start: Optional[datetime] = Query(None, description="Start date for filtering applications"),
-    date_range_end: Optional[datetime] = Query(None, description="End date for filtering applications"),
-    min_bottleneck_score: float = Query(
-        30.0,
-        ge=0.0,
-        le=100.0,
-        description="Minimum score (0-100) to be considered a bottleneck"
-    ),
-    controller: Annotated[
-        WorkflowAnalyticsController,
-        Depends(Provide[Container.workflow_analytics_controller])
-    ] = None,
+        workflow_id: str,
+        controller: Annotated[
+            WorkflowAnalyticsController,
+            Depends(Provide[Container.workflow_analytics_controller])
+        ],
+        date_range_start: Optional[datetime] = Query(None, description="Start date for filtering applications"),
+        date_range_end: Optional[datetime] = Query(None, description="End date for filtering applications"),
+        min_bottleneck_score: float = Query(
+            30.0,
+            ge=0.0,
+            le=100.0,
+            description="Minimum score (0-100) to be considered a bottleneck"
+        ),
+
 ) -> List[StageBottleneckResponse]:
     """
     Get list of bottleneck stages in a workflow.

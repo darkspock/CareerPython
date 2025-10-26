@@ -7,7 +7,9 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict
 from datetime import datetime, timedelta
 
-from core.query_handler import QueryHandler
+from typing import TYPE_CHECKING
+
+from src.shared.application.query_bus import Query, QueryHandler
 from src.workflow_analytics.application.dtos import (
     WorkflowAnalyticsDto,
     StageAnalyticsDto,
@@ -17,12 +19,14 @@ from src.workflow_analytics.application.dtos import (
 from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from core.database import Database
 from sqlalchemy import func, case, and_, or_
+
+if TYPE_CHECKING:
+    from core.database import SQLAlchemyDatabase
 
 
 @dataclass
-class GetWorkflowAnalyticsQuery:
+class GetWorkflowAnalyticsQuery(Query):
     """
     Query to get comprehensive analytics for a workflow.
 
@@ -39,7 +43,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
 
     def __init__(
         self,
-        database: Database,
+        database: "SQLAlchemyDatabase",
         workflow_repository: CompanyWorkflowRepositoryInterface,
         stage_repository: WorkflowStageRepositoryInterface
     ):
@@ -88,13 +92,13 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
 
             active_count = base_query.filter(
                 CompanyCandidateModel.status.in_([
-                    CompanyCandidateStatus.CONFIRMED.value,
+                    CompanyCandidateStatus.ACTIVE.value,
                     CompanyCandidateStatus.PENDING_CONFIRMATION.value
                 ])
             ).count()
 
             completed_count = base_query.filter(
-                CompanyCandidateModel.status == CompanyCandidateStatus.CONFIRMED.value,
+                CompanyCandidateModel.status == CompanyCandidateStatus.ACTIVE.value,
                 CompanyCandidateModel.archived_at.isnot(None)
             ).count()
 
@@ -131,8 +135,8 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
                 total_in_stage = current_in_stage
 
                 # For conversion rate, count how many moved to next stage
-                next_stage_idx = stage.stage_order + 1
-                next_stages = [s for s in stages if s.stage_order == next_stage_idx]
+                next_stage_idx = stage.order + 1
+                next_stages = [s for s in stages if s.order == next_stage_idx]
 
                 moved_to_next = 0
                 if next_stages:
@@ -150,7 +154,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
                 stage_analytics_list.append(StageAnalyticsDto(
                     stage_id=stage_id,
                     stage_name=stage.name,
-                    stage_order=stage.stage_order,
+                    stage_order=stage.order,
                     total_applications=total_in_stage,
                     current_applications=current_in_stage,
                     completed_applications=0,  # Would need stage history
@@ -258,7 +262,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
             return bottlenecks
 
         avg_conversion = sum(
-            s.conversion_rate_to_next for s in stages_with_conversion
+            s.conversion_rate_to_next or 0.0 for s in stages_with_conversion
         ) / len(stages_with_conversion)
 
         # Expected conversion rate (we'll use average as baseline)
