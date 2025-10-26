@@ -247,7 +247,7 @@ from src.position_stage_assignment.application import (
 from src.position_stage_assignment.infrastructure import PositionStageAssignmentRepository
 
 # Position Stage Assignment Presentation
-from src.position_stage_assignment.presentation import PositionStageAssignmentController
+from src.position_stage_assignment.presentation.controllers import PositionStageAssignmentController
 
 # Onboarding dependencies - SIMPLIFIED for landing endpoint only
 from src.user.infrastructure.repositories.user_asset_repository import SQLAlchemyUserAssetRepository
@@ -288,6 +288,36 @@ from src.candidate_application.application.queries.get_my_assigned_tasks_query i
 from src.candidate_application.application.commands.claim_task_command import ClaimTaskCommandHandler
 from src.candidate_application.application.commands.unclaim_task_command import UnclaimTaskCommandHandler
 from src.candidate_application.infrastructure.repositories.candidate_application_repository import SQLAlchemyCandidateApplicationRepository
+
+# Phase 7: Email Template Management
+from src.email_template.application.commands.create_email_template_command import CreateEmailTemplateCommandHandler
+from src.email_template.application.commands.update_email_template_command import UpdateEmailTemplateCommandHandler
+from src.email_template.application.commands.delete_email_template_command import DeleteEmailTemplateCommandHandler
+from src.email_template.application.commands.activate_email_template_command import ActivateEmailTemplateCommandHandler
+from src.email_template.application.commands.deactivate_email_template_command import DeactivateEmailTemplateCommandHandler
+from src.email_template.application.queries.get_email_template_by_id_query import GetEmailTemplateByIdQueryHandler
+from src.email_template.application.queries.list_email_templates_by_workflow_query import ListEmailTemplatesByWorkflowQueryHandler
+from src.email_template.application.queries.list_email_templates_by_stage_query import ListEmailTemplatesByStageQueryHandler
+from src.email_template.application.queries.get_email_templates_by_trigger_query import GetEmailTemplatesByTriggerQueryHandler
+from src.email_template.infrastructure.repositories.email_template_repository import EmailTemplateRepository
+from src.email_template.application.handlers.send_stage_transition_email_handler import SendStageTransitionEmailHandler
+from adapters.http.company.controllers.email_template_controller import EmailTemplateController
+
+# Phase 8: Talent Pool Management
+from src.talent_pool.application.commands.add_to_talent_pool_command import AddToTalentPoolCommandHandler
+from src.talent_pool.application.commands.update_talent_pool_entry_command import UpdateTalentPoolEntryCommandHandler
+from src.talent_pool.application.commands.remove_from_talent_pool_command import RemoveFromTalentPoolCommandHandler
+from src.talent_pool.application.commands.change_talent_pool_entry_status_command import ChangeTalentPoolEntryStatusCommandHandler
+from src.talent_pool.application.queries.list_talent_pool_entries_query import ListTalentPoolEntriesQueryHandler
+from src.talent_pool.application.queries.get_talent_pool_entry_by_id_query import GetTalentPoolEntryByIdQueryHandler
+from src.talent_pool.application.queries.search_talent_pool_query import SearchTalentPoolQueryHandler
+from src.talent_pool.infrastructure.repositories.talent_pool_entry_repository import TalentPoolEntryRepository
+from src.talent_pool.presentation.controllers.talent_pool_controller import TalentPoolController
+
+# Phase 9: Workflow Analytics
+from src.workflow_analytics.application.queries.get_workflow_analytics_query import GetWorkflowAnalyticsQueryHandler
+from src.workflow_analytics.application.queries.get_stage_bottlenecks_query import GetStageBottlenecksQueryHandler
+from src.workflow_analytics.presentation.controllers.workflow_analytics_controller import WorkflowAnalyticsController
 
 # Email Services
 from src.notification.infrastructure.services.smtp_email_service import SMTPEmailService
@@ -453,6 +483,18 @@ class Container(containers.DeclarativeContainer):
     # Position Stage Assignment Repository
     position_stage_assignment_repository = providers.Factory(
         PositionStageAssignmentRepository,
+        database=database
+    )
+
+    # Phase 7: Email Template Repository
+    email_template_repository = providers.Factory(
+        EmailTemplateRepository,
+        database=database
+    )
+
+    # Phase 8: Talent Pool Repository
+    talent_pool_repository = providers.Factory(
+        TalentPoolEntryRepository,
         database=database
     )
 
@@ -1438,6 +1480,112 @@ class Container(containers.DeclarativeContainer):
         application_repository=candidate_application_repository
     )
 
+    # Phase 7: Email Template Query Handlers
+    get_email_template_by_id_query_handler = providers.Factory(
+        GetEmailTemplateByIdQueryHandler,
+        repository=email_template_repository
+    )
+
+    list_email_templates_by_workflow_query_handler = providers.Factory(
+        ListEmailTemplatesByWorkflowQueryHandler,
+        repository=email_template_repository
+    )
+
+    list_email_templates_by_stage_query_handler = providers.Factory(
+        ListEmailTemplatesByStageQueryHandler,
+        repository=email_template_repository
+    )
+
+    get_email_templates_by_trigger_query_handler = providers.Factory(
+        GetEmailTemplatesByTriggerQueryHandler,
+        repository=email_template_repository
+    )
+
+    # Phase 7: Email Template Command Handlers
+    create_email_template_command_handler = providers.Factory(
+        CreateEmailTemplateCommandHandler,
+        repository=email_template_repository
+    )
+
+    update_email_template_command_handler = providers.Factory(
+        UpdateEmailTemplateCommandHandler,
+        repository=email_template_repository
+    )
+
+    delete_email_template_command_handler = providers.Factory(
+        DeleteEmailTemplateCommandHandler,
+        repository=email_template_repository
+    )
+
+    activate_email_template_command_handler = providers.Factory(
+        ActivateEmailTemplateCommandHandler,
+        repository=email_template_repository
+    )
+
+    deactivate_email_template_command_handler = providers.Factory(
+        DeactivateEmailTemplateCommandHandler,
+        repository=email_template_repository
+    )
+
+    # Phase 7: Email Template Event Handler
+    send_stage_transition_email_handler = providers.Factory(
+        SendStageTransitionEmailHandler,
+        email_template_repository=email_template_repository,
+        command_bus=command_bus
+    )
+
+    # Phase 8: Talent Pool Query Handlers
+    list_talent_pool_entries_query_handler = providers.Factory(
+        ListTalentPoolEntriesQueryHandler,
+        repository=talent_pool_repository
+    )
+
+    get_talent_pool_entry_by_id_query_handler = providers.Factory(
+        GetTalentPoolEntryByIdQueryHandler,
+        repository=talent_pool_repository
+    )
+
+    search_talent_pool_query_handler = providers.Factory(
+        SearchTalentPoolQueryHandler,
+        repository=talent_pool_repository
+    )
+
+    # Phase 8: Talent Pool Command Handlers
+    add_to_talent_pool_command_handler = providers.Factory(
+        AddToTalentPoolCommandHandler,
+        repository=talent_pool_repository
+    )
+
+    update_talent_pool_entry_command_handler = providers.Factory(
+        UpdateTalentPoolEntryCommandHandler,
+        repository=talent_pool_repository
+    )
+
+    remove_from_talent_pool_command_handler = providers.Factory(
+        RemoveFromTalentPoolCommandHandler,
+        repository=talent_pool_repository
+    )
+
+    change_talent_pool_entry_status_command_handler = providers.Factory(
+        ChangeTalentPoolEntryStatusCommandHandler,
+        repository=talent_pool_repository
+    )
+
+    # Phase 9: Workflow Analytics Query Handlers
+    get_workflow_analytics_query_handler = providers.Factory(
+        GetWorkflowAnalyticsQueryHandler,
+        database=database,
+        workflow_repository=company_workflow_repository,
+        stage_repository=workflow_stage_repository
+    )
+
+    get_stage_bottlenecks_query_handler = providers.Factory(
+        GetStageBottlenecksQueryHandler,
+        database=database,
+        workflow_repository=company_workflow_repository,
+        stage_repository=workflow_stage_repository
+    )
+
     # Email Command Handler
     send_email_command_handler = providers.Factory(
         SendEmailCommandHandler,
@@ -1557,6 +1705,26 @@ class Container(containers.DeclarativeContainer):
     task_controller = providers.Factory(
         TaskController,
         command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    # Phase 7: Email Template Controller
+    email_template_controller = providers.Factory(
+        EmailTemplateController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    # Phase 8: Talent Pool Controller
+    talent_pool_controller = providers.Factory(
+        TalentPoolController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    # Phase 9: Workflow Analytics Controller
+    workflow_analytics_controller = providers.Factory(
+        WorkflowAnalyticsController,
         query_bus=query_bus
     )
 

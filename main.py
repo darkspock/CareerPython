@@ -20,6 +20,9 @@ from adapters.http.company.routers.company_role_router import router as company_
 from adapters.http.company.routers.company_candidate_application_router import router as company_candidate_application_router
 from adapters.http.company.routers.enum_router import router as company_enum_router
 from adapters.http.company.routers.task_router import router as task_router
+from adapters.http.company.routers.email_template_router import router as email_template_router
+from src.talent_pool.presentation.routers.talent_pool_router import router as talent_pool_router
+from src.workflow_analytics.presentation.routers.workflow_analytics_router import router as workflow_analytics_router
 from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
 from adapters.http.company_workflow.routers.company_workflow_router import router as company_workflow_router
 from adapters.http.company_workflow.routers.workflow_stage_router import router as workflow_stage_router
@@ -67,6 +70,9 @@ app.include_router(company_role_router)  # Company role management
 app.include_router(company_candidate_application_router)  # Company candidate application management
 app.include_router(company_enum_router)  # Company enums
 app.include_router(task_router)  # Phase 6: Task Management
+app.include_router(email_template_router)  # Phase 7: Email Template Management
+app.include_router(talent_pool_router)  # Phase 8: Talent Pool Management
+app.include_router(workflow_analytics_router)  # Phase 9: Workflow Analytics
 app.include_router(company_candidate_router)  # Company candidate management
 app.include_router(company_workflow_router)  # Company workflow management
 app.include_router(workflow_stage_router)  # Workflow stage management
@@ -119,5 +125,6 @@ container.wire(modules=[
     "adapters.http.company_workflow.routers.custom_field_router",
     "src.field_validation.presentation.routers.validation_rule_router",
     "src.position_stage_assignment.presentation.routers.position_stage_assignment_router",
+    "src.workflow_analytics.presentation.routers.workflow_analytics_router",
     "adapters.http.shared.routes.user_router",
 ])

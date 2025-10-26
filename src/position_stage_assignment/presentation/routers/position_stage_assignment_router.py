@@ -10,7 +10,7 @@ from src.position_stage_assignment.presentation.schemas import (
     CopyWorkflowAssignmentsRequest,
     PositionStageAssignmentResponse
 )
-from src.core.container import Container  # type: ignore
+from core.container import Container
 from dependency_injector.wiring import inject, Provide
 
 router = APIRouter(

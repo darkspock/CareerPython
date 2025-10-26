@@ -35,8 +35,7 @@ from .presentation import (
     CopyWorkflowAssignmentsRequest,
     PositionStageAssignmentResponse,
     PositionStageAssignmentController,
-    PositionStageAssignmentMapper,
-    router
+    PositionStageAssignmentMapper
 )
 
 __all__ = [
@@ -73,6 +72,5 @@ __all__ = [
     'CopyWorkflowAssignmentsRequest',
     'PositionStageAssignmentResponse',
     'PositionStageAssignmentController',
-    'PositionStageAssignmentMapper',
-    'router'
+    'PositionStageAssignmentMapper'
 ]

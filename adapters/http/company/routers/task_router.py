@@ -36,7 +36,7 @@ def get_my_assigned_tasks(
     user_id: str = Query(..., description="User ID to get tasks for"),  # TODO: Get from auth token/session
     stage_id: Optional[str] = Query(None, description="Filter by specific stage ID"),
     limit: Optional[int] = Query(None, description="Limit number of results", ge=1, le=100),
-    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])] = Depends(Provide[Container.task_controller])
+    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])]
 ) -> List[CandidateApplicationDto]:
     """
     Get all tasks assigned to the current user.
@@ -68,7 +68,7 @@ def get_my_assigned_tasks(
 @inject
 def claim_task(
     request: ClaimTaskRequest,
-    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])] = Depends(Provide[Container.task_controller])
+    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])]
 ) -> dict:
     """
     Claim a task for processing.
@@ -100,7 +100,7 @@ def claim_task(
 @inject
 def unclaim_task(
     request: UnclaimTaskRequest,
-    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])] = Depends(Provide[Container.task_controller])
+    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])]
 ) -> dict:
     """
     Unclaim/release a task back to pending status.

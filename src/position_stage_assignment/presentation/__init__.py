@@ -7,7 +7,6 @@ from .schemas import (
     PositionStageAssignmentResponse
 )
 from .controllers import PositionStageAssignmentController
-from .routers import router
 from .mappers import PositionStageAssignmentMapper
 
 __all__ = [
@@ -17,6 +16,5 @@ __all__ = [
     'CopyWorkflowAssignmentsRequest',
     'PositionStageAssignmentResponse',
     'PositionStageAssignmentController',
-    'PositionStageAssignmentMapper',
-    'router'
+    'PositionStageAssignmentMapper'
 ]
