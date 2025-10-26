@@ -16,11 +16,9 @@ class DeleteJobPositionCommand(Command):
 class DeleteJobPositionCommandHandler:
     def __init__(self,
                  job_position_repository: JobPositionRepositoryInterface,
-                 candidate_application_repository: CandidateApplicationRepositoryInterface,):
+                 candidate_application_repository: CandidateApplicationRepositoryInterface, ):
         self.job_position_repository = job_position_repository
         self.candidate_application_repository = candidate_application_repository
-
-
 
     def execute(self, command: DeleteJobPositionCommand) -> None:
         job_position = self.job_position_repository.get_by_id(command.id)
