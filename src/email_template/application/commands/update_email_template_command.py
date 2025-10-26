@@ -38,11 +38,10 @@ class UpdateEmailTemplateCommandHandler(CommandHandler[UpdateEmailTemplateComman
             raise ValueError(f"Email template not found: {command.template_id}")
 
         # Update the template
-        template.update(
+        template.update_content(
             template_name=command.template_name,
             subject=command.subject,
             body_html=command.body_html,
-            available_variables=command.available_variables,
             body_text=command.body_text
         )
 

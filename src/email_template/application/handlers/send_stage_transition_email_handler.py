@@ -81,12 +81,13 @@ class SendStageTransitionEmailHandler(EventHandler[ApplicationStageChangedEvent]
                     body_text = template.render_body_text(context) if template.body_text else None
 
                     # Send email via command bus
+                    from src.notification.domain.enums.notification_type import NotificationTypeEnum
                     send_email_command = SendEmailCommand(
                         recipient_email=event.candidate_email,
                         subject=subject,
-                        body_html=body_html,
-                        body_text=body_text,
-                        from_name=event.company_name
+                        template_name=template.template_name,
+                        notification_type=NotificationTypeEnum.APPLICATION_CONFIRMATION,
+                        template_data=context
                     )
 
                     self._command_bus.execute(send_email_command)
