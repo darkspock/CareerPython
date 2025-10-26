@@ -14,6 +14,7 @@ from src.job_position.application.queries.job_position_dto import JobPositionDto
 class JobPositionCreate(BaseModel):
     """Schema for creating a job position"""
     company_id: str = Field(..., description="Company ID")
+    workflow_id: Optional[str] = Field(None, description="Workflow ID")
     title: str = Field(..., description="Position title")
     description: Optional[str] = Field(None, description="Position description")
     location: Optional[str] = Field(None, description="Position location")
@@ -44,6 +45,7 @@ class JobPositionCreate(BaseModel):
 
 class JobPositionUpdate(BaseModel):
     """Schema for updating a job position"""
+    workflow_id: Optional[str] = Field(None, description="Workflow ID")
     title: Optional[str] = Field(None, description="Position title")
     description: Optional[str] = Field(None, description="Position description")
     location: Optional[str] = Field(None, description="Position location")
@@ -77,6 +79,7 @@ class JobPositionResponse(BaseModel):
     id: str
     title: str
     company_id: str
+    workflow_id: Optional[str] = None
     company_name: Optional[str] = None  # For display purposes
     description: Optional[str] = None
     location: Optional[str] = None
@@ -139,6 +142,7 @@ class JobPositionResponse(BaseModel):
             id=dto.id.value,
             title=dto.title,
             company_id=dto.company_id.value,
+            workflow_id=dto.workflow_id,
             company_name=company_name,
             description=dto.description,
             location=dto.location,

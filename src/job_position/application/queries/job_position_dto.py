@@ -18,6 +18,7 @@ class JobPositionDto:
     id: JobPositionId
     title: str
     company_id: CompanyId
+    workflow_id: Optional[str]
     description: Optional[str]
     position_level: Optional[JobPositionLevelEnum]
     location: Optional[str]
@@ -53,6 +54,7 @@ class JobPositionDto:
         return JobPositionDto(
             id=entity.id,
             company_id=entity.company_id,
+            workflow_id=entity.workflow_id,
             work_location_type=entity.work_location_type,
             salary_range=entity.salary_range,
             contract_type=entity.contract_type,

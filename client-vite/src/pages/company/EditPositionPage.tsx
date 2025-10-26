@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { Position, UpdatePositionRequest } from '../../types/position';
+import { WorkflowSelector, StageAssignmentEditor } from '../../components/workflow';
+import { companyWorkflowService } from '../../services/companyWorkflowService';
+import type { WorkflowStage } from '../../types/workflow';
+import { api } from '../../lib/api';
 
 export default function EditPositionPage() {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +16,7 @@ export default function EditPositionPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<UpdatePositionRequest>({
+    workflow_id: null,
     title: '',
     description: '',
     location: '',
@@ -37,9 +42,17 @@ export default function EditPositionPage() {
     job_category: 'other',
   });
 
+  const [companyId, setCompanyId] = useState<string>('');
+
   const [requirementInput, setRequirementInput] = useState('');
   const [benefitInput, setBenefitInput] = useState('');
   const [skillInput, setSkillInput] = useState('');
+
+  // Stage assignment states
+  const [workflowStages, setWorkflowStages] = useState<WorkflowStage[]>([]);
+  const [companyUsers, setCompanyUsers] = useState<Array<{ id: string; name: string; email: string }>>([]);
+  const [loadingStages, setLoadingStages] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -56,6 +69,7 @@ export default function EditPositionPage() {
 
       // Convert Position to form data
       setFormData({
+        workflow_id: position.workflow_id,
         title: position.title,
         description: position.description,
         location: position.location,
@@ -81,6 +95,8 @@ export default function EditPositionPage() {
         job_category: position.job_category,
       });
 
+      setCompanyId(position.company_id);
+
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load position');
@@ -89,6 +105,57 @@ export default function EditPositionPage() {
       setLoading(false);
     }
   };
+
+  // Load workflow stages when workflow_id changes
+  useEffect(() => {
+    const loadWorkflowStages = async () => {
+      if (!formData.workflow_id) {
+        setWorkflowStages([]);
+        return;
+      }
+
+      setLoadingStages(true);
+      try {
+        const stages = await companyWorkflowService.listStagesByWorkflow(formData.workflow_id);
+        setWorkflowStages(stages);
+      } catch (err) {
+        console.error('Error loading workflow stages:', err);
+        setWorkflowStages([]);
+      } finally {
+        setLoadingStages(false);
+      }
+    };
+
+    loadWorkflowStages();
+  }, [formData.workflow_id]);
+
+  // Load company users when component mounts
+  useEffect(() => {
+    const loadCompanyUsers = async () => {
+      if (!companyId) return;
+
+      setLoadingUsers(true);
+      try {
+        const response = await api.authenticatedRequest(`/company/${companyId}/users?active_only=true`);
+
+        // Map to the format expected by StageAssignmentEditor
+        const users = response.map((user: any) => ({
+          id: user.user_id,
+          name: user.name || user.email,
+          email: user.email
+        }));
+
+        setCompanyUsers(users);
+      } catch (err) {
+        console.error('Error loading company users:', err);
+        setCompanyUsers([]);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    loadCompanyUsers();
+  }, [companyId]);
 
   const handleAddItem = (
     inputValue: string,
@@ -261,6 +328,36 @@ export default function EditPositionPage() {
                 Remote Position
               </label>
             </div>
+
+            {/* Workflow Selector */}
+            <div className="md:col-span-2">
+              <WorkflowSelector
+                companyId={companyId}
+                selectedWorkflowId={formData.workflow_id}
+                onWorkflowChange={(workflowId) => setFormData({ ...formData, workflow_id: workflowId })}
+                label="Application Workflow (Optional)"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Select a workflow to automate candidate processing with custom fields and validation rules
+              </p>
+            </div>
+
+            {/* Stage Assignments Editor */}
+            {formData.workflow_id && !loadingStages && workflowStages.length > 0 && id && (
+              <div className="md:col-span-2">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <StageAssignmentEditor
+                    positionId={id}
+                    stages={workflowStages}
+                    companyUsers={companyUsers}
+                    disabled={saving || loadingUsers}
+                  />
+                  <p className="mt-3 text-sm text-gray-500">
+                    Assign team members to each workflow stage. They will be responsible for processing candidates at that stage.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>

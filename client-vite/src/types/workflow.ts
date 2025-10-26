@@ -255,3 +255,121 @@ export const getFieldVisibilityColor = (visibility: FieldVisibility): string => 
     default: return 'bg-gray-100 text-gray-800';
   }
 };
+
+// Validation Rule Types
+export type ValidationRuleType = 'compare_position_field' | 'range' | 'pattern' | 'custom';
+
+export type ComparisonOperator = 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq' | 'in_range' | 'out_range' | 'contains' | 'not_contains';
+
+export type ValidationSeverity = 'warning' | 'error';
+
+export interface ValidationRule {
+  id: string;
+  custom_field_id: string;
+  stage_id: string;
+  rule_type: ValidationRuleType;
+  comparison_operator: ComparisonOperator;
+  position_field_path: string | null;
+  comparison_value: any;
+  severity: ValidationSeverity;
+  validation_message: string;
+  auto_reject: boolean;
+  rejection_reason: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateValidationRuleRequest {
+  custom_field_id: string;
+  stage_id: string;
+  rule_type: ValidationRuleType;
+  comparison_operator: ComparisonOperator;
+  severity: ValidationSeverity;
+  validation_message: string;
+  position_field_path?: string;
+  comparison_value?: any;
+  auto_reject?: boolean;
+  rejection_reason?: string;
+  is_active?: boolean;
+}
+
+export interface UpdateValidationRuleRequest {
+  comparison_operator?: ComparisonOperator;
+  severity?: ValidationSeverity;
+  validation_message?: string;
+  position_field_path?: string;
+  comparison_value?: any;
+  auto_reject?: boolean;
+  rejection_reason?: string;
+  is_active?: boolean;
+}
+
+export interface ValidationIssue {
+  field_key: string;
+  field_name: string;
+  message: string;
+  severity: ValidationSeverity;
+  rule_id: string;
+  should_auto_reject: boolean;
+  rejection_reason: string | null;
+}
+
+export interface ValidationResult {
+  is_valid: boolean;
+  has_errors: boolean;
+  has_warnings: boolean;
+  errors: ValidationIssue[];
+  warnings: ValidationIssue[];
+  should_auto_reject: boolean;
+  auto_reject_reason: string | null;
+}
+
+export interface ValidateStageRequest {
+  stage_id: string;
+  candidate_field_values: Record<string, any>;
+  position_data?: Record<string, any>;
+}
+
+// Helper functions for validation rules
+export const getValidationRuleTypeLabel = (type: ValidationRuleType): string => {
+  switch (type) {
+    case 'compare_position_field': return 'Compare with Position Field';
+    case 'range': return 'Range Validation';
+    case 'pattern': return 'Pattern Validation';
+    case 'custom': return 'Custom Validation';
+    default: return type;
+  }
+};
+
+export const getComparisonOperatorLabel = (operator: ComparisonOperator): string => {
+  switch (operator) {
+    case 'gt': return 'Greater Than (>)';
+    case 'gte': return 'Greater Than or Equal (≥)';
+    case 'lt': return 'Less Than (<)';
+    case 'lte': return 'Less Than or Equal (≤)';
+    case 'eq': return 'Equal (=)';
+    case 'neq': return 'Not Equal (≠)';
+    case 'in_range': return 'In Range';
+    case 'out_range': return 'Out of Range';
+    case 'contains': return 'Contains';
+    case 'not_contains': return 'Does Not Contain';
+    default: return operator;
+  }
+};
+
+export const getValidationSeverityLabel = (severity: ValidationSeverity): string => {
+  switch (severity) {
+    case 'warning': return 'Warning';
+    case 'error': return 'Error';
+    default: return severity;
+  }
+};
+
+export const getValidationSeverityColor = (severity: ValidationSeverity): string => {
+  switch (severity) {
+    case 'warning': return 'bg-yellow-100 text-yellow-800';
+    case 'error': return 'bg-red-100 text-red-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+};

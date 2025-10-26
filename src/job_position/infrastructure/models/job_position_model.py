@@ -21,6 +21,7 @@ class JobPositionModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     company_id: Mapped[str] = mapped_column(String, index=True)  # Removed ForeignKey
+    workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True)  # Workflow for this position
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text)  # Job description
     location: Mapped[Optional[str]] = mapped_column(String)  # Work location

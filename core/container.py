@@ -14,6 +14,7 @@ from adapters.http.shared.controllers.user import UserController
 from adapters.http.candidate import OnboardingController
 from adapters.http.candidate.controllers.candidate import CandidateController
 from adapters.http.candidate.controllers.application_controller import ApplicationController
+from adapters.http.company.controllers.task_controller import TaskController
 
 # Admin Controllers
 from adapters.http.admin.controllers.admin_candidate_controller import AdminCandidateController
@@ -193,6 +194,30 @@ from src.company_workflow.presentation.controllers.company_workflow_controller i
 from src.company_workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
 from src.company_workflow.presentation.controllers.custom_field_controller import CustomFieldController
 
+# FieldValidation Application Layer - Commands
+from src.field_validation.application.commands.create_validation_rule_command import CreateValidationRuleCommandHandler
+from src.field_validation.application.commands.update_validation_rule_command import UpdateValidationRuleCommandHandler
+from src.field_validation.application.commands.delete_validation_rule_command import DeleteValidationRuleCommandHandler
+from src.field_validation.application.commands.activate_validation_rule_command import ActivateValidationRuleCommandHandler
+from src.field_validation.application.commands.deactivate_validation_rule_command import DeactivateValidationRuleCommandHandler
+
+# FieldValidation Application Layer - Queries
+from src.field_validation.application.queries.get_validation_rule_by_id_query import GetValidationRuleByIdQueryHandler
+from src.field_validation.application.queries.list_validation_rules_by_stage_query import ListValidationRulesByStageQueryHandler
+from src.field_validation.application.queries.list_validation_rules_by_field_query import ListValidationRulesByFieldQueryHandler
+
+# FieldValidation Application Layer - Services
+from src.field_validation.application.services.field_validation_service import FieldValidationService
+
+# CandidateApplication Application Layer - Services
+from src.candidate_application.application.services.stage_permission_service import StagePermissionService
+
+# FieldValidation Infrastructure
+from src.field_validation.infrastructure.repositories.validation_rule_repository import ValidationRuleRepository
+
+# FieldValidation Presentation Controllers
+from src.field_validation.presentation.controllers.validation_rule_controller import ValidationRuleController
+
 # Job Position Application Layer
 from src.job_position.application.commands.create_job_position import CreateJobPositionCommandHandler
 from src.job_position.application.commands.update_job_position import UpdateJobPositionCommandHandler
@@ -203,6 +228,26 @@ from src.job_position.application.queries.get_job_positions_stats import GetJobP
 
 # Job Position Infrastructure
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepository
+
+# Position Stage Assignment Application Layer - Commands
+from src.position_stage_assignment.application import (
+    AssignUsersToStageCommandHandler,
+    AddUserToStageCommandHandler,
+    RemoveUserFromStageCommandHandler,
+    CopyWorkflowAssignmentsCommandHandler
+)
+
+# Position Stage Assignment Application Layer - Queries
+from src.position_stage_assignment.application import (
+    ListStageAssignmentsQueryHandler,
+    GetAssignedUsersQueryHandler
+)
+
+# Position Stage Assignment Infrastructure
+from src.position_stage_assignment.infrastructure import PositionStageAssignmentRepository
+
+# Position Stage Assignment Presentation
+from src.position_stage_assignment.presentation import PositionStageAssignmentController
 
 # Onboarding dependencies - SIMPLIFIED for landing endpoint only
 from src.user.infrastructure.repositories.user_asset_repository import SQLAlchemyUserAssetRepository
@@ -238,6 +283,10 @@ from src.candidate.infrastructure.repositories.candidate_project_repository impo
 from src.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommandHandler
 from src.candidate_application.application.commands.update_application_status import UpdateApplicationStatusCommandHandler
 from src.candidate_application.application.queries.get_applications_by_candidate_id import GetApplicationsByCandidateIdQueryHandler
+# Phase 6: Task Management
+from src.candidate_application.application.queries.get_my_assigned_tasks_query import GetMyAssignedTasksQueryHandler
+from src.candidate_application.application.commands.claim_task_command import ClaimTaskCommandHandler
+from src.candidate_application.application.commands.unclaim_task_command import UnclaimTaskCommandHandler
 from src.candidate_application.infrastructure.repositories.candidate_application_repository import SQLAlchemyCandidateApplicationRepository
 
 # Email Services
@@ -390,9 +439,20 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
+    # FieldValidation Repository
+    validation_rule_repository = providers.Factory(
+        ValidationRuleRepository
+    )
+
     # Job Position Repository
     job_position_repository = providers.Factory(
         JobPositionRepository,
+        database=database
+    )
+
+    # Position Stage Assignment Repository
+    position_stage_assignment_repository = providers.Factory(
+        PositionStageAssignmentRepository,
         database=database
     )
 
@@ -674,6 +734,22 @@ class Container(containers.DeclarativeContainer):
         repository=field_configuration_repository
     )
 
+    # FieldValidation Query Handlers
+    get_validation_rule_by_id_query_handler = providers.Factory(
+        GetValidationRuleByIdQueryHandler,
+        repository=validation_rule_repository
+    )
+
+    list_validation_rules_by_stage_query_handler = providers.Factory(
+        ListValidationRulesByStageQueryHandler,
+        repository=validation_rule_repository
+    )
+
+    list_validation_rules_by_field_query_handler = providers.Factory(
+        ListValidationRulesByFieldQueryHandler,
+        repository=validation_rule_repository
+    )
+
     # Job Position Query Handlers
     list_job_positions_query_handler = providers.Factory(
         ListJobPositionsQueryHandler,
@@ -688,6 +764,17 @@ class Container(containers.DeclarativeContainer):
     get_job_positions_stats_query_handler = providers.Factory(
         GetJobPositionsStatsQueryHandler,
         job_position_repository=job_position_repository
+    )
+
+    # Position Stage Assignment Query Handlers
+    list_stage_assignments_query_handler = providers.Factory(
+        ListStageAssignmentsQueryHandler,
+        repository=position_stage_assignment_repository
+    )
+
+    get_assigned_users_query_handler = providers.Factory(
+        GetAssignedUsersQueryHandler,
+        repository=position_stage_assignment_repository
     )
 
     # Auth Command Handlers
@@ -1052,6 +1139,45 @@ class Container(containers.DeclarativeContainer):
         repository=field_configuration_repository
     )
 
+    # FieldValidation Command Handlers
+    create_validation_rule_command_handler = providers.Factory(
+        CreateValidationRuleCommandHandler,
+        repository=validation_rule_repository
+    )
+
+    update_validation_rule_command_handler = providers.Factory(
+        UpdateValidationRuleCommandHandler,
+        repository=validation_rule_repository
+    )
+
+    delete_validation_rule_command_handler = providers.Factory(
+        DeleteValidationRuleCommandHandler,
+        repository=validation_rule_repository
+    )
+
+    activate_validation_rule_command_handler = providers.Factory(
+        ActivateValidationRuleCommandHandler,
+        repository=validation_rule_repository
+    )
+
+    deactivate_validation_rule_command_handler = providers.Factory(
+        DeactivateValidationRuleCommandHandler,
+        repository=validation_rule_repository
+    )
+
+    # FieldValidation Service
+    field_validation_service = providers.Factory(
+        FieldValidationService,
+        validation_rule_repository=validation_rule_repository,
+        custom_field_repository=custom_field_repository
+    )
+
+    # StagePermission Service (Phase 5)
+    stage_permission_service = providers.Factory(
+        StagePermissionService,
+        position_stage_assignment_repository=position_stage_assignment_repository
+    )
+
     # Job Position Command Handlers
     create_job_position_command_handler = providers.Factory(
         CreateJobPositionCommandHandler,
@@ -1068,6 +1194,27 @@ class Container(containers.DeclarativeContainer):
         job_position_repository=job_position_repository,
         candidate_application_repository= candidate_application_repository,
 
+    )
+
+    # Position Stage Assignment Command Handlers
+    assign_users_to_stage_command_handler = providers.Factory(
+        AssignUsersToStageCommandHandler,
+        repository=position_stage_assignment_repository
+    )
+
+    add_user_to_stage_command_handler = providers.Factory(
+        AddUserToStageCommandHandler,
+        repository=position_stage_assignment_repository
+    )
+
+    remove_user_from_stage_command_handler = providers.Factory(
+        RemoveUserFromStageCommandHandler,
+        repository=position_stage_assignment_repository
+    )
+
+    copy_workflow_assignments_command_handler = providers.Factory(
+        CopyWorkflowAssignmentsCommandHandler,
+        repository=position_stage_assignment_repository
     )
 
     # Buses - MOVED BEFORE HANDLERS
@@ -1273,6 +1420,24 @@ class Container(containers.DeclarativeContainer):
         candidate_application_repository=candidate_application_repository
     )
 
+    # Phase 6: Task Management Query Handlers
+    get_my_assigned_tasks_query_handler = providers.Factory(
+        GetMyAssignedTasksQueryHandler,
+        application_repository=candidate_application_repository,
+        stage_assignment_repository=position_stage_assignment_repository
+    )
+
+    # Phase 6: Task Management Command Handlers
+    claim_task_command_handler = providers.Factory(
+        ClaimTaskCommandHandler,
+        application_repository=candidate_application_repository
+    )
+
+    unclaim_task_command_handler = providers.Factory(
+        UnclaimTaskCommandHandler,
+        application_repository=candidate_application_repository
+    )
+
     # Email Command Handler
     send_email_command_handler = providers.Factory(
         SendEmailCommandHandler,
@@ -1335,10 +1500,23 @@ class Container(containers.DeclarativeContainer):
         query_bus=query_bus
     )
 
+    validation_rule_controller = providers.Factory(
+        ValidationRuleController,
+        command_bus=command_bus,
+        query_bus=query_bus,
+        validation_service=field_validation_service
+    )
+
     job_position_controller = providers.Factory(
         JobPositionController,
         query_bus=query_bus,
         command_bus=command_bus
+    )
+
+    position_stage_assignment_controller = providers.Factory(
+        PositionStageAssignmentController,
+        command_bus=command_bus,
+        query_bus=query_bus
     )
 
     onboarding_controller = providers.Factory(
@@ -1369,6 +1547,15 @@ class Container(containers.DeclarativeContainer):
 
     application_controller = providers.Factory(
         ApplicationController,
+        command_bus=command_bus,
+        query_bus=query_bus,
+        stage_permission_service=stage_permission_service,
+        application_repository=candidate_application_repository
+    )
+
+    # Phase 6: Task Management Controller
+    task_controller = providers.Factory(
+        TaskController,
         command_bus=command_bus,
         query_bus=query_bus
     )

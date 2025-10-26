@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
 from src.candidate_application.domain.enums.application_status import ApplicationStatusEnum
+from src.candidate_application.domain.enums.task_status import TaskStatus
 from src.shared.domain.entities.base import generate_id
 
 # Forward references for mypy
@@ -33,6 +34,21 @@ class CandidateApplicationModel(Base):
     applied_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=func.now())
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Workflow stage tracking fields (Phase 5)
+    current_stage_id: Mapped[Optional[str]] = mapped_column(
+        String,
+        ForeignKey("workflow_stages.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True
+    )
+    stage_entered_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    stage_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    task_status: Mapped[TaskStatus] = mapped_column(
+        Enum(TaskStatus, values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=TaskStatus.PENDING
+    )
 
     # Relationships
     candidate: Mapped["CandidateModel"] = relationship("CandidateModel", back_populates="applications")

@@ -185,6 +185,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             id=JobPositionId.from_string(model.id),
             title=model.title,
             company_id=CompanyId.from_string(model.company_id),
+            workflow_id=model.workflow_id,
             description=model.description,
             location=model.location,
             employment_type=model.employment_type,
@@ -242,6 +243,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         return JobPositionModel(
             id=job_position.id.value,
             company_id=job_position.company_id.value,
+            workflow_id=job_position.workflow_id,
             title=job_position.title,
             description=job_position.description,
             location=job_position.location,
@@ -297,6 +299,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         if job_position.desired_roles:
             desired_roles_json = [role.value for role in job_position.desired_roles]
 
+        model.workflow_id = job_position.workflow_id
         model.title = job_position.title
         model.description = job_position.description
         model.location = job_position.location

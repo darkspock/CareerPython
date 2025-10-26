@@ -10,6 +10,7 @@ from src.company_workflow.infrastructure.models.company_workflow_model import Co
 from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 from src.company_workflow.infrastructure.models.custom_field_model import CustomFieldModel
 from src.company_workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
+from src.field_validation.infrastructure.models.validation_rule_model import ValidationRuleModel
 from src.user.infrastructure.models.user_model import UserModel
 from src.user.infrastructure.models.user_asset_model import UserAssetModel
 from src.candidate.infrastructure.models.candidate_model import CandidateModel
@@ -32,6 +33,7 @@ __all__ = [
     "WorkflowStageModel",
     "CustomFieldModel",
     "FieldConfigurationModel",
+    "ValidationRuleModel",
     "UserModel",
     "UserAssetModel",
     "CandidateModel",

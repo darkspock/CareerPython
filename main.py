@@ -19,10 +19,13 @@ from adapters.http.company.routers.company_user_router import router as company_
 from adapters.http.company.routers.company_role_router import router as company_role_router
 from adapters.http.company.routers.company_candidate_application_router import router as company_candidate_application_router
 from adapters.http.company.routers.enum_router import router as company_enum_router
+from adapters.http.company.routers.task_router import router as task_router
 from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
 from adapters.http.company_workflow.routers.company_workflow_router import router as company_workflow_router
 from adapters.http.company_workflow.routers.workflow_stage_router import router as workflow_stage_router
 from adapters.http.company_workflow.routers.custom_field_router import router as custom_field_router
+from src.field_validation.presentation.routers.validation_rule_router import router as validation_rule_router
+from src.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
 from adapters.http.shared.routes.user_router import user_router
 from adapters.http.shared.routes.ai_test_router import router as ai_test_router
 
@@ -63,10 +66,13 @@ app.include_router(company_user_router)  # Company user management
 app.include_router(company_role_router)  # Company role management
 app.include_router(company_candidate_application_router)  # Company candidate application management
 app.include_router(company_enum_router)  # Company enums
+app.include_router(task_router)  # Phase 6: Task Management
 app.include_router(company_candidate_router)  # Company candidate management
 app.include_router(company_workflow_router)  # Company workflow management
 app.include_router(workflow_stage_router)  # Workflow stage management
 app.include_router(custom_field_router)  # Custom field management
+app.include_router(validation_rule_router)  # Field validation rules
+app.include_router(position_stage_assignment_router)  # Position stage assignment management
 app.include_router(candidate_router)
 app.include_router(user_router)
 app.include_router(ai_test_router)  # Direct AI testing
@@ -111,5 +117,7 @@ container.wire(modules=[
     "adapters.http.company_workflow.routers.company_workflow_router",
     "adapters.http.company_workflow.routers.workflow_stage_router",
     "adapters.http.company_workflow.routers.custom_field_router",
+    "src.field_validation.presentation.routers.validation_rule_router",
+    "src.position_stage_assignment.presentation.routers.position_stage_assignment_router",
     "adapters.http.shared.routes.user_router",
 ])

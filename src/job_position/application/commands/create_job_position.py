@@ -19,7 +19,8 @@ from src.shared.domain.enums.job_category import JobCategoryEnum
 class CreateJobPositionCommand(Command):
     id: JobPositionId
     company_id: CompanyId
-    title: str
+    workflow_id: Optional[str] = None
+    title: str = ""
     description: Optional[str] = None
     location: Optional[str] = None
     employment_type: Optional[EmploymentType] = None
@@ -55,6 +56,7 @@ class CreateJobPositionCommandHandler(CommandHandler[CreateJobPositionCommand]):
         job_position = JobPosition.create(
             id=command.id,
             company_id=command.company_id,
+            workflow_id=command.workflow_id,
             title=command.title,
             description=command.description,
             location=command.location,

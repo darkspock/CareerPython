@@ -6,6 +6,7 @@ from core.database import DatabaseInterface
 from src.candidate.domain.value_objects.candidate_id import CandidateId
 from src.candidate_application.domain.entities.candidate_application import CandidateApplication
 from src.candidate_application.domain.enums.application_status import ApplicationStatusEnum
+from src.candidate_application.domain.enums.task_status import TaskStatus
 from src.candidate_application.domain.repositories.candidate_application_repository_interface import \
     CandidateApplicationRepositoryInterface
 from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
@@ -30,7 +31,12 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
             application_status=ApplicationStatusEnum(model.application_status),
             applied_at=model.applied_at,
             updated_at=model.updated_at,
-            notes=model.notes
+            notes=model.notes,
+            # Phase 5: Workflow stage tracking fields
+            current_stage_id=model.current_stage_id,
+            stage_entered_at=model.stage_entered_at,
+            stage_deadline=model.stage_deadline,
+            task_status=TaskStatus(model.task_status) if model.task_status else TaskStatus.PENDING
         )
 
     def _to_model(self, entity: CandidateApplication) -> CandidateApplicationModel:
@@ -43,7 +49,12 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
             application_status=entity.application_status,  # SQLAlchemy will handle enum conversion
             applied_at=entity.applied_at,
             updated_at=datetime.utcnow(),  # Always set to current time when saving
-            notes=entity.notes
+            notes=entity.notes,
+            # Phase 5: Workflow stage tracking fields
+            current_stage_id=entity.current_stage_id,
+            stage_entered_at=entity.stage_entered_at,
+            stage_deadline=entity.stage_deadline,
+            task_status=entity.task_status  # SQLAlchemy will handle enum conversion
         )
 
     def save(self, candidate_application: CandidateApplication) -> None:
@@ -63,6 +74,11 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
                 existing_model.applied_at = candidate_application.applied_at
                 existing_model.updated_at = datetime.utcnow()  # Always set to current time
                 existing_model.notes = candidate_application.notes
+                # Phase 5: Update workflow stage tracking fields
+                existing_model.current_stage_id = candidate_application.current_stage_id
+                existing_model.stage_entered_at = candidate_application.stage_entered_at
+                existing_model.stage_deadline = candidate_application.stage_deadline
+                existing_model.task_status = candidate_application.task_status  # SQLAlchemy handles enum
             else:
                 # Create new
                 model = self._to_model(candidate_application)

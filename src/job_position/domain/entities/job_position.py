@@ -20,6 +20,7 @@ class JobPosition:
     id: JobPositionId
     title: str
     company_id: CompanyId
+    workflow_id: Optional[str]
     description: Optional[str]
     location: Optional[str]
     employment_type: Optional[EmploymentType]
@@ -195,6 +196,7 @@ class JobPosition:
 
     def update_details(
             self,
+            workflow_id: Optional[str],
             title: str,
             description: Optional[str],
             location: Optional[str],
@@ -233,6 +235,7 @@ class JobPosition:
         if travel_required is not None and (travel_required < 0 or travel_required > 100):
             raise JobPositionValidationError("Travel required must be between 0 and 100")
 
+        self.workflow_id = workflow_id
         self.title = title.strip()
         self.description = description
         self.location = location
@@ -266,6 +269,7 @@ class JobPosition:
             id: JobPositionId,
             title: str,
             company_id: CompanyId,
+            workflow_id: Optional[str] = None,
             description: Optional[str] = None,
             location: Optional[str] = None,
             employment_type: Optional[EmploymentType] = None,
@@ -299,6 +303,7 @@ class JobPosition:
             id=id,
             title=title,
             company_id=company_id,
+            workflow_id=workflow_id,
             description=description,
             location=location,
             employment_type=employment_type,
@@ -335,6 +340,7 @@ class JobPosition:
             id: JobPositionId,
             title: str,
             company_id: CompanyId,
+            workflow_id: Optional[str],
             description: Optional[str],
             location: Optional[str],
             employment_type: Optional[EmploymentType],
@@ -369,6 +375,7 @@ class JobPosition:
             id=id,
             title=title,
             company_id=company_id,
+            workflow_id=workflow_id,
             description=description,
             location=location,
             employment_type=employment_type,

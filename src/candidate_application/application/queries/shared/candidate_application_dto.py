@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 from src.candidate_application.domain.enums.application_status import ApplicationStatusEnum
+from src.candidate_application.domain.enums.task_status import TaskStatus
 
 
 @dataclass
@@ -15,3 +16,8 @@ class CandidateApplicationDto:
     applied_at: datetime
     updated_at: Optional[datetime]
     notes: Optional[str]
+    # Phase 5: Workflow stage tracking fields
+    current_stage_id: Optional[str] = None
+    stage_entered_at: Optional[datetime] = None
+    stage_deadline: Optional[datetime] = None
+    task_status: TaskStatus = TaskStatus.PENDING

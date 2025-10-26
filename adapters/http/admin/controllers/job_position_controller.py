@@ -231,6 +231,7 @@ class JobPositionController:
             command = CreateJobPositionCommand(
                 id=id,
                 company_id=CompanyId.from_string(position_data.company_id),
+                workflow_id=position_data.workflow_id,
                 title=position_data.title,
                 description=position_data.description,
                 location=position_data.location,
@@ -341,6 +342,7 @@ class JobPositionController:
 
             command = UpdateJobPositionCommand(
                 id=JobPositionId.from_string(position_id),
+                workflow_id=position_data.workflow_id if position_data.workflow_id is not None else current_dto.workflow_id,
                 title=position_data.title or current_dto.title,
                 description=position_data.description if position_data.description is not None else current_dto.description,
                 location=position_data.location if position_data.location is not None else current_dto.location,

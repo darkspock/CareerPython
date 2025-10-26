@@ -46,6 +46,7 @@ export const DESIRED_ROLE_OPTIONS = [
 export interface Position {
   id: string;
   company_id: string;
+  workflow_id?: string | null;
   company_name?: string; // Populated when fetching with company info
   title: string;
   description?: string;
@@ -91,6 +92,7 @@ export interface Position {
 
 export interface CreatePositionRequest {
   company_id: string;
+  workflow_id?: string | null;
   title: string;
   description?: string;
   department?: string;
@@ -120,6 +122,7 @@ export interface CreatePositionRequest {
 }
 
 export interface UpdatePositionRequest {
+  workflow_id?: string | null;
   title?: string;
   description?: string;
   department?: string;
@@ -185,6 +188,7 @@ export interface PositionActionResponse {
 
 export interface PositionFormData {
   company_id: string;
+  workflow_id?: string | null;
   title: string;
   description: string;
   department: string;

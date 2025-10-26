@@ -17,7 +17,8 @@ from src.shared.domain.enums.job_category import JobCategoryEnum
 @dataclass
 class UpdateJobPositionCommand(Command):
     id: JobPositionId
-    title: str
+    workflow_id: Optional[str] = None
+    title: str = ""
     description: Optional[str] = None
     location: Optional[str] = None
     employment_type: Optional[EmploymentType] = None
@@ -55,6 +56,7 @@ class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
             raise JobPositionNotFoundException(f"Job position with id {command.id.value} not found")
 
         job_position.update_details(
+            workflow_id=command.workflow_id,
             title=command.title,
             description=command.description,
             location=command.location,

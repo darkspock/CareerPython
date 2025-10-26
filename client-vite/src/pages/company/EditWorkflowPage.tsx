@@ -5,7 +5,7 @@ import { companyWorkflowService } from '../../services/companyWorkflowService';
 import { api } from '../../lib/api';
 import type { CompanyWorkflow, WorkflowStage, CustomField, FieldConfiguration } from '../../types/workflow';
 import type { CompanyRole } from '../../types/company';
-import { CustomFieldEditor, FieldVisibilityMatrix } from '../../components/workflow';
+import { CustomFieldEditor, FieldVisibilityMatrix, ValidationRuleEditor } from '../../components/workflow';
 
 interface StageFormData {
   id?: string;
@@ -530,6 +530,33 @@ export default function EditWorkflowPage() {
               } as WorkflowStage))}
               fields={customFields}
               onConfigurationsChange={setFieldConfigurations}
+            />
+          </div>
+        )}
+
+        {/* Validation Rules */}
+        {customFields.length > 0 && stages.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <ValidationRuleEditor
+              workflowId={workflowId!}
+              stages={stages.map((s, idx) => ({
+                ...s,
+                id: s.id || `temp-${idx}`,
+                workflow_id: workflowId!,
+                description: s.description || null,
+                is_active: s.is_active ?? true,
+                allow_skip: s.allow_skip ?? false,
+                estimated_duration_days: s.estimated_duration_days ?? null,
+                default_role_ids: s.default_role_ids ?? null,
+                default_assigned_users: s.default_assigned_users ?? null,
+                email_template_id: s.email_template_id ?? null,
+                custom_email_text: s.custom_email_text ?? null,
+                deadline_days: s.deadline_days ?? null,
+                estimated_cost: s.estimated_cost ?? null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              } as WorkflowStage))}
+              customFields={customFields}
             />
           </div>
         )}

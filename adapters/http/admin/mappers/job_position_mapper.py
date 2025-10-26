@@ -36,6 +36,7 @@ class JobPositionMapper:
         return JobPositionResponse(
             id=dto.id.value,
             company_id=dto.company_id.value,
+            workflow_id=dto.workflow_id,
             company_name=company_name,
             title=dto.title,
             description=dto.description,
