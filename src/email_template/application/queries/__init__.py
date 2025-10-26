@@ -1,0 +1,1 @@
+"""Queries for Email Templates"""
