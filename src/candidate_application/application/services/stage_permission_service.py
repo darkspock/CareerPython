@@ -1,6 +1,6 @@
 """Service for checking user permissions to process applications at specific workflow stages"""
 
-from typing import List, Optional
+from typing import List
 
 from src.candidate_application.domain.entities.candidate_application import CandidateApplication
 from src.position_stage_assignment.domain.repositories.position_stage_assignment_repository_interface import (
@@ -12,16 +12,16 @@ class StagePermissionService:
     """Service for validating user permissions to process applications at workflow stages"""
 
     def __init__(
-        self,
-        position_stage_assignment_repository: PositionStageAssignmentRepositoryInterface
+            self,
+            position_stage_assignment_repository: PositionStageAssignmentRepositoryInterface
     ):
         self.position_stage_assignment_repository = position_stage_assignment_repository
 
     def can_user_process_stage(
-        self,
-        user_id: str,
-        application: CandidateApplication,
-        company_id: str
+            self,
+            user_id: str,
+            application: CandidateApplication,
+            company_id: str
     ) -> bool:
         """Check if a user can process an application at its current stage
 
@@ -50,9 +50,9 @@ class StagePermissionService:
         return user_id in assigned_users
 
     def get_assigned_users_for_stage(
-        self,
-        position_id: str,
-        stage_id: str
+            self,
+            position_id: str,
+            stage_id: str
     ) -> List[str]:
         """Get list of user IDs assigned to a specific stage for a position
 
@@ -99,11 +99,11 @@ class StagePermissionService:
         return False
 
     def can_user_change_stage(
-        self,
-        user_id: str,
-        application: CandidateApplication,
-        target_stage_id: str,
-        company_id: str
+            self,
+            user_id: str,
+            application: CandidateApplication,
+            target_stage_id: str,
+            company_id: str
     ) -> bool:
         """Check if user can move an application to a specific stage
 
@@ -124,7 +124,7 @@ class StagePermissionService:
         if self.is_user_company_admin(user_id, company_id):
             return True
 
-        target_assigned_users = self.get_assigned_users_for_stage(
+        self.get_assigned_users_for_stage(
             application.job_position_id.value,
             target_stage_id
         )

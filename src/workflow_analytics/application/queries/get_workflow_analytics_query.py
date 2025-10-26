@@ -4,11 +4,15 @@ Phase 9: Query for retrieving workflow analytics
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional, List, Dict
-from datetime import datetime, timedelta
-
 from typing import TYPE_CHECKING
 
+from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
+    CompanyWorkflowRepositoryInterface
+from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.shared.application.query_bus import Query, QueryHandler
 from src.workflow_analytics.application.dtos import (
     WorkflowAnalyticsDto,
@@ -16,10 +20,6 @@ from src.workflow_analytics.application.dtos import (
     StageBottleneckDto,
     WorkflowPerformanceDto
 )
-from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from sqlalchemy import func, case, and_, or_
 
 if TYPE_CHECKING:
     from core.database import SQLAlchemyDatabase
@@ -42,10 +42,10 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
     """Handler for GetWorkflowAnalyticsQuery"""
 
     def __init__(
-        self,
-        database: "SQLAlchemyDatabase",
-        workflow_repository: CompanyWorkflowRepositoryInterface,
-        stage_repository: WorkflowStageRepositoryInterface
+            self,
+            database: "SQLAlchemyDatabase",
+            workflow_repository: CompanyWorkflowRepositoryInterface,
+            stage_repository: WorkflowStageRepositoryInterface
     ):
         self._database = database
         self._workflow_repository = workflow_repository
@@ -178,7 +178,8 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
                 withdrawn_applications=withdrawn_count,
                 average_completion_time_hours=None,  # Would need timestamp tracking
                 median_completion_time_hours=None,
-                overall_conversion_rate=None if total_applications == 0 else (completed_count / total_applications) * 100,
+                overall_conversion_rate=None if total_applications == 0 else (
+                                                                                         completed_count / total_applications) * 100,
                 cost_per_hire=None,  # Would need cost tracking
                 time_to_hire_days=None,  # Would need timestamp tracking
                 applications_per_stage=applications_per_stage
@@ -240,8 +241,8 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
             )
 
     def _identify_bottlenecks(
-        self,
-        stage_analytics: List[StageAnalyticsDto]
+            self,
+            stage_analytics: List[StageAnalyticsDto]
     ) -> List[StageBottleneckDto]:
         """
         Identify bottlenecks in the workflow.
@@ -285,7 +286,8 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
             # Low conversion rate
             if stage.conversion_rate_to_next < expected_conversion * 0.7:  # 30% below average
                 score += 40
-                reasons.append(f"Low conversion rate ({stage.conversion_rate_to_next:.1f}% vs expected {expected_conversion:.1f}%)")
+                reasons.append(
+                    f"Low conversion rate ({stage.conversion_rate_to_next:.1f}% vs expected {expected_conversion:.1f}%)")
 
             # High number of stuck applications
             if stage.current_applications > stage.total_applications * 0.5:  # More than 50% stuck
@@ -320,10 +322,10 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
         return bottlenecks
 
     def _generate_recommendations(
-        self,
-        performance: WorkflowPerformanceDto,
-        stage_analytics: List[StageAnalyticsDto],
-        bottlenecks: List[StageBottleneckDto]
+            self,
+            performance: WorkflowPerformanceDto,
+            stage_analytics: List[StageAnalyticsDto],
+            bottlenecks: List[StageBottleneckDto]
     ) -> List[str]:
         """Generate actionable recommendations based on analytics"""
         recommendations = []
@@ -352,7 +354,8 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
         for stage in stage_analytics:
             if stage.current_applications > 50:  # Arbitrary threshold
                 recommendations.append(
-                    f"'{stage.stage_name}' has {stage.current_applications} pending applications. Consider adding reviewers or automating parts of this stage."
+                    f"'{stage.stage_name}' has {stage.current_applications} pending applications. "
+                    f"Consider adding reviewers or automating parts of this stage."
                 )
 
         # If no specific issues found

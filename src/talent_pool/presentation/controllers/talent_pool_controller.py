@@ -8,18 +8,18 @@ from typing import List, Optional
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.talent_pool.application.commands.add_to_talent_pool_command import AddToTalentPoolCommand
-from src.talent_pool.application.commands.update_talent_pool_entry_command import UpdateTalentPoolEntryCommand
-from src.talent_pool.application.commands.remove_from_talent_pool_command import RemoveFromTalentPoolCommand
 from src.talent_pool.application.commands.change_talent_pool_entry_status_command import (
     ChangeTalentPoolEntryStatusCommand,
 )
+from src.talent_pool.application.commands.remove_from_talent_pool_command import RemoveFromTalentPoolCommand
+from src.talent_pool.application.commands.update_talent_pool_entry_command import UpdateTalentPoolEntryCommand
 from src.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEntryDto
-from src.talent_pool.application.queries.list_talent_pool_entries_query import ListTalentPoolEntriesQuery
 from src.talent_pool.application.queries.get_talent_pool_entry_by_id_query import GetTalentPoolEntryByIdQuery
+from src.talent_pool.application.queries.list_talent_pool_entries_query import ListTalentPoolEntriesQuery
 from src.talent_pool.application.queries.search_talent_pool_query import SearchTalentPoolQuery
 from src.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
-from src.talent_pool.presentation.schemas.talent_pool_schemas import TalentPoolEntryResponse
 from src.talent_pool.presentation.mappers.talent_pool_mapper import TalentPoolMapper
+from src.talent_pool.presentation.schemas.talent_pool_schemas import TalentPoolEntryResponse
 
 
 class TalentPoolController:
@@ -30,17 +30,17 @@ class TalentPoolController:
         self._query_bus = query_bus
 
     def add_to_talent_pool(
-        self,
-        company_id: str,
-        candidate_id: str,
-        added_reason: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        rating: Optional[int] = None,
-        notes: Optional[str] = None,
-        status: TalentPoolStatus = TalentPoolStatus.ACTIVE,
-        source_application_id: Optional[str] = None,
-        source_position_id: Optional[str] = None,
-        added_by_user_id: Optional[str] = None,
+            self,
+            company_id: str,
+            candidate_id: str,
+            added_reason: Optional[str] = None,
+            tags: Optional[List[str]] = None,
+            rating: Optional[int] = None,
+            notes: Optional[str] = None,
+            status: TalentPoolStatus = TalentPoolStatus.ACTIVE,
+            source_application_id: Optional[str] = None,
+            source_position_id: Optional[str] = None,
+            added_by_user_id: Optional[str] = None,
     ) -> dict:
         """
         Add a candidate to the talent pool.
@@ -86,7 +86,7 @@ class TalentPoolController:
             Talent pool entry response or None
         """
         query = GetTalentPoolEntryByIdQuery(entry_id=entry_id)
-        dto:Optional[TalentPoolEntryDto] = self._query_bus.query(query)
+        dto: Optional[TalentPoolEntryDto] = self._query_bus.query(query)
 
         if not dto:
             return None
@@ -94,11 +94,11 @@ class TalentPoolController:
         return TalentPoolMapper.dto_to_response(dto)
 
     def list_entries(
-        self,
-        company_id: str,
-        status: Optional[TalentPoolStatus] = None,
-        tags: Optional[List[str]] = None,
-        min_rating: Optional[int] = None,
+            self,
+            company_id: str,
+            status: Optional[TalentPoolStatus] = None,
+            tags: Optional[List[str]] = None,
+            min_rating: Optional[int] = None,
     ) -> List[TalentPoolEntryResponse]:
         """
         List talent pool entries for a company.
@@ -118,16 +118,16 @@ class TalentPoolController:
             tags=tags,
             min_rating=min_rating,
         )
-        dtos:List[TalentPoolEntryDto] = self._query_bus.query(query)
+        dtos: List[TalentPoolEntryDto] = self._query_bus.query(query)
         return [TalentPoolMapper.dto_to_response(dto) for dto in dtos]
 
     def search_entries(
-        self,
-        company_id: str,
-        search_term: Optional[str] = None,
-        status: Optional[TalentPoolStatus] = None,
-        tags: Optional[List[str]] = None,
-        min_rating: Optional[int] = None,
+            self,
+            company_id: str,
+            search_term: Optional[str] = None,
+            status: Optional[TalentPoolStatus] = None,
+            tags: Optional[List[str]] = None,
+            min_rating: Optional[int] = None,
     ) -> List[TalentPoolEntryResponse]:
         """
         Search talent pool entries.
@@ -153,12 +153,12 @@ class TalentPoolController:
         return [TalentPoolMapper.dto_to_response(dto) for dto in dtos]
 
     def update_entry(
-        self,
-        entry_id: str,
-        added_reason: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        rating: Optional[int] = None,
-        notes: Optional[str] = None,
+            self,
+            entry_id: str,
+            added_reason: Optional[str] = None,
+            tags: Optional[List[str]] = None,
+            rating: Optional[int] = None,
+            notes: Optional[str] = None,
     ) -> dict:
         """
         Update a talent pool entry.

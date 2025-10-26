@@ -7,10 +7,18 @@ class CreateValidationRuleRequest(BaseModel):
 
     custom_field_id: str = Field(..., description="ID of the custom field to validate")
     stage_id: str = Field(..., description="ID of the workflow stage")
-    rule_type: str = Field(..., description="Type of validation rule (compare_position_field, range, pattern, custom)")
-    comparison_operator: str = Field(..., description="Comparison operator (gt, gte, lt, lte, eq, neq, in_range, out_range, contains, not_contains)")
+    rule_type: str = Field(
+        ..., description="Type of validation rule (compare_position_field, range, pattern, custom)"
+    )
+    comparison_operator: str = Field(
+        ...,
+        description="Comparison operator (gt, gte, lt, lte, eq, neq, in_range, out_range, contains, not_contains)"
+    )
     severity: str = Field(..., description="Severity level (warning, error)")
-    validation_message: str = Field(..., description="Message shown when validation fails. Supports {field_name}, {candidate_value}, {position_value}")
+    validation_message: str = Field(
+        ...,
+        description="Message shown when validation fails. Supports {field_name}, {candidate_value}, {position_value}"
+    )
     position_field_path: Optional[str] = Field(None, description="Path to position field for comparison (e.g., 'salary.max')")
     comparison_value: Optional[Any] = Field(None, description="Static comparison value (for non-position rules)")
     auto_reject: bool = Field(False, description="Automatically reject application if this rule fails")

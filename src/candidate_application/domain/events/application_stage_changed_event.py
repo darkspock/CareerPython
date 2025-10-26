@@ -27,7 +27,7 @@ class ApplicationStageChangedEvent(DomainEvent):
     changed_at: datetime
     changed_by_user_id: Optional[str] = None
 
-    def __post_init__(self)->None:
+    def __post_init__(self) -> None:
         """Validate event data"""
         if not self.application_id:
             raise ValueError("application_id is required")

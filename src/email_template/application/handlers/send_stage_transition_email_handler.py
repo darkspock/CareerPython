@@ -75,10 +75,8 @@ class SendStageTransitionEmailHandler(EventHandler[ApplicationStageChangedEvent]
             # Send each template
             for template in all_templates:
                 try:
-                    # Render subject and body
+                    # Render subject
                     subject = template.render_subject(context)
-                    body_html = template.render_body_html(context)
-                    body_text = template.render_body_text(context) if template.body_text else None
 
                     # Send email via command bus
                     from src.notification.domain.enums.notification_type import NotificationTypeEnum

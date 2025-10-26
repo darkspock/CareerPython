@@ -38,13 +38,6 @@ class PositionStageAssignmentController:
         )
         self.command_bus.execute(command)
 
-        # Query the created/updated assignment
-        query = GetAssignedUsersQuery(
-            position_id=request.position_id,
-            stage_id=request.stage_id
-        )
-        user_ids: List[str] = self.query_bus.query(query)
-
         # Get full assignment details
         list_query = ListStageAssignmentsQuery(position_id=request.position_id)
         from src.position_stage_assignment.application import PositionStageAssignmentDto

@@ -7,9 +7,9 @@ from typing import List, Optional
 
 from core.database import DatabaseInterface
 from src.email_template.domain.entities.email_template import EmailTemplate
-from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.email_template.domain.enums.trigger_event import TriggerEvent
 from src.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
+from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.email_template.infrastructure.models.email_template_model import EmailTemplateModel
 
 
@@ -72,7 +72,7 @@ class EmailTemplateRepository(EmailTemplateRepositoryInterface):
             )
 
             if active_only:
-                query = query.filter(EmailTemplateModel.is_active == True)
+                query = query.filter(EmailTemplateModel.is_active.is_(True))
 
             models = query.order_by(EmailTemplateModel.created_at.desc()).all()
 
@@ -86,18 +86,18 @@ class EmailTemplateRepository(EmailTemplateRepositoryInterface):
             )
 
             if active_only:
-                query = query.filter(EmailTemplateModel.is_active == True)
+                query = query.filter(EmailTemplateModel.is_active.is_(True))
 
             models = query.order_by(EmailTemplateModel.created_at.desc()).all()
 
             return [self._create_entity_from_model(model) for model in models]
 
     def list_by_trigger(
-        self,
-        workflow_id: str,
-        trigger_event: TriggerEvent,
-        stage_id: Optional[str] = None,
-        active_only: bool = True
+            self,
+            workflow_id: str,
+            trigger_event: TriggerEvent,
+            stage_id: Optional[str] = None,
+            active_only: bool = True
     ) -> List[EmailTemplate]:
         """Get templates by trigger event"""
         with self.database.get_session() as session:
@@ -110,7 +110,7 @@ class EmailTemplateRepository(EmailTemplateRepositoryInterface):
                 query = query.filter(EmailTemplateModel.stage_id == stage_id)
 
             if active_only:
-                query = query.filter(EmailTemplateModel.is_active == True)
+                query = query.filter(EmailTemplateModel.is_active.is_(True))
 
             models = query.all()
 
