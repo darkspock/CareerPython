@@ -14,7 +14,7 @@ class CompanyMapper:
             domain=entity.domain,
             slug=entity.slug,
             logo_url=entity.logo_url,
-            settings=entity.settings.to_dict() if hasattr(entity.settings, 'to_dict') else entity.settings,
+            settings=entity.settings.to_dict(),
             status=entity.status.value if hasattr(entity.status, 'value') else entity.status,
             created_at=entity.created_at,
             updated_at=entity.updated_at,

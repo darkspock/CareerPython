@@ -28,7 +28,7 @@ class CompanyDto:
             domain=company.domain,
             slug=company.slug,
             logo_url=company.logo_url,
-            settings=company.settings.to_dict() if hasattr(company.settings, 'to_dict') else company.settings,
+            settings=company.settings.to_dict(),
             status=company.status.value if hasattr(company.status, 'value') else company.status,
             created_at=company.created_at,
             updated_at=company.updated_at

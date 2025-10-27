@@ -53,3 +53,6 @@ class CompanyRepositoryInterface(ABC):
     def count_recent(self, days: int = 30) -> int:
         """Count companies created in last N days"""
         pass
+
+    def get_by_slug(self, slug: str) -> Optional[Company]:
+        pass
