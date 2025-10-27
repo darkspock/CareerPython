@@ -31,6 +31,8 @@ from src.field_validation.presentation.routers.validation_rule_router import rou
 from src.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
 from adapters.http.shared.routes.user_router import user_router
 from adapters.http.shared.routes.ai_test_router import router as ai_test_router
+# Phase 10: Public Position Router
+from src.job_position.presentation.routers.public_position_router import router as public_position_router
 
 # Crear tablas - COMENTADO temporalmente para aislamiento
 # Base.metadata.create_all(bind=engine)
@@ -61,6 +63,7 @@ app.add_middleware(
 # to prevent the generic /{candidate_id} route from catching /resume paths
 app.include_router(admin_router)
 app.include_router(landing_router)
+app.include_router(public_position_router)  # Phase 10: Public job board (no auth required)
 app.include_router(resume_router)  # Register resume router first
 app.include_router(file_router)  # File operations (PDF analysis)
 app.include_router(job_router)  # Job status polling for frontend
@@ -126,5 +129,6 @@ container.wire(modules=[
     "src.field_validation.presentation.routers.validation_rule_router",
     "src.position_stage_assignment.presentation.routers.position_stage_assignment_router",
     "src.workflow_analytics.presentation.routers.workflow_analytics_router",
+    "src.job_position.presentation.routers.public_position_router",  # Phase 10: Public position endpoints
     "adapters.http.shared.routes.user_router",
 ])

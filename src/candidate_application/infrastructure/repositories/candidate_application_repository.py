@@ -36,7 +36,9 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
             current_stage_id=model.current_stage_id,
             stage_entered_at=model.stage_entered_at,
             stage_deadline=model.stage_deadline,
-            task_status=TaskStatus(model.task_status) if model.task_status else TaskStatus.PENDING
+            task_status=TaskStatus(model.task_status) if model.task_status else TaskStatus.PENDING,
+            # Phase 12: Phase tracking field
+            current_phase_id=model.current_phase_id
         )
 
     def _to_model(self, entity: CandidateApplication) -> CandidateApplicationModel:
@@ -54,7 +56,9 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
             current_stage_id=entity.current_stage_id,
             stage_entered_at=entity.stage_entered_at,
             stage_deadline=entity.stage_deadline,
-            task_status=entity.task_status  # SQLAlchemy will handle enum conversion
+            task_status=entity.task_status,  # SQLAlchemy will handle enum conversion
+            # Phase 12: Phase tracking field
+            current_phase_id=entity.current_phase_id
         )
 
     def save(self, candidate_application: CandidateApplication) -> None:
@@ -79,6 +83,8 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
                 existing_model.stage_entered_at = candidate_application.stage_entered_at
                 existing_model.stage_deadline = candidate_application.stage_deadline
                 existing_model.task_status = candidate_application.task_status  # SQLAlchemy handles enum
+                # Phase 12: Update phase tracking field
+                existing_model.current_phase_id = candidate_application.current_phase_id
             else:
                 # Create new
                 model = self._to_model(candidate_application)

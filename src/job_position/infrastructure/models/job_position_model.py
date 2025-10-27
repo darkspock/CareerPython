@@ -21,7 +21,8 @@ class JobPositionModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     company_id: Mapped[str] = mapped_column(String, index=True)  # Removed ForeignKey
-    workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True)  # Workflow for this position
+    workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True)  # Legacy/default workflow
+    phase_workflows: Mapped[Optional[Dict[str, str]]] = mapped_column(JSON)  # Phase 12.8: phase_id -> workflow_id mapping
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text)  # Job description
     location: Mapped[Optional[str]] = mapped_column(String)  # Work location
@@ -52,6 +53,8 @@ class JobPositionModel(Base):
     skills: Mapped[Optional[List[str]]] = mapped_column(JSON)  # List of skill strings
     application_url: Mapped[Optional[str]] = mapped_column(String)  # URL to apply
     application_email: Mapped[Optional[str]] = mapped_column(String)  # Email to apply
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False, index=True)  # Whether position is publicly visible
+    public_slug: Mapped[Optional[str]] = mapped_column(String(255), unique=True, index=True)  # SEO-friendly URL slug
     status: Mapped[JobPositionStatusEnum] = mapped_column(Enum(JobPositionStatusEnum),
                                                           default=JobPositionStatusEnum.PENDING)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())

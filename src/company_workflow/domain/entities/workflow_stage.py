@@ -7,6 +7,11 @@ from src.company_workflow.domain.value_objects.workflow_stage_id import Workflow
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.enums.stage_type import StageType
 
+# TYPE_CHECKING to avoid circular imports
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.phase.domain.value_objects.phase_id import PhaseId
+
 
 @dataclass(frozen=True)
 class WorkflowStage:
@@ -29,6 +34,9 @@ class WorkflowStage:
     deadline_days: Optional[int]  # Days to complete this stage (for task priority)
     estimated_cost: Optional[Decimal]  # Estimated cost for this stage
 
+    # Phase 12: Phase transition
+    next_phase_id: Optional[str]  # Phase to transition to when reaching this stage (only for SUCCESS/FAIL stages)
+
     created_at: datetime
     updated_at: datetime
 
@@ -48,7 +56,8 @@ class WorkflowStage:
         email_template_id: Optional[str] = None,
         custom_email_text: Optional[str] = None,
         deadline_days: Optional[int] = None,
-        estimated_cost: Optional[Decimal] = None
+        estimated_cost: Optional[Decimal] = None,
+        next_phase_id: Optional[str] = None
     ) -> "WorkflowStage":
         """Factory method to create a new workflow stage"""
         if not name:
@@ -61,6 +70,10 @@ class WorkflowStage:
             raise ValueError("Deadline must be at least 1 day")
         if estimated_cost is not None and estimated_cost < 0:
             raise ValueError("Estimated cost must be non-negative")
+
+        # Validate next_phase_id can only be set for SUCCESS or FAIL stages
+        if next_phase_id is not None and stage_type not in [StageType.SUCCESS, StageType.FAIL]:
+            raise ValueError("next_phase_id can only be set for SUCCESS or FAIL stage types")
 
         now = datetime.utcnow()
         return WorkflowStage(
@@ -79,6 +92,7 @@ class WorkflowStage:
             custom_email_text=custom_email_text,
             deadline_days=deadline_days,
             estimated_cost=estimated_cost,
+            next_phase_id=next_phase_id,
             created_at=now,
             updated_at=now
         )
@@ -95,7 +109,8 @@ class WorkflowStage:
         email_template_id: Optional[str] = None,
         custom_email_text: Optional[str] = None,
         deadline_days: Optional[int] = None,
-        estimated_cost: Optional[Decimal] = None
+        estimated_cost: Optional[Decimal] = None,
+        next_phase_id: Optional[str] = None
     ) -> "WorkflowStage":
         """Update stage information"""
         if not name:
@@ -106,6 +121,10 @@ class WorkflowStage:
             raise ValueError("Deadline must be at least 1 day")
         if estimated_cost is not None and estimated_cost < 0:
             raise ValueError("Estimated cost must be non-negative")
+
+        # Validate next_phase_id can only be set for SUCCESS or FAIL stages
+        if next_phase_id is not None and stage_type not in [StageType.SUCCESS, StageType.FAIL]:
+            raise ValueError("next_phase_id can only be set for SUCCESS or FAIL stage types")
 
         return WorkflowStage(
             id=self.id,
@@ -123,6 +142,7 @@ class WorkflowStage:
             custom_email_text=custom_email_text if custom_email_text is not None else self.custom_email_text,
             deadline_days=deadline_days if deadline_days is not None else self.deadline_days,
             estimated_cost=estimated_cost if estimated_cost is not None else self.estimated_cost,
+            next_phase_id=next_phase_id if next_phase_id is not None else self.next_phase_id,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -148,6 +168,7 @@ class WorkflowStage:
             custom_email_text=self.custom_email_text,
             deadline_days=self.deadline_days,
             estimated_cost=self.estimated_cost,
+            next_phase_id=self.next_phase_id,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -170,6 +191,7 @@ class WorkflowStage:
             custom_email_text=self.custom_email_text,
             deadline_days=self.deadline_days,
             estimated_cost=self.estimated_cost,
+            next_phase_id=self.next_phase_id,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -192,6 +214,7 @@ class WorkflowStage:
             custom_email_text=self.custom_email_text,
             deadline_days=self.deadline_days,
             estimated_cost=self.estimated_cost,
+            next_phase_id=self.next_phase_id,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )

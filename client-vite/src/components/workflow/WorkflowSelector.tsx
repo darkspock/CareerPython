@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { WorkflowService } from '../../services/workflowService';
-import type { Workflow } from '../../types/workflow';
+import { companyWorkflowService } from '../../services/companyWorkflowService';
+import type { CompanyWorkflow } from '../../types/workflow';
 
 interface WorkflowSelectorProps {
   companyId: string;
@@ -21,7 +21,7 @@ export const WorkflowSelector: React.FC<WorkflowSelectorProps> = ({
   disabled = false,
   error
 }) => {
-  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [workflows, setWorkflows] = useState<CompanyWorkflow[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -33,8 +33,8 @@ export const WorkflowSelector: React.FC<WorkflowSelectorProps> = ({
       setLoadError(null);
 
       try {
-        const result = await WorkflowService.listWorkflows({ company_id: companyId });
-        setWorkflows(result.workflows);
+        const result = await companyWorkflowService.listWorkflowsByCompany(companyId);
+        setWorkflows(result);
       } catch (err) {
         console.error('Error loading workflows:', err);
         setLoadError('Failed to load workflows');

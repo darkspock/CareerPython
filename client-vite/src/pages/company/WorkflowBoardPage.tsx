@@ -17,9 +17,10 @@ import { companyCandidateService } from '../../services/companyCandidateService'
 import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 import { getPriorityColor } from '../../types/companyCandidate';
+import { PhaseBadge } from '../../components/phase';  // Phase 12
 
 // Candidate Card Component
-function CandidateCard({ candidate }: { candidate: CompanyCandidate }) {
+function CandidateCard({ candidate, companyId }: { candidate: CompanyCandidate; companyId: string }) {
   const navigate = useNavigate();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: candidate.id,
@@ -61,6 +62,18 @@ function CandidateCard({ candidate }: { candidate: CompanyCandidate }) {
         </span>
       </div>
 
+      {/* Phase 12: Phase Badge */}
+      {candidate.current_phase_id && (
+        <div className="mb-2">
+          <PhaseBadge
+            phaseId={candidate.current_phase_id}
+            companyId={companyId}
+            size="sm"
+            showIcon={true}
+          />
+        </div>
+      )}
+
       {/* Tags */}
       {candidate.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
@@ -87,9 +100,11 @@ function CandidateCard({ candidate }: { candidate: CompanyCandidate }) {
 function StageColumn({
   stage,
   candidates,
+  companyId,
 }: {
   stage: WorkflowStage;
   candidates: CompanyCandidate[];
+  companyId: string;
 }) {
   const { setNodeRef } = useSortable({ id: stage.id });
 
@@ -117,7 +132,7 @@ function StageColumn({
             </div>
           ) : (
             candidates.map((candidate) => (
-              <CandidateCard key={candidate.id} candidate={candidate} />
+              <CandidateCard key={candidate.id} candidate={candidate} companyId={companyId} />
             ))
           )}
         </SortableContext>
@@ -344,6 +359,7 @@ export default function WorkflowBoardPage() {
                   key={stage.id}
                   stage={stage}
                   candidates={getCandidatesByStage(stage.id)}
+                  companyId={getCompanyId() || ''}
                 />
               ))}
             </div>

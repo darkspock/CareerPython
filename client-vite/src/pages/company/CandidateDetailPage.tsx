@@ -20,6 +20,7 @@ import {
   getPriorityColor,
   getOwnershipColor
 } from '../../types/companyCandidate';
+import { StageTimeline } from '../../components/candidate';
 
 export default function CandidateDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +29,17 @@ export default function CandidateDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'history'>('info');
+
+  const getCompanyId = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.company_id;
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -284,52 +296,11 @@ export default function CandidateDetailPage() {
                 </div>
               )}
 
-              {/* History Tab */}
+              {/* History Tab - Phase 12: Stage Timeline */}
               {activeTab === 'history' && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity History</h3>
-                  <div className="space-y-4">
-                    {/* Timeline items */}
-                    <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Candidate Added</p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(candidate.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-
-                    {candidate.invited_at && (
-                      <div className="flex gap-4">
-                        <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-yellow-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">Invitation Sent</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(candidate.invited_at).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {candidate.confirmed_at && (
-                      <div className="flex gap-4">
-                        <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">Invitation Confirmed</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(candidate.confirmed_at).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Stage Timeline</h3>
+                  <StageTimeline candidate={candidate} companyId={getCompanyId() || ''} />
                 </div>
               )}
             </div>

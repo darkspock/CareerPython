@@ -200,5 +200,17 @@
     "updated": "Actualizado exitosamente",
     "deleted": "Eliminado exitosamente",
     "created": "Creado exitosamente"
+  },
+  "companyLogin": {
+    "footer": {
+      "adminQuestion": "¿Administrador del Sistema?",
+      "adminAccess": "Panel de Administrador"
+    },
+    "features": {
+      "title": "Gestiona tu reclutamiento",
+      "candidates": "Candidatos",
+      "workflows": "Flujos de trabajo",
+      "analytics": "Análisis"
+    }
   }
 }

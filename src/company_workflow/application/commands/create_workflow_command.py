@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from src.company.domain.value_objects.company_id import CompanyId
 from src.company_workflow.domain.entities.company_workflow import CompanyWorkflow
@@ -15,6 +16,7 @@ class CreateWorkflowCommand(Command):
     company_id: str
     name: str
     description: str
+    phase_id: Optional[str] = None  # Phase 12: Phase association
     is_default: bool = False
 
 
@@ -31,6 +33,7 @@ class CreateWorkflowCommandHandler(CommandHandler[CreateWorkflowCommand]):
             company_id=CompanyId.from_string(command.company_id),
             name=command.name,
             description=command.description,
+            phase_id=command.phase_id,  # Phase 12: Phase association
             is_default=command.is_default
         )
 

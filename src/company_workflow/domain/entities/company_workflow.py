@@ -1,11 +1,16 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company.domain.value_objects.company_id import CompanyId
 from src.company_workflow.domain.enums.workflow_status import WorkflowStatus
 from src.company_workflow.domain.exceptions.invalid_workflow_operation import InvalidWorkflowOperation
+
+# TYPE_CHECKING to avoid circular imports
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.phase.domain.value_objects.phase_id import PhaseId
 
 
 @dataclass(frozen=True)
@@ -13,6 +18,7 @@ class CompanyWorkflow:
     """Company workflow entity - represents a custom recruitment workflow"""
     id: CompanyWorkflowId
     company_id: CompanyId
+    phase_id: Optional[str]  # Phase 12: Phase that this workflow belongs to
     name: str
     description: str
     status: WorkflowStatus
@@ -27,6 +33,7 @@ class CompanyWorkflow:
         company_id: CompanyId,
         name: str,
         description: str,
+        phase_id: Optional[str] = None,
         is_default: bool = False
     ) -> "CompanyWorkflow":
         """Factory method to create a new company workflow"""
@@ -37,9 +44,10 @@ class CompanyWorkflow:
         return cls(
             id=id,
             company_id=company_id,
+            phase_id=phase_id,
             name=name,
             description=description,
-            status=WorkflowStatus.ACTIVE,
+            status=WorkflowStatus.DRAFT,  # Workflows start as DRAFT
             is_default=is_default,
             created_at=now,
             updated_at=now
@@ -48,7 +56,8 @@ class CompanyWorkflow:
     def update(
         self,
         name: str,
-        description: str
+        description: str,
+        phase_id: Optional[str] = None
     ) -> "CompanyWorkflow":
         """Update workflow information"""
         if not name:
@@ -57,6 +66,7 @@ class CompanyWorkflow:
         return CompanyWorkflow(
             id=self.id,
             company_id=self.company_id,
+            phase_id=phase_id if phase_id is not None else self.phase_id,
             name=name,
             description=description,
             status=self.status,
@@ -73,6 +83,7 @@ class CompanyWorkflow:
         return CompanyWorkflow(
             id=self.id,
             company_id=self.company_id,
+            phase_id=self.phase_id,
             name=self.name,
             description=self.description,
             status=WorkflowStatus.ACTIVE,
@@ -82,9 +93,9 @@ class CompanyWorkflow:
         )
 
     def deactivate(self) -> "CompanyWorkflow":
-        """Deactivate the workflow"""
-        if self.status == WorkflowStatus.INACTIVE:
-            raise InvalidWorkflowOperation("Workflow is already inactive")
+        """Deactivate the workflow (move to draft)"""
+        if self.status == WorkflowStatus.DRAFT:
+            raise InvalidWorkflowOperation("Workflow is already in draft")
 
         if self.is_default:
             raise InvalidWorkflowOperation("Cannot deactivate the default workflow")
@@ -92,9 +103,10 @@ class CompanyWorkflow:
         return CompanyWorkflow(
             id=self.id,
             company_id=self.company_id,
+            phase_id=self.phase_id,
             name=self.name,
             description=self.description,
-            status=WorkflowStatus.INACTIVE,
+            status=WorkflowStatus.DRAFT,
             is_default=self.is_default,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
@@ -111,6 +123,7 @@ class CompanyWorkflow:
         return CompanyWorkflow(
             id=self.id,
             company_id=self.company_id,
+            phase_id=self.phase_id,
             name=self.name,
             description=self.description,
             status=WorkflowStatus.ARCHIVED,
@@ -127,6 +140,7 @@ class CompanyWorkflow:
         return CompanyWorkflow(
             id=self.id,
             company_id=self.company_id,
+            phase_id=self.phase_id,
             name=self.name,
             description=self.description,
             status=self.status,
@@ -143,6 +157,7 @@ class CompanyWorkflow:
         return CompanyWorkflow(
             id=self.id,
             company_id=self.company_id,
+            phase_id=self.phase_id,
             name=self.name,
             description=self.description,
             status=self.status,

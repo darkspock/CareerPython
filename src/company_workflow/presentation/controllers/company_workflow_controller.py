@@ -44,6 +44,7 @@ class CompanyWorkflowController:
             company_id=request.company_id,
             name=request.name,
             description=request.description,
+            phase_id=request.phase_id,  # Phase 12
             is_default=request.is_default
         )
 
@@ -119,7 +120,8 @@ class CompanyWorkflowController:
         command = UpdateWorkflowCommand(
             id=workflow_id,
             name=request.name,
-            description=request.description
+            description=request.description,
+            phase_id=request.phase_id  # Phase 12
         )
 
         self._command_bus.dispatch(command)

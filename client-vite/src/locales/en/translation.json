@@ -200,5 +200,17 @@
     "updated": "Updated successfully",
     "deleted": "Deleted successfully",
     "created": "Created successfully"
+  },
+  "companyLogin": {
+    "footer": {
+      "adminQuestion": "System Administrator?",
+      "adminAccess": "Admin Panel"
+    },
+    "features": {
+      "title": "Manage your recruitment",
+      "candidates": "Candidates",
+      "workflows": "Workflows",
+      "analytics": "Analytics"
+    }
   }
 }

@@ -25,6 +25,8 @@ class CandidateApplication:
     stage_entered_at: Optional[datetime] = None
     stage_deadline: Optional[datetime] = None
     task_status: TaskStatus = TaskStatus.PENDING
+    # Phase 12: Phase tracking field
+    current_phase_id: Optional[str] = None
 
     def approve(self) -> None:
         """Aprobar la aplicación"""
@@ -79,6 +81,24 @@ class CandidateApplication:
         # Reset task status when moving to new stage
         self.task_status = TaskStatus.PENDING
 
+    def move_to_next_phase(self, next_phase_id: str, initial_stage_id: Optional[str] = None, time_limit_hours: Optional[int] = None) -> None:
+        """Move application to the next phase in the recruitment process
+
+        Phase 12: This method is called when a candidate completes a terminal stage
+        (SUCCESS or FAIL) that triggers a phase transition.
+
+        Args:
+            next_phase_id: ID of the next phase to move to
+            initial_stage_id: Optional ID of the initial stage in the new phase
+            time_limit_hours: Optional time limit for the initial stage in hours
+        """
+        self.current_phase_id = next_phase_id
+        self.updated_at = datetime.utcnow()
+
+        # If initial stage is provided, move to it
+        if initial_stage_id:
+            self.move_to_stage(initial_stage_id, time_limit_hours)
+
     def calculate_stage_deadline(self, time_limit_hours: Optional[int]) -> Optional[datetime]:
         """Calculate deadline based on stage entry time and time limit
 
@@ -129,7 +149,8 @@ class CandidateApplication:
             job_position_id: JobPositionId,
             notes: Optional[str] = None,
             initial_stage_id: Optional[str] = None,
-            stage_time_limit_hours: Optional[int] = None
+            stage_time_limit_hours: Optional[int] = None,
+            initial_phase_id: Optional[str] = None
     ) -> 'CandidateApplication':
         """Factory method para crear una nueva aplicación
 
@@ -140,6 +161,7 @@ class CandidateApplication:
             notes: Optional notes
             initial_stage_id: Optional ID of initial workflow stage
             stage_time_limit_hours: Optional time limit for initial stage in hours
+            initial_phase_id: Optional ID of initial phase (Phase 12)
         """
         now = datetime.utcnow()
 
@@ -160,5 +182,7 @@ class CandidateApplication:
             current_stage_id=initial_stage_id,
             stage_entered_at=now if initial_stage_id else None,
             stage_deadline=stage_deadline,
-            task_status=TaskStatus.PENDING
+            task_status=TaskStatus.PENDING,
+            # Phase 12: Phase field
+            current_phase_id=initial_phase_id
         )

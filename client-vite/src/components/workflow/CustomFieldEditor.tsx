@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
+import type {
   CustomField,
   FieldType,
   CreateCustomFieldRequest,
-  UpdateCustomFieldRequest,
-  getFieldTypeLabel
+  UpdateCustomFieldRequest
 } from '../../types/workflow';
+import { getFieldTypeLabel } from '../../types/workflow';
 import { CustomFieldService } from '../../services/customFieldService';
 import { FieldConfigEditor } from './FieldConfigEditor';
 

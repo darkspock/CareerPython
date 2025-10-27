@@ -44,6 +44,8 @@ class JobPositionDto:
     application_deadline: Optional[date]
     application_url: Optional[str]
     application_email: Optional[str]
+    is_public: bool
+    public_slug: Optional[str]
     skills: List[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
@@ -81,6 +83,8 @@ class JobPositionDto:
             application_deadline=entity.application_deadline,
             application_url=entity.application_url,
             application_email=entity.application_email,
+            is_public=entity.is_public,
+            public_slug=entity.public_slug,
             skills=entity.skills or [],
             created_at=entity.created_at,
             updated_at=entity.updated_at

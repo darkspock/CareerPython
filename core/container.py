@@ -225,9 +225,15 @@ from src.job_position.application.commands.delete_job_position import DeleteJobP
 from src.job_position.application.queries.list_job_positions import ListJobPositionsQueryHandler
 from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQueryHandler
 from src.job_position.application.queries.get_job_positions_stats import GetJobPositionsStatsQueryHandler
+# Phase 10: Public position queries
+from src.job_position.application.queries.list_public_job_positions import ListPublicJobPositionsQueryHandler
+from src.job_position.application.queries.get_public_job_position import GetPublicJobPositionQueryHandler
 
 # Job Position Infrastructure
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepository
+
+# Phase 10: Public Position Controller
+from src.job_position.presentation.controllers.public_position_controller import PublicPositionController
 
 # Position Stage Assignment Application Layer - Commands
 from src.position_stage_assignment.application import (
@@ -288,6 +294,10 @@ from src.candidate_application.application.queries.get_my_assigned_tasks_query i
 from src.candidate_application.application.commands.claim_task_command import ClaimTaskCommandHandler
 from src.candidate_application.application.commands.unclaim_task_command import UnclaimTaskCommandHandler
 from src.candidate_application.infrastructure.repositories.candidate_application_repository import SQLAlchemyCandidateApplicationRepository
+
+# Phase 12: Candidate Stage Tracking and Phase Transitions
+from src.candidate_application.application.commands.move_candidate_to_stage_command import MoveCandidateToStageCommandHandler
+from src.candidate_stage.infrastructure.repositories.candidate_stage_repository import CandidateStageRepository
 
 # Phase 7: Email Template Management
 from src.email_template.application.commands.create_email_template_command import CreateEmailTemplateCommandHandler
@@ -538,6 +548,12 @@ class Container(containers.DeclarativeContainer):
     candidate_application_repository = providers.Factory(
         SQLAlchemyCandidateApplicationRepository,
         database=database
+    )
+
+    # Phase 12: Candidate Stage Repository
+    candidate_stage_repository = providers.Factory(
+        CandidateStageRepository,
+        session=database.provided.session
     )
 
     # Onboarding Services - SIMPLIFIED
@@ -808,6 +824,17 @@ class Container(containers.DeclarativeContainer):
         job_position_repository=job_position_repository
     )
 
+    # Phase 10: Public Position Query Handlers
+    list_public_job_positions_query_handler = providers.Factory(
+        ListPublicJobPositionsQueryHandler,
+        job_position_repository=job_position_repository
+    )
+
+    get_public_job_position_query_handler = providers.Factory(
+        GetPublicJobPositionQueryHandler,
+        job_position_repository=job_position_repository
+    )
+
     # Position Stage Assignment Query Handlers
     list_stage_assignments_query_handler = providers.Factory(
         ListStageAssignmentsQueryHandler,
@@ -976,7 +1003,8 @@ class Container(containers.DeclarativeContainer):
     # Company Command Handlers
     create_company_command_handler = providers.Factory(
         CreateCompanyCommandHandler,
-        repository=company_repository
+        repository=company_repository,
+        command_bus=command_bus
     )
 
     update_company_command_handler = providers.Factory(
@@ -1457,6 +1485,15 @@ class Container(containers.DeclarativeContainer):
         candidate_application_repository=candidate_application_repository
     )
 
+    # Phase 12.12: Move Candidate to Stage with Automatic Phase Transitions
+    move_candidate_to_stage_command_handler = providers.Factory(
+        MoveCandidateToStageCommandHandler,
+        candidate_application_repository=candidate_application_repository,
+        candidate_stage_repository=candidate_stage_repository,
+        workflow_stage_repository=workflow_stage_repository,
+        job_position_repository=job_position_repository
+    )
+
     get_applications_by_candidate_id_query_handler = providers.Factory(
         GetApplicationsByCandidateIdQueryHandler,
         candidate_application_repository=candidate_application_repository
@@ -1659,6 +1696,12 @@ class Container(containers.DeclarativeContainer):
         JobPositionController,
         query_bus=query_bus,
         command_bus=command_bus
+    )
+
+    # Phase 10: Public Position Controller
+    public_position_controller = providers.Factory(
+        PublicPositionController,
+        query_bus=query_bus
     )
 
     position_stage_assignment_controller = providers.Factory(

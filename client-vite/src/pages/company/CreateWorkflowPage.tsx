@@ -2,19 +2,23 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
+import { phaseService } from '../../services/phaseService';
 import { api } from '../../lib/api';
 import type { CompanyRole } from '../../types/company';
+import type { StageType } from '../../types/workflow';
+import type { Phase } from '../../types/phase';
 
 interface StageFormData {
   name: string;
   description: string;
-  stage_type: 'initial' | 'intermediate' | 'final' | 'custom';
+  stage_type: StageType;
   order: number;
   allow_skip?: boolean;
   estimated_duration_days?: number;
   default_role_ids?: string[];
   deadline_days?: number;
   estimated_cost?: string;
+  next_phase_id?: string;
 }
 
 export default function CreateWorkflowPage() {
@@ -23,15 +27,18 @@ export default function CreateWorkflowPage() {
   const [error, setError] = useState<string | null>(null);
   const [roles, setRoles] = useState<CompanyRole[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
+  const [phases, setPhases] = useState<Phase[]>([]);
+  const [loadingPhases, setLoadingPhases] = useState(true);
 
   const [workflowName, setWorkflowName] = useState('');
   const [workflowDescription, setWorkflowDescription] = useState('');
+  const [phaseId, setPhaseId] = useState<string>('');
   const [isDefault, setIsDefault] = useState(false);
   const [stages, setStages] = useState<StageFormData[]>([
     { name: 'Applied', description: 'Candidate has applied', stage_type: 'initial', order: 1 },
-    { name: 'Screening', description: 'Initial screening', stage_type: 'intermediate', order: 2 },
-    { name: 'Interview', description: 'Interview stage', stage_type: 'intermediate', order: 3 },
-    { name: 'Offer', description: 'Offer extended', stage_type: 'final', order: 4 },
+    { name: 'Screening', description: 'Initial screening', stage_type: 'standard', order: 2 },
+    { name: 'Interview', description: 'Interview stage', stage_type: 'standard', order: 3 },
+    { name: 'Hired', description: 'Candidate hired', stage_type: 'success', order: 4 },
   ]);
 
   const getCompanyId = () => {
@@ -45,31 +52,39 @@ export default function CreateWorkflowPage() {
     }
   };
 
-  // Load company roles on mount
+  // Load company roles and phases on mount
   useEffect(() => {
-    const loadRoles = async () => {
+    const loadData = async () => {
       const companyId = getCompanyId();
       if (!companyId) return;
 
       try {
         setLoadingRoles(true);
-        const response = await api.listCompanyRoles(companyId, true); // Only active roles
-        setRoles(response as CompanyRole[]);
+        setLoadingPhases(true);
+
+        const [rolesResponse, phasesData] = await Promise.all([
+          api.listCompanyRoles(companyId, true), // Only active roles
+          phaseService.listPhases(companyId)
+        ]);
+
+        setRoles(rolesResponse as CompanyRole[]);
+        setPhases(phasesData.sort((a, b) => a.sort_order - b.sort_order));
       } catch (err) {
-        console.error('Failed to load roles:', err);
+        console.error('Failed to load data:', err);
       } finally {
         setLoadingRoles(false);
+        setLoadingPhases(false);
       }
     };
 
-    loadRoles();
+    loadData();
   }, []);
 
   const handleAddStage = () => {
     const newOrder = stages.length + 1;
     setStages([
       ...stages,
-      { name: '', description: '', stage_type: 'intermediate', order: newOrder },
+      { name: '', description: '', stage_type: 'standard', order: newOrder },
     ]);
   };
 
@@ -154,6 +169,7 @@ export default function CreateWorkflowPage() {
         company_id: companyId,
         name: workflowName,
         description: workflowDescription,
+        phase_id: phaseId || undefined,
         is_default: isDefault,
       });
 
@@ -171,6 +187,7 @@ export default function CreateWorkflowPage() {
           default_role_ids: stageData.default_role_ids,
           deadline_days: stageData.deadline_days,
           estimated_cost: stageData.estimated_cost,
+          next_phase_id: stageData.next_phase_id,
         });
       }
 
@@ -236,6 +253,36 @@ export default function CreateWorkflowPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Describe this workflow..."
               />
+            </div>
+
+            {/* Phase Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phase (Optional)
+              </label>
+              {loadingPhases ? (
+                <div className="text-sm text-gray-500">Loading phases...</div>
+              ) : phases.length === 0 ? (
+                <div className="text-sm text-gray-500">
+                  No phases available. <a href="/company/settings/phases" className="text-blue-600 hover:underline">Create phases first</a>
+                </div>
+              ) : (
+                <select
+                  value={phaseId}
+                  onChange={(e) => setPhaseId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">No Phase (Standalone Workflow)</option>
+                  {phases.map((phase) => (
+                    <option key={phase.id} value={phase.id}>
+                      {phase.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Assign this workflow to a recruitment phase (optional)
+              </p>
             </div>
 
             {/* Is Default */}
@@ -332,11 +379,41 @@ export default function CreateWorkflowPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="initial">Initial</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="final">Final</option>
-                      <option value="custom">Custom</option>
+                      <option value="standard">Standard</option>
+                      <option value="success">Success</option>
+                      <option value="fail">Fail</option>
                     </select>
                   </div>
+
+                  {/* Next Phase (only for success/fail stages) */}
+                  {(stage.stage_type === 'success' || stage.stage_type === 'fail') && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Next Phase (Optional)
+                      </label>
+                      {loadingPhases ? (
+                        <div className="text-sm text-gray-500">Loading phases...</div>
+                      ) : phases.length === 0 ? (
+                        <div className="text-sm text-gray-500">No phases available</div>
+                      ) : (
+                        <select
+                          value={stage.next_phase_id || ''}
+                          onChange={(e) => handleStageChange(index, 'next_phase_id', e.target.value || undefined)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">No automatic transition</option>
+                          {phases.map((phase) => (
+                            <option key={phase.id} value={phase.id}>
+                              {phase.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">
+                        Automatically move candidate to this phase when reaching this stage
+                      </p>
+                    </div>
+                  )}
 
                   {/* Description */}
                   <div className="md:col-span-2">

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from src.company_workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
 from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
@@ -13,6 +14,7 @@ class UpdateWorkflowCommand(Command):
     id: str
     name: str
     description: str
+    phase_id: Optional[str] = None  # Phase 12: Phase association
 
 
 class UpdateWorkflowCommandHandler(CommandHandler[UpdateWorkflowCommand]):
@@ -31,7 +33,8 @@ class UpdateWorkflowCommandHandler(CommandHandler[UpdateWorkflowCommand]):
 
         updated_workflow = workflow.update(
             name=command.name,
-            description=command.description
+            description=command.description,
+            phase_id=command.phase_id  # Phase 12: Phase association
         )
 
         self._repository.save(updated_workflow)

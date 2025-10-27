@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
+import type {
   CustomField,
   WorkflowStage,
   FieldConfiguration,
-  FieldVisibility,
+  FieldVisibility
+} from '../../types/workflow';
+import {
   getFieldVisibilityLabel,
   getFieldVisibilityColor
 } from '../../types/workflow';

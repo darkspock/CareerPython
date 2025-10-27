@@ -1,5 +1,5 @@
 import React from 'react';
-import { FieldType } from '../../types/workflow';
+import type { FieldType } from '../../types/workflow';
 
 interface FieldConfigEditorProps {
   fieldType: FieldType;

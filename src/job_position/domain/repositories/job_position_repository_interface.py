@@ -23,7 +23,13 @@ class JobPositionRepositoryInterface(ABC):
                         contract_type: Optional[ContractTypeEnum] = None,
                         location: Optional[str] = None,
                         search_term: Optional[str] = None,
-                        limit: int = 50, offset: int = 0) -> List[JobPosition]:
+                        limit: int = 50, offset: int = 0,
+                        is_public: Optional[bool] = None) -> List[JobPosition]:
+        pass
+
+    @abstractmethod
+    def find_by_public_slug(self, public_slug: str) -> Optional[JobPosition]:
+        """Phase 10: Find job position by public slug"""
         pass
 
     @abstractmethod

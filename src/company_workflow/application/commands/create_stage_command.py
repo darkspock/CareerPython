@@ -31,6 +31,7 @@ class CreateStageCommand(Command):
     custom_email_text: Optional[str] = None
     deadline_days: Optional[int] = None
     estimated_cost: Optional[Decimal] = None
+    next_phase_id: Optional[str] = None  # Phase 12: Phase transition
 
 
 class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
@@ -65,7 +66,8 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
             email_template_id=command.email_template_id,
             custom_email_text=command.custom_email_text,
             deadline_days=command.deadline_days,
-            estimated_cost=command.estimated_cost
+            estimated_cost=command.estimated_cost,
+            next_phase_id=command.next_phase_id  # Phase 12: Phase transition
         )
 
         self.repository.save(stage)

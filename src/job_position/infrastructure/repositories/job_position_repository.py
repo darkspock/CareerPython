@@ -58,7 +58,8 @@ class JobPositionRepository(JobPositionRepositoryInterface):
                         contract_type: Optional[ContractTypeEnum] = None,
                         location: Optional[str] = None,
                         search_term: Optional[str] = None,
-                        limit: int = 50, offset: int = 0) -> List[JobPosition]:
+                        limit: int = 50, offset: int = 0,
+                        is_public: Optional[bool] = None) -> List[JobPosition]:
         """Find job positions by filters"""
         with self.database.get_session() as session:
             query = session.query(JobPositionModel)
@@ -90,6 +91,10 @@ class JobPositionRepository(JobPositionRepositoryInterface):
                         JobPositionModel.location.ilike(f"%{search_term}%")
                     )
                 )
+
+            # Phase 10: Filter by is_public
+            if is_public is not None:
+                query = query.filter(JobPositionModel.is_public == is_public)
 
             # Order by created_at desc (before pagination)
             query = query.order_by(JobPositionModel.created_at.desc())
@@ -130,6 +135,18 @@ class JobPositionRepository(JobPositionRepositoryInterface):
                     JobPositionModel.status.in_(active_statuses)
                 )
             ).count()
+
+    def find_by_public_slug(self, public_slug: str) -> Optional[JobPosition]:
+        """Phase 10: Find job position by public slug"""
+        with self.database.get_session() as session:
+            job_position_model = session.query(JobPositionModel).filter(
+                JobPositionModel.public_slug == public_slug
+            ).first()
+
+            if not job_position_model:
+                return None
+
+            return self._create_entity_from_model(job_position_model)
 
     def delete(self, id: JobPositionId) -> bool:
         """Delete job position"""
@@ -186,6 +203,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             title=model.title,
             company_id=CompanyId.from_string(model.company_id),
             workflow_id=model.workflow_id,
+            phase_workflows=model.phase_workflows,
             description=model.description,
             location=model.location,
             employment_type=model.employment_type,
@@ -244,6 +262,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             id=job_position.id.value,
             company_id=job_position.company_id.value,
             workflow_id=job_position.workflow_id,
+            phase_workflows=job_position.phase_workflows,
             title=job_position.title,
             description=job_position.description,
             location=job_position.location,
@@ -300,6 +319,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             desired_roles_json = [role.value for role in job_position.desired_roles]
 
         model.workflow_id = job_position.workflow_id
+        model.phase_workflows = job_position.phase_workflows
         model.title = job_position.title
         model.description = job_position.description
         model.location = job_position.location

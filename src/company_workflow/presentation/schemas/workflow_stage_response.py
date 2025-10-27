@@ -21,6 +21,7 @@ class WorkflowStageResponse(BaseModel):
     custom_email_text: Optional[str]
     deadline_days: Optional[int]
     estimated_cost: Optional[Decimal]
+    next_phase_id: Optional[str] = None  # Phase 12: Phase transition
     created_at: datetime
     updated_at: datetime
 

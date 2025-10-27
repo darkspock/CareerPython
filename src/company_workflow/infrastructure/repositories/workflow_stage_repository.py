@@ -59,11 +59,11 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             return None
 
     def get_final_stages(self, workflow_id: CompanyWorkflowId) -> List[WorkflowStage]:
-        """Get all final stages of a workflow"""
+        """Get all final stages of a workflow (SUCCESS and FAIL stages)"""
         with self._database.get_session() as session:
-            models = session.query(WorkflowStageModel).filter_by(
-                workflow_id=str(workflow_id),
-                stage_type=StageType.FINAL.value
+            models = session.query(WorkflowStageModel).filter(
+                WorkflowStageModel.workflow_id == str(workflow_id),
+                WorkflowStageModel.stage_type.in_([StageType.SUCCESS.value, StageType.FAIL.value])
             ).all()
             return [self._to_domain(model) for model in models]
 
@@ -92,6 +92,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             custom_email_text=model.custom_email_text,
             deadline_days=model.deadline_days,
             estimated_cost=Decimal(str(model.estimated_cost)) if model.estimated_cost is not None else None,
+            next_phase_id=model.next_phase_id,
             created_at=model.created_at,
             updated_at=model.updated_at
         )
@@ -114,6 +115,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             custom_email_text=entity.custom_email_text,
             deadline_days=entity.deadline_days,
             estimated_cost=float(entity.estimated_cost) if entity.estimated_cost is not None else None,
+            next_phase_id=entity.next_phase_id,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

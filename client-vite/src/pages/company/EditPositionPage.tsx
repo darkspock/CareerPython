@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { Position, UpdatePositionRequest } from '../../types/position';
-import { WorkflowSelector, StageAssignmentEditor } from '../../components/workflow';
+import { WorkflowSelector, StageAssignmentEditor, PhaseWorkflowSelector } from '../../components/workflow';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import type { WorkflowStage } from '../../types/workflow';
 import { api } from '../../lib/api';
@@ -17,6 +17,7 @@ export default function EditPositionPage() {
 
   const [formData, setFormData] = useState<UpdatePositionRequest>({
     workflow_id: null,
+    phase_workflows: {},  // Phase 12.8: phase_id -> workflow_id mapping
     title: '',
     description: '',
     location: '',
@@ -70,6 +71,7 @@ export default function EditPositionPage() {
       // Convert Position to form data
       setFormData({
         workflow_id: position.workflow_id,
+        phase_workflows: position.phase_workflows || {},  // Phase 12.8
         title: position.title,
         description: position.description,
         location: position.location,
@@ -329,16 +331,17 @@ export default function EditPositionPage() {
               </label>
             </div>
 
-            {/* Workflow Selector */}
+            {/* Phase 12.8: Phase-Workflow Configuration */}
             <div className="md:col-span-2">
-              <WorkflowSelector
+              <PhaseWorkflowSelector
                 companyId={companyId}
-                selectedWorkflowId={formData.workflow_id}
-                onWorkflowChange={(workflowId) => setFormData({ ...formData, workflow_id: workflowId })}
-                label="Application Workflow (Optional)"
+                phaseWorkflows={formData.phase_workflows || {}}
+                onChange={(phaseWorkflows) => setFormData({ ...formData, phase_workflows: phaseWorkflows })}
+                label="Recruitment Workflow Configuration"
               />
               <p className="mt-1 text-sm text-gray-500">
-                Select a workflow to automate candidate processing with custom fields and validation rules
+                Configure which workflow to use for each recruitment phase. The system will automatically
+                guide candidates through the configured phases.
               </p>
             </div>
 

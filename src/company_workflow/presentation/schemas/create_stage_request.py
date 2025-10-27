@@ -21,6 +21,7 @@ class CreateStageRequest(BaseModel):
     custom_email_text: Optional[str] = Field(None, description="Custom email text to append to template")
     deadline_days: Optional[int] = Field(None, ge=1, description="Days to complete this stage (for task priority)")
     estimated_cost: Optional[Decimal] = Field(None, ge=0, description="Estimated cost for this stage")
+    next_phase_id: Optional[str] = Field(None, description="Phase ID to transition to (Phase 12 - only for SUCCESS/FAIL stages)")
 
     class Config:
         json_schema_extra = {

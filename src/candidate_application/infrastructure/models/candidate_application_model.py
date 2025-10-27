@@ -50,6 +50,14 @@ class CandidateApplicationModel(Base):
         default=TaskStatus.PENDING
     )
 
+    # Phase 12: Phase tracking field
+    current_phase_id: Mapped[Optional[str]] = mapped_column(
+        String,
+        ForeignKey("company_phases.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True
+    )
+
     # Relationships
     candidate: Mapped["CandidateModel"] = relationship("CandidateModel", back_populates="applications")
     job_position: Mapped["JobPositionModel"] = relationship("JobPositionModel", back_populates="applications")

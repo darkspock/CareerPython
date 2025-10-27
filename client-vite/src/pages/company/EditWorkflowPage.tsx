@@ -2,16 +2,18 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, Trash2, ArrowUp, ArrowDown, Settings } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
+import { phaseService } from '../../services/phaseService';
 import { api } from '../../lib/api';
-import type { CompanyWorkflow, WorkflowStage, CustomField, FieldConfiguration } from '../../types/workflow';
+import type { CompanyWorkflow, WorkflowStage, CustomField, FieldConfiguration, StageType } from '../../types/workflow';
 import type { CompanyRole } from '../../types/company';
+import type { Phase } from '../../types/phase';
 import { CustomFieldEditor, FieldVisibilityMatrix, ValidationRuleEditor } from '../../components/workflow';
 
 interface StageFormData {
   id?: string;
   name: string;
   description: string;
-  stage_type: 'initial' | 'intermediate' | 'final' | 'custom';
+  stage_type: StageType;
   order: number;
   is_active: boolean;
   isNew?: boolean;
@@ -20,6 +22,7 @@ interface StageFormData {
   default_role_ids?: string[];
   deadline_days?: number;
   estimated_cost?: string;
+  next_phase_id?: string;
 }
 
 export default function EditWorkflowPage() {
@@ -30,10 +33,13 @@ export default function EditWorkflowPage() {
   const [error, setError] = useState<string | null>(null);
   const [roles, setRoles] = useState<CompanyRole[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
+  const [phases, setPhases] = useState<Phase[]>([]);
+  const [loadingPhases, setLoadingPhases] = useState(true);
 
   const [workflow, setWorkflow] = useState<CompanyWorkflow | null>(null);
   const [workflowName, setWorkflowName] = useState('');
   const [workflowDescription, setWorkflowDescription] = useState('');
+  const [phaseId, setPhaseId] = useState<string>('');
   const [stages, setStages] = useState<StageFormData[]>([]);
   const [deletedStageIds, setDeletedStageIds] = useState<string[]>([]);
   const [advancedModalOpen, setAdvancedModalOpen] = useState(false);
@@ -46,6 +52,7 @@ export default function EditWorkflowPage() {
   useEffect(() => {
     loadWorkflow();
     loadRoles();
+    loadPhases();
   }, [workflowId]);
 
   const getCompanyId = () => {
@@ -74,6 +81,21 @@ export default function EditWorkflowPage() {
     }
   };
 
+  const loadPhases = async () => {
+    const companyId = getCompanyId();
+    if (!companyId) return;
+
+    try {
+      setLoadingPhases(true);
+      const phasesData = await phaseService.listPhases(companyId);
+      setPhases(phasesData.sort((a, b) => a.sort_order - b.sort_order));
+    } catch (err) {
+      console.error('Failed to load phases:', err);
+    } finally {
+      setLoadingPhases(false);
+    }
+  };
+
   const loadWorkflow = async () => {
     if (!workflowId) {
       setError('Workflow ID not found');
@@ -87,6 +109,7 @@ export default function EditWorkflowPage() {
       setWorkflow(workflowData);
       setWorkflowName(workflowData.name);
       setWorkflowDescription(workflowData.description || '');
+      setPhaseId(workflowData.phase_id || '');
 
       // Load stages
       const stagesData = await companyWorkflowService.listStagesByWorkflow(workflowId);
@@ -103,6 +126,7 @@ export default function EditWorkflowPage() {
         default_role_ids: stage.default_role_ids || undefined,
         deadline_days: stage.deadline_days || undefined,
         estimated_cost: stage.estimated_cost || undefined,
+        next_phase_id: stage.next_phase_id || undefined,
       }));
       setStages(formattedStages);
       setError(null);
@@ -121,7 +145,7 @@ export default function EditWorkflowPage() {
       {
         name: '',
         description: '',
-        stage_type: 'intermediate',
+        stage_type: 'standard',
         order: newOrder,
         is_active: true,
         isNew: true,
@@ -228,6 +252,7 @@ export default function EditWorkflowPage() {
       await companyWorkflowService.updateWorkflow(workflowId, {
         name: workflowName,
         description: workflowDescription,
+        phase_id: phaseId || undefined,
       });
 
       // Delete removed stages
@@ -251,6 +276,7 @@ export default function EditWorkflowPage() {
             default_role_ids: stageData.default_role_ids,
             deadline_days: stageData.deadline_days,
             estimated_cost: stageData.estimated_cost,
+            next_phase_id: stageData.next_phase_id,
           });
         } else if (stageData.id) {
           // Update existing stage
@@ -265,6 +291,7 @@ export default function EditWorkflowPage() {
             default_role_ids: stageData.default_role_ids,
             deadline_days: stageData.deadline_days,
             estimated_cost: stageData.estimated_cost,
+            next_phase_id: stageData.next_phase_id,
           });
         }
       }
@@ -358,6 +385,36 @@ export default function EditWorkflowPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Describe this workflow..."
               />
+            </div>
+
+            {/* Phase Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phase (Optional)
+              </label>
+              {loadingPhases ? (
+                <div className="text-sm text-gray-500">Loading phases...</div>
+              ) : phases.length === 0 ? (
+                <div className="text-sm text-gray-500">
+                  No phases available. <a href="/company/settings/phases" className="text-blue-600 hover:underline">Create phases first</a>
+                </div>
+              ) : (
+                <select
+                  value={phaseId}
+                  onChange={(e) => setPhaseId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">No Phase (Standalone Workflow)</option>
+                  {phases.map((phase) => (
+                    <option key={phase.id} value={phase.id}>
+                      {phase.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Assign this workflow to a recruitment phase (optional)
+              </p>
             </div>
 
             {/* Workflow Status Info */}
@@ -460,11 +517,41 @@ export default function EditWorkflowPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="initial">Initial</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="final">Final</option>
-                      <option value="custom">Custom</option>
+                      <option value="standard">Standard</option>
+                      <option value="success">Success</option>
+                      <option value="fail">Fail</option>
                     </select>
                   </div>
+
+                  {/* Next Phase (only for success/fail stages) */}
+                  {(stage.stage_type === 'success' || stage.stage_type === 'fail') && (
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Next Phase (Optional)
+                      </label>
+                      {loadingPhases ? (
+                        <div className="text-sm text-gray-500">Loading phases...</div>
+                      ) : phases.length === 0 ? (
+                        <div className="text-sm text-gray-500">No phases available</div>
+                      ) : (
+                        <select
+                          value={stage.next_phase_id || ''}
+                          onChange={(e) => handleStageChange(index, 'next_phase_id', e.target.value || undefined)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">No automatic transition</option>
+                          {phases.map((phase) => (
+                            <option key={phase.id} value={phase.id}>
+                              {phase.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">
+                        Automatically move candidate to this phase when reaching this stage
+                      </p>
+                    </div>
+                  )}
 
                   {/* Description */}
                   <div className="md:col-span-2">
@@ -695,6 +782,38 @@ export default function EditWorkflowPage() {
                     )}
                     <p className="mt-1 text-xs text-gray-500">Select one or more roles to assign to this stage</p>
                   </div>
+
+                  {/* Next Phase (only for success/fail stages) */}
+                  {(stages[selectedStageIndex].stage_type === 'success' || stages[selectedStageIndex].stage_type === 'fail') && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Next Phase (Optional)
+                      </label>
+                      {loadingPhases ? (
+                        <div className="text-sm text-gray-500">Loading phases...</div>
+                      ) : phases.length === 0 ? (
+                        <div className="text-sm text-gray-500">
+                          No phases available. <a href="/company/settings/phases" className="text-blue-600 hover:underline">Create phases first</a>
+                        </div>
+                      ) : (
+                        <select
+                          value={stages[selectedStageIndex].next_phase_id || ''}
+                          onChange={(e) => handleStageChange(selectedStageIndex, 'next_phase_id', e.target.value || undefined)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">No automatic transition</option>
+                          {phases.map((phase) => (
+                            <option key={phase.id} value={phase.id}>
+                              {phase.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">
+                        Automatically move candidate to this phase when reaching this stage
+                      </p>
+                    </div>
+                  )}
 
                   {/* Active Toggle */}
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">

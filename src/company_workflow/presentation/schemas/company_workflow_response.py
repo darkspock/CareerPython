@@ -7,6 +7,7 @@ class CompanyWorkflowResponse(BaseModel):
     """Company workflow API response schema"""
     id: str
     company_id: str
+    phase_id: Optional[str] = None  # Phase 12: Phase association
     name: str
     description: str
     status: str

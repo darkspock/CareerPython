@@ -61,6 +61,7 @@ class CompanyWorkflowRepository(CompanyWorkflowRepositoryInterface):
         return CompanyWorkflow(
             id=CompanyWorkflowId.from_string(model.id),
             company_id=CompanyId.from_string(model.company_id),
+            phase_id=model.phase_id,
             name=model.name,
             description=model.description,
             status=WorkflowStatus(model.status),
@@ -74,6 +75,7 @@ class CompanyWorkflowRepository(CompanyWorkflowRepositoryInterface):
         return CompanyWorkflowModel(
             id=str(entity.id),
             company_id=str(entity.company_id),
+            phase_id=entity.phase_id,
             name=entity.name,
             description=entity.description,
             status=entity.status.value,

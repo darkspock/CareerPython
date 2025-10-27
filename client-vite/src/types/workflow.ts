@@ -1,12 +1,15 @@
 // Workflow types
 
-export type WorkflowStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+// Phase 12: Updated workflow status (INACTIVE → DRAFT)
+export type WorkflowStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 
-export type StageType = 'initial' | 'intermediate' | 'final' | 'custom';
+// Phase 12: Updated stage types (INTERMEDIATE → STANDARD, FINAL → SUCCESS, added FAIL)
+export type StageType = 'initial' | 'standard' | 'success' | 'fail';
 
 export interface CompanyWorkflow {
   id: string;
   company_id: string;
+  phase_id?: string | null; // Phase 12: Phase association
   name: string;
   description: string | null;
   is_default: boolean;
@@ -37,6 +40,7 @@ export interface WorkflowStage {
   custom_email_text: string | null;
   deadline_days: number | null;
   estimated_cost: string | null;
+  next_phase_id?: string | null; // Phase 12: Phase transition
   created_at: string;
   updated_at: string;
 
@@ -48,6 +52,7 @@ export interface CreateWorkflowRequest {
   company_id: string;
   name: string;
   description?: string;
+  phase_id?: string | null; // Phase 12: Phase association
   is_default?: boolean;
   status?: WorkflowStatus;
 }
@@ -55,6 +60,7 @@ export interface CreateWorkflowRequest {
 export interface UpdateWorkflowRequest {
   name?: string;
   description?: string;
+  phase_id?: string | null; // Phase 12: Phase association
   is_default?: boolean;
   status?: WorkflowStatus;
 }
@@ -74,6 +80,7 @@ export interface CreateStageRequest {
   custom_email_text?: string;
   deadline_days?: number;
   estimated_cost?: string;
+  next_phase_id?: string | null; // Phase 12: Phase transition
 }
 
 export interface UpdateStageRequest {
@@ -90,6 +97,7 @@ export interface UpdateStageRequest {
   custom_email_text?: string;
   deadline_days?: number;
   estimated_cost?: string;
+  next_phase_id?: string | null; // Phase 12: Phase transition
 }
 
 export interface ReorderStagesRequest {
@@ -99,8 +107,8 @@ export interface ReorderStagesRequest {
 // Helper functions
 export const getWorkflowStatusColor = (status: WorkflowStatus): string => {
   switch (status) {
+    case 'DRAFT': return 'bg-gray-100 text-gray-800'; // Phase 12: DRAFT status
     case 'ACTIVE': return 'bg-green-100 text-green-800';
-    case 'INACTIVE': return 'bg-gray-100 text-gray-800';
     case 'ARCHIVED': return 'bg-red-100 text-red-800';
     default: return 'bg-gray-100 text-gray-800';
   }
@@ -109,9 +117,9 @@ export const getWorkflowStatusColor = (status: WorkflowStatus): string => {
 export const getStageTypeColor = (type: StageType): string => {
   switch (type) {
     case 'initial': return 'bg-blue-100 text-blue-800';
-    case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-    case 'final': return 'bg-green-100 text-green-800';
-    case 'custom': return 'bg-purple-100 text-purple-800';
+    case 'standard': return 'bg-yellow-100 text-yellow-800'; // Phase 12: STANDARD
+    case 'success': return 'bg-green-100 text-green-800'; // Phase 12: SUCCESS
+    case 'fail': return 'bg-red-100 text-red-800'; // Phase 12: FAIL
     default: return 'bg-gray-100 text-gray-800';
   }
 };

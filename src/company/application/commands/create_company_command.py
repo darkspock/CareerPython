@@ -5,7 +5,8 @@ from src.company.domain.entities.company import Company
 from src.company.domain.value_objects import CompanyId, CompanySettings
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError
-from src.shared.application.command_bus import Command, CommandHandler
+from src.shared.application.command_bus import Command, CommandHandler, CommandBus
+from src.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommand
 
 
 @dataclass
@@ -21,8 +22,9 @@ class CreateCompanyCommand(Command):
 class CreateCompanyCommandHandler(CommandHandler):
     """Handler for creating a company"""
 
-    def __init__(self, repository: CompanyRepositoryInterface):
+    def __init__(self, repository: CompanyRepositoryInterface, command_bus: CommandBus):
         self.repository = repository
+        self.command_bus = command_bus
 
     def execute(self, command: CreateCompanyCommand) -> None:
         """Execute the command - NO return value"""
@@ -42,3 +44,9 @@ class CreateCompanyCommandHandler(CommandHandler):
 
         # Persist
         self.repository.save(company)
+
+        # Phase 12: Initialize default phases for the new company
+        initialize_phases_command = InitializeCompanyPhasesCommand(
+            company_id=CompanyId.from_string(command.id)
+        )
+        self.command_bus.dispatch(initialize_phases_command)

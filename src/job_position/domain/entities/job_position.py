@@ -20,7 +20,8 @@ class JobPosition:
     id: JobPositionId
     title: str
     company_id: CompanyId
-    workflow_id: Optional[str]
+    workflow_id: Optional[str]  # Legacy/default workflow
+    phase_workflows: Optional[Dict[str, str]]  # Phase 12.8: phase_id -> workflow_id mapping
     description: Optional[str]
     location: Optional[str]
     employment_type: Optional[EmploymentType]
@@ -47,6 +48,8 @@ class JobPosition:
     skills: List[str]
     application_url: Optional[str]
     application_email: Optional[str]
+    is_public: bool
+    public_slug: Optional[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 
@@ -177,6 +180,16 @@ class JobPosition:
         """Check if job position is in draft state"""
         return self.status == JobPositionStatusEnum.PENDING
 
+    def get_workflow_for_phase(self, phase_id: str) -> Optional[str]:
+        """Get the workflow ID configured for a specific phase
+
+        Phase 12.8: Returns the workflow_id configured for the given phase.
+        If no phase-specific workflow is configured, returns the default workflow_id.
+        """
+        if self.phase_workflows and phase_id in self.phase_workflows:
+            return self.phase_workflows[phase_id]
+        return self.workflow_id  # Fallback to default/legacy workflow
+
     def add_requirement(self, requirement_type: str, requirement_data: Any) -> None:
         """Add a requirement to the job position"""
         if self.requirements is None:
@@ -197,6 +210,7 @@ class JobPosition:
     def update_details(
             self,
             workflow_id: Optional[str],
+            phase_workflows: Optional[Dict[str, str]],
             title: str,
             description: Optional[str],
             location: Optional[str],
@@ -236,6 +250,7 @@ class JobPosition:
             raise JobPositionValidationError("Travel required must be between 0 and 100")
 
         self.workflow_id = workflow_id
+        self.phase_workflows = phase_workflows or {}
         self.title = title.strip()
         self.description = description
         self.location = location
@@ -270,6 +285,7 @@ class JobPosition:
             title: str,
             company_id: CompanyId,
             workflow_id: Optional[str] = None,
+            phase_workflows: Optional[Dict[str, str]] = None,
             description: Optional[str] = None,
             location: Optional[str] = None,
             employment_type: Optional[EmploymentType] = None,
@@ -304,6 +320,7 @@ class JobPosition:
             title=title,
             company_id=company_id,
             workflow_id=workflow_id,
+            phase_workflows=phase_workflows or {},
             description=description,
             location=location,
             employment_type=employment_type,
@@ -341,6 +358,7 @@ class JobPosition:
             title: str,
             company_id: CompanyId,
             workflow_id: Optional[str],
+            phase_workflows: Optional[Dict[str, str]],
             description: Optional[str],
             location: Optional[str],
             employment_type: Optional[EmploymentType],
@@ -376,6 +394,7 @@ class JobPosition:
             title=title,
             company_id=company_id,
             workflow_id=workflow_id,
+            phase_workflows=phase_workflows,
             description=description,
             location=location,
             employment_type=employment_type,

@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { CreatePositionRequest } from '../../types/position';
 import { WORK_LOCATION_OPTIONS, LANGUAGE_OPTIONS, LANGUAGE_LEVEL_OPTIONS, DESIRED_ROLE_OPTIONS } from '../../types/position';
-import { WorkflowSelector } from '../../components/workflow';
+import { WorkflowSelector, PhaseWorkflowSelector } from '../../components/workflow';
 
 export default function CreatePositionPage() {
   const navigate = useNavigate();
@@ -14,6 +14,7 @@ export default function CreatePositionPage() {
   const [formData, setFormData] = useState<CreatePositionRequest>({
     company_id: '',
     workflow_id: null,
+    phase_workflows: {},  // Phase 12.8: phase_id -> workflow_id mapping
     title: '',
     description: '',
     location: '',
@@ -237,16 +238,17 @@ export default function CreatePositionPage() {
               </label>
             </div>
 
-            {/* Workflow Selector */}
+            {/* Phase 12.8: Phase-Workflow Configuration */}
             <div className="md:col-span-2">
-              <WorkflowSelector
+              <PhaseWorkflowSelector
                 companyId={getCompanyId() || ''}
-                selectedWorkflowId={formData.workflow_id}
-                onWorkflowChange={(workflowId) => setFormData({ ...formData, workflow_id: workflowId })}
-                label="Application Workflow (Optional)"
+                phaseWorkflows={formData.phase_workflows || {}}
+                onChange={(phaseWorkflows) => setFormData({ ...formData, phase_workflows: phaseWorkflows })}
+                label="Recruitment Workflow Configuration"
               />
               <p className="mt-1 text-sm text-gray-500">
-                Select a workflow to automate candidate processing with custom fields and validation rules
+                Configure which workflow to use for each recruitment phase. The system will automatically
+                guide candidates through the configured phases.
               </p>
             </div>
 

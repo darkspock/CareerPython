@@ -1,8 +1,15 @@
 import { Link } from 'react-router-dom';
-import { Workflow, Users, Settings } from 'lucide-react';
+import { Workflow, Users, Settings, Layers } from 'lucide-react';
 
 export default function CompanySettingsPage() {
   const settingsCards = [
+    {
+      title: 'Phase Management',
+      description: 'Organize recruitment into high-level phases',
+      icon: Layers,
+      path: '/company/settings/phases',
+      color: 'purple',
+    },
     {
       title: 'Workflow Settings',
       description: 'Manage recruitment workflows and stages',
