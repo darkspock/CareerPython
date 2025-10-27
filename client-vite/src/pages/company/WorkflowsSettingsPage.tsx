@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Settings, Archive, Trash2, Star, CheckCircle, Eye, Edit } from 'lucide-react';
+import { Plus, Settings, Trash2, Star, CheckCircle, Edit, Filter } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
+import { phaseService } from '../../services/phaseService';
 import type { CompanyWorkflow } from '../../types/workflow';
+import type { Phase } from '../../types/phase';
 import { getWorkflowStatusColor } from '../../types/workflow';
 
 export default function WorkflowsSettingsPage() {
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<CompanyWorkflow[]>([]);
+  const [allWorkflows, setAllWorkflows] = useState<CompanyWorkflow[]>([]);
+  const [phases, setPhases] = useState<Phase[]>([]);
+  const [selectedPhaseId, setSelectedPhaseId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,8 +28,31 @@ export default function WorkflowsSettingsPage() {
   };
 
   useEffect(() => {
+    loadPhases();
     loadWorkflows();
   }, []);
+
+  useEffect(() => {
+    filterWorkflows();
+  }, [selectedPhaseId, allWorkflows]);
+
+  const loadPhases = async () => {
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) return;
+
+      const phasesData = await phaseService.listPhases(companyId);
+      const sortedPhases = phasesData.sort((a, b) => a.sort_order - b.sort_order);
+      setPhases(sortedPhases);
+
+      // Auto-select first phase if none selected
+      if (sortedPhases.length > 0 && !selectedPhaseId) {
+        setSelectedPhaseId(sortedPhases[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load phases:', err);
+    }
+  };
 
   const loadWorkflows = async () => {
     try {
@@ -36,6 +64,7 @@ export default function WorkflowsSettingsPage() {
       }
 
       const data = await companyWorkflowService.listWorkflowsByCompany(companyId);
+      setAllWorkflows(data);
       setWorkflows(data);
       setError(null);
     } catch (err: any) {
@@ -46,34 +75,18 @@ export default function WorkflowsSettingsPage() {
     }
   };
 
+  const filterWorkflows = () => {
+    if (selectedPhaseId) {
+      setWorkflows(allWorkflows.filter(w => w.phase_id === selectedPhaseId));
+    }
+  };
+
   const handleSetDefault = async (workflowId: string) => {
     try {
       await companyWorkflowService.setAsDefault(workflowId);
       loadWorkflows();
     } catch (err: any) {
       alert('Failed to set default workflow: ' + err.message);
-    }
-  };
-
-  const handleDeactivate = async (workflowId: string) => {
-    if (!confirm('Are you sure you want to deactivate this workflow?')) return;
-
-    try {
-      await companyWorkflowService.deactivateWorkflow(workflowId);
-      loadWorkflows();
-    } catch (err: any) {
-      alert('Failed to deactivate workflow: ' + err.message);
-    }
-  };
-
-  const handleArchive = async (workflowId: string) => {
-    if (!confirm('Are you sure you want to archive this workflow?')) return;
-
-    try {
-      await companyWorkflowService.archiveWorkflow(workflowId);
-      loadWorkflows();
-    } catch (err: any) {
-      alert('Failed to archive workflow: ' + err.message);
     }
   };
 
@@ -90,11 +103,6 @@ export default function WorkflowsSettingsPage() {
 
   const handleCreateWorkflow = () => {
     navigate('/company/workflows/create');
-  };
-
-  const handleViewWorkflow = (workflowId: string) => {
-    // TODO: Implement view workflow page
-    alert('View workflow page not implemented yet');
   };
 
   const handleEditWorkflow = (workflowId: string) => {
@@ -125,6 +133,27 @@ export default function WorkflowsSettingsPage() {
           Create Workflow
         </button>
       </div>
+
+      {/* Filter by Phase */}
+      {phases.length > 0 && (
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center gap-4">
+            <Filter className="w-5 h-5 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700">Phase:</label>
+            <select
+              value={selectedPhaseId}
+              onChange={(e) => setSelectedPhaseId(e.target.value)}
+              className="flex-1 max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {phases.map((phase) => (
+                <option key={phase.id} value={phase.id}>
+                  {phase.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (
@@ -203,25 +232,16 @@ export default function WorkflowsSettingsPage() {
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2">
-                  {/* View and Edit buttons - always visible */}
+                  {/* Edit button */}
                   <button
-                    onClick={() => handleViewWorkflow(workflow.id)}
-                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-                    title="View workflow"
+                    onClick={() => handleEditWorkflow(workflow.id)}
+                    className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
+                    title="Edit workflow"
                   >
-                    <Eye className="w-4 h-4 mx-auto" />
+                    <Edit className="w-4 h-4 mx-auto" />
                   </button>
-                  {workflow.status !== 'ARCHIVED' && (
-                    <button
-                      onClick={() => handleEditWorkflow(workflow.id)}
-                      className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                      title="Edit workflow"
-                    >
-                      <Edit className="w-4 h-4 mx-auto" />
-                    </button>
-                  )}
 
-                  {/* Status-based actions */}
+                  {/* Set as default button */}
                   {!workflow.is_default && workflow.status === 'ACTIVE' && (
                     <button
                       onClick={() => handleSetDefault(workflow.id)}
@@ -231,33 +251,15 @@ export default function WorkflowsSettingsPage() {
                       <Star className="w-4 h-4 mx-auto" />
                     </button>
                   )}
-                  {workflow.status === 'ACTIVE' && (
-                    <button
-                      onClick={() => handleDeactivate(workflow.id)}
-                      className="flex-1 px-3 py-2 text-sm bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                      title="Deactivate"
-                    >
-                      Deactivate
-                    </button>
-                  )}
-                  {workflow.status === 'INACTIVE' && (
-                    <button
-                      onClick={() => handleArchive(workflow.id)}
-                      className="flex-1 px-3 py-2 text-sm bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
-                      title="Archive"
-                    >
-                      <Archive className="w-4 h-4 mx-auto" />
-                    </button>
-                  )}
-                  {workflow.status === 'ARCHIVED' && (
-                    <button
-                      onClick={() => handleDelete(workflow.id)}
-                      className="flex-1 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4 mx-auto" />
-                    </button>
-                  )}
+
+                  {/* Delete button */}
+                  <button
+                    onClick={() => handleDelete(workflow.id)}
+                    className="flex-1 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4 mx-auto" />
+                  </button>
                 </div>
               </div>
 

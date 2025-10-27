@@ -157,6 +157,7 @@ from src.company_workflow.application.commands.update_workflow_command import Up
 from src.company_workflow.application.commands.activate_workflow_command import ActivateWorkflowCommandHandler
 from src.company_workflow.application.commands.deactivate_workflow_command import DeactivateWorkflowCommandHandler
 from src.company_workflow.application.commands.archive_workflow_command import ArchiveWorkflowCommandHandler
+from src.company_workflow.application.commands.delete_workflow_command import DeleteWorkflowCommandHandler
 from src.company_workflow.application.commands.set_as_default_workflow_command import SetAsDefaultWorkflowCommandHandler
 from src.company_workflow.application.commands.unset_as_default_workflow_command import UnsetAsDefaultWorkflowCommandHandler
 from src.company_workflow.application.commands.create_stage_command import CreateStageCommandHandler
@@ -1171,6 +1172,11 @@ class Container(containers.DeclarativeContainer):
 
     archive_workflow_command_handler = providers.Factory(
         ArchiveWorkflowCommandHandler,
+        repository=company_workflow_repository
+    )
+
+    delete_workflow_command_handler = providers.Factory(
+        DeleteWorkflowCommandHandler,
         repository=company_workflow_repository
     )
 

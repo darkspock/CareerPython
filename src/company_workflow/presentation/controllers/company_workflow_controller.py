@@ -12,6 +12,7 @@ from src.company_workflow.application.commands.update_workflow_command import Up
 from src.company_workflow.application.commands.activate_workflow_command import ActivateWorkflowCommand
 from src.company_workflow.application.commands.deactivate_workflow_command import DeactivateWorkflowCommand
 from src.company_workflow.application.commands.archive_workflow_command import ArchiveWorkflowCommand
+from src.company_workflow.application.commands.delete_workflow_command import DeleteWorkflowCommand
 from src.company_workflow.application.commands.set_as_default_workflow_command import SetAsDefaultWorkflowCommand
 from src.company_workflow.application.commands.unset_as_default_workflow_command import UnsetAsDefaultWorkflowCommand
 from src.company_workflow.application.queries.get_workflow_by_id import GetWorkflowByIdQuery
@@ -218,3 +219,8 @@ class CompanyWorkflowController:
             raise Exception("Workflow not found after unsetting as default")
 
         return CompanyWorkflowResponseMapper.dto_to_response(dto)
+
+    def delete_workflow(self, workflow_id: str) -> None:
+        """Delete a workflow permanently"""
+        command = DeleteWorkflowCommand(workflow_id=CompanyWorkflowId.from_string(workflow_id))
+        self._command_bus.dispatch(command)

@@ -12,7 +12,7 @@ from src.phase.presentation.schemas.phase_schemas import (
     PhaseResponse
 )
 
-router = APIRouter(prefix="/companies/{company_id}/phases", tags=["phases"])
+router = APIRouter(prefix="/api/companies/{company_id}/phases", tags=["phases"])
 
 
 @router.post(

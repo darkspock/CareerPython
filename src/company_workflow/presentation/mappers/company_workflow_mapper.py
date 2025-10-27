@@ -11,6 +11,7 @@ class CompanyWorkflowResponseMapper:
         return CompanyWorkflowResponse(
             id=dto.id,
             company_id=dto.company_id,
+            phase_id=dto.phase_id,
             name=dto.name,
             description=dto.description,
             status=dto.status,

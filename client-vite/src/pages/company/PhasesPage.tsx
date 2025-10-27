@@ -328,6 +328,27 @@ export default function PhasesPage() {
     loadPhases();
   };
 
+  const handleInitializeDefaults = async () => {
+    if (!confirm('This will create 4 default phases with their workflows:\n\n1. Sourcing (Kanban) - Screening process\n2. Evaluation (Kanban) - Interview process\n3. Offer and Pre-Onboarding (List) - Offer negotiation\n4. Talent Pool (List) - Long-term tracking\n\nContinue?')) {
+      return;
+    }
+
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) {
+        alert('Company ID not found');
+        return;
+      }
+
+      setLoading(true);
+      await phaseService.initializeDefaultPhases(companyId);
+      loadPhases();
+    } catch (err: any) {
+      alert('Failed to initialize default phases: ' + err.message);
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -376,16 +397,25 @@ export default function PhasesPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Layers className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No phases yet</h3>
-          <p className="text-gray-600 mb-4">
-            Create your first phase to organize your recruitment workflow
+          <p className="text-gray-600 mb-6">
+            Get started quickly with our default phases or create your own custom phase
           </p>
-          <button
-            onClick={handleCreatePhase}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Create Phase
-          </button>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={handleInitializeDefaults}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Layers className="w-5 h-5" />
+              Initialize Default Phases
+            </button>
+            <button
+              onClick={handleCreatePhase}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Create Custom Phase
+            </button>
+          </div>
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

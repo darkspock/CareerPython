@@ -198,3 +198,20 @@ def unset_as_default_workflow(
         return controller.unset_as_default_workflow(workflow_id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.delete(
+    "/{workflow_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a workflow"
+)
+@inject
+def delete_workflow(
+        workflow_id: str,
+        controller: CompanyWorkflowController = Depends(Provide[Container.company_workflow_controller])
+) -> None:
+    """Delete a workflow permanently"""
+    try:
+        controller.delete_workflow(workflow_id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

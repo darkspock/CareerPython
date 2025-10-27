@@ -113,16 +113,21 @@ export const companyWorkflowService = {
   },
 
   /**
-   * Delete workflow
+   * Delete workflow (archives it)
    */
   deleteWorkflow: async (workflowId: string): Promise<void> => {
-    return ApiClient.post(
-      `/api/company-workflows/${workflowId}/delete`,
-      {},
-      {
-        headers: getAuthHeaders(),
-      }
-    );
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/company-workflows/${workflowId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to delete workflow');
+    }
+
+    // DELETE returns 204 No Content, so no need to parse response
+    return;
   },
 
   // ===== Stage Management =====
