@@ -33,3 +33,8 @@ class CompanyWorkflowRepositoryInterface(ABC):
     def delete(self, workflow_id: CompanyWorkflowId) -> None:
         """Delete a workflow"""
         pass
+
+    @abstractmethod
+    def list_by_phase_id(self, phase_id: str) -> List[CompanyWorkflow]:
+        """List all workflows for a phase - Phase 12"""
+        pass

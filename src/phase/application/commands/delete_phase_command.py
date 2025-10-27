@@ -3,15 +3,16 @@ from dataclasses import dataclass
 
 from src.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.phase.domain.value_objects.phase_id import PhaseId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
-class DeletePhaseCommand:
+class DeletePhaseCommand(Command):
     """Command to delete a phase"""
     phase_id: PhaseId
 
 
-class DeletePhaseCommandHandler:
+class DeletePhaseCommandHandler(CommandHandler[DeletePhaseCommand]):
     """Handler for DeletePhaseCommand"""
 
     def __init__(self, phase_repository: PhaseRepositoryInterface):

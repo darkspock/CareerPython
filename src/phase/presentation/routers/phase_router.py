@@ -161,3 +161,37 @@ def delete_phase(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.post(
+    "/initialize",
+    response_model=List[PhaseResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Initialize default phases (reset)"
+)
+@inject
+def initialize_default_phases(
+    company_id: str,
+    controller: PhaseController = Depends(Provide[Container.phase_controller])
+) -> List[PhaseResponse]:
+    """Initialize default phases for a company (reset to defaults)
+
+    This will create 4 default phases with their workflows:
+    - Sourcing (Kanban) - Screening process
+    - Evaluation (Kanban) - Interview and assessment
+    - Offer and Pre-Onboarding (List) - Offer negotiation
+    - Talent Pool (List) - Long-term tracking
+
+    Args:
+        company_id: Company ID
+
+    Returns:
+        List of created phases
+
+    Raises:
+        HTTPException: If initialization fails
+    """
+    try:
+        return controller.initialize_default_phases(company_id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

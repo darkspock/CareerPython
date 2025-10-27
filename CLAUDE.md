@@ -103,6 +103,88 @@ src/
 - **Repository Pattern**: Data access abstraction
 - **Domain Events**: Business events published from entities
 
+### CQRS Implementation - MANDATORY INHERITANCE RULES
+
+**CRITICAL**: All Commands, Queries, and their Handlers MUST inherit from base classes. This is MANDATORY for the CommandBus and QueryBus to work correctly.
+
+#### Commands Must Inherit from Command Base Class
+
+**Location**: `src/shared/application/command_bus.py`
+
+```python
+from dataclasses import dataclass
+from src.shared.application.command_bus import Command, CommandHandler
+
+@dataclass
+class CreatePhaseCommand(Command):  # MUST inherit from Command
+    """Command to create a new phase"""
+    company_id: CompanyId
+    name: str
+    # ... other fields
+
+class CreatePhaseCommandHandler(CommandHandler[CreatePhaseCommand]):  # MUST inherit from CommandHandler with generic type
+    """Handler for CreatePhaseCommand"""
+
+    def __init__(self, repository: PhaseRepositoryInterface):
+        self.repository = repository
+
+    def execute(self, command: CreatePhaseCommand) -> None:  # Commands MUST NOT return values
+        # Implementation
+        pass
+```
+
+**Rules**:
+- ALL Commands MUST inherit from `Command` base class
+- ALL CommandHandlers MUST inherit from `CommandHandler[TCommand]` with the specific command type as generic parameter
+- CommandHandler's `execute` method MUST return `None` (no return value)
+- Commands are used for write operations and side effects
+
+#### Queries Must Inherit from Query Base Class
+
+**Location**: `src/shared/application/query_bus.py`
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+from src.shared.application.query_bus import Query, QueryHandler
+
+@dataclass
+class GetPhaseByIdQuery(Query):  # MUST inherit from Query
+    """Query to get a phase by ID"""
+    phase_id: PhaseId
+
+class GetPhaseByIdQueryHandler(QueryHandler[GetPhaseByIdQuery, Optional[PhaseDto]]):  # MUST inherit from QueryHandler with query type and return type
+    """Handler for GetPhaseByIdQuery"""
+
+    def __init__(self, repository: PhaseRepositoryInterface):
+        self.repository = repository
+
+    def handle(self, query: GetPhaseByIdQuery) -> Optional[PhaseDto]:  # Queries MUST return DTOs
+        # Implementation
+        return dto
+```
+
+**Rules**:
+- ALL Queries MUST inherit from `Query` base class
+- ALL QueryHandlers MUST inherit from `QueryHandler[TQuery, TResult]` with the specific query type and return type as generic parameters
+- QueryHandler's `handle` method MUST return a DTO (or List[DTO], Optional[DTO], etc.)
+- Queries are used for read operations only
+
+#### Why This is Mandatory
+
+The `CommandBus` and `QueryBus` use automatic handler discovery by convention:
+1. They look up handlers by name: `{CommandName}Handler` or `{QueryName}Handler`
+2. They rely on type checking to ensure correct handler types
+3. Without proper inheritance, the buses cannot find or invoke handlers correctly
+
+**Common Mistakes to Avoid**:
+- ❌ `class CreatePhaseCommand:` - Missing `(Command)` inheritance
+- ❌ `class CreatePhaseCommandHandler:` - Missing `(CommandHandler[CreatePhaseCommand])` inheritance
+- ❌ `class GetPhaseQuery:` - Missing `(Query)` inheritance
+- ❌ `class GetPhaseQueryHandler:` - Missing `(QueryHandler[GetPhaseQuery, PhaseDto])` inheritance
+- ❌ `def execute(self, command) -> PhaseDto:` - Commands must NOT return values
+- ❌ `def handle(self, query) -> Phase:` - Queries must return DTOs, NOT entities
+
 ## DDD Layer Communication - MANDATORY PATTERNS
 
 **CRITICAL**: These patterns are MANDATORY and must NEVER be changed. Follow them exactly as specified.

@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from core.container import Container
 from src.company_workflow.presentation.controllers.company_workflow_controller import CompanyWorkflowController
@@ -62,6 +62,38 @@ def list_workflows_by_company(
 ) -> List[CompanyWorkflowResponse]:
     """List all workflows for a company"""
     return controller.list_workflows_by_company(company_id)
+
+
+@router.get(
+    "/",
+    response_model=List[CompanyWorkflowResponse],
+    summary="List workflows with filters"
+)
+@inject
+def list_workflows(
+        phase_id: Optional[str] = Query(None, description="Filter by phase ID"),
+        workflow_status: Optional[str] = Query(None, description="Filter by status (active, draft, archived)"),
+        controller: CompanyWorkflowController = Depends(Provide[Container.company_workflow_controller])
+) -> List[CompanyWorkflowResponse]:
+    """List workflows filtered by phase_id and/or status
+
+    Args:
+        phase_id: Optional phase ID to filter workflows
+        workflow_status: Optional status to filter workflows (active, draft, archived)
+
+    Returns:
+        List of workflows matching the filters
+    """
+    if not phase_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="phase_id query parameter is required"
+        )
+
+    try:
+        return controller.list_workflows_by_phase(phase_id, workflow_status)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.put(

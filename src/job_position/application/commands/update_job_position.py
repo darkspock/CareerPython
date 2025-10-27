@@ -18,6 +18,7 @@ from src.shared.domain.enums.job_category import JobCategoryEnum
 class UpdateJobPositionCommand(Command):
     id: JobPositionId
     workflow_id: Optional[str] = None
+    phase_workflows: Optional[Dict[str, str]] = None
     title: str = ""
     description: Optional[str] = None
     location: Optional[str] = None
@@ -57,6 +58,7 @@ class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
 
         job_position.update_details(
             workflow_id=command.workflow_id,
+            phase_workflows=command.phase_workflows,
             title=command.title,
             description=command.description,
             location=command.location,

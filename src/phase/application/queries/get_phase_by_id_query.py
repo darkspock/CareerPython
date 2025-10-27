@@ -3,9 +3,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from src.phase.domain.entities.phase import Phase
 from src.phase.domain.enums.default_view_enum import DefaultView
 from src.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.phase.domain.value_objects.phase_id import PhaseId
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass
@@ -21,7 +23,7 @@ class PhaseDto:
     updated_at: datetime
 
     @staticmethod
-    def from_entity(phase) -> "PhaseDto":
+    def from_entity(phase: Phase) -> "PhaseDto":
         """Create DTO from Phase entity"""
         return PhaseDto(
             id=phase.id.value,
@@ -36,12 +38,12 @@ class PhaseDto:
 
 
 @dataclass
-class GetPhaseByIdQuery:
+class GetPhaseByIdQuery(Query):
     """Query to get a phase by ID"""
     phase_id: PhaseId
 
 
-class GetPhaseByIdQueryHandler:
+class GetPhaseByIdQueryHandler(QueryHandler[GetPhaseByIdQuery, Optional[PhaseDto]]):
     """Handler for GetPhaseByIdQuery"""
 
     def __init__(self, phase_repository: PhaseRepositoryInterface):

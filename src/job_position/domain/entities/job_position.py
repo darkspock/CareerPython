@@ -310,7 +310,9 @@ class JobPosition:
             application_deadline: Optional[date] = None,
             application_url: Optional[str] = None,
             application_email: Optional[str] = None,
-            skills: Optional[List[str]] = None
+            skills: Optional[List[str]] = None,
+            is_public: bool = False,
+            public_slug: Optional[str] = None,
     ) -> 'JobPosition':
         """Create a new job position"""
         now = datetime.utcnow()
@@ -348,7 +350,9 @@ class JobPosition:
             application_url=application_url,
             application_email=application_email,
             created_at=now,
-            updated_at=now
+            updated_at=now,
+            is_public=is_public,
+            public_slug=public_slug
         )
 
     @classmethod
@@ -386,7 +390,9 @@ class JobPosition:
             application_url: Optional[str],
             application_email: Optional[str],
             created_at: datetime,
-            updated_at: datetime
+            updated_at: datetime,
+            is_public: bool,
+            public_slug: Optional[str]
     ) -> 'JobPosition':
         """Create JobPosition from repository data - only for repositories to use"""
         return cls(
@@ -422,5 +428,7 @@ class JobPosition:
             application_url=application_url,
             application_email=application_email,
             created_at=created_at,
-            updated_at=updated_at
+            updated_at=updated_at,
+            is_public=is_public,
+            public_slug=public_slug
         )

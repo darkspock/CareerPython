@@ -238,6 +238,20 @@ export default function CreatePositionPage() {
               </label>
             </div>
 
+            {/* Phase 10: Public Position Toggle */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="is_public"
+                checked={formData.is_public || false}
+                onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="is_public" className="text-sm font-medium text-gray-700">
+                Public Position (visible on job board)
+              </label>
+            </div>
+
             {/* Phase 12.8: Phase-Workflow Configuration */}
             <div className="md:col-span-2">
               <PhaseWorkflowSelector

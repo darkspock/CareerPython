@@ -16,6 +16,7 @@ from src.company_workflow.application.commands.set_as_default_workflow_command i
 from src.company_workflow.application.commands.unset_as_default_workflow_command import UnsetAsDefaultWorkflowCommand
 from src.company_workflow.application.queries.get_workflow_by_id import GetWorkflowByIdQuery
 from src.company_workflow.application.queries.list_workflows_by_company import ListWorkflowsByCompanyQuery
+from src.company_workflow.application.queries.list_workflows_by_phase import ListWorkflowsByPhaseQuery
 from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQuery
 from src.company_workflow.presentation.schemas.create_workflow_request import CreateWorkflowRequest
 from src.company_workflow.presentation.schemas.update_workflow_request import UpdateWorkflowRequest
@@ -114,6 +115,21 @@ class CompanyWorkflowController:
             responses.append(response)
 
         return responses
+
+    def list_workflows_by_phase(self, phase_id: str, status: Optional[str] = None) -> List[CompanyWorkflowResponse]:
+        """List workflows filtered by phase and optionally by status
+
+        Args:
+            phase_id: Phase ID to filter workflows
+            status: Optional status filter (active, draft, archived)
+
+        Returns:
+            List of workflow responses (simplified, without enrichment)
+        """
+        query = ListWorkflowsByPhaseQuery(phase_id=phase_id, status=status)
+        dtos: List[CompanyWorkflowDto] = self._query_bus.query(query)
+
+        return [CompanyWorkflowResponseMapper.dto_to_response(dto) for dto in dtos]
 
     def update_workflow(self, workflow_id: str, request: UpdateWorkflowRequest) -> CompanyWorkflowResponse:
         """Update workflow information"""

@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 from src.job_position.domain.enums import JobPositionStatusEnum
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
-from src.shared.application.query_bus import Query
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass
@@ -11,7 +11,7 @@ class GetJobPositionsStatsQuery(Query):
     pass
 
 
-class GetJobPositionsStatsQueryHandler:
+class GetJobPositionsStatsQueryHandler(QueryHandler[GetJobPositionsStatsQuery, Dict[str, Any]]):
     def __init__(self, job_position_repository: JobPositionRepositoryInterface):
         self.job_position_repository = job_position_repository
 

@@ -4,7 +4,7 @@ from typing import Optional
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
-from src.shared.application.command_bus import Command
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -14,7 +14,7 @@ class SuspendCompanyCommand(Command):
     reason: Optional[str] = None
 
 
-class SuspendCompanyCommandHandler:
+class SuspendCompanyCommandHandler(CommandHandler[SuspendCompanyCommand]):
     """Handler for suspending a company"""
 
     def __init__(self, repository: CompanyRepositoryInterface):

@@ -8,7 +8,7 @@ from typing import Optional, List
 from src.job_position.application.queries.job_position_dto import JobPositionDto
 from src.job_position.domain.enums import JobPositionStatusEnum, WorkLocationTypeEnum, ContractTypeEnum
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
-from src.shared.application.query_bus import Query
+from src.shared.application.query_bus import Query, QueryHandler
 from src.shared.domain.enums.job_category import JobCategoryEnum
 
 
@@ -27,19 +27,19 @@ class ListPublicJobPositionsQuery(Query):
     offset: int = 0
 
 
-class ListPublicJobPositionsQueryHandler:
+class ListPublicJobPositionsQueryHandler(QueryHandler[ListPublicJobPositionsQuery, List[JobPositionDto]]):
     def __init__(self, job_position_repository: JobPositionRepositoryInterface):
         self.job_position_repository = job_position_repository
 
     def handle(self, query: ListPublicJobPositionsQuery) -> List[JobPositionDto]:
         """
         Handle query for public job positions
-        Only returns positions where is_public=True and status=ACTIVE
+        Only returns positions where is_public=True and status=OPEN
         """
-        # Filter for public and active positions only
+        # Filter for public and open positions only
         job_positions = self.job_position_repository.find_by_filters(
             company_id=None,  # No company filter - show all companies
-            status=JobPositionStatusEnum.ACTIVE,  # Only active positions
+            status=JobPositionStatusEnum.OPEN,  # Only open positions
             job_category=query.job_category,
             work_location_type=query.work_location_type,
             contract_type=query.contract_type,

@@ -13,8 +13,6 @@ import {
   Briefcase,
   Building2,
   Home,
-  AlertCircle,
-  CheckCircle,
   Send
 } from 'lucide-react';
 import { publicPositionService } from '../../services/publicPositionService';
@@ -26,13 +24,6 @@ export default function PublicPositionDetailPage() {
   const [position, setPosition] = useState<Position | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showApplicationForm, setShowApplicationForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [applicationSuccess, setApplicationSuccess] = useState(false);
-  const [applicationData, setApplicationData] = useState({
-    cover_letter: '',
-    referral_source: ''
-  });
 
   useEffect(() => {
     if (slugOrId) {
@@ -56,21 +47,10 @@ export default function PublicPositionDetailPage() {
     }
   };
 
-  const handleSubmitApplication = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!slugOrId) return;
-
-    try {
-      setSubmitting(true);
-      setError(null);
-      await publicPositionService.submitApplication(slugOrId, applicationData);
-      setApplicationSuccess(true);
-      setShowApplicationForm(false);
-    } catch (err: any) {
-      setError(err.message || 'Failed to submit application');
-      console.error('Error submitting application:', err);
-    } finally {
-      setSubmitting(false);
+  const handleApply = () => {
+    // Phase 10: Redirect to landing page with job position ID for full onboarding flow
+    if (position?.id) {
+      navigate(`/?jobPositionId=${position.id}`);
     }
   };
 
@@ -252,100 +232,25 @@ export default function PublicPositionDetailPage() {
                 </div>
               )}
 
-              {/* Application Form */}
-              {!applicationSuccess && (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  {!showApplicationForm ? (
-                    <>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Apply for this Position</h3>
-                      <p className="text-gray-600 text-sm mb-6">
-                        Ready to take the next step in your career? Click below to submit your application.
-                      </p>
-                      <button
-                        onClick={() => setShowApplicationForm(true)}
-                        className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center gap-2"
-                      >
-                        <Send className="w-5 h-5" />
-                        Apply Now
-                      </button>
-                    </>
-                  ) : (
-                    <form onSubmit={handleSubmitApplication}>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Form</h3>
-
-                      {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                          <p className="text-red-800 text-sm">{error}</p>
-                        </div>
-                      )}
-
-                      <div className="space-y-4">
-                        {/* Cover Letter */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Cover Letter (Optional)
-                          </label>
-                          <textarea
-                            value={applicationData.cover_letter}
-                            onChange={(e) => setApplicationData({ ...applicationData, cover_letter: e.target.value })}
-                            rows={6}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Tell us why you're a great fit for this position..."
-                          />
-                        </div>
-
-                        {/* Referral Source */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            How did you hear about us? (Optional)
-                          </label>
-                          <input
-                            type="text"
-                            value={applicationData.referral_source}
-                            onChange={(e) => setApplicationData({ ...applicationData, referral_source: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="e.g. LinkedIn, Friend referral, Job board"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="mt-6 flex gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setShowApplicationForm(false)}
-                          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={submitting}
-                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                          {submitting ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              Submitting...
-                            </>
-                          ) : (
-                            <>
-                              <Send className="w-4 h-4" />
-                              Submit
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </form>
-                  )}
-                </div>
-              )}
+              {/* Application Section */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Apply for this Position</h3>
+                <p className="text-gray-600 text-sm mb-6">
+                  Ready to take the next step in your career? Start your application process and we'll guide you through creating your profile.
+                </p>
+                <button
+                  onClick={handleApply}
+                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  Start Application
+                </button>
+              </div>
 
               {/* Info Box */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> You need to be logged in as a candidate to submit an application.
-                  If you don't have an account, you'll be prompted to create one.
+                  <strong>What's next?</strong> You'll be guided through a simple onboarding process where you can upload your resume and complete your profile.
                 </p>
               </div>
             </div>

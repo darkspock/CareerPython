@@ -41,6 +41,7 @@ export default function EditPositionPage() {
     reports_to: '',
     number_of_openings: 1,
     job_category: 'other',
+    is_public: false,  // Phase 10: Public job board
   });
 
   const [companyId, setCompanyId] = useState<string>('');
@@ -95,6 +96,7 @@ export default function EditPositionPage() {
         reports_to: position.reports_to,
         number_of_openings: position.number_of_openings,
         job_category: position.job_category,
+        is_public: position.is_public || false,  // Phase 10: Public job board
       });
 
       setCompanyId(position.company_id);
@@ -328,6 +330,20 @@ export default function EditPositionPage() {
               />
               <label htmlFor="is_remote" className="text-sm font-medium text-gray-700">
                 Remote Position
+              </label>
+            </div>
+
+            {/* Phase 10: Public Position Toggle */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="is_public"
+                checked={formData.is_public || false}
+                onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="is_public" className="text-sm font-medium text-gray-700">
+                Public Position (visible on job board)
               </label>
             </div>
 

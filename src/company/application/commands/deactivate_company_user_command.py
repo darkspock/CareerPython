@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.domain.value_objects import CompanyUserId
-from src.shared.application.command_bus import Command
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -12,7 +12,7 @@ class DeactivateCompanyUserCommand(Command):
     id: CompanyUserId
 
 
-class DeactivateCompanyUserCommandHandler:
+class DeactivateCompanyUserCommandHandler(CommandHandler[DeactivateCompanyUserCommand]):
     """Handler for deactivating a company user"""
 
     def __init__(self, repository: CompanyUserRepositoryInterface):

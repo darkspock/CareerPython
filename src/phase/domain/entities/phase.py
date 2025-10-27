@@ -22,6 +22,7 @@ class Phase:
 
     @staticmethod
     def create(
+        id: PhaseId,
         company_id: CompanyId,
         name: str,
         sort_order: int,
@@ -38,7 +39,7 @@ class Phase:
         now = datetime.utcnow()
 
         return Phase(
-            id=PhaseId.generate(),
+            id=id,
             company_id=company_id,
             name=name.strip(),
             sort_order=sort_order,

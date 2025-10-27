@@ -5,15 +5,16 @@ from typing import List
 from src.company.domain.value_objects.company_id import CompanyId
 from src.phase.application.queries.get_phase_by_id_query import PhaseDto
 from src.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass
-class ListPhasesByCompanyQuery:
+class ListPhasesByCompanyQuery(Query):
     """Query to list all phases for a company"""
     company_id: CompanyId
 
 
-class ListPhasesByCompanyQueryHandler:
+class ListPhasesByCompanyQueryHandler(QueryHandler[ListPhasesByCompanyQuery, List[PhaseDto]]):
     """Handler for ListPhasesByCompanyQuery"""
 
     def __init__(self, phase_repository: PhaseRepositoryInterface):

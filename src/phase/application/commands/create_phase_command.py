@@ -6,10 +6,11 @@ from src.phase.domain.entities.phase import Phase
 from src.phase.domain.enums.default_view_enum import DefaultView
 from src.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.phase.domain.value_objects.phase_id import PhaseId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
-class CreatePhaseCommand:
+class CreatePhaseCommand(Command):
     """Command to create a new phase"""
     company_id: CompanyId
     name: str
@@ -18,7 +19,7 @@ class CreatePhaseCommand:
     objective: str | None = None
 
 
-class CreatePhaseCommandHandler:
+class CreatePhaseCommandHandler(CommandHandler[CreatePhaseCommand]):
     """Handler for CreatePhaseCommand"""
 
     def __init__(self, phase_repository: PhaseRepositoryInterface):

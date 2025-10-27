@@ -14,7 +14,7 @@ export default function CompanyDashboardPage() {
       <div className="max-w-7xl mx-auto">
         {/* Welcome Message */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg p-8 mb-8 text-white">
-          <h2 className="text-3xl font-bold mb-2">Welcome to Your Company Dashboard</h2>
+          <h2 className="text-3xl font-bold mb-2">Company Recruitment Dashboard</h2>
           <p className="text-blue-100">Manage your recruitment process efficiently</p>
         </div>
 

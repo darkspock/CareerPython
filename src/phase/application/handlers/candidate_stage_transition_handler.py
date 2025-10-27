@@ -15,6 +15,7 @@ from src.company_workflow.domain.infrastructure.company_workflow_repository_inte
     CompanyWorkflowRepositoryInterface
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.domain.enums.stage_type import StageType
+from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
 
 
 class CandidateStageTransitionHandler:
@@ -89,7 +90,7 @@ class CandidateStageTransitionHandler:
         # Save the updated application
         self.application_repository.save(application)
 
-    def _get_phase_initial_stage(self, phase_id: str) -> Optional[any]:
+    def _get_phase_initial_stage(self, phase_id: str) -> Optional[WorkflowStage]:
         """Get the initial stage of the default workflow for a phase
 
         Args:
@@ -98,11 +99,30 @@ class CandidateStageTransitionHandler:
         Returns:
             The initial stage of the default workflow, or None if not found
         """
-        # Find workflows for this phase
-        # Note: We need a method to list workflows by phase_id
-        # For now, this is a placeholder that needs to be implemented
-        # when we add list_by_phase method to workflow repository
+        # Find active workflows for this phase
+        workflows = self.workflow_repository.list_by_phase_id(phase_id)
 
-        # TODO: Implement this when we add list_by_phase_id to workflow repository
-        # For now, return None
-        return None
+        if not workflows:
+            return None
+
+        # Get the first workflow (they're ordered by status=ACTIVE)
+        workflow = workflows[0]
+
+        # Get all stages for this workflow
+        stages = self.stage_repository.list_by_workflow(workflow.id)
+
+        if not stages:
+            return None
+
+        # Find the initial stage (stage with order=1 or first stage)
+        initial_stage = None
+        for stage in stages:
+            if stage.order == 1:
+                initial_stage = stage
+                break
+
+        # If no stage with order=1, use the first stage
+        if not initial_stage and stages:
+            initial_stage = stages[0]
+
+        return initial_stage

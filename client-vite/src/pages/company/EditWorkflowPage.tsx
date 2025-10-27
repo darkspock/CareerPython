@@ -7,7 +7,7 @@ import { api } from '../../lib/api';
 import type { CompanyWorkflow, WorkflowStage, CustomField, FieldConfiguration, StageType } from '../../types/workflow';
 import type { CompanyRole } from '../../types/company';
 import type { Phase } from '../../types/phase';
-import { CustomFieldEditor, FieldVisibilityMatrix, ValidationRuleEditor } from '../../components/workflow';
+import { CustomFieldEditor, FieldVisibilityMatrix, ValidationRuleEditor, PhaseTransitionIndicator } from '../../components/workflow';
 
 interface StageFormData {
   id?: string;
@@ -550,6 +550,19 @@ export default function EditWorkflowPage() {
                       <p className="mt-1 text-xs text-gray-500">
                         Automatically move candidate to this phase when reaching this stage
                       </p>
+
+                      {/* Phase Transition Visual Indicator */}
+                      {stage.next_phase_id && getCompanyId() && (
+                        <PhaseTransitionIndicator
+                          stage={{
+                            ...stage,
+                            workflow_id: workflowId || '',
+                            stage_type: stage.stage_type.toUpperCase() as StageType,
+                          } as WorkflowStage}
+                          companyId={getCompanyId()!}
+                          currentPhaseId={phaseId}
+                        />
+                      )}
                     </div>
                   )}
 

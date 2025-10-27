@@ -5,6 +5,10 @@ from src.company.domain.value_objects.company_id import CompanyId
 from src.phase.application.commands.create_phase_command import CreatePhaseCommand, CreatePhaseCommandHandler
 from src.phase.application.commands.delete_phase_command import DeletePhaseCommand, DeletePhaseCommandHandler
 from src.phase.application.commands.update_phase_command import UpdatePhaseCommand, UpdatePhaseCommandHandler
+from src.phase.application.commands.initialize_company_phases_command import (
+    InitializeCompanyPhasesCommand,
+    InitializeCompanyPhasesCommandHandler
+)
 from src.phase.application.queries.get_phase_by_id_query import GetPhaseByIdQuery, GetPhaseByIdQueryHandler
 from src.phase.application.queries.list_phases_by_company_query import (
     ListPhasesByCompanyQuery,
@@ -28,13 +32,15 @@ class PhaseController:
         update_handler: UpdatePhaseCommandHandler,
         delete_handler: DeletePhaseCommandHandler,
         get_by_id_handler: GetPhaseByIdQueryHandler,
-        list_by_company_handler: ListPhasesByCompanyQueryHandler
+        list_by_company_handler: ListPhasesByCompanyQueryHandler,
+        initialize_handler: InitializeCompanyPhasesCommandHandler
     ):
         self.create_handler = create_handler
         self.update_handler = update_handler
         self.delete_handler = delete_handler
         self.get_by_id_handler = get_by_id_handler
         self.list_by_company_handler = list_by_company_handler
+        self.initialize_handler = initialize_handler
 
     def create_phase(self, company_id: str, request: CreatePhaseRequest) -> PhaseResponse:
         """Create a new phase
@@ -144,3 +150,27 @@ class PhaseController:
         phase_dtos = self.list_by_company_handler.handle(query)
 
         return [PhaseMapper.dto_to_response(dto) for dto in phase_dtos]
+
+    def initialize_default_phases(self, company_id: str) -> List[PhaseResponse]:
+        """Initialize default phases for a company (reset to defaults)
+
+        This will create 4 default phases with their workflows:
+        - Sourcing (Kanban) - Screening process
+        - Evaluation (Kanban) - Interview and assessment
+        - Offer and Pre-Onboarding (List) - Offer negotiation
+        - Talent Pool (List) - Long-term tracking
+
+        Args:
+            company_id: Company ID
+
+        Returns:
+            List of created phase responses
+        """
+        # Execute initialization command
+        command = InitializeCompanyPhasesCommand(
+            company_id=CompanyId.from_string(company_id)
+        )
+        self.initialize_handler.execute(command)
+
+        # Return the created phases
+        return self.list_phases_by_company(company_id)

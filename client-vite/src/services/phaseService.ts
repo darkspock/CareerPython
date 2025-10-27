@@ -3,32 +3,29 @@
  * Phase 12: API service for managing phases
  */
 
-import api from '@/lib/api';
-import type { Phase, CreatePhaseRequest, UpdatePhaseRequest } from '@/types/phase';
+import { ApiClient } from '../lib/api';
+import type { Phase, CreatePhaseRequest, UpdatePhaseRequest } from '../types/phase';
 
 export const phaseService = {
   /**
    * Get all phases for a company
    */
   async listPhases(companyId: string): Promise<Phase[]> {
-    const response = await api.get(`/companies/${companyId}/phases`);
-    return response.data;
+    return ApiClient.get<Phase[]>(`/companies/${companyId}/phases`);
   },
 
   /**
    * Get a phase by ID
    */
   async getPhase(companyId: string, phaseId: string): Promise<Phase> {
-    const response = await api.get(`/companies/${companyId}/phases/${phaseId}`);
-    return response.data;
+    return ApiClient.get<Phase>(`/companies/${companyId}/phases/${phaseId}`);
   },
 
   /**
    * Create a new phase
    */
   async createPhase(companyId: string, data: CreatePhaseRequest): Promise<Phase> {
-    const response = await api.post(`/companies/${companyId}/phases`, data);
-    return response.data;
+    return ApiClient.post<Phase>(`/companies/${companyId}/phases`, data);
   },
 
   /**
@@ -39,14 +36,25 @@ export const phaseService = {
     phaseId: string,
     data: UpdatePhaseRequest
   ): Promise<Phase> {
-    const response = await api.put(`/companies/${companyId}/phases/${phaseId}`, data);
-    return response.data;
+    return ApiClient.put<Phase>(`/companies/${companyId}/phases/${phaseId}`, data);
   },
 
   /**
    * Delete a phase
    */
   async deletePhase(companyId: string, phaseId: string): Promise<void> {
-    await api.delete(`/companies/${companyId}/phases/${phaseId}`);
+    return ApiClient.delete<void>(`/companies/${companyId}/phases/${phaseId}`);
+  },
+
+  /**
+   * Initialize default phases (reset configuration)
+   * Creates 4 default phases with their workflows:
+   * - Sourcing (Kanban)
+   * - Evaluation (Kanban)
+   * - Offer and Pre-Onboarding (List)
+   * - Talent Pool (List)
+   */
+  async initializeDefaultPhases(companyId: string): Promise<Phase[]> {
+    return ApiClient.post<Phase[]>(`/companies/${companyId}/phases/initialize`);
   },
 };

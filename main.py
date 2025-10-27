@@ -33,6 +33,8 @@ from adapters.http.shared.routes.user_router import user_router
 from adapters.http.shared.routes.ai_test_router import router as ai_test_router
 # Phase 10: Public Position Router
 from src.job_position.presentation.routers.public_position_router import router as public_position_router
+# Phase 12: Phase Router
+from src.phase.presentation.routers.phase_router import router as phase_router
 
 # Crear tablas - COMENTADO temporalmente para aislamiento
 # Base.metadata.create_all(bind=engine)
@@ -82,6 +84,7 @@ app.include_router(workflow_stage_router)  # Workflow stage management
 app.include_router(custom_field_router)  # Custom field management
 app.include_router(validation_rule_router)  # Field validation rules
 app.include_router(position_stage_assignment_router)  # Position stage assignment management
+app.include_router(phase_router)  # Phase 12: Phase management
 app.include_router(candidate_router)
 app.include_router(user_router)
 app.include_router(ai_test_router)  # Direct AI testing
@@ -130,5 +133,6 @@ container.wire(modules=[
     "src.position_stage_assignment.presentation.routers.position_stage_assignment_router",
     "src.workflow_analytics.presentation.routers.workflow_analytics_router",
     "src.job_position.presentation.routers.public_position_router",  # Phase 10: Public position endpoints
+    "src.phase.presentation.routers.phase_router",  # Phase 12: Phase management
     "adapters.http.shared.routes.user_router",
 ])

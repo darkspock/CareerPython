@@ -1,7 +1,49 @@
-import { Link } from 'react-router-dom';
-import { Workflow, Users, Settings, Layers } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle } from 'lucide-react';
+import { phaseService } from '../../services/phaseService';
 
 export default function CompanySettingsPage() {
+  const navigate = useNavigate();
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const getCompanyId = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.company_id;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleResetConfiguration = async () => {
+    const companyId = getCompanyId();
+    if (!companyId) {
+      alert('Company ID not found');
+      return;
+    }
+
+    try {
+      setResetting(true);
+      const result = await phaseService.initializeDefaultPhases(companyId);
+      setShowResetModal(false);
+
+      if (result && result.length > 0) {
+        alert('Configuration initialized successfully! 4 default phases have been created.');
+        navigate('/company/settings/phases');
+      } else {
+        alert('Phases already exist for this company. To reset, please delete existing phases first from the Phase Management page.');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Unknown error occurred';
+      alert('Failed to initialize configuration: ' + errorMessage);
+    } finally {
+      setResetting(false);
+    }
+  };
   const settingsCards = [
     {
       title: 'Phase Management',
@@ -105,6 +147,105 @@ export default function CompanySettingsPage() {
           </Link>
         </div>
       </div>
+
+      {/* Initialize Configuration Section */}
+      <div className="mt-8 bg-blue-50 rounded-lg border border-blue-200 p-6">
+        <div className="flex items-start gap-3">
+          <RotateCcw className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-blue-900 mb-2">Initialize Default Phases</h2>
+            <p className="text-blue-800 text-sm mb-4">
+              Initialize your company's phase configuration with the default setup. This will create 4
+              standard phases (Sourcing, Evaluation, Offer & Pre-Onboarding, and Talent Pool) with
+              their default workflows. Only works if you don't have existing phases.
+            </p>
+            <button
+              onClick={() => setShowResetModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Initialize Default Phases
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Reset Confirmation Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Background overlay */}
+            <div
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+              onClick={() => !resetting && setShowResetModal(false)}
+            ></div>
+
+            {/* Modal panel */}
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-6 py-6">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                    <RotateCcw className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Initialize Default Phases?
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    This action will initialize 4 default phases with their workflows:
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-2 mb-4 ml-4">
+                    <li><strong>Sourcing</strong> (Kanban) - Screening and filtering process</li>
+                    <li><strong>Evaluation</strong> (Kanban) - Interview and assessment</li>
+                    <li><strong>Offer and Pre-Onboarding</strong> (List) - Offer negotiation and documents</li>
+                    <li><strong>Talent Pool</strong> (List) - Long-term candidate tracking</li>
+                  </ul>
+                  <p className="text-sm text-blue-700 font-medium">
+                    Note: This will only work if you don't have existing phases. If phases already exist,
+                    you'll need to delete them first from the Phase Management page.
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowResetModal(false)}
+                  disabled={resetting}
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetConfiguration}
+                  disabled={resetting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {resetting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Initializing...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="w-4 h-4" />
+                      Yes, Initialize Phases
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

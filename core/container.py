@@ -235,6 +235,25 @@ from src.job_position.infrastructure.repositories.job_position_repository import
 # Phase 10: Public Position Controller
 from src.job_position.presentation.controllers.public_position_controller import PublicPositionController
 
+# Phase 12: Phase Application Layer - Commands
+from src.phase.application.commands.create_phase_command import CreatePhaseCommandHandler
+from src.phase.application.commands.update_phase_command import UpdatePhaseCommandHandler
+from src.phase.application.commands.delete_phase_command import DeletePhaseCommandHandler
+from src.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommandHandler
+
+# Phase 12: Phase Application Layer - Queries
+from src.phase.application.queries.get_phase_by_id_query import GetPhaseByIdQueryHandler
+from src.phase.application.queries.list_phases_by_company_query import ListPhasesByCompanyQueryHandler
+
+# Phase 12: Phase Infrastructure
+from src.phase.infrastructure.repositories.phase_repository import PhaseRepository
+
+# Phase 12: Phase Presentation Controllers
+from src.phase.presentation.controllers.phase_controller import PhaseController
+
+# Phase 12: Phase Handlers
+from src.phase.application.handlers.candidate_stage_transition_handler import CandidateStageTransitionHandler
+
 # Position Stage Assignment Application Layer - Commands
 from src.position_stage_assignment.application import (
     AssignUsersToStageCommandHandler,
@@ -493,6 +512,12 @@ class Container(containers.DeclarativeContainer):
     # Position Stage Assignment Repository
     position_stage_assignment_repository = providers.Factory(
         PositionStageAssignmentRepository,
+        database=database
+    )
+
+    # Phase 12: Phase Repository
+    phase_repository = providers.Factory(
+        PhaseRepository,
         database=database
     )
 
@@ -835,6 +860,17 @@ class Container(containers.DeclarativeContainer):
         job_position_repository=job_position_repository
     )
 
+    # Phase 12: Phase Query Handlers
+    get_phase_by_id_query_handler = providers.Factory(
+        GetPhaseByIdQueryHandler,
+        phase_repository=phase_repository
+    )
+
+    list_phases_by_company_query_handler = providers.Factory(
+        ListPhasesByCompanyQueryHandler,
+        phase_repository=phase_repository
+    )
+
     # Position Stage Assignment Query Handlers
     list_stage_assignments_query_handler = providers.Factory(
         ListStageAssignmentsQueryHandler,
@@ -1001,11 +1037,7 @@ class Container(containers.DeclarativeContainer):
     )
 
     # Company Command Handlers
-    create_company_command_handler = providers.Factory(
-        CreateCompanyCommandHandler,
-        repository=company_repository,
-        command_bus=command_bus
-    )
+
 
     update_company_command_handler = providers.Factory(
         UpdateCompanyCommandHandler,
@@ -1248,6 +1280,14 @@ class Container(containers.DeclarativeContainer):
         position_stage_assignment_repository=position_stage_assignment_repository
     )
 
+    # Phase 12: Candidate Stage Transition Handler
+    candidate_stage_transition_handler = providers.Factory(
+        CandidateStageTransitionHandler,
+        application_repository=candidate_application_repository,
+        stage_repository=workflow_stage_repository,
+        workflow_repository=company_workflow_repository
+    )
+
     # Job Position Command Handlers
     create_job_position_command_handler = providers.Factory(
         CreateJobPositionCommandHandler,
@@ -1287,6 +1327,29 @@ class Container(containers.DeclarativeContainer):
         repository=position_stage_assignment_repository
     )
 
+    # Phase 12: Phase Command Handlers
+    create_phase_command_handler = providers.Factory(
+        CreatePhaseCommandHandler,
+        phase_repository=phase_repository
+    )
+
+    update_phase_command_handler = providers.Factory(
+        UpdatePhaseCommandHandler,
+        phase_repository=phase_repository
+    )
+
+    delete_phase_command_handler = providers.Factory(
+        DeletePhaseCommandHandler,
+        phase_repository=phase_repository
+    )
+
+    initialize_company_phases_command_handler = providers.Factory(
+        InitializeCompanyPhasesCommandHandler,
+        phase_repository=phase_repository,
+        workflow_repository=company_workflow_repository,
+        stage_repository=workflow_stage_repository
+    )
+
     # Buses - MOVED BEFORE HANDLERS
     query_bus = providers.Factory(QueryBus)
     command_bus = providers.Factory(CommandBus)
@@ -1297,7 +1360,16 @@ class Container(containers.DeclarativeContainer):
     #     candidate_repository=candidate_repository
     # )
 
+    create_company_command_handler = providers.Factory(
+        CreateCompanyCommandHandler,
+        repository=company_repository,
+        command_bus=command_bus
+    )
+
     # Onboarding Command Handlers - SIMPLIFIED
+
+
+
     create_user_from_landing_command_handler = providers.Factory(
         CreateUserFromLandingCommandHandler,
         user_repository=user_repository,
@@ -1702,6 +1774,17 @@ class Container(containers.DeclarativeContainer):
     public_position_controller = providers.Factory(
         PublicPositionController,
         query_bus=query_bus
+    )
+
+    # Phase 12: Phase Controller
+    phase_controller = providers.Factory(
+        PhaseController,
+        create_handler=create_phase_command_handler,
+        update_handler=update_phase_command_handler,
+        delete_handler=delete_phase_command_handler,
+        get_by_id_handler=get_phase_by_id_query_handler,
+        list_by_company_handler=list_phases_by_company_query_handler,
+        initialize_handler=initialize_company_phases_command_handler
     )
 
     position_stage_assignment_controller = providers.Factory(

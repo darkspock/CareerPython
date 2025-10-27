@@ -129,7 +129,6 @@ function App() {
                         <Route path="/candidate/auth/login" element={<CandidateLoginPage />} />
                         <Route path="/admin/auth/login" element={<AdminLoginPage />} />
                         <Route path="/company/auth/login" element={<CompanyLoginPage />} />
-                        <Route path="/company/dashboard" element={<CompanyDashboardPage />} />
                         {/* Redirect common login paths for convenience */}
                         <Route path="/admin/login" element={<Navigate to="/admin/auth/login" replace />} />
                         <Route path="/candidate/login" element={<Navigate to="/candidate/auth/login" replace />} />

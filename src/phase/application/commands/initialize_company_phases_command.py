@@ -15,10 +15,11 @@ from src.company_workflow.domain.infrastructure.company_workflow_repository_inte
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
-class InitializeCompanyPhasesCommand:
+class InitializeCompanyPhasesCommand(Command):
     """Command to initialize default phases for a new company
 
     Phase 12: This command creates 4 default phases with workflows:
@@ -30,7 +31,7 @@ class InitializeCompanyPhasesCommand:
     company_id: CompanyId
 
 
-class InitializeCompanyPhasesCommandHandler:
+class InitializeCompanyPhasesCommandHandler(CommandHandler):
     """Handler for InitializeCompanyPhasesCommand"""
 
     def __init__(
@@ -51,7 +52,15 @@ class InitializeCompanyPhasesCommandHandler:
         2. Evaluation (sort_order=1, Kanban) - Interview and assessment
         3. Offer and Pre-Onboarding (sort_order=2, List) - Offer negotiation
         4. Talent Pool (sort_order=3, List) - Long-term tracking
+
+        Note: This will only create phases if they don't already exist.
         """
+        # Check if phases already exist for this company
+        existing_phases = self.phase_repository.list_by_company(command.company_id)
+        if existing_phases:
+            # Phases already exist, skip initialization
+            return
+
         # Phase 1: Sourcing
         phase1_id = PhaseId.generate()
         phase1 = Phase.create(

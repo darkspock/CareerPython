@@ -5,6 +5,7 @@ from typing import Optional, Dict, Tuple, Any
 
 from src.candidate.application.commands.create_candidate import CreateCandidateCommand
 from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
 from src.notification.application.commands.send_email_command import SendEmailCommand
 from src.notification.domain.enums.notification_type import NotificationTypeEnum
 from src.resume.application.commands.analyze_pdf_resume_command import AnalyzePDFResumeCommand
@@ -111,15 +112,15 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
             # Store candidate_id in command for later use
             command.candidate_id = str(candidate_id) if candidate_id else None
 
-            # 5. Create job application if job_position_id provided - TEMPORARILY DISABLED
+            # 5. Phase 10: Create job application if job_position_id provided
             if command.job_position_id and candidate_id:
-                # application_command = CreateCandidateApplicationCommand(
-                #     candidate_id=candidate_id.value,
-                #     job_position_id=command.job_position_id,
-                #     notes="Application created during onboarding process"
-                # )
-                # self.command_bus.dispatch(application_command)
-                self.logger.info(f"Job application for position {command.job_position_id} will be created later")
+                application_command = CreateCandidateApplicationCommand(
+                    candidate_id=str(candidate_id),
+                    job_position_id=command.job_position_id,
+                    notes="Application created during onboarding process"
+                )
+                self.command_bus.dispatch(application_command)
+                self.logger.info(f"Created job application for position {command.job_position_id}")
 
             # 6. Send password reset email for new users
             if not existing_user:

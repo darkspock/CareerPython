@@ -89,6 +89,9 @@ export interface Position {
   salary_currency?: string;
   is_remote?: boolean;
   is_active?: boolean;
+  // Phase 10: Public job board
+  is_public?: boolean;
+  public_slug?: string;
 }
 
 export interface CreatePositionRequest {
@@ -121,6 +124,8 @@ export interface CreatePositionRequest {
   job_category?: string;
   languages_required?: Record<string, string>;
   desired_roles?: string[];
+  // Phase 10: Public job board
+  is_public?: boolean;
 }
 
 export interface UpdatePositionRequest {
@@ -152,6 +157,8 @@ export interface UpdatePositionRequest {
   job_category?: string;
   languages_required?: Record<string, string>;
   desired_roles?: string[];
+  // Phase 10: Public job board
+  is_public?: boolean;
 }
 
 export interface PositionFilters {

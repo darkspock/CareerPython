@@ -230,6 +230,8 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             skills=model.skills or [],
             application_url=model.application_url,
             application_email=model.application_email,
+            is_public=model.is_public,
+            public_slug=model.public_slug,
             created_at=model.created_at,
             updated_at=model.updated_at
         )

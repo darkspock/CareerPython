@@ -35,22 +35,28 @@ class PublicPositionResponse(BaseModel):
     @classmethod
     def from_dto(cls, dto: JobPositionDto) -> "PublicPositionResponse":
         """Convert DTO to response schema"""
+        # Convert requirements dict to string if present
+        requirements_str = None
+        if dto.requirements:
+            # Join requirements into a readable string
+            requirements_str = "\n".join([f"{k}: {v}" for k, v in dto.requirements.items()])
+
         return cls(
-            id=dto.id,
+            id=dto.id.value,
             title=dto.title,
             description=dto.description,
-            requirements=dto.requirements,
-            responsibilities=dto.responsibilities,
+            requirements=requirements_str,
+            responsibilities=None,  # Not available in current DTO
             location=dto.location,
-            is_remote=dto.is_remote,
-            salary_range_min=dto.salary_range_min,
-            salary_range_max=dto.salary_range_max,
-            employment_type=dto.contract_type.value if dto.contract_type else None,
-            experience_level=dto.experience_level,
+            is_remote=(dto.work_location_type.value == "REMOTE") if dto.work_location_type else False,
+            salary_range_min=dto.salary_range.min_salary if dto.salary_range else None,
+            salary_range_max=dto.salary_range.max_salary if dto.salary_range else None,
+            employment_type=dto.employment_type.value if dto.employment_type else None,
+            experience_level=dto.position_level.value if dto.position_level else None,
             department=dto.department,
             public_slug=dto.public_slug,
-            created_at=dto.created_at,
-            company_id=dto.company_id
+            created_at=dto.created_at if dto.created_at else datetime.now(),
+            company_id=dto.company_id.value
         )
 
 

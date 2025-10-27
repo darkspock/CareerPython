@@ -2,16 +2,16 @@
 Public Position Controller
 Phase 10: Handles public job position operations
 """
-from typing import Optional
+from typing import Optional, List
+
 import math
 
-from src.job_position.application.queries.list_public_job_positions import (
-    ListPublicJobPositionsQuery,
-    ListPublicJobPositionsQueryHandler
-)
 from src.job_position.application.queries.get_public_job_position import (
-    GetPublicJobPositionQuery,
-    GetPublicJobPositionQueryHandler
+    GetPublicJobPositionQuery
+)
+from src.job_position.application.queries.job_position_dto import JobPositionDto
+from src.job_position.application.queries.list_public_job_positions import (
+    ListPublicJobPositionsQuery
 )
 from src.job_position.domain.exceptions import JobPositionNotFoundError
 from src.job_position.presentation.schemas.public_position_schemas import (
@@ -30,15 +30,15 @@ class PublicPositionController:
         self.query_bus = query_bus
 
     def list_public_positions(
-        self,
-        search: Optional[str] = None,
-        location: Optional[str] = None,
-        department: Optional[str] = None,
-        employment_type: Optional[str] = None,
-        experience_level: Optional[str] = None,
-        is_remote: Optional[bool] = None,
-        page: int = 1,
-        page_size: int = 12
+            self,
+            search: Optional[str] = None,
+            location: Optional[str] = None,
+            department: Optional[str] = None,
+            employment_type: Optional[str] = None,
+            experience_level: Optional[str] = None,
+            is_remote: Optional[bool] = None,
+            page: int = 1,
+            page_size: int = 12
     ) -> PublicPositionListResponse:
         """
         List public job positions with filters
@@ -70,7 +70,7 @@ class PublicPositionController:
         )
 
         # Execute query
-        position_dtos = self.query_bus.query(query)
+        position_dtos: List[JobPositionDto] = self.query_bus.query(query)
 
         # Convert to response
         positions = [PublicPositionResponse.from_dto(dto) for dto in position_dtos]
@@ -102,7 +102,7 @@ class PublicPositionController:
         """
         query = GetPublicJobPositionQuery(slug_or_id=slug_or_id)
 
-        position_dto = self.query_bus.query(query)
+        position_dto: JobPositionDto = self.query_bus.query(query)
 
         if not position_dto:
             raise JobPositionNotFoundError(f"Public position not found: {slug_or_id}")
@@ -110,10 +110,10 @@ class PublicPositionController:
         return PublicPositionResponse.from_dto(position_dto)
 
     def submit_application(
-        self,
-        slug_or_id: str,
-        candidate_id: str,
-        request: SubmitApplicationRequest
+            self,
+            slug_or_id: str,
+            candidate_id: str,
+            request: SubmitApplicationRequest
     ) -> SubmitApplicationResponse:
         """
         Submit an application to a public position

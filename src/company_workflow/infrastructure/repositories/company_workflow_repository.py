@@ -56,6 +56,15 @@ class CompanyWorkflowRepository(CompanyWorkflowRepositoryInterface):
             session.query(CompanyWorkflowModel).filter_by(id=str(workflow_id)).delete()
             session.commit()
 
+    def list_by_phase_id(self, phase_id: str) -> List[CompanyWorkflow]:
+        """List all workflows for a phase - Phase 12"""
+        with self._database.get_session() as session:
+            models = session.query(CompanyWorkflowModel).filter_by(
+                phase_id=phase_id,
+                status=WorkflowStatus.ACTIVE.value
+            ).all()
+            return [self._to_domain(model) for model in models]
+
     def _to_domain(self, model: CompanyWorkflowModel) -> CompanyWorkflow:
         """Convert model to domain entity"""
         return CompanyWorkflow(

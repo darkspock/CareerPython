@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
-from src.shared.application.command_bus import Command
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -12,7 +12,7 @@ class DeleteCompanyCommand(Command):
     id: CompanyId
 
 
-class DeleteCompanyCommandHandler:
+class DeleteCompanyCommandHandler(CommandHandler[DeleteCompanyCommand]):
     """Handler for deleting a company"""
 
     def __init__(self, repository: CompanyRepositoryInterface):
