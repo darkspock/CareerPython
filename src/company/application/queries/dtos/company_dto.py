@@ -12,6 +12,7 @@ class CompanyDto:
     id: str
     name: str
     domain: str
+    slug: Optional[str]
     logo_url: Optional[str]
     settings: Dict[str, Any]
     status: str
@@ -25,9 +26,10 @@ class CompanyDto:
             id=str(company.id),
             name=company.name,
             domain=company.domain,
+            slug=company.slug,
             logo_url=company.logo_url,
-            settings=company.settings.to_dict(),
-            status=company.status.value,
+            settings=company.settings.to_dict() if hasattr(company.settings, 'to_dict') else company.settings,
+            status=company.status.value if hasattr(company.status, 'value') else company.status,
             created_at=company.created_at,
             updated_at=company.updated_at
         )

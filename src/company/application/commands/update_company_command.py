@@ -13,6 +13,7 @@ class UpdateCompanyCommand(Command):
     id: str
     name: str
     domain: str
+    slug: Optional[str]
     logo_url: Optional[str]
     settings: Dict[str, Any]
 
@@ -35,6 +36,7 @@ class UpdateCompanyCommandHandler(CommandHandler):
         updated_company = company.update(
             name=command.name,
             domain=command.domain,
+            slug=command.slug,
             logo_url=command.logo_url,
             settings=CompanySettings.from_dict(command.settings),
         )

@@ -37,6 +37,7 @@ class UpdateCompanyRequest(BaseModel):
     """Request schema to update a company"""
     name: str
     domain: str
+    slug: Optional[str] = None
     logo_url: Optional[str] = None
     settings: Dict[str, Any]
 
@@ -61,6 +62,22 @@ class UpdateCompanyRequest(BaseModel):
         if len(v.strip()) > 255:
             raise ValueError('Company domain cannot exceed 255 characters')
         return v.strip().lower()
+
+    @field_validator('slug')
+    @classmethod
+    def validate_slug(cls, v: Optional[str]) -> Optional[str]:
+        """Validate slug format"""
+        if v is None:
+            return None
+        if not v.strip():
+            return None
+        slug = v.strip().lower()
+        # Only allow alphanumeric and hyphens
+        if not slug.replace('-', '').isalnum():
+            raise ValueError('Slug can only contain letters, numbers, and hyphens')
+        if len(slug) > 255:
+            raise ValueError('Slug cannot exceed 255 characters')
+        return slug
 
 
 class SuspendCompanyRequest(BaseModel):

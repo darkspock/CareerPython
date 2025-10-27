@@ -12,6 +12,7 @@ class CompanyResponseMapper:
             id=dto.id,
             name=dto.name,
             domain=dto.domain,
+            slug=dto.slug,
             logo_url=dto.logo_url,
             settings=dto.settings,
             status=dto.status,

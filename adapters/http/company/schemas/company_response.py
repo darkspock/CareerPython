@@ -8,6 +8,7 @@ class CompanyResponse(BaseModel):
     id: str
     name: str
     domain: str
+    slug: Optional[str]
     logo_url: Optional[str]
     settings: Dict[str, Any]
     status: str

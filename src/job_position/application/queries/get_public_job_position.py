@@ -27,7 +27,7 @@ class GetPublicJobPositionQueryHandler(QueryHandler[GetPublicJobPositionQuery, J
         """
         Handle query for a single public job position
         First tries to find by public_slug, then by ID
-        Only returns positions where is_public=True and status=ACTIVE
+        Only returns positions where is_public=True and status=OPEN
         """
         job_position = None
 
@@ -35,7 +35,11 @@ class GetPublicJobPositionQueryHandler(QueryHandler[GetPublicJobPositionQuery, J
         try:
             job_position = self.job_position_repository.find_by_public_slug(query.slug_or_id)
         except (JobPositionNotFoundError, AttributeError):
-            # If not found by slug, try by ID
+            # Not found by slug or method doesn't exist, will try by ID below
+            pass
+
+        # If not found by slug (either None or exception), try by ID
+        if not job_position:
             from src.job_position.domain.value_objects import JobPositionId
             try:
                 position_id = JobPositionId.from_string(query.slug_or_id)

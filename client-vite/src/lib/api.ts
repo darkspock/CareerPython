@@ -197,7 +197,7 @@ export const api = {
     const formData = new URLSearchParams();
     formData.append('username', credentials.username);
     formData.append('password', credentials.password);
-    return ApiClient.request('/company/auth/login', {
+    return ApiClient.request('/companies/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData,

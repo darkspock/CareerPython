@@ -98,6 +98,7 @@ from src.company.application.commands.remove_company_user_command import RemoveC
 # Company Application Layer - Queries
 from src.company.application.queries.get_company_by_id import GetCompanyByIdQueryHandler
 from src.company.application.queries.get_company_by_domain import GetCompanyByDomainQueryHandler
+from src.company.application.queries.get_company_by_slug import GetCompanyBySlugQueryHandler
 from src.company.application.queries.list_companies import ListCompaniesQueryHandler
 from src.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQueryHandler
 from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQueryHandler
@@ -691,6 +692,11 @@ class Container(containers.DeclarativeContainer):
 
     get_company_by_domain_query_handler = providers.Factory(
         GetCompanyByDomainQueryHandler,
+        company_repository=company_repository
+    )
+
+    get_company_by_slug_query_handler = providers.Factory(
+        GetCompanyBySlugQueryHandler,
         company_repository=company_repository
     )
 

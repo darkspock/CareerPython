@@ -20,6 +20,7 @@ from src.company.application.dtos.company_dto import CompanyDto
 from src.company.application.queries import (
     GetCompanyByIdQuery,
     GetCompanyByDomainQuery,
+    GetCompanyBySlugQuery,
     ListCompaniesQuery,
 )
 from src.company.domain import CompanyId, CompanyStatusEnum
@@ -126,6 +127,28 @@ class CompanyController:
                 detail=f"Failed to retrieve company: {str(e)}"
             )
 
+    def get_company_by_slug(self, slug: str) -> CompanyResponse:
+        """Get a company by slug"""
+        try:
+            query = GetCompanyBySlugQuery(slug=slug)
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
+
+            if not dto:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Company with slug {slug} not found"
+                )
+
+            return CompanyResponseMapper.dto_to_response(dto)
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to retrieve company: {str(e)}"
+            )
+
     def list_companies(
             self,
             search_term: Optional[str] = None,
@@ -159,6 +182,7 @@ class CompanyController:
                 id=company_id,
                 name=request.name,
                 domain=request.domain,
+                slug=request.slug,
                 logo_url=request.logo_url,
                 settings=request.settings,
             )

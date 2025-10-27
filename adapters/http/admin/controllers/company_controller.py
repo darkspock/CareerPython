@@ -104,12 +104,11 @@ class CompanyController:
         """Get a specific company by ID"""
         try:
             query = GetCompanyByIdQuery(company_id=company_id)
-            company: Optional[Company] = self.query_bus.query(query)
+            company_dto: Optional[CompanyDto] = self.query_bus.query(query)
 
-            if not company:
+            if not company_dto:
                 raise ValueError(f"Company with ID {company_id} not found")
 
-            company_dto = CompanyDto.from_entity(company)
             return self._dto_to_response(company_dto)
 
         except Exception as e:
@@ -154,6 +153,7 @@ class CompanyController:
                 id=str(company_id),
                 name=company_data.name,
                 domain=company_data.domain,
+                slug=None,  # Admin doesn't update slug
                 logo_url=company_data.logo_url,
                 settings=company_data.settings or {}
             )

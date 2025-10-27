@@ -39,6 +39,14 @@ class CompanyRepository(CompanyRepositoryInterface):
             ).first()
             return self._to_domain(model) if model else None
 
+    def get_by_slug(self, slug: str) -> Optional[Company]:
+        """Get a company by slug"""
+        with self.database.get_session() as session:
+            model = session.query(CompanyModel).filter(
+                CompanyModel.slug == slug
+            ).first()
+            return self._to_domain(model) if model else None
+
     def list_all(self) -> List[Company]:
         """List all companies"""
         with self.database.get_session() as session:
@@ -87,6 +95,7 @@ class CompanyRepository(CompanyRepositoryInterface):
             id=CompanyId.from_string(model.id),
             name=model.name,
             domain=model.domain,
+            slug=model.slug,
             logo_url=model.logo_url,
             settings=CompanySettings.from_dict(model.settings or {}),
             status=CompanyStatusEnum(model.status),
@@ -100,6 +109,7 @@ class CompanyRepository(CompanyRepositoryInterface):
             id=str(entity.id),
             name=entity.name,
             domain=entity.domain,
+            slug=entity.slug,
             logo_url=entity.logo_url,
             settings=entity.settings.to_dict(),
             status=entity.status.value,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle, Building2, Edit } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 
 export default function CompanySettingsPage() {
@@ -79,6 +79,30 @@ export default function CompanySettingsPage() {
         <p className="text-gray-600">
           Configure your company's workflows, roles, and recruitment process
         </p>
+      </div>
+
+      {/* Company Profile Card */}
+      <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Company Profile</h2>
+              <p className="text-gray-600 text-sm mb-4">
+                Edit your company name, domain, and public URL slug
+              </p>
+              <Link
+                to="/company/settings/edit"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <Edit className="w-4 h-4" />
+                Edit Company Profile
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Settings Cards Grid */}

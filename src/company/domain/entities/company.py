@@ -16,6 +16,7 @@ class Company:
     id: CompanyId
     name: str
     domain: str
+    slug: Optional[str]  # URL-friendly identifier for public pages
     logo_url: Optional[str]
     settings: CompanySettings
     status: CompanyStatusEnum
@@ -28,6 +29,7 @@ class Company:
             id: CompanyId,
             name: str,
             domain: str,
+            slug: Optional[str] = None,
             logo_url: Optional[str] = None,
             settings: Optional[CompanySettings] = None,
     ) -> "Company":
@@ -38,6 +40,7 @@ class Company:
             id: Company ID (required, must be provided from outside)
             name: Company name
             domain: Corporate domain (e.g., "company.com")
+            slug: URL-friendly identifier (optional, auto-generated from name if not provided)
             logo_url: Logo URL (optional)
             settings: Custom settings (optional)
 
@@ -58,6 +61,16 @@ class Company:
         if "@" in domain:
             raise CompanyValidationError("Domain must not contain @")
 
+        # Generate slug if not provided
+        if not slug:
+            slug = name.strip().lower().replace(" ", "-").replace("_", "-")
+            # Remove special characters
+            slug = "".join(c for c in slug if c.isalnum() or c == "-")
+
+        # Validate slug format
+        if slug and not slug.replace("-", "").isalnum():
+            raise CompanyValidationError("Slug can only contain letters, numbers, and hyphens")
+
         # Default values
         now = datetime.utcnow()
         company_settings = settings or CompanySettings.default()
@@ -66,6 +79,7 @@ class Company:
             id=id,
             name=name.strip(),
             domain=domain.strip().lower(),
+            slug=slug,
             logo_url=logo_url,
             settings=company_settings,
             status=CompanyStatusEnum.ACTIVE,
@@ -77,6 +91,7 @@ class Company:
             self,
             name: str,
             domain: str,
+            slug: Optional[str],
             logo_url: Optional[str],
             settings: CompanySettings,
     ) -> "Company":
@@ -87,6 +102,7 @@ class Company:
         Args:
             name: New name
             domain: New domain
+            slug: New slug (URL-friendly identifier)
             logo_url: New logo URL
             settings: New settings
 
@@ -106,11 +122,16 @@ class Company:
         if "@" in domain:
             raise CompanyValidationError("Domain must not contain @")
 
+        # Validate slug format if provided
+        if slug and not slug.replace("-", "").isalnum():
+            raise CompanyValidationError("Slug can only contain letters, numbers, and hyphens")
+
         # Return new instance
         return Company(
             id=self.id,
             name=name.strip(),
             domain=domain.strip().lower(),
+            slug=slug,
             logo_url=logo_url,
             settings=settings,
             status=self.status,
@@ -138,6 +159,7 @@ class Company:
             id=self.id,
             name=self.name,
             domain=self.domain,
+            slug=self.slug,
             logo_url=self.logo_url,
             settings=self.settings,
             status=CompanyStatusEnum.SUSPENDED,

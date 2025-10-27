@@ -1,6 +1,7 @@
 """Query handlers for Company module"""
 from .get_company_by_id import GetCompanyByIdQuery, GetCompanyByIdQueryHandler
 from .get_company_by_domain import GetCompanyByDomainQuery, GetCompanyByDomainQueryHandler
+from .get_company_by_slug import GetCompanyBySlugQuery, GetCompanyBySlugQueryHandler
 from .list_companies import ListCompaniesQuery, ListCompaniesQueryHandler
 from .get_company_user_by_id import GetCompanyUserByIdQuery, GetCompanyUserByIdQueryHandler
 from .get_company_user_by_company_and_user import (
@@ -17,6 +18,8 @@ __all__ = [
     "GetCompanyByIdQueryHandler",
     "GetCompanyByDomainQuery",
     "GetCompanyByDomainQueryHandler",
+    "GetCompanyBySlugQuery",
+    "GetCompanyBySlugQueryHandler",
     "ListCompaniesQuery",
     "ListCompaniesQueryHandler",
     "GetCompanyUserByIdQuery",

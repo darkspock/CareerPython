@@ -13,7 +13,9 @@ import {
   Briefcase,
   Building2,
   Home,
-  Send
+  Send,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import { publicPositionService } from '../../services/publicPositionService';
 import type { Position } from '../../types/position';
@@ -24,6 +26,7 @@ export default function PublicPositionDetailPage() {
   const [position, setPosition] = useState<Position | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [applicationSuccess, setApplicationSuccess] = useState(false);
 
   useEffect(() => {
     if (slugOrId) {

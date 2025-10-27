@@ -11,12 +11,35 @@ import {
   LayoutDashboard,
   Layers
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 
 export default function CompanyLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [companyName, setCompanyName] = useState<string>('Company');
+
+  useEffect(() => {
+    loadCompanyName();
+  }, []);
+
+  const loadCompanyName = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const companyId = payload.company_id;
+
+      if (companyId) {
+        const company = await recruiterCompanyService.getCompany(companyId);
+        setCompanyName(company.name);
+      }
+    } catch (error) {
+      console.error('Error loading company name:', error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -56,7 +79,7 @@ export default function CompanyLayout() {
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
               <Building2 className="w-8 h-8 text-blue-600" />
-              <span className="font-bold text-xl text-gray-900">Company</span>
+              <span className="font-bold text-xl text-gray-900">{companyName}</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -115,7 +138,7 @@ export default function CompanyLayout() {
           <div className="flex items-center p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
               <Building2 className="w-8 h-8 text-blue-600" />
-              <span className="font-bold text-xl text-gray-900">Company</span>
+              <span className="font-bold text-xl text-gray-900">{companyName}</span>
             </div>
           </div>
 

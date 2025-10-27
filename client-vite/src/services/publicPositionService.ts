@@ -3,7 +3,7 @@
  * Phase 10: Public job board - no authentication required
  */
 
-import { api } from '../lib/api';
+import { ApiClient } from '../lib/api';
 import type { Position } from '../types/position';
 
 export interface PublicPositionFilters {
@@ -13,6 +13,7 @@ export interface PublicPositionFilters {
   employment_type?: string;
   experience_level?: string;
   is_remote?: boolean;
+  company_id?: string;
   page?: number;
   page_size?: number;
 }
@@ -39,19 +40,20 @@ export const publicPositionService = {
     if (filters?.employment_type) queryParams.append('employment_type', filters.employment_type);
     if (filters?.experience_level) queryParams.append('experience_level', filters.experience_level);
     if (filters?.is_remote !== undefined) queryParams.append('is_remote', filters.is_remote.toString());
+    if (filters?.company_id) queryParams.append('company_id', filters.company_id);
     if (filters?.page) queryParams.append('page', filters.page.toString());
     if (filters?.page_size) queryParams.append('page_size', filters.page_size.toString());
 
     const endpoint = `/public/positions${queryParams.toString() ? `?${queryParams}` : ''}`;
 
     try {
-      const response = await api.get(endpoint);
+      const response = await ApiClient.get<PublicPositionListResponse>(endpoint);
       return {
-        positions: response.data.positions || response.data || [],
-        total: response.data.total || 0,
-        page: response.data.page || 1,
-        page_size: response.data.page_size || 10,
-        total_pages: response.data.total_pages || 0
+        positions: response.positions || [],
+        total: response.total || 0,
+        page: response.page || 1,
+        page_size: response.page_size || 10,
+        total_pages: response.total_pages || 0
       };
     } catch (error) {
       console.error('[PublicPositionService] Error fetching public positions:', error);
@@ -65,8 +67,7 @@ export const publicPositionService = {
    */
   async getPublicPosition(slugOrId: string): Promise<Position> {
     try {
-      const response = await api.get(`/public/positions/${slugOrId}`);
-      return response.data;
+      return await ApiClient.get<Position>(`/public/positions/${slugOrId}`);
     } catch (error) {
       console.error('[PublicPositionService] Error fetching public position:', error);
       throw error;
@@ -85,8 +86,10 @@ export const publicPositionService = {
     }
   ): Promise<{ application_id: string; message: string }> {
     try {
-      const response = await api.post(`/public/positions/${slugOrId}/apply`, data);
-      return response.data;
+      return await ApiClient.post<{ application_id: string; message: string }>(
+        `/public/positions/${slugOrId}/apply`,
+        data
+      );
     } catch (error) {
       console.error('[PublicPositionService] Error submitting application:', error);
       throw error;

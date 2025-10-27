@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, Trash2, ExternalLink, Globe, GlobeLock } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
+import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import type { Position } from '../../types/position';
 import { getStatusColor, getContractTypeLabel, getWorkLocationLabel } from '../../types/position';
 
@@ -10,6 +11,7 @@ export default function PositionsListPage() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [companySlug, setCompanySlug] = useState<string | null>(null);
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -23,8 +25,21 @@ export default function PositionsListPage() {
   };
 
   useEffect(() => {
+    loadCompanyData();
     loadPositions();
   }, []);
+
+  const loadCompanyData = async () => {
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) return;
+
+      const company = await recruiterCompanyService.getCompany(companyId);
+      setCompanySlug(company.slug);
+    } catch (err) {
+      console.error('Error loading company data:', err);
+    }
+  };
 
   const loadPositions = async () => {
     try {
@@ -63,6 +78,22 @@ export default function PositionsListPage() {
     }
   };
 
+  const handleTogglePublish = async (position: Position) => {
+    const action = position.is_public ? 'unpublish' : 'publish';
+    if (!confirm(`Are you sure you want to ${action} this position?`)) return;
+
+    try {
+      // When publishing (is_public=true), the backend will automatically approve and open the position
+      // so it appears in public listings
+      await PositionService.updatePosition(position.id, {
+        is_public: !position.is_public
+      });
+      loadPositions();
+    } catch (err: any) {
+      alert(`Failed to ${action} position: ` + err.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -71,21 +102,38 @@ export default function PositionsListPage() {
     );
   }
 
+  const publicUrl = companySlug ? `/companies/${companySlug}/open-positions` : null;
+
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Job Positions</h1>
-          <p className="text-gray-600 mt-1">Manage your open positions and vacancies</p>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Job Positions</h1>
+            <p className="text-gray-600 mt-1">Manage your open positions and vacancies</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {publicUrl && (
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <ExternalLink className="w-5 h-5" />
+                View Public Page
+              </a>
+            )}
+            <button
+              onClick={() => navigate('/company/positions/create')}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Create Position
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => navigate('/company/positions/create')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Create Position
-        </button>
       </div>
 
       {/* Error Message */}
@@ -160,6 +208,14 @@ export default function PositionsListPage() {
                   </div>
                 </div>
 
+                {/* Public Status Badge */}
+                {position.is_public && (
+                  <div className="mb-3 flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-1 rounded">
+                    <Globe className="w-3 h-3" />
+                    <span>Published</span>
+                  </div>
+                )}
+
                 {/* Actions */}
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
                   <button
@@ -175,6 +231,21 @@ export default function PositionsListPage() {
                     title="Edit"
                   >
                     <Edit className="w-4 h-4 mx-auto" />
+                  </button>
+                  <button
+                    onClick={() => handleTogglePublish(position)}
+                    className={`flex-1 px-3 py-2 text-sm rounded-lg transition-colors ${
+                      position.is_public
+                        ? 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+                        : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                    }`}
+                    title={position.is_public ? 'Unpublish' : 'Publish'}
+                  >
+                    {position.is_public ? (
+                      <GlobeLock className="w-4 h-4 mx-auto" />
+                    ) : (
+                      <Globe className="w-4 h-4 mx-auto" />
+                    )}
                   </button>
                   <button
                     onClick={() => handleDelete(position.id)}

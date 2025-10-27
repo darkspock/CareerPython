@@ -236,7 +236,8 @@ class JobPosition:
             application_deadline: Optional[date],
             skills: List[str],
             application_url: Optional[str],
-            application_email: Optional[str]
+            application_email: Optional[str],
+            is_public: Optional[bool] = None
     ) -> None:
         """Update job position details with all attributes"""
         # Validate required fields
@@ -277,6 +278,8 @@ class JobPosition:
         self.skills = skills or []
         self.application_url = application_url
         self.application_email = application_email
+        if is_public is not None:
+            self.is_public = is_public
         self.updated_at = datetime.utcnow()
 
     @staticmethod

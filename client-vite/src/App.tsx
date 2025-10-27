@@ -77,8 +77,10 @@ import EditWorkflowPage from './pages/company/EditWorkflowPage';
 import PositionDetailPage from './pages/company/PositionDetailPage';
 import EditPositionPage from './pages/company/EditPositionPage';
 import PhasesPage from './pages/company/PhasesPage';
+import EditCompanyPage from './pages/company/EditCompanyPage';
 import PublicPositionsPage from './pages/public/PublicPositionsPage';
 import PublicPositionDetailPage from './pages/public/PublicPositionDetailPage';
+import CompanyPublicPositionsPage from './pages/public/CompanyPublicPositionsPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import UsersManagement from './components/admin/UsersManagement';
 import CandidatesManagement from './components/admin/CandidatesManagement';
@@ -123,6 +125,7 @@ function App() {
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/positions" element={<PublicPositionsPage />} />
                         <Route path="/positions/:slugOrId" element={<PublicPositionDetailPage />} />
+                        <Route path="/companies/:companySlug/open-positions" element={<CompanyPublicPositionsPage />} />
                         <Route path="/candidate/dashboard" element={<HomePage />} />
                         <Route path="/candidate/search" element={<CandidatesPage />} />
                         {/* REMOVED: /auth/login - using specific /candidate/auth/login, /admin/auth/login, and /company/auth/login instead */}
@@ -207,6 +210,7 @@ function App() {
                           <Route path="workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="workflows/:workflowId/edit" element={<EditWorkflowPage />} />
                           <Route path="settings" element={<CompanySettingsPage />} />
+                          <Route path="settings/edit" element={<EditCompanyPage />} />
                           <Route path="settings/workflows" element={<WorkflowsSettingsPage />} />
                           <Route path="settings/workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="settings/phases" element={<PhasesPage />} />

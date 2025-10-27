@@ -24,14 +24,14 @@ from src.shared.application.query_bus import QueryBus
 log = logging.getLogger(__name__)
 
 # Router for company endpoints
-router = APIRouter(prefix="/company", tags=["company"])
+router = APIRouter(prefix="/companies", tags=["company"])
 
 
 @router.post("", response_model=CompanyResponse, status_code=201)
 @inject
 async def create_company(
         request: CreateCompanyRequest,
-        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> CompanyResponse:
     """Create a new company"""
     return controller.create_company(request)
@@ -41,7 +41,7 @@ async def create_company(
 @inject
 async def get_company_by_id(
         company_id: str,
-        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> CompanyResponse:
     """Get a company by ID"""
     return controller.get_company_by_id(company_id)
@@ -51,16 +51,26 @@ async def get_company_by_id(
 @inject
 async def get_company_by_domain(
         domain: str,
-        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> CompanyResponse:
     """Get a company by domain"""
     return controller.get_company_by_domain(domain)
 
 
+@router.get("/slug/{slug}", response_model=CompanyResponse)
+@inject
+async def get_company_by_slug(
+        slug: str,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
+) -> CompanyResponse:
+    """Get a company by slug"""
+    return controller.get_company_by_slug(slug)
+
+
 @router.get("", response_model=List[CompanyResponse])
 @inject
 async def list_companies(
-        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
         search_term: Optional[str] = Query(None, description="Search companies by name or domain"),
         status_filter: Optional[str] = Query(None, description="Filter by status"),
         limit: int = Query(100, ge=1, le=1000, description="Maximum number of results"),
@@ -90,7 +100,7 @@ async def list_companies(
 async def update_company(
         company_id: str,
         request: UpdateCompanyRequest,
-        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> CompanyResponse:
     """Update a company"""
     return controller.update_company(company_id, request)
@@ -101,7 +111,7 @@ async def update_company(
 async def suspend_company(
         company_id: str,
         reason: str,
-        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> CompanyResponse:
     """Suspend a company"""
     return controller.suspend_company(company_id, reason)
@@ -111,7 +121,7 @@ async def suspend_company(
 @inject
 async def activate_company(
         company_id: str,
-        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> CompanyResponse:
     """Activate a company"""
     return controller.activate_company(CompanyId.from_string(company_id))
@@ -121,7 +131,7 @@ async def activate_company(
 @inject
 async def delete_company(
         company_id: str,
-        controller: Annotated[CompanyController, Depends(Provide[Container.company_controller])],
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> None:
     """Delete a company (soft delete)"""
     controller.delete_company(company_id)

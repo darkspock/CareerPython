@@ -45,6 +45,7 @@ class UpdateJobPositionCommand(Command):
     skills: Optional[List[str]] = None
     application_url: Optional[str] = None
     application_email: Optional[str] = None
+    is_public: Optional[bool] = None
 
 
 class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
@@ -84,7 +85,17 @@ class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
             application_deadline=command.application_deadline,
             skills=command.skills or [],
             application_url=command.application_url,
-            application_email=command.application_email
+            application_email=command.application_email,
+            is_public=command.is_public
         )
+
+        # When publishing (is_public=True), automatically approve and open the position
+        # so it appears in public listings
+        if command.is_public is True and not job_position.is_open():
+            # First approve if not already approved
+            if not job_position.is_approved():
+                job_position.approve()
+            # Then open the position
+            job_position.open_position()
 
         self.job_position_repository.save(job_position)

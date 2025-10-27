@@ -8,6 +8,7 @@ class CompanyBase(BaseModel):
     """Base company schema"""
     name: str = Field(..., min_length=1, max_length=200, description="Company name")
     domain: str = Field(..., min_length=3, max_length=200, description="Company domain (e.g., company.com)")
+    slug: Optional[str] = Field(None, max_length=200, description="Company slug for URLs")
     logo_url: Optional[str] = Field(None, max_length=500, description="Company logo URL")
     settings: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Company settings")
 
