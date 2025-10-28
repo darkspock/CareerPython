@@ -81,16 +81,16 @@ function SortablePhaseRow({
               <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
                 {getDefaultViewLabel(phase.default_view)}
               </span>
-              {phase.status === PhaseStatus.DRAFT && (
-                <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
-                  Draft
-                </span>
-              )}
-              {phase.status === PhaseStatus.ARCHIVED && (
-                <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 rounded">
-                  Archived
-                </span>
-              )}
+              {/* Always show status */}
+              <span className={`px-2 py-1 text-xs font-medium rounded ${
+                phase.status === PhaseStatus.ACTIVE
+                  ? 'bg-green-100 text-green-800'
+                  : phase.status === PhaseStatus.DRAFT
+                  ? 'bg-gray-100 text-gray-700'
+                  : 'bg-red-100 text-red-700'
+              }`}>
+                {phase.status}
+              </span>
             </div>
 
             {phase.objective && (
@@ -442,7 +442,7 @@ export default function PhasesPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Phase Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Phase Management v2</h1>
           <p className="text-gray-600 mt-1">
             Organize your recruitment process into high-level phases
           </p>
