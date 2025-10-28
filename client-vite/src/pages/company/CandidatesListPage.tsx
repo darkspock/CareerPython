@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -77,6 +77,9 @@ const getStatusLabel = (status: string) => {
 
 export default function CandidatesListPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const phaseId = searchParams.get('phase'); // Get phase from URL
+
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,7 +107,7 @@ export default function CandidatesListPage() {
 
   useEffect(() => {
     loadCandidates();
-  }, []);
+  }, [phaseId]); // Reload when phase changes
 
   const loadCandidates = async () => {
     try {
@@ -200,7 +203,10 @@ export default function CandidatesListPage() {
     const matchesStatus = !statusFilter || candidate.status === statusFilter;
     const matchesPriority = !priorityFilter || candidate.priority === priorityFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority;
+    // Phase 12: Filter by phase_id from URL
+    const matchesPhase = !phaseId || candidate.current_phase_id === phaseId;
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesPhase;
   });
 
   if (loading) {
