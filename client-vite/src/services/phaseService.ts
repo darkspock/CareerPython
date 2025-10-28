@@ -48,11 +48,10 @@ export const phaseService = {
 
   /**
    * Initialize default phases (reset configuration)
-   * Creates 4 default phases with their workflows:
+   * Creates 3 default phases with their workflows:
    * - Sourcing (Kanban)
    * - Evaluation (Kanban)
    * - Offer and Pre-Onboarding (List)
-   * - Talent Pool (List)
    */
   async initializeDefaultPhases(companyId: string): Promise<Phase[]> {
     return ApiClient.post<Phase[]>(`/api/companies/${companyId}/phases/initialize`);

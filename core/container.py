@@ -176,6 +176,7 @@ from src.company_workflow.application.commands.update_field_visibility_command i
 # CompanyWorkflow Application Layer - Queries
 from src.company_workflow.application.queries.get_workflow_by_id import GetWorkflowByIdQueryHandler
 from src.company_workflow.application.queries.list_workflows_by_company import ListWorkflowsByCompanyQueryHandler
+from src.company_workflow.application.queries.list_workflows_by_phase import ListWorkflowsByPhaseQueryHandler
 from src.company_workflow.application.queries.get_stage_by_id import GetStageByIdQueryHandler
 from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQueryHandler
 from src.company_workflow.application.queries.get_initial_stage import GetInitialStageQueryHandler
@@ -778,6 +779,11 @@ class Container(containers.DeclarativeContainer):
 
     list_workflows_by_company_query_handler = providers.Factory(
         ListWorkflowsByCompanyQueryHandler,
+        repository=company_workflow_repository
+    )
+
+    list_workflows_by_phase_query_handler = providers.Factory(
+        ListWorkflowsByPhaseQueryHandler,
         repository=company_workflow_repository
     )
 

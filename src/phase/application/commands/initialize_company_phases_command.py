@@ -22,11 +22,10 @@ from src.shared.application.command_bus import Command, CommandHandler
 class InitializeCompanyPhasesCommand(Command):
     """Command to initialize default phases for a new company
 
-    Phase 12: This command creates 4 default phases with workflows:
+    Phase 12: This command creates 3 default phases with workflows:
     - Sourcing (Kanban view) - Screening and filtering
     - Evaluation (Kanban view) - Interview and assessment
     - Offer and Pre-Onboarding (List view) - Offer negotiation and documents
-    - Talent Pool (List view) - Long-term candidate tracking
     """
     company_id: CompanyId
 
@@ -47,11 +46,10 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
     def execute(self, command: InitializeCompanyPhasesCommand) -> None:
         """Execute the command to create default phases
 
-        Creates 4 default phases with specific workflows:
+        Creates 3 default phases with specific workflows:
         1. Sourcing (sort_order=0, Kanban) - Screening process
         2. Evaluation (sort_order=1, Kanban) - Interview and assessment
         3. Offer and Pre-Onboarding (sort_order=2, List) - Offer negotiation
-        4. Talent Pool (sort_order=3, List) - Long-term tracking
 
         Note: This will only create phases if they don't already exist.
         """
@@ -109,27 +107,10 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         workflow3_id = CompanyWorkflowId.generate()
         self._create_offer_workflow(workflow3_id, command.company_id, phase3_id.value)
 
-        # Phase 4: Talent Pool
-        phase4_id = PhaseId.generate()
-        phase4 = Phase.create(
-            id=phase4_id,
-            company_id=command.company_id,
-            name="Talent Pool",
-            sort_order=3,
-            default_view=DefaultView.LIST,
-            objective="Long-term candidate tracking and talent pipeline management"
-        )
-        self.phase_repository.save(phase4)
-
-        # Create Talent Pool workflow
-        workflow4_id = CompanyWorkflowId.generate()
-        self._create_talent_pool_workflow(workflow4_id, command.company_id, phase4_id.value)
-
         # Update workflows to set next_phase_id in SUCCESS stages
         self._update_success_stage_next_phase(workflow1_id, phase2_id.value)
         self._update_success_stage_next_phase(workflow2_id, phase3_id.value)
-        # Phase 3 success can transition to Talent Pool
-        self._update_success_stage_next_phase(workflow3_id, phase4_id.value)
+        # Phase 3 (Offer) is the final phase, no next phase transition
 
     def _create_sourcing_workflow(self, workflow_id: CompanyWorkflowId, company_id: CompanyId, phase_id: str) -> None:
         """Create Sourcing workflow with 5 stages per WORKFLOW3.md"""
@@ -195,28 +176,6 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
             ("Document Submission", "Candidate submitting documents", StageType.STANDARD, 2),
             ("Document Verification", "Verifying submitted documents", StageType.SUCCESS, 3),
             ("Lost", "Candidate declined or withdrew", StageType.FAIL, 4),
-        ]
-        for name, desc, stage_type, order in stages:
-            stage = WorkflowStage.create(
-                id=WorkflowStageId.generate(), workflow_id=workflow_id, name=name,
-                description=desc, stage_type=stage_type, order=order,
-                allow_skip=False, is_active=True
-            )
-            self.stage_repository.save(stage)
-
-    def _create_talent_pool_workflow(self, workflow_id: CompanyWorkflowId, company_id: CompanyId, phase_id: str) -> None:
-        """Create Talent Pool workflow with 3 stages per WORKFLOW3.md"""
-        workflow = CompanyWorkflow.create(
-            id=workflow_id, company_id=company_id, name="Talent Pool Workflow",
-            description="Long-term candidate tracking", phase_id=phase_id, is_default=True
-        )
-        workflow = workflow.activate()
-        self.workflow_repository.save(workflow)
-
-        stages = [
-            ("Welcome", "Candidate added to talent pool", StageType.INITIAL, 0),
-            ("Recovered", "Candidate re-engaged for new opportunity", StageType.SUCCESS, 1),
-            ("Lost", "Candidate no longer interested", StageType.FAIL, 2),
         ]
         for name, desc, stage_type, order in stages:
             stage = WorkflowStage.create(

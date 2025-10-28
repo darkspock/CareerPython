@@ -176,11 +176,10 @@ def initialize_default_phases(
 ) -> List[PhaseResponse]:
     """Initialize default phases for a company (reset to defaults)
 
-    This will create 4 default phases with their workflows:
+    This will create 3 default phases with their workflows:
     - Sourcing (Kanban) - Screening process
     - Evaluation (Kanban) - Interview and assessment
     - Offer and Pre-Onboarding (List) - Offer negotiation
-    - Talent Pool (List) - Long-term tracking
 
     Args:
         company_id: Company ID

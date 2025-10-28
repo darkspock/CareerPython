@@ -9,35 +9,60 @@ import {
   Menu,
   X,
   LayoutDashboard,
-  Layers
+  Layers,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
+import { phaseService } from '../../services/phaseService';
+import type { Phase } from '../../types/phase';
 
 export default function CompanyLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [companyName, setCompanyName] = useState<string>('Company');
+  const [phases, setPhases] = useState<Phase[]>([]);
+  const [candidatesMenuOpen, setCandidatesMenuOpen] = useState(false);
 
   useEffect(() => {
     loadCompanyName();
+    loadPhases();
   }, []);
+
+  const getCompanyId = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.company_id;
+    } catch {
+      return null;
+    }
+  };
 
   const loadCompanyName = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      if (!token) return;
+      const companyId = getCompanyId();
+      if (!companyId) return;
 
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const companyId = payload.company_id;
-
-      if (companyId) {
-        const company = await recruiterCompanyService.getCompany(companyId);
-        setCompanyName(company.name);
-      }
+      const company = await recruiterCompanyService.getCompany(companyId);
+      setCompanyName(company.name);
     } catch (error) {
       console.error('Error loading company name:', error);
+    }
+  };
+
+  const loadPhases = async () => {
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) return;
+
+      const phasesData = await phaseService.listPhases(companyId);
+      setPhases(phasesData.sort((a, b) => a.sort_order - b.sort_order));
+    } catch (error) {
+      console.error('Error loading phases:', error);
     }
   };
 
@@ -48,13 +73,12 @@ export default function CompanyLayout() {
 
   const menuItems = [
     { path: '/company/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/company/candidates', icon: Users, label: 'Candidates' },
-    { path: '/company/workflow-board', icon: Kanban, label: 'Kanban Board' },
     { path: '/company/positions', icon: Briefcase, label: 'Job Positions' },
     { path: '/company/settings', icon: Settings, label: 'Settings' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
+  const isCandidatesActive = location.pathname.startsWith('/company/candidates');
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -91,7 +115,80 @@ export default function CompanyLayout() {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {menuItems.map((item) => {
+            {menuItems.slice(0, 1).map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                    ${
+                      active
+                        ? 'bg-blue-50 text-blue-700 font-medium'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }
+                  `}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+
+            {/* Candidates Menu with Phases */}
+            <div>
+              <button
+                onClick={() => setCandidatesMenuOpen(!candidatesMenuOpen)}
+                className={`
+                  flex items-center justify-between w-full gap-3 px-4 py-3 rounded-lg transition-colors
+                  ${
+                    isCandidatesActive
+                      ? 'bg-blue-50 text-blue-700 font-medium'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5" />
+                  <span>Candidates</span>
+                </div>
+                {candidatesMenuOpen ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </button>
+
+              {/* Phase Submenu */}
+              {candidatesMenuOpen && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {phases.map((phase) => (
+                    <Link
+                      key={phase.id}
+                      to={`/company/candidates?phase=${phase.id}`}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`
+                        flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
+                        ${
+                          location.search.includes(`phase=${phase.id}`)
+                            ? 'bg-blue-50 text-blue-700 font-medium'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }
+                      `}
+                    >
+                      <Layers className="w-4 h-4" />
+                      <span>{phase.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {menuItems.slice(1).map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
 
@@ -144,7 +241,80 @@ export default function CompanyLayout() {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {menuItems.map((item) => {
+            {menuItems.slice(0, 1).map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                    ${
+                      active
+                        ? 'bg-blue-50 text-blue-700 font-medium'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }
+                  `}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+
+            {/* Candidates Menu with Phases */}
+            <div>
+              <button
+                onClick={() => setCandidatesMenuOpen(!candidatesMenuOpen)}
+                className={`
+                  flex items-center justify-between w-full gap-3 px-4 py-3 rounded-lg transition-colors
+                  ${
+                    isCandidatesActive
+                      ? 'bg-blue-50 text-blue-700 font-medium'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5" />
+                  <span>Candidates</span>
+                </div>
+                {candidatesMenuOpen ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </button>
+
+              {/* Phase Submenu */}
+              {candidatesMenuOpen && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {phases.map((phase) => (
+                    <Link
+                      key={phase.id}
+                      to={`/company/candidates?phase=${phase.id}`}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`
+                        flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
+                        ${
+                          location.search.includes(`phase=${phase.id}`)
+                            ? 'bg-blue-50 text-blue-700 font-medium'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }
+                      `}
+                    >
+                      <Layers className="w-4 h-4" />
+                      <span>{phase.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {menuItems.slice(1).map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
 

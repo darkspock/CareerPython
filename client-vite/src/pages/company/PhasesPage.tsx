@@ -329,7 +329,7 @@ export default function PhasesPage() {
   };
 
   const handleInitializeDefaults = async () => {
-    if (!confirm('This will create 4 default phases with their workflows:\n\n1. Sourcing (Kanban) - Screening process\n2. Evaluation (Kanban) - Interview process\n3. Offer and Pre-Onboarding (List) - Offer negotiation\n4. Talent Pool (List) - Long-term tracking\n\nContinue?')) {
+    if (!confirm('This will create 3 default phases with their workflows:\n\n1. Sourcing (Kanban) - Screening process\n2. Evaluation (Kanban) - Interview process\n3. Offer and Pre-Onboarding (List) - Offer negotiation\n\nContinue?')) {
       return;
     }
 
