@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from src.phase.domain.enums.default_view_enum import DefaultView
+from src.phase.domain.enums.phase_status_enum import PhaseStatus
 
 
 class CreatePhaseRequest(BaseModel):
@@ -50,6 +51,7 @@ class PhaseResponse(BaseModel):
     name: str
     sort_order: int
     default_view: DefaultView
+    status: PhaseStatus
     objective: Optional[str]
     created_at: datetime
     updated_at: datetime
@@ -63,6 +65,7 @@ class PhaseResponse(BaseModel):
                 "name": "Interview",
                 "sort_order": 1,
                 "default_view": "KANBAN",
+                "status": "ACTIVE",
                 "objective": "Conduct interviews and assess candidate fit",
                 "created_at": "2024-01-15T10:30:00Z",
                 "updated_at": "2024-01-15T10:30:00Z"

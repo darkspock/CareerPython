@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, ArrowUp, ArrowDown, Layers, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowUp, ArrowDown, Layers, GripVertical, Archive, CheckCircle } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { phaseService } from '../../services/phaseService';
 import type { Phase } from '../../types/phase';
+import { PhaseStatus } from '../../types/phase';
 import PhaseFormModal from '../../components/phases/PhaseFormModal';
 
 // Sortable Phase Row Component
@@ -14,6 +15,8 @@ function SortablePhaseRow({
   index,
   onEdit,
   onDelete,
+  onArchive,
+  onActivate,
   onMoveUp,
   onMoveDown,
   isFirst,
@@ -23,6 +26,8 @@ function SortablePhaseRow({
   index: number;
   onEdit: (phase: Phase) => void;
   onDelete: (phaseId: string) => void;
+  onArchive: (phaseId: string) => void;
+  onActivate: (phaseId: string) => void;
   onMoveUp: (index: number) => void;
   onMoveDown: (index: number) => void;
   isFirst: boolean;
@@ -76,6 +81,16 @@ function SortablePhaseRow({
               <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
                 {getDefaultViewLabel(phase.default_view)}
               </span>
+              {phase.status === PhaseStatus.DRAFT && (
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+                  Draft
+                </span>
+              )}
+              {phase.status === PhaseStatus.ARCHIVED && (
+                <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 rounded">
+                  Archived
+                </span>
+              )}
             </div>
 
             {phase.objective && (
@@ -115,6 +130,28 @@ function SortablePhaseRow({
             >
               <ArrowDown className="w-5 h-5" />
             </button>
+
+            {/* Activate (only if not ACTIVE) */}
+            {phase.status !== PhaseStatus.ACTIVE && (
+              <button
+                onClick={() => onActivate(phase.id)}
+                className="p-2 text-green-600 hover:text-green-800 rounded-lg hover:bg-green-50 transition-colors"
+                title="Activate phase"
+              >
+                <CheckCircle className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Archive (only if ACTIVE) */}
+            {phase.status === PhaseStatus.ACTIVE && (
+              <button
+                onClick={() => onArchive(phase.id)}
+                className="p-2 text-orange-600 hover:text-orange-800 rounded-lg hover:bg-orange-50 transition-colors"
+                title="Archive phase"
+              >
+                <Archive className="w-5 h-5" />
+              </button>
+            )}
 
             {/* Edit */}
             <button
@@ -217,6 +254,40 @@ export default function PhasesPage() {
       loadPhases();
     } catch (err: any) {
       alert('Failed to delete phase: ' + err.message);
+    }
+  };
+
+  const handleArchivePhase = async (phaseId: string) => {
+    if (!confirm('Are you sure you want to archive this phase? Archived phases are hidden but not deleted.')) {
+      return;
+    }
+
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) {
+        alert('Company ID not found');
+        return;
+      }
+
+      await phaseService.archivePhase(companyId, phaseId);
+      loadPhases();
+    } catch (err: any) {
+      alert('Failed to archive phase: ' + err.message);
+    }
+  };
+
+  const handleActivatePhase = async (phaseId: string) => {
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) {
+        alert('Company ID not found');
+        return;
+      }
+
+      await phaseService.activatePhase(companyId, phaseId);
+      loadPhases();
+    } catch (err: any) {
+      alert('Failed to activate phase: ' + err.message);
     }
   };
 
@@ -329,7 +400,7 @@ export default function PhasesPage() {
   };
 
   const handleInitializeDefaults = async () => {
-    if (!confirm('This will create 3 default phases with their workflows:\n\n1. Sourcing (Kanban) - Screening process\n2. Evaluation (Kanban) - Interview process\n3. Offer and Pre-Onboarding (List) - Offer negotiation\n\nContinue?')) {
+    if (!confirm('This will ARCHIVE all existing phases and create 3 new default phases:\n\n1. Sourcing (Kanban) - Screening process\n2. Evaluation (Kanban) - Interview process\n3. Offer and Pre-Onboarding (List) - Offer negotiation\n\nYour existing phases (including Talent Pool) will be archived but not deleted.\n\nContinue?')) {
       return;
     }
 
@@ -428,6 +499,8 @@ export default function PhasesPage() {
                   index={index}
                   onEdit={handleEditPhase}
                   onDelete={handleDeletePhase}
+                  onArchive={handleArchivePhase}
+                  onActivate={handleActivatePhase}
                   onMoveUp={handleMovePhaseUp}
                   onMoveDown={handleMovePhaseDown}
                   isFirst={index === 0}

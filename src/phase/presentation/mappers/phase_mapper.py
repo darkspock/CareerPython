@@ -22,6 +22,7 @@ class PhaseMapper:
             name=dto.name,
             sort_order=dto.sort_order,
             default_view=dto.default_view,
+            status=dto.status,
             objective=dto.objective,
             created_at=dto.created_at,
             updated_at=dto.updated_at

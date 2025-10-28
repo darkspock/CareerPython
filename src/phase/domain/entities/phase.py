@@ -5,6 +5,7 @@ from typing import Optional
 
 from src.company.domain.value_objects.company_id import CompanyId
 from src.phase.domain.enums.default_view_enum import DefaultView
+from src.phase.domain.enums.phase_status_enum import PhaseStatus
 from src.phase.domain.value_objects.phase_id import PhaseId
 
 
@@ -16,6 +17,7 @@ class Phase:
     name: str
     sort_order: int
     default_view: DefaultView
+    status: PhaseStatus
     objective: Optional[str]
     created_at: datetime
     updated_at: datetime
@@ -27,7 +29,8 @@ class Phase:
         name: str,
         sort_order: int,
         default_view: DefaultView,
-        objective: Optional[str] = None
+        objective: Optional[str] = None,
+        status: PhaseStatus = PhaseStatus.ACTIVE
     ) -> 'Phase':
         """Create a new Phase"""
         if not name or name.strip() == "":
@@ -44,6 +47,7 @@ class Phase:
             name=name.strip(),
             sort_order=sort_order,
             default_view=default_view,
+            status=status,
             objective=objective,
             created_at=now,
             updated_at=now
@@ -69,6 +73,27 @@ class Phase:
         self.objective = objective
         self.updated_at = datetime.utcnow()
 
+    def archive(self) -> None:
+        """Archive this phase (soft delete)"""
+        if self.status == PhaseStatus.ARCHIVED:
+            raise ValueError("Phase is already archived")
+        self.status = PhaseStatus.ARCHIVED
+        self.updated_at = datetime.utcnow()
+
+    def activate(self) -> None:
+        """Activate this phase"""
+        if self.status == PhaseStatus.ACTIVE:
+            raise ValueError("Phase is already active")
+        self.status = PhaseStatus.ACTIVE
+        self.updated_at = datetime.utcnow()
+
+    def set_draft(self) -> None:
+        """Set phase to draft status"""
+        if self.status == PhaseStatus.DRAFT:
+            raise ValueError("Phase is already in draft status")
+        self.status = PhaseStatus.DRAFT
+        self.updated_at = datetime.utcnow()
+
     @classmethod
     def _from_repository(
         cls,
@@ -77,6 +102,7 @@ class Phase:
         name: str,
         sort_order: int,
         default_view: DefaultView,
+        status: PhaseStatus,
         objective: Optional[str],
         created_at: datetime,
         updated_at: datetime
@@ -88,6 +114,7 @@ class Phase:
             name=name,
             sort_order=sort_order,
             default_view=default_view,
+            status=status,
             objective=objective,
             created_at=created_at,
             updated_at=updated_at

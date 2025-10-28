@@ -56,4 +56,18 @@ export const phaseService = {
   async initializeDefaultPhases(companyId: string): Promise<Phase[]> {
     return ApiClient.post<Phase[]>(`/api/companies/${companyId}/phases/initialize`);
   },
+
+  /**
+   * Archive a phase (soft delete)
+   */
+  async archivePhase(companyId: string, phaseId: string): Promise<Phase> {
+    return ApiClient.post<Phase>(`/api/companies/${companyId}/phases/${phaseId}/archive`);
+  },
+
+  /**
+   * Activate a phase
+   */
+  async activatePhase(companyId: string, phaseId: string): Promise<Phase> {
+    return ApiClient.post<Phase>(`/api/companies/${companyId}/phases/${phaseId}/activate`);
+  },
 };

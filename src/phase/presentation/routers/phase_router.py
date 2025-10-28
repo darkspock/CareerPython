@@ -194,3 +194,65 @@ def initialize_default_phases(
         return controller.initialize_default_phases(company_id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.post(
+    "/{phase_id}/archive",
+    response_model=PhaseResponse,
+    summary="Archive a phase (soft delete)"
+)
+@inject
+def archive_phase(
+    company_id: str,
+    phase_id: str,
+    controller: PhaseController = Depends(Provide[Container.phase_controller])
+) -> PhaseResponse:
+    """Archive a phase (soft delete)
+
+    Args:
+        company_id: Company ID
+        phase_id: Phase ID to archive
+
+    Returns:
+        Archived phase
+
+    Raises:
+        HTTPException: If phase not found or archiving fails
+    """
+    try:
+        return controller.archive_phase(phase_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.post(
+    "/{phase_id}/activate",
+    response_model=PhaseResponse,
+    summary="Activate a phase"
+)
+@inject
+def activate_phase(
+    company_id: str,
+    phase_id: str,
+    controller: PhaseController = Depends(Provide[Container.phase_controller])
+) -> PhaseResponse:
+    """Activate a phase
+
+    Args:
+        company_id: Company ID
+        phase_id: Phase ID to activate
+
+    Returns:
+        Activated phase
+
+    Raises:
+        HTTPException: If phase not found or activation fails
+    """
+    try:
+        return controller.activate_phase(phase_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

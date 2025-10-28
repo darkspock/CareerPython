@@ -5,6 +5,7 @@ from typing import Optional
 
 from src.phase.domain.entities.phase import Phase
 from src.phase.domain.enums.default_view_enum import DefaultView
+from src.phase.domain.enums.phase_status_enum import PhaseStatus
 from src.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.phase.domain.value_objects.phase_id import PhaseId
 from src.shared.application.query_bus import Query, QueryHandler
@@ -18,6 +19,7 @@ class PhaseDto:
     name: str
     sort_order: int
     default_view: DefaultView
+    status: PhaseStatus
     objective: Optional[str]
     created_at: datetime
     updated_at: datetime
@@ -31,6 +33,7 @@ class PhaseDto:
             name=phase.name,
             sort_order=phase.sort_order,
             default_view=phase.default_view,
+            status=phase.status,
             objective=phase.objective,
             created_at=phase.created_at,
             updated_at=phase.updated_at

@@ -5,6 +5,8 @@ from src.company.domain.value_objects.company_id import CompanyId
 from src.phase.application.commands.create_phase_command import CreatePhaseCommand, CreatePhaseCommandHandler
 from src.phase.application.commands.delete_phase_command import DeletePhaseCommand, DeletePhaseCommandHandler
 from src.phase.application.commands.update_phase_command import UpdatePhaseCommand, UpdatePhaseCommandHandler
+from src.phase.application.commands.archive_phase_command import ArchivePhaseCommand, ArchivePhaseCommandHandler
+from src.phase.application.commands.activate_phase_command import ActivatePhaseCommand, ActivatePhaseCommandHandler
 from src.phase.application.commands.initialize_company_phases_command import (
     InitializeCompanyPhasesCommand,
     InitializeCompanyPhasesCommandHandler
@@ -31,6 +33,8 @@ class PhaseController:
         create_handler: CreatePhaseCommandHandler,
         update_handler: UpdatePhaseCommandHandler,
         delete_handler: DeletePhaseCommandHandler,
+        archive_handler: ArchivePhaseCommandHandler,
+        activate_handler: ActivatePhaseCommandHandler,
         get_by_id_handler: GetPhaseByIdQueryHandler,
         list_by_company_handler: ListPhasesByCompanyQueryHandler,
         initialize_handler: InitializeCompanyPhasesCommandHandler
@@ -38,6 +42,8 @@ class PhaseController:
         self.create_handler = create_handler
         self.update_handler = update_handler
         self.delete_handler = delete_handler
+        self.archive_handler = archive_handler
+        self.activate_handler = activate_handler
         self.get_by_id_handler = get_by_id_handler
         self.list_by_company_handler = list_by_company_handler
         self.initialize_handler = initialize_handler
@@ -174,3 +180,47 @@ class PhaseController:
 
         # Return the created phases
         return self.list_phases_by_company(company_id)
+
+    def archive_phase(self, phase_id: str) -> PhaseResponse:
+        """Archive a phase (soft delete)
+
+        Args:
+            phase_id: Phase ID to archive
+
+        Returns:
+            Archived phase response
+        """
+        # Execute archive command
+        command = ArchivePhaseCommand(phase_id=phase_id)
+        self.archive_handler.execute(command)
+
+        # Query the archived phase
+        query = GetPhaseByIdQuery(phase_id=PhaseId.from_string(phase_id))
+        phase_dto = self.get_by_id_handler.handle(query)
+
+        if not phase_dto:
+            raise ValueError(f"Phase {phase_id} not found")
+
+        return PhaseMapper.dto_to_response(phase_dto)
+
+    def activate_phase(self, phase_id: str) -> PhaseResponse:
+        """Activate a phase
+
+        Args:
+            phase_id: Phase ID to activate
+
+        Returns:
+            Activated phase response
+        """
+        # Execute activate command
+        command = ActivatePhaseCommand(phase_id=phase_id)
+        self.activate_handler.execute(command)
+
+        # Query the activated phase
+        query = GetPhaseByIdQuery(phase_id=PhaseId.from_string(phase_id))
+        phase_dto = self.get_by_id_handler.handle(query)
+
+        if not phase_dto:
+            raise ValueError(f"Phase {phase_id} not found")
+
+        return PhaseMapper.dto_to_response(phase_dto)

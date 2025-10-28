@@ -51,13 +51,13 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         2. Evaluation (sort_order=1, Kanban) - Interview and assessment
         3. Offer and Pre-Onboarding (sort_order=2, List) - Offer negotiation
 
-        Note: This will only create phases if they don't already exist.
+        Note: This will ARCHIVE all existing phases before creating the defaults.
         """
-        # Check if phases already exist for this company
+        # Archive all existing active phases for this company
         existing_phases = self.phase_repository.list_by_company(command.company_id)
-        if existing_phases:
-            # Phases already exist, skip initialization
-            return
+        for phase in existing_phases:
+            phase.archive()
+            self.phase_repository.save(phase)
 
         # Phase 1: Sourcing
         phase1_id = PhaseId.generate()

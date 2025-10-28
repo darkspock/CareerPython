@@ -8,12 +8,19 @@ export enum DefaultView {
   LIST = 'LIST',
 }
 
+export enum PhaseStatus {
+  DRAFT = 'DRAFT',
+  ACTIVE = 'ACTIVE',
+  ARCHIVED = 'ARCHIVED',
+}
+
 export interface Phase {
   id: string;
   company_id: string;
   name: string;
   sort_order: number;
   default_view: DefaultView;
+  status: PhaseStatus;
   objective: string | null;
   created_at: string;
   updated_at: string;

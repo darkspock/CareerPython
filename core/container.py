@@ -242,6 +242,8 @@ from src.job_position.presentation.controllers.public_position_controller import
 from src.phase.application.commands.create_phase_command import CreatePhaseCommandHandler
 from src.phase.application.commands.update_phase_command import UpdatePhaseCommandHandler
 from src.phase.application.commands.delete_phase_command import DeletePhaseCommandHandler
+from src.phase.application.commands.archive_phase_command import ArchivePhaseCommandHandler
+from src.phase.application.commands.activate_phase_command import ActivatePhaseCommandHandler
 from src.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommandHandler
 
 # Phase 12: Phase Application Layer - Queries
@@ -1361,6 +1363,16 @@ class Container(containers.DeclarativeContainer):
         phase_repository=phase_repository
     )
 
+    archive_phase_command_handler = providers.Factory(
+        ArchivePhaseCommandHandler,
+        phase_repository=phase_repository
+    )
+
+    activate_phase_command_handler = providers.Factory(
+        ActivatePhaseCommandHandler,
+        phase_repository=phase_repository
+    )
+
     initialize_company_phases_command_handler = providers.Factory(
         InitializeCompanyPhasesCommandHandler,
         phase_repository=phase_repository,
@@ -1800,6 +1812,8 @@ class Container(containers.DeclarativeContainer):
         create_handler=create_phase_command_handler,
         update_handler=update_phase_command_handler,
         delete_handler=delete_phase_command_handler,
+        archive_handler=archive_phase_command_handler,
+        activate_handler=activate_phase_command_handler,
         get_by_id_handler=get_phase_by_id_query_handler,
         list_by_company_handler=list_phases_by_company_query_handler,
         initialize_handler=initialize_company_phases_command_handler
