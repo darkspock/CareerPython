@@ -41,5 +41,8 @@ class WorkflowStageModel(Base):
     # Kanban display configuration
     kanban_display: Mapped[str] = mapped_column(String(10), nullable=False, default='column')  # 'column', 'row', or 'none'
 
+    # Visual styling
+    style: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # StageStyle as JSON
+
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

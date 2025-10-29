@@ -24,5 +24,6 @@ class WorkflowStageDto:
     estimated_cost: Optional[Decimal]
     next_phase_id: Optional[str]
     kanban_display: str
+    style: dict
     created_at: datetime
     updated_at: datetime

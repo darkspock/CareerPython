@@ -204,7 +204,7 @@ export default function CandidatesListPage() {
     const matchesPriority = !priorityFilter || candidate.priority === priorityFilter;
 
     // Phase 12: Filter by phase_id from URL
-    const matchesPhase = !phaseId || candidate.current_phase_id === phaseId;
+    const matchesPhase = !phaseId || candidate.phase_id === phaseId;
 
     return matchesSearch && matchesStatus && matchesPriority && matchesPhase;
   });

@@ -26,6 +26,7 @@ class WorkflowStageMapper:
             estimated_cost=entity.estimated_cost,
             next_phase_id=entity.next_phase_id,
             kanban_display=entity.kanban_display,
+            style=entity.style.to_dict(),
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

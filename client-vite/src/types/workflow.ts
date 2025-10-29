@@ -1,4 +1,5 @@
 // Workflow types
+import type { StageStyle } from './stageStyle';
 
 // Phase 12: Updated workflow status (INACTIVE → DRAFT)
 export type WorkflowStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
@@ -49,6 +50,7 @@ export interface WorkflowStage {
   estimated_cost: string | null;
   next_phase_id?: string | null; // Phase 12: Phase transition
   kanban_display: KanbanDisplay; // Kanban display configuration
+  style: StageStyle; // Visual styling
   created_at: string;
   updated_at: string;
 

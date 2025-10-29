@@ -17,7 +17,7 @@ class CompanyCandidateResponseMapper:
             created_by_user_id=dto.created_by_user_id,
             workflow_id=dto.workflow_id,
             current_stage_id=dto.current_stage_id,
-            current_phase_id=dto.current_phase_id,
+            phase_id=dto.phase_id,
             invited_at=dto.invited_at,
             confirmed_at=dto.confirmed_at,
             rejected_at=dto.rejected_at,

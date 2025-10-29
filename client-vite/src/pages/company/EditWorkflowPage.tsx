@@ -7,7 +7,9 @@ import { api } from '../../lib/api';
 import type { CompanyWorkflow, WorkflowStage, CustomField, FieldConfiguration, StageType } from '../../types/workflow';
 import type { CompanyRole } from '../../types/company';
 import type { Phase } from '../../types/phase';
+import type { UpdateStageStyleRequest } from '../../types/stageStyle';
 import { CustomFieldEditor, FieldVisibilityMatrix, ValidationRuleEditor, PhaseTransitionIndicator } from '../../components/workflow';
+import { StageStyleEditor } from '../../components/workflow/StageStyleEditor';
 
 interface StageFormData {
   id?: string;
@@ -23,6 +25,11 @@ interface StageFormData {
   deadline_days?: number;
   estimated_cost?: string;
   next_phase_id?: string;
+  style?: {
+    icon: string;
+    color: string;
+    background_color: string;
+  };
 }
 
 export default function EditWorkflowPage() {
@@ -44,6 +51,8 @@ export default function EditWorkflowPage() {
   const [deletedStageIds, setDeletedStageIds] = useState<string[]>([]);
   const [advancedModalOpen, setAdvancedModalOpen] = useState(false);
   const [selectedStageIndex, setSelectedStageIndex] = useState<number | null>(null);
+  const [styleEditorOpen, setStyleEditorOpen] = useState(false);
+  const [editingStageIndex, setEditingStageIndex] = useState<number | null>(null);
 
   // Custom fields state
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
@@ -127,6 +136,7 @@ export default function EditWorkflowPage() {
         deadline_days: stage.deadline_days || undefined,
         estimated_cost: stage.estimated_cost || undefined,
         next_phase_id: stage.next_phase_id || undefined,
+        style: stage.style,
       }));
       setStages(formattedStages);
       setError(null);
@@ -216,6 +226,42 @@ export default function EditWorkflowPage() {
   const closeAdvancedSettings = () => {
     setAdvancedModalOpen(false);
     setSelectedStageIndex(null);
+  };
+
+  const handleEditStageStyle = (stageIndex: number) => {
+    setEditingStageIndex(stageIndex);
+    setStyleEditorOpen(true);
+  };
+
+  const handleSaveStageStyle = async (style: UpdateStageStyleRequest) => {
+    if (editingStageIndex === null) return;
+
+    const stage = stages[editingStageIndex];
+    if (!stage.id) return;
+
+    try {
+      const updatedStage = await companyWorkflowService.updateStageStyle(stage.id, style);
+      
+      // Update the stage in the local state
+      setStages(prevStages => 
+        prevStages.map((s, index) => 
+          index === editingStageIndex 
+            ? { ...s, style: updatedStage.style }
+            : s
+        )
+      );
+
+      setStyleEditorOpen(false);
+      setEditingStageIndex(null);
+    } catch (error) {
+      console.error('Error updating stage style:', error);
+      setError('Failed to update stage style');
+    }
+  };
+
+  const handleCancelStageStyle = () => {
+    setStyleEditorOpen(false);
+    setEditingStageIndex(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -451,7 +497,13 @@ export default function EditWorkflowPage() {
               <div key={stage.id || index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-500">Stage {index + 1}</span>
+                    <div className="flex items-center gap-2">
+                      <span 
+                        className="text-lg"
+                        dangerouslySetInnerHTML={{ __html: stage.style?.icon || '📋' }}
+                      />
+                      <span className="text-sm font-medium text-gray-500">Stage {index + 1}</span>
+                    </div>
                     {stage.isNew && (
                       <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
                         New
@@ -478,6 +530,17 @@ export default function EditWorkflowPage() {
                     >
                       <ArrowDown className="w-4 h-4" />
                     </button>
+                    {/* Style button */}
+                    {!stage.isNew && (
+                      <button
+                        type="button"
+                        onClick={() => handleEditStageStyle(index)}
+                        className="p-1 text-blue-600 hover:text-blue-800"
+                        title="Edit stage style"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                    )}
                     {/* Delete button */}
                     {stages.length > 1 && (
                       <button
@@ -857,6 +920,16 @@ export default function EditWorkflowPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Stage Style Editor Modal */}
+      {styleEditorOpen && editingStageIndex !== null && (
+        <StageStyleEditor
+          stageStyle={stages[editingStageIndex].style || { icon: '📋', color: '#374151', background_color: '#f3f4f6' }}
+          onSave={handleSaveStageStyle}
+          onCancel={handleCancelStageStyle}
+          isOpen={styleEditorOpen}
+        />
       )}
     </div>
   );

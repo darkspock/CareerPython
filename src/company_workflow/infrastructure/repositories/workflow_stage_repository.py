@@ -3,6 +3,7 @@ from typing import Optional, List, Any
 from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.stage_style import StageStyle
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 from src.company_workflow.domain.enums.stage_type import StageType
@@ -111,6 +112,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             estimated_cost=Decimal(str(model.estimated_cost)) if model.estimated_cost is not None else None,
             next_phase_id=model.next_phase_id,
             kanban_display=model.kanban_display,
+            style=StageStyle.from_dict(model.style) if model.style else StageStyle.create(),
             created_at=model.created_at,
             updated_at=model.updated_at
         )
@@ -135,6 +137,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             estimated_cost=float(entity.estimated_cost) if entity.estimated_cost is not None else None,
             next_phase_id=entity.next_phase_id,
             kanban_display=entity.kanban_display,
+            style=entity.style.to_dict(),
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

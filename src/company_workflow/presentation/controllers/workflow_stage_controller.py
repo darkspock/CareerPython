@@ -18,6 +18,7 @@ from src.company_workflow.application.queries.get_final_stages import GetFinalSt
 from src.company_workflow.presentation.schemas.create_stage_request import CreateStageRequest
 from src.company_workflow.presentation.schemas.update_stage_request import UpdateStageRequest
 from src.company_workflow.presentation.schemas.reorder_stages_request import ReorderStagesRequest
+from src.company_workflow.presentation.schemas.stage_style_request import UpdateStageStyleRequest
 from src.company_workflow.presentation.schemas.workflow_stage_response import WorkflowStageResponse
 from src.company_workflow.presentation.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
 
@@ -177,3 +178,45 @@ class WorkflowStageController:
             raise Exception("Stage not found after deactivation")
 
         return WorkflowStageResponseMapper.dto_to_response(dto)
+
+    def update_stage_style(self, stage_id: str, style_request: UpdateStageStyleRequest) -> WorkflowStageResponse:
+        """Update the visual style of a workflow stage."""
+        # First get the current stage
+        query = GetStageByIdQuery(id=stage_id)
+        dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
+        
+        if not dto:
+            raise Exception("Stage not found")
+
+        # Create update command with style changes
+        updated_style = {
+            **dto.style,
+            **{k: v for k, v in style_request.dict().items() if v is not None}
+        }
+
+        command = UpdateStageCommand(
+            id=stage_id,
+            name=dto.name,
+            description=dto.description,
+            stage_type=dto.stage_type,
+            allow_skip=dto.allow_skip,
+            estimated_duration_days=dto.estimated_duration_days,
+            default_role_ids=dto.default_role_ids,
+            default_assigned_users=dto.default_assigned_users,
+            email_template_id=dto.email_template_id,
+            custom_email_text=dto.custom_email_text,
+            deadline_days=dto.deadline_days,
+            estimated_cost=dto.estimated_cost,
+            next_phase_id=dto.next_phase_id,
+            style=updated_style
+        )
+        self._command_bus.dispatch(command)
+
+        # Return updated stage
+        updated_query = GetStageByIdQuery(id=stage_id)
+        updated_dto: Optional[WorkflowStageDto] = self._query_bus.query(updated_query)
+
+        if not updated_dto:
+            raise Exception("Stage not found after style update")
+
+        return WorkflowStageResponseMapper.dto_to_response(updated_dto)

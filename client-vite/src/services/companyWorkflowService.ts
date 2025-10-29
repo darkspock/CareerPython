@@ -8,6 +8,7 @@ import type {
   UpdateStageRequest,
   ReorderStagesRequest
 } from '../types/workflow';
+import type { UpdateStageStyleRequest } from '../types/stageStyle';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('access_token');
@@ -248,6 +249,22 @@ export const companyWorkflowService = {
       {},
       {
         headers: getAuthHeaders(),
+      }
+    );
+  },
+
+  /**
+   * Update stage style
+   */
+  updateStageStyle: async (stageId: string, style: UpdateStageStyleRequest): Promise<WorkflowStage> => {
+    return ApiClient.authenticatedRequest(
+      `/api/workflow-stages/${stageId}/style`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(style),
       }
     );
   },

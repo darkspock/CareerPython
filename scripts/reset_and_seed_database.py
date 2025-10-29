@@ -642,7 +642,7 @@ def link_candidates_to_positions(session, company_id: str, candidate_ids: list[s
                 company_id=company_id,
                 candidate_id=candidate_id,
                 job_position_id=position_id,
-                current_phase_id=phase_id,
+                phase_id=phase_id,
                 current_stage_id=stage_id,
                 priority=priority,
                 status=status,

@@ -66,15 +66,15 @@ export function StageTimeline({ candidate, companyId }: StageTimelineProps) {
   }
 
   // Add current phase if available
-  if (candidate.current_phase_id) {
+  if (candidate.phase_id) {
     timeline.push({
-      id: `phase-${candidate.current_phase_id}`,
+      id: `phase-${candidate.phase_id}`,
       type: 'phase',
       title: 'Current Phase',
       description: 'Candidate entered this recruitment phase',
       timestamp: candidate.updated_at,
       status: 'current',
-      phaseId: candidate.current_phase_id,
+      phaseId: candidate.phase_id,
     });
   }
 

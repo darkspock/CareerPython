@@ -10,6 +10,7 @@ from src.company_workflow.presentation.schemas.create_stage_request import Creat
 from src.company_workflow.presentation.schemas.reorder_stages_request import ReorderStagesRequest
 from src.company_workflow.presentation.schemas.update_stage_request import UpdateStageRequest
 from src.company_workflow.presentation.schemas.workflow_stage_response import WorkflowStageResponse
+from src.company_workflow.presentation.schemas.stage_style_request import UpdateStageStyleRequest
 
 router = APIRouter(
     prefix="/api/workflow-stages",
@@ -194,5 +195,23 @@ def deactivate_stage(
     """Deactivate a stage"""
     try:
         return controller.deactivate_stage(stage_id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.patch(
+    "/{stage_id}/style",
+    response_model=WorkflowStageResponse,
+    summary="Update stage style"
+)
+@inject
+def update_stage_style(
+        stage_id: str,
+        style_request: UpdateStageStyleRequest,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> WorkflowStageResponse:
+    """Update the visual style of a workflow stage"""
+    try:
+        return controller.update_stage_style(stage_id, style_request)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

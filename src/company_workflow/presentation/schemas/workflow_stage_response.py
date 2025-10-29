@@ -23,6 +23,7 @@ class WorkflowStageResponse(BaseModel):
     estimated_cost: Optional[Decimal]
     next_phase_id: Optional[str] = None  # Phase 12: Phase transition
     kanban_display: str  # Kanban display configuration
+    style: dict  # Visual styling
     created_at: datetime
     updated_at: datetime
 

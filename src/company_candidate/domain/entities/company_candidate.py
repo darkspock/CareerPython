@@ -36,7 +36,7 @@ class CompanyCandidate:
     created_by_user_id: CompanyUserId
     workflow_id: Optional[CompanyWorkflowId]
     current_stage_id: Optional[WorkflowStageId]
-    current_phase_id: Optional[str]  # Current recruitment phase
+    phase_id: Optional[str]  # Current recruitment phase
     invited_at: datetime
     confirmed_at: Optional[datetime]
     rejected_at: Optional[datetime]
@@ -74,7 +74,7 @@ class CompanyCandidate:
         lead_id: Optional[str] = None,
         resume_url: Optional[str] = None,
         resume_uploaded_by: Optional[CompanyUserId] = None,
-        current_phase_id: Optional[str] = None,
+        phase_id: Optional[str] = None,
     ) -> "CompanyCandidate":
         """
         Factory method to create a new company-candidate relationship
@@ -144,7 +144,7 @@ class CompanyCandidate:
             created_by_user_id=created_by_user_id,
             workflow_id=None,
             current_stage_id=None,
-            current_phase_id=current_phase_id,
+            phase_id=phase_id,
             invited_at=now,
             confirmed_at=None,
             rejected_at=None,
@@ -197,7 +197,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=self.current_stage_id,
-            current_phase_id=self.current_phase_id,
+            phase_id=self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,
@@ -242,7 +242,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=self.current_stage_id,
-            current_phase_id=self.current_phase_id,
+            phase_id=self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,
@@ -289,7 +289,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=self.current_stage_id,
-            current_phase_id=self.current_phase_id,
+            phase_id=self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=datetime.utcnow(),
             rejected_at=self.rejected_at,
@@ -328,7 +328,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=self.current_stage_id,
-            current_phase_id=self.current_phase_id,
+            phase_id=self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=datetime.utcnow(),
@@ -367,7 +367,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=self.current_stage_id,
-            current_phase_id=self.current_phase_id,
+            phase_id=self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,
@@ -412,7 +412,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=self.current_stage_id,
-            current_phase_id=self.current_phase_id,
+            phase_id=self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,
@@ -432,13 +432,14 @@ class CompanyCandidate:
             updated_at=datetime.utcnow(),
         )
 
-    def assign_workflow(self, workflow_id: CompanyWorkflowId, initial_stage_id: WorkflowStageId) -> "CompanyCandidate":
+    def assign_workflow(self, workflow_id: CompanyWorkflowId, initial_stage_id: WorkflowStageId, phase_id: Optional[str] = None) -> "CompanyCandidate":
         """
         Assigns a workflow and initial stage to this candidate
 
         Args:
             workflow_id: Workflow ID
             initial_stage_id: Initial stage ID
+            phase_id: Phase ID (optional)
 
         Returns:
             CompanyCandidate: New instance with workflow assigned
@@ -452,7 +453,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=workflow_id,
             current_stage_id=initial_stage_id,
-            current_phase_id=self.current_phase_id,
+            phase_id=phase_id or self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,
@@ -499,7 +500,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=new_stage_id,
-            current_phase_id=self.current_phase_id,
+            phase_id=self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,

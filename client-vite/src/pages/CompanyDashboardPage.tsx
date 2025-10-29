@@ -96,11 +96,11 @@ export default function CompanyDashboardPage() {
             </button>
 
             <button
-              onClick={() => navigate('/company/workflow-board')}
+              onClick={() => navigate('/company/phases')}
               className="p-4 border-2 border-gray-200 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-all text-left"
             >
               <TrendingUp className="w-6 h-6 text-yellow-600 mb-2" />
-              <p className="font-medium text-gray-900">Kanban Board</p>
+              <p className="font-medium text-gray-900">Workflow Board</p>
               <p className="text-sm text-gray-500">Track candidates through stages</p>
             </button>
 

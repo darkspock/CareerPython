@@ -30,7 +30,7 @@ export interface CandidateApplication {
   stage_deadline?: string;
   task_status: TaskStatus;
   // Phase 12: Phase tracking field
-  current_phase_id?: string;
+  phase_id?: string;
 }
 
 export interface PermissionCheckResponse {

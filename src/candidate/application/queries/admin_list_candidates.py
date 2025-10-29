@@ -5,7 +5,7 @@ from typing import Optional, List
 from src.candidate.application.queries.shared.candidate_dto import CandidateDto
 from src.candidate.domain.enums import CandidateStatusEnum
 from src.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
-from src.shared.application.query_bus import Query
+from src.shared.application.query_bus import Query, QueryHandler
 from src.shared.domain.enums.job_category import JobCategoryEnum
 
 
@@ -27,11 +27,11 @@ class AdminListCandidatesQuery(Query):
     offset: int = 0
 
 
-class AdminListCandidatesQueryHandler:
+class AdminListCandidatesQueryHandler(QueryHandler[AdminListCandidatesQuery, List[CandidateDto]]):
     def __init__(self, candidate_repository: CandidateRepositoryInterface):
         self.candidate_repository = candidate_repository
 
-    def execute(self, query: AdminListCandidatesQuery) -> List[CandidateDto]:
+    def handle(self, query: AdminListCandidatesQuery) -> List[CandidateDto]:
         list = self.candidate_repository.admin_find_by_filters(
             name=query.name,
             email=query.email,

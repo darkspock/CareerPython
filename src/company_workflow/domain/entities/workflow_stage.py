@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.stage_style import StageStyle
 from src.company_workflow.domain.enums.stage_type import StageType
 
 # TYPE_CHECKING to avoid circular imports
@@ -40,6 +41,9 @@ class WorkflowStage:
     # Kanban display configuration
     kanban_display: str  # 'column', 'row', or 'none'
 
+    # Visual styling
+    style: StageStyle
+
     created_at: datetime
     updated_at: datetime
 
@@ -61,7 +65,8 @@ class WorkflowStage:
         deadline_days: Optional[int] = None,
         estimated_cost: Optional[Decimal] = None,
         next_phase_id: Optional[str] = None,
-        kanban_display: str = 'column'
+        kanban_display: str = 'column',
+        style: Optional[StageStyle] = None
     ) -> "WorkflowStage":
         """Factory method to create a new workflow stage"""
         if not name:
@@ -78,6 +83,23 @@ class WorkflowStage:
         # Validate next_phase_id can only be set for SUCCESS or FAIL stages
         if next_phase_id is not None and stage_type not in [StageType.SUCCESS, StageType.FAIL]:
             raise ValueError("next_phase_id can only be set for SUCCESS or FAIL stage types")
+
+        # Determine default style based on stage type if not provided
+        if style is None:
+            from src.company_workflow.domain.value_objects.stage_style import (
+                DEFAULT_STAGE_STYLE, SUCCESS_STAGE_STYLE, FAIL_STAGE_STYLE, 
+                PROCESS_STAGE_STYLE, REVIEW_STAGE_STYLE
+            )
+            
+            # Map stage types to their default styles
+            style_mapping = {
+                StageType.SUCCESS: SUCCESS_STAGE_STYLE,
+                StageType.FAIL: FAIL_STAGE_STYLE,
+                StageType.STANDARD: PROCESS_STAGE_STYLE,
+                StageType.INITIAL: REVIEW_STAGE_STYLE,
+            }
+            
+            style = style_mapping.get(stage_type, DEFAULT_STAGE_STYLE)
 
         now = datetime.utcnow()
         return WorkflowStage(
@@ -98,6 +120,7 @@ class WorkflowStage:
             estimated_cost=estimated_cost,
             next_phase_id=next_phase_id,
             kanban_display=kanban_display,
+            style=style,
             created_at=now,
             updated_at=now
         )
@@ -115,7 +138,8 @@ class WorkflowStage:
         custom_email_text: Optional[str] = None,
         deadline_days: Optional[int] = None,
         estimated_cost: Optional[Decimal] = None,
-        next_phase_id: Optional[str] = None
+        next_phase_id: Optional[str] = None,
+        style: Optional[StageStyle] = None
     ) -> "WorkflowStage":
         """Update stage information"""
         if not name:
@@ -149,6 +173,7 @@ class WorkflowStage:
             estimated_cost=estimated_cost if estimated_cost is not None else self.estimated_cost,
             next_phase_id=next_phase_id if next_phase_id is not None else self.next_phase_id,
             kanban_display=self.kanban_display,
+            style=style if style is not None else self.style,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -176,6 +201,7 @@ class WorkflowStage:
             estimated_cost=self.estimated_cost,
             next_phase_id=self.next_phase_id,
             kanban_display=self.kanban_display,
+            style=self.style,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -200,6 +226,7 @@ class WorkflowStage:
             estimated_cost=self.estimated_cost,
             next_phase_id=self.next_phase_id,
             kanban_display=self.kanban_display,
+            style=self.style,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -224,6 +251,7 @@ class WorkflowStage:
             estimated_cost=self.estimated_cost,
             next_phase_id=self.next_phase_id,
             kanban_display=self.kanban_display,
+            style=self.style,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )

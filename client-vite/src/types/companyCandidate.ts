@@ -32,7 +32,7 @@ export interface CompanyCandidate {
   visibility_settings: VisibilitySettings;
   current_workflow_id: string | null;
   current_stage_id: string | null;
-  current_phase_id: string | null;  // Phase 12: current recruitment phase
+  phase_id: string | null;  // Phase 12: current recruitment phase
   added_by_user_id: string;
   invited_at: string | null;
   confirmed_at: string | null;

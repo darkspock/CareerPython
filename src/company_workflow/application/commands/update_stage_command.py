@@ -1,6 +1,6 @@
 """Update Stage Command."""
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from decimal import Decimal
 
 from src.company_workflow.domain.enums.stage_type import StageType
@@ -8,6 +8,7 @@ from src.company_workflow.domain.exceptions.stage_not_found import StageNotFound
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.company_workflow.domain.value_objects.stage_style import StageStyle
 from src.shared.application.command_bus import Command, CommandHandler
 
 
@@ -28,6 +29,7 @@ class UpdateStageCommand(Command):
     deadline_days: Optional[int] = None
     estimated_cost: Optional[Decimal] = None
     next_phase_id: Optional[str] = None  # Phase 12: Phase transition
+    style: Optional[Dict[str, Any]] = None  # Stage style
 
 
 class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
@@ -53,6 +55,11 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
             raise StageNotFound(f"Stage with id {command.id} not found")
 
         stage_type = StageType(command.stage_type)
+        
+        # Handle style update
+        style = None
+        if command.style is not None:
+            style = StageStyle.from_dict(command.style)
 
         updated_stage = stage.update(
             name=command.name,
@@ -66,7 +73,8 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
             custom_email_text=command.custom_email_text,
             deadline_days=command.deadline_days,
             estimated_cost=command.estimated_cost,
-            next_phase_id=command.next_phase_id  # Phase 12: Phase transition
+            next_phase_id=command.next_phase_id,  # Phase 12: Phase transition
+            style=style
         )
 
         self.repository.save(updated_stage)

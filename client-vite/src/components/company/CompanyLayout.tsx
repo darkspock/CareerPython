@@ -10,7 +10,8 @@ import {
   LayoutDashboard,
   Layers,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Search
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
@@ -174,6 +175,24 @@ export default function CompanyLayout() {
               {/* Phase Submenu */}
               {candidatesMenuOpen && (
                 <div className="ml-4 mt-1 space-y-1">
+                  {/* Search All Candidates Button */}
+                  <Link
+                    to="/company/candidates"
+                    onClick={() => setSidebarOpen(false)}
+                    className={`
+                      flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
+                      ${
+                        location.pathname === '/company/candidates' && !location.search.includes('phase=')
+                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }
+                    `}
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Search All Candidates</span>
+                  </Link>
+                  
+                  {/* Phase-specific views */}
                   {phases.map((phase) => (
                     <Link
                       key={phase.id}
@@ -298,6 +317,24 @@ export default function CompanyLayout() {
               {/* Phase Submenu */}
               {candidatesMenuOpen && (
                 <div className="ml-4 mt-1 space-y-1">
+                  {/* Search All Candidates Button */}
+                  <Link
+                    to="/company/candidates"
+                    onClick={() => setSidebarOpen(false)}
+                    className={`
+                      flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
+                      ${
+                        location.pathname === '/company/candidates' && !location.search.includes('phase=')
+                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }
+                    `}
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Search All Candidates</span>
+                  </Link>
+                  
+                  {/* Phase-specific views */}
                   {phases.map((phase) => (
                     <Link
                       key={phase.id}

@@ -298,6 +298,7 @@ from src.candidate.application.queries.list_candidate_projects_by_candidate_id i
 from src.candidate.application.queries.get_experience_by_id import GetExperienceByIdQueryHandler
 from src.candidate.application.queries.get_education_by_id import GetEducationByIdQueryHandler
 from src.candidate.application.queries.get_project_by_id import GetProjectByIdQueryHandler
+from src.candidate.application.queries.admin_list_candidates import AdminListCandidatesQueryHandler
 from src.candidate.application.commands.create_experience import CreateExperienceCommandHandler
 from src.candidate.application.commands.update_experience import UpdateExperienceCommandHandler
 from src.candidate.application.commands.delete_experience import DeleteExperienceCommandHandler
@@ -1132,7 +1133,9 @@ class Container(containers.DeclarativeContainer):
     # CompanyCandidate Command Handlers
     create_company_candidate_command_handler = providers.Factory(
         CreateCompanyCandidateCommandHandler,
-        repository=company_candidate_repository
+        repository=company_candidate_repository,
+        workflow_repository=company_workflow_repository,
+        stage_repository=workflow_stage_repository
     )
 
     update_company_candidate_command_handler = providers.Factory(
@@ -1444,6 +1447,11 @@ class Container(containers.DeclarativeContainer):
 
     list_candidates_query_handler = providers.Factory(
         ListCandidatesQueryHandler,
+        candidate_repository=candidate_repository
+    )
+
+    admin_list_candidates_query_handler = providers.Factory(
+        AdminListCandidatesQueryHandler,
         candidate_repository=candidate_repository
     )
 

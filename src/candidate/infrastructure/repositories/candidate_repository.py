@@ -287,11 +287,11 @@ class SQLAlchemyCandidateRepository(CandidateRepositoryInterface):
                     )
                 )
 
-            # Apply pagination
-            query = query.offset(offset).limit(limit)
-
             # Order by created_at desc
             query = query.order_by(CandidateModel.created_at.desc())
+
+            # Apply pagination
+            query = query.offset(offset).limit(limit)
 
             models = query.all()
             return [self._to_domain(model) for model in models]

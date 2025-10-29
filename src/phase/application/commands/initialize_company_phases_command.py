@@ -210,6 +210,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
                     estimated_cost=stage.estimated_cost,
                     next_phase_id=next_phase_id,  # Set the next phase
                     kanban_display=stage.kanban_display,
+                    style=stage.style,
                     created_at=stage.created_at,
                     updated_at=stage.updated_at
                 )

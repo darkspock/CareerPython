@@ -1,4 +1,6 @@
 import React from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 
 interface CandidateNameRowProps {
@@ -10,9 +12,19 @@ export const CandidateNameRow: React.FC<CandidateNameRowProps> = ({
   candidate,
   onClick
 }) => {
-  const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('text/plain', candidate.id);
-    e.dataTransfer.effectAllowed = 'move';
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: candidate.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   const handleClick = () => {
@@ -21,9 +33,11 @@ export const CandidateNameRow: React.FC<CandidateNameRowProps> = ({
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
       className="candidate-name-row"
-      draggable
-      onDragStart={handleDragStart}
       onClick={handleClick}
       role="button"
       tabIndex={0}

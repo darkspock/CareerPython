@@ -1,19 +1,23 @@
 /* Kanban Row Stages Styles */
 
 .row-stage-section {
-  @apply mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200;
+  @apply mb-6 p-4 rounded-lg border border-gray-200;
+  /* Background and color will be set dynamically via style prop */
 }
 
 .stage-header {
   @apply flex items-center justify-between mb-3 pb-2 border-b border-gray-300;
+  /* Background and color will be set dynamically via style prop */
 }
 
 .stage-name {
-  @apply text-lg font-semibold text-gray-800;
+  @apply text-lg font-semibold;
+  /* Color will be set dynamically via style prop */
 }
 
 .candidate-count {
-  @apply text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded-full;
+  @apply text-sm px-2 py-1 rounded-full;
+  /* Background and color will be set dynamically via style prop */
 }
 
 .candidates-row {
@@ -26,6 +30,10 @@
 
 .candidates-row.drag-over {
   @apply border-blue-500 bg-blue-100;
+}
+
+.candidates-row.drop-zone-active {
+  @apply border-blue-500 bg-blue-100 border-solid;
 }
 
 .empty-state {

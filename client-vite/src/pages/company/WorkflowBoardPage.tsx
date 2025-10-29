@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   DndContext,
@@ -11,23 +11,50 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Kanban, User, Tag, AlertCircle, RefreshCw, List } from 'lucide-react';
+import { Kanban, User, Tag, AlertCircle, RefreshCw, List, ChevronDown, Move } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import { companyCandidateService } from '../../services/companyCandidateService';
+import { phaseService } from '../../services/phaseService';
 import type { WorkflowStage } from '../../types/workflow';
 import type { CompanyCandidate } from '../../types/companyCandidate';
+import type { Phase } from '../../types/phase';
 import { getPriorityColor } from '../../types/companyCandidate';
-import { PhaseBadge } from '../../components/phase';  // Phase 12
 import { RowStageSection } from '../../components/kanban/RowStageSection';
 import { KanbanDisplay } from '../../types/workflow';
 import '../../components/kanban/kanban-styles.css';
 
 // Candidate Card Component
-function CandidateCard({ candidate, companyId }: { candidate: CompanyCandidate; companyId: string }) {
+function CandidateCard({ 
+  candidate, 
+  companyId, 
+  rowStages, 
+  onMoveToStage 
+}: { 
+  candidate: CompanyCandidate; 
+  companyId: string;
+  rowStages: WorkflowStage[];
+  onMoveToStage: (candidateId: string, stageId: string) => void;
+}) {
   const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: candidate.id,
   });
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showDropdown]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -56,26 +83,17 @@ function CandidateCard({ candidate, companyId }: { candidate: CompanyCandidate; 
           </h4>
           <p className="text-xs text-gray-500">{candidate.candidate_email || 'N/A'}</p>
         </div>
-        <span
-          className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
-            candidate.priority
-          )}`}
-        >
-          {candidate.priority}
-        </span>
+        {candidate.priority !== 'MEDIUM' && (
+          <span
+            className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
+              candidate.priority
+            )}`}
+          >
+            {candidate.priority}
+          </span>
+        )}
       </div>
 
-      {/* Phase 12: Phase Badge */}
-      {candidate.current_phase_id && (
-        <div className="mb-2">
-          <PhaseBadge
-            phaseId={candidate.current_phase_id}
-            companyId={companyId}
-            size="sm"
-            showIcon={true}
-          />
-        </div>
-      )}
 
       {/* Tags */}
       {candidate.tags.length > 0 && (
@@ -95,6 +113,47 @@ function CandidateCard({ candidate, companyId }: { candidate: CompanyCandidate; 
           )}
         </div>
       )}
+
+      {/* Quick Action Dropdown for Row Stages */}
+      {rowStages.length > 0 && (
+        <div ref={dropdownRef} className="mt-3 pt-2 border-t border-gray-200 relative">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDropdown(!showDropdown);
+            }}
+            className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors w-full justify-center"
+          >
+            <Move className="w-3 h-3" />
+            <span>Move to Stage</span>
+            <ChevronDown className="w-3 h-3" />
+          </button>
+          
+          {showDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <div className="py-1">
+                {rowStages.map((stage) => (
+                  <button
+                    key={stage.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMoveToStage(candidate.id, stage.id);
+                      setShowDropdown(false);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 w-full text-left"
+                  >
+                    <span 
+                      className="text-sm"
+                      dangerouslySetInnerHTML={{ __html: stage.style.icon }}
+                    />
+                    <span className="text-gray-700">{stage.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -104,25 +163,47 @@ function StageColumn({
   stage,
   candidates,
   companyId,
+  rowStages,
+  onMoveToStage,
 }: {
   stage: WorkflowStage;
   candidates: CompanyCandidate[];
   companyId: string;
+  rowStages: WorkflowStage[];
+  onMoveToStage: (candidateId: string, stageId: string) => void;
 }) {
   const { setNodeRef } = useSortable({ id: stage.id });
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 min-w-[300px] max-w-[300px] flex-shrink-0">
+    <div 
+      className="rounded-lg p-4 min-w-[300px] max-w-[300px] flex-shrink-0"
+      style={{ 
+        backgroundColor: stage.style.background_color,
+        color: stage.style.color 
+      }}
+    >
       {/* Stage Header */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-gray-900">{stage.name}</h3>
-          <span className="px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-full">
+          <div className="flex items-center gap-2">
+            <span 
+              className="text-lg"
+              dangerouslySetInnerHTML={{ __html: stage.style.icon }}
+            />
+            <h3 className="font-semibold">{stage.name}</h3>
+          </div>
+          <span 
+            className="px-2 py-1 text-xs font-medium rounded-full"
+            style={{ 
+              backgroundColor: stage.style.color + '20', // 20% opacity
+              color: stage.style.color 
+            }}
+          >
             {candidates.length}
           </span>
         </div>
         {stage.description && (
-          <p className="text-xs text-gray-600 line-clamp-2">{stage.description}</p>
+          <p className="text-xs opacity-75 line-clamp-2">{stage.description}</p>
         )}
       </div>
 
@@ -135,7 +216,13 @@ function StageColumn({
             </div>
           ) : (
             candidates.map((candidate) => (
-              <CandidateCard key={candidate.id} candidate={candidate} companyId={companyId} />
+              <CandidateCard 
+                key={candidate.id} 
+                candidate={candidate} 
+                companyId={companyId}
+                rowStages={rowStages}
+                onMoveToStage={onMoveToStage}
+              />
             ))
           )}
         </SortableContext>
@@ -150,6 +237,7 @@ export default function WorkflowBoardPage() {
   const phaseIdFromUrl = searchParams.get('phase');
   
   const [selectedPhaseId, setSelectedPhaseId] = useState<string>('');
+  const [phase, setPhase] = useState<Phase | null>(null);
   const [stages, setStages] = useState<WorkflowStage[]>([]);
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,13 +277,17 @@ export default function WorkflowBoardPage() {
       const companyId = getCompanyId();
       if (!companyId || !phaseIdFromUrl) return;
 
+      // Load phase information
+      const phaseData = await phaseService.getPhase(companyId, phaseIdFromUrl);
+      setPhase(phaseData);
+
       // Load stages for the selected phase
       const stagesData = await companyWorkflowService.listStagesByPhase(phaseIdFromUrl);
       setStages(stagesData.sort((a, b) => a.order - b.order));
 
       // Load candidates for the selected phase
       const candidatesData = await companyCandidateService.listByCompany(companyId);
-      setCandidates(candidatesData.filter((c) => c.current_phase_id === phaseIdFromUrl));
+      setCandidates(candidatesData.filter((c) => c.phase_id === phaseIdFromUrl));
 
       setError(null);
     } catch (err: any) {
@@ -253,6 +345,24 @@ export default function WorkflowBoardPage() {
     return candidates.filter((c) => c.current_stage_id === stageId);
   };
 
+  const moveCandidateToStage = async (candidateId: string, stageId: string) => {
+    try {
+      await companyCandidateService.changeStage(candidateId, { new_stage_id: stageId });
+      
+      // Update local state
+      setCandidates(prevCandidates =>
+        prevCandidates.map(candidate =>
+          candidate.id === candidateId
+            ? { ...candidate, current_stage_id: stageId }
+            : candidate
+        )
+      );
+    } catch (error) {
+      console.error('Failed to move candidate:', error);
+      setError('Failed to move candidate');
+    }
+  };
+
   // Separate stages by kanban_display
   const columnStages = stages.filter(s => s.kanban_display === KanbanDisplay.COLUMN);
   const rowStages = stages.filter(s => s.kanban_display === KanbanDisplay.ROW);
@@ -267,13 +377,33 @@ export default function WorkflowBoardPage() {
     );
   }
 
+  if (!phaseIdFromUrl) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">No Phase Selected</h2>
+          <p className="text-gray-600 mb-6">Please select a phase to view the workflow board.</p>
+          <Link
+            to="/company/phases"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <List className="w-4 h-4 mr-2" />
+            Go to Phases
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Workflow Board</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {phase ? phase.name : 'Workflow Board'}
+            </h1>
             <p className="text-gray-600 mt-1">Drag and drop candidates through stages</p>
           </div>
           <button
@@ -324,7 +454,8 @@ export default function WorkflowBoardPage() {
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="space-y-6">
+          <SortableContext items={candidates.map(c => c.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-6">
             {/* Column Stages */}
             {columnStages.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 overflow-x-auto">
@@ -335,6 +466,8 @@ export default function WorkflowBoardPage() {
                       stage={stage}
                       candidates={getCandidatesByStage(stage.id)}
                       companyId={getCompanyId() || ''}
+                      rowStages={rowStages}
+                      onMoveToStage={moveCandidateToStage}
                     />
                   ))}
                 </div>
@@ -353,18 +486,12 @@ export default function WorkflowBoardPage() {
                       // Navigate to candidate details
                       window.location.href = `/company/candidates/${candidate.id}`;
                     }}
-                    onDrop={(candidateId, stageId) => {
-                      // Handle drop in row stage
-                      handleDragEnd({
-                        active: { id: candidateId },
-                        over: { id: stageId }
-                      } as DragEndEvent);
-                    }}
                   />
                 ))}
               </div>
             )}
-          </div>
+            </div>
+          </SortableContext>
 
           {/* Drag Overlay */}
           <DragOverlay>
