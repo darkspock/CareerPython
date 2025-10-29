@@ -18,6 +18,9 @@ import type { WorkflowStage } from '../../types/workflow';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 import { getPriorityColor } from '../../types/companyCandidate';
 import { PhaseBadge } from '../../components/phase';  // Phase 12
+import { RowStageSection } from '../../components/kanban/RowStageSection';
+import { KanbanDisplay } from '../../types/workflow';
+import '../../components/kanban/kanban-styles.css';
 
 // Candidate Card Component
 function CandidateCard({ candidate, companyId }: { candidate: CompanyCandidate; companyId: string }) {
@@ -250,6 +253,10 @@ export default function WorkflowBoardPage() {
     return candidates.filter((c) => c.current_stage_id === stageId);
   };
 
+  // Separate stages by kanban_display
+  const columnStages = stages.filter(s => s.kanban_display === KanbanDisplay.COLUMN);
+  const rowStages = stages.filter(s => s.kanban_display === KanbanDisplay.ROW);
+
   const activeDragCandidate = candidates.find((c) => c.id === activeId);
 
   if (loading) {
@@ -317,17 +324,46 @@ export default function WorkflowBoardPage() {
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 overflow-x-auto">
-            <div className="flex gap-4">
-              {stages.map((stage) => (
-                <StageColumn
-                  key={stage.id}
-                  stage={stage}
-                  candidates={getCandidatesByStage(stage.id)}
-                  companyId={getCompanyId() || ''}
-                />
-              ))}
-            </div>
+          <div className="space-y-6">
+            {/* Column Stages */}
+            {columnStages.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 overflow-x-auto">
+                <div className="flex gap-4">
+                  {columnStages.map((stage) => (
+                    <StageColumn
+                      key={stage.id}
+                      stage={stage}
+                      candidates={getCandidatesByStage(stage.id)}
+                      companyId={getCompanyId() || ''}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Row Stages */}
+            {rowStages.length > 0 && (
+              <div className="space-y-4">
+                {rowStages.map((stage) => (
+                  <RowStageSection
+                    key={stage.id}
+                    stage={stage}
+                    candidates={getCandidatesByStage(stage.id)}
+                    onCandidateClick={(candidate) => {
+                      // Navigate to candidate details
+                      window.location.href = `/company/candidates/${candidate.id}`;
+                    }}
+                    onDrop={(candidateId, stageId) => {
+                      // Handle drop in row stage
+                      handleDragEnd({
+                        active: { id: candidateId },
+                        over: { id: stageId }
+                      } as DragEndEvent);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Drag Overlay */}
@@ -354,8 +390,9 @@ export default function WorkflowBoardPage() {
                 How to use the Kanban Board
               </h4>
               <p className="text-blue-800 text-sm">
-                Drag and drop candidate cards between columns to move them through your
-                workflow stages. Click on a candidate card to view their full details.
+                Drag and drop candidate cards between columns and rows to move them through your
+                workflow stages. Click on a candidate card or name to view their full details.
+                Row stages show only candidate names for quick reference.
               </p>
             </div>
           </div>

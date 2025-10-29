@@ -24,6 +24,8 @@ class WorkflowStageMapper:
             custom_email_text=entity.custom_email_text,
             deadline_days=entity.deadline_days,
             estimated_cost=entity.estimated_cost,
+            next_phase_id=entity.next_phase_id,
+            kanban_display=entity.kanban_display,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

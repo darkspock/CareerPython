@@ -1,0 +1,64 @@
+/* Kanban Row Stages Styles */
+
+.row-stage-section {
+  @apply mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200;
+}
+
+.stage-header {
+  @apply flex items-center justify-between mb-3 pb-2 border-b border-gray-300;
+}
+
+.stage-name {
+  @apply text-lg font-semibold text-gray-800;
+}
+
+.candidate-count {
+  @apply text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded-full;
+}
+
+.candidates-row {
+  @apply flex flex-wrap gap-2 min-h-[40px] p-2 bg-white rounded border-2 border-dashed border-gray-300 transition-colors;
+}
+
+.candidates-row:hover {
+  @apply border-blue-300 bg-blue-50;
+}
+
+.candidates-row.drag-over {
+  @apply border-blue-500 bg-blue-100;
+}
+
+.empty-state {
+  @apply flex items-center justify-center w-full text-center py-4;
+}
+
+.candidate-name-row {
+  @apply inline-block px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer transition-all duration-200 hover:shadow-md hover:border-blue-400 hover:bg-blue-50;
+}
+
+.candidate-name-row:hover {
+  @apply transform scale-105;
+}
+
+.candidate-name-row:active {
+  @apply transform scale-95;
+}
+
+.candidate-name {
+  @apply text-sm font-medium text-gray-800;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .candidates-row {
+    @apply flex-col;
+  }
+  
+  .candidate-name-row {
+    @apply w-full text-center;
+  }
+  
+  .stage-header {
+    @apply flex-col items-start space-y-2;
+  }
+}

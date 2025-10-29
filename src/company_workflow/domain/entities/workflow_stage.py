@@ -37,6 +37,9 @@ class WorkflowStage:
     # Phase 12: Phase transition
     next_phase_id: Optional[str]  # Phase to transition to when reaching this stage (only for SUCCESS/FAIL stages)
 
+    # Kanban display configuration
+    kanban_display: str  # 'column', 'row', or 'none'
+
     created_at: datetime
     updated_at: datetime
 
@@ -57,7 +60,8 @@ class WorkflowStage:
         custom_email_text: Optional[str] = None,
         deadline_days: Optional[int] = None,
         estimated_cost: Optional[Decimal] = None,
-        next_phase_id: Optional[str] = None
+        next_phase_id: Optional[str] = None,
+        kanban_display: str = 'column'
     ) -> "WorkflowStage":
         """Factory method to create a new workflow stage"""
         if not name:
@@ -93,6 +97,7 @@ class WorkflowStage:
             deadline_days=deadline_days,
             estimated_cost=estimated_cost,
             next_phase_id=next_phase_id,
+            kanban_display=kanban_display,
             created_at=now,
             updated_at=now
         )

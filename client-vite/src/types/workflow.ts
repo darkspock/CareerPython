@@ -6,6 +6,13 @@ export type WorkflowStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 // Phase 12: Updated stage types (INTERMEDIATE → STANDARD, FINAL → SUCCESS, added FAIL)
 export type StageType = 'initial' | 'standard' | 'success' | 'fail';
 
+// Kanban display configuration
+export enum KanbanDisplay {
+  COLUMN = 'column',
+  ROW = 'row', 
+  NONE = 'none'
+}
+
 export interface CompanyWorkflow {
   id: string;
   company_id: string;
@@ -41,6 +48,7 @@ export interface WorkflowStage {
   deadline_days: number | null;
   estimated_cost: string | null;
   next_phase_id?: string | null; // Phase 12: Phase transition
+  kanban_display: KanbanDisplay; // Kanban display configuration
   created_at: string;
   updated_at: string;
 

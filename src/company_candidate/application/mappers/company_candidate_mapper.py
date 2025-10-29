@@ -17,6 +17,7 @@ class CompanyCandidateMapper:
             created_by_user_id=str(entity.created_by_user_id),
             workflow_id=str(entity.workflow_id) if entity.workflow_id else None,
             current_stage_id=str(entity.current_stage_id) if entity.current_stage_id else None,
+            current_phase_id=entity.current_phase_id,
             invited_at=entity.invited_at,
             confirmed_at=entity.confirmed_at,
             rejected_at=entity.rejected_at,

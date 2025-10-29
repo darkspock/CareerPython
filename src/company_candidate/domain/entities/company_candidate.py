@@ -36,6 +36,7 @@ class CompanyCandidate:
     created_by_user_id: CompanyUserId
     workflow_id: Optional[CompanyWorkflowId]
     current_stage_id: Optional[WorkflowStageId]
+    current_phase_id: Optional[str]  # Current recruitment phase
     invited_at: datetime
     confirmed_at: Optional[datetime]
     rejected_at: Optional[datetime]
@@ -73,6 +74,7 @@ class CompanyCandidate:
         lead_id: Optional[str] = None,
         resume_url: Optional[str] = None,
         resume_uploaded_by: Optional[CompanyUserId] = None,
+        current_phase_id: Optional[str] = None,
     ) -> "CompanyCandidate":
         """
         Factory method to create a new company-candidate relationship
@@ -142,6 +144,7 @@ class CompanyCandidate:
             created_by_user_id=created_by_user_id,
             workflow_id=None,
             current_stage_id=None,
+            current_phase_id=current_phase_id,
             invited_at=now,
             confirmed_at=None,
             rejected_at=None,
@@ -194,6 +197,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=self.current_stage_id,
+            current_phase_id=self.current_phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,
@@ -238,6 +242,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=self.current_stage_id,
+            current_phase_id=self.current_phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,
@@ -489,6 +494,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=self.workflow_id,
             current_stage_id=new_stage_id,
+            current_phase_id=self.current_phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,

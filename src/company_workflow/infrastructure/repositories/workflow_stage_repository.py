@@ -111,6 +111,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             deadline_days=model.deadline_days,
             estimated_cost=Decimal(str(model.estimated_cost)) if model.estimated_cost is not None else None,
             next_phase_id=model.next_phase_id,
+            kanban_display=model.kanban_display,
             created_at=model.created_at,
             updated_at=model.updated_at
         )
@@ -134,6 +135,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             deadline_days=entity.deadline_days,
             estimated_cost=float(entity.estimated_cost) if entity.estimated_cost is not None else None,
             next_phase_id=entity.next_phase_id,
+            kanban_display=entity.kanban_display,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

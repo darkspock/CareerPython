@@ -24,6 +24,8 @@ class WorkflowStageResponseMapper:
             custom_email_text=dto.custom_email_text,
             deadline_days=dto.deadline_days,
             estimated_cost=dto.estimated_cost,
+            next_phase_id=dto.next_phase_id,
+            kanban_display=dto.kanban_display,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )

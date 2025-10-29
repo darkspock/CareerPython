@@ -22,5 +22,7 @@ class WorkflowStageDto:
     custom_email_text: Optional[str]
     deadline_days: Optional[int]
     estimated_cost: Optional[Decimal]
+    next_phase_id: Optional[str]
+    kanban_display: str
     created_at: datetime
     updated_at: datetime

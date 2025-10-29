@@ -49,11 +49,11 @@ const getStatusIcon = (status: string) => {
 
 const getPriorityIcon = (priority: string) => {
   switch (priority) {
-    case 'high':
+    case 'HIGH':
       return <Flag className="w-4 h-4 text-red-600" />;
-    case 'medium':
+    case 'MEDIUM':
       return null; // Don't show icon for medium priority
-    case 'low':
+    case 'LOW':
       return <Flag className="w-4 h-4 text-green-600" />;
     default:
       return null;

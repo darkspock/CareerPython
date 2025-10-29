@@ -38,5 +38,8 @@ class WorkflowStageModel(Base):
     # Phase 12: Phase transition
     next_phase_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # Phase to transition to (only for SUCCESS/FAIL stages)
 
+    # Kanban display configuration
+    kanban_display: Mapped[str] = mapped_column(String(10), nullable=False, default='column')  # 'column', 'row', or 'none'
+
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -14,6 +14,7 @@ class CompanyCandidateDto:
     created_by_user_id: str
     workflow_id: Optional[str]
     current_stage_id: Optional[str]
+    current_phase_id: Optional[str]  # Current recruitment phase
     invited_at: datetime
     confirmed_at: Optional[datetime]
     rejected_at: Optional[datetime]
