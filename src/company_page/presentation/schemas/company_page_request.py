@@ -1,5 +1,5 @@
 """
-Company Page Request Schemas - Schemas de request para páginas de empresa
+Company Page Request Schemas - Request schemas for company pages
 """
 from typing import List, Optional
 from pydantic import BaseModel, Field, validator
@@ -8,15 +8,15 @@ from src.company_page.domain.enums.page_type import PageType
 
 
 class CreateCompanyPageRequest(BaseModel):
-    """Request para crear una página de empresa"""
+    """Request to create a company page"""
     
-    page_type: PageType = Field(..., description="Tipo de página")
-    title: str = Field(..., min_length=1, max_length=500, description="Título de la página")
-    html_content: str = Field(..., min_length=1, description="Contenido HTML de la página")
-    meta_description: Optional[str] = Field(None, max_length=160, description="Meta descripción para SEO")
-    meta_keywords: List[str] = Field(default_factory=list, max_items=20, description="Keywords para SEO")
-    language: str = Field(default="es", min_length=2, max_length=2, description="Idioma de la página")
-    is_default: bool = Field(default=False, description="Si es la página por defecto para este tipo")
+    page_type: PageType = Field(..., description="Page type")
+    title: str = Field(..., min_length=1, max_length=500, description="Page title")
+    html_content: str = Field(..., min_length=1, description="Page HTML content")
+    meta_description: Optional[str] = Field(None, max_length=160, description="Meta description for SEO")
+    meta_keywords: List[str] = Field(default_factory=list, max_items=20, description="SEO keywords")
+    language: str = Field(default="en", min_length=2, max_length=2, description="Page language")
+    is_default: bool = Field(default=False, description="Whether this is the default page for this type")
     
     @validator('meta_keywords')
     def validate_keywords(cls, v):
@@ -34,12 +34,12 @@ class CreateCompanyPageRequest(BaseModel):
 
 
 class UpdateCompanyPageRequest(BaseModel):
-    """Request para actualizar una página de empresa"""
+    """Request to update a company page"""
     
-    title: str = Field(..., min_length=1, max_length=500, description="Título de la página")
-    html_content: str = Field(..., min_length=1, description="Contenido HTML de la página")
-    meta_description: Optional[str] = Field(None, max_length=160, description="Meta descripción para SEO")
-    meta_keywords: List[str] = Field(default_factory=list, max_items=20, description="Keywords para SEO")
+    title: str = Field(..., min_length=1, max_length=500, description="Page title")
+    html_content: str = Field(..., min_length=1, description="Page HTML content")
+    meta_description: Optional[str] = Field(None, max_length=160, description="Meta description for SEO")
+    meta_keywords: List[str] = Field(default_factory=list, max_items=20, description="SEO keywords")
     
     @validator('meta_keywords')
     def validate_keywords(cls, v):

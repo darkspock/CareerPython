@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle, Building2 } from 'lucide-react';
+import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle, Building2, FileText } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 
 export default function CompanySettingsPage() {
@@ -45,6 +45,13 @@ export default function CompanySettingsPage() {
     }
   };
   const settingsCards = [
+    {
+      title: 'Content Pages',
+      description: 'Manage company pages and content',
+      icon: FileText,
+      path: '/company/pages',
+      color: 'indigo',
+    },
     {
       title: 'Phase Management',
       description: 'Organize recruitment into high-level phases',

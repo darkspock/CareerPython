@@ -370,48 +370,76 @@ def create_candidates(session, company_id: str) -> list[str]:
     from src.candidate.domain.enums.candidate_enums import CandidateStatusEnum, CandidateTypeEnum
     from src.shared.domain.enums.job_category import JobCategoryEnum
 
-    candidates_data = [
-        {
-            "name": "John Doe",
-            "email": "john.doe@example.com",
-            "phone": "+1-555-0101",
-            "city": "San Francisco",
-            "country": "USA",
-            "skills": ["Python", "React", "PostgreSQL", "Docker"],
-        },
-        {
-            "name": "Jane Smith",
-            "email": "jane.smith@example.com",
-            "phone": "+1-555-0102",
-            "city": "New York",
-            "country": "USA",
-            "skills": ["Java", "Spring Boot", "Kubernetes", "AWS"],
-        },
-        {
-            "name": "Alice Johnson",
-            "email": "alice.johnson@example.com",
-            "phone": "+1-555-0103",
-            "city": "Austin",
-            "country": "USA",
-            "skills": ["JavaScript", "Node.js", "MongoDB", "GraphQL"],
-        },
-        {
-            "name": "Bob Williams",
-            "email": "bob.williams@example.com",
-            "phone": "+1-555-0104",
-            "city": "Seattle",
-            "country": "USA",
-            "skills": ["C++", "Python", "Machine Learning", "TensorFlow"],
-        },
-        {
-            "name": "Carol Davis",
-            "email": "carol.davis@example.com",
-            "phone": "+1-555-0105",
-            "city": "Boston",
-            "country": "USA",
-            "skills": ["Ruby", "Rails", "Redis", "Sidekiq"],
-        }
+    # Generate 50 sample candidates with realistic data
+    import random
+    
+    first_names = [
+        "John", "Jane", "Alice", "Bob", "Carol", "David", "Emma", "Frank", "Grace", "Henry",
+        "Ivy", "Jack", "Kate", "Liam", "Maya", "Noah", "Olivia", "Paul", "Quinn", "Rachel",
+        "Sam", "Tina", "Uma", "Victor", "Wendy", "Xavier", "Yara", "Zoe", "Alex", "Beth",
+        "Chris", "Diana", "Ethan", "Fiona", "George", "Hannah", "Ian", "Julia", "Kevin", "Lisa",
+        "Mike", "Nina", "Oscar", "Paula", "Quentin", "Rita", "Steve", "Tara", "Ulysses", "Vera"
     ]
+    
+    last_names = [
+        "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez",
+        "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin",
+        "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson",
+        "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores",
+        "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts"
+    ]
+    
+    cities = [
+        "San Francisco", "New York", "Austin", "Seattle", "Boston", "Los Angeles", "Chicago", "Denver", "Miami", "Portland",
+        "Phoenix", "Dallas", "Houston", "Atlanta", "Nashville", "Detroit", "Minneapolis", "Philadelphia", "Baltimore", "Washington",
+        "Orlando", "Tampa", "Charlotte", "Raleigh", "Richmond", "Norfolk", "Jacksonville", "Memphis", "Louisville", "Cincinnati",
+        "Indianapolis", "Columbus", "Cleveland", "Pittsburgh", "Buffalo", "Rochester", "Syracuse", "Albany", "Hartford", "Providence"
+    ]
+    
+    countries = ["USA", "Canada", "Mexico", "UK", "Germany", "France", "Spain", "Italy", "Netherlands", "Sweden"]
+    
+    tech_skills = [
+        "Python", "JavaScript", "Java", "C++", "C#", "Go", "Rust", "TypeScript", "PHP", "Ruby",
+        "React", "Vue.js", "Angular", "Node.js", "Express", "Django", "Flask", "Spring Boot", "Laravel", "Rails",
+        "PostgreSQL", "MySQL", "MongoDB", "Redis", "Elasticsearch", "SQLite", "Oracle", "SQL Server", "DynamoDB", "Cassandra",
+        "Docker", "Kubernetes", "AWS", "Azure", "GCP", "Terraform", "Ansible", "Jenkins", "GitLab CI", "GitHub Actions",
+        "Machine Learning", "TensorFlow", "PyTorch", "Scikit-learn", "Pandas", "NumPy", "Jupyter", "Apache Spark", "Hadoop", "Kafka"
+    ]
+    
+    candidates_data = []
+    used_emails = set()
+    
+    for i in range(50):
+        # Generate unique email
+        attempts = 0
+        while attempts < 100:  # Prevent infinite loop
+            first_name = random.choice(first_names)
+            last_name = random.choice(last_names)
+            email = f"{first_name.lower()}.{last_name.lower()}@example.com"
+            
+            if email not in used_emails:
+                used_emails.add(email)
+                break
+            attempts += 1
+        
+        # If we still have duplicates, add a number
+        if email in used_emails and attempts >= 100:
+            email = f"{first_name.lower()}.{last_name.lower()}{i}@example.com"
+            used_emails.add(email)
+        
+        phone = f"+1-555-{random.randint(1000, 9999)}"
+        city = random.choice(cities)
+        country = random.choice(countries)
+        skills = random.sample(tech_skills, random.randint(3, 6))
+        
+        candidates_data.append({
+            "name": f"{first_name} {last_name}",
+            "email": email,
+            "phone": phone,
+            "city": city,
+            "country": country,
+            "skills": skills,
+        })
 
     candidate_ids = []
 
@@ -515,6 +543,62 @@ def create_job_positions(session, company_id: str, phases: dict) -> list[str]:
     return position_ids
 
 
+def create_company_candidates(session, company_id: str, candidate_ids: list[str], phases: dict):
+    """Create company_candidates relationships"""
+    print("🔗 Creating company-candidate relationships...")
+
+    # Get admin company_user ID
+    admin_company_user_result = session.execute(
+        text("""
+            SELECT cu.id
+            FROM company_users cu
+            WHERE cu.company_id = :company_id AND cu.role = 'ADMIN'
+            LIMIT 1
+        """),
+        {"company_id": company_id}
+    ).fetchone()
+    
+    if not admin_company_user_result:
+        print("  ⚠️  No admin company_user found, skipping company_candidates creation")
+        return
+    
+    admin_company_user_id = admin_company_user_result[0]
+    now = datetime.now(UTC)
+    
+    # Distribute candidates across phases
+    phase_list = list(phases.values())
+    
+    for i, candidate_id in enumerate(candidate_ids):
+        phase_id = phase_list[i % len(phase_list)]
+        
+        session.execute(text("""
+            INSERT INTO company_candidates 
+            (id, company_id, candidate_id, phase_id, status, ownership_status, created_by_user_id, 
+             priority, invited_at, source, visibility_settings, tags, internal_notes, created_at, updated_at)
+            VALUES (:id, :company_id, :candidate_id, :phase_id, :status, :ownership_status, :created_by_user_id, 
+                    :priority, :invited_at, :source, :visibility_settings, :tags, :internal_notes, :created_at, :updated_at)
+        """), {
+            'id': generate_ulid(),
+            'company_id': company_id,
+            'candidate_id': candidate_id,
+            'phase_id': phase_id,
+            'status': 'ACTIVE',
+            'ownership_status': 'COMPANY_OWNED',
+            'created_by_user_id': admin_company_user_id,
+            'priority': 'MEDIUM',
+            'invited_at': now,
+            'source': 'MANUAL',
+            'visibility_settings': '{}',
+            'tags': '{}',
+            'internal_notes': '',
+            'created_at': now,
+            'updated_at': now
+        })
+
+    session.commit()
+    print(f"  ✓ Created {len(candidate_ids)} company-candidate relationships\n")
+
+
 def link_candidates_to_positions(session, company_id: str, candidate_ids: list[str],
                                  position_ids: list[str], phases: dict):
     """Link candidates to job positions"""
@@ -595,6 +679,9 @@ def main():
 
         # Step 6: Link candidates to positions (commented out for simplicity)
         # link_candidates_to_positions(session, company_id, candidate_ids, position_ids, phases)
+        
+        # Step 7: Create company_candidates relationships
+        create_company_candidates(session, company_id, candidate_ids, phases)
 
     print("="*60)
     print("✅ DATABASE RESET AND SEED COMPLETED!")
@@ -606,7 +693,7 @@ def main():
     print("   - 1 Company (My Company)")
     print("   - 1 Admin user")
     print("   - 3 Phases with workflows and stages")
-    print("   - 5 Sample candidates")
+    print("   - 50 Sample candidates")
     print("\n")
 
 

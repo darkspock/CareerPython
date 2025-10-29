@@ -1,33 +1,28 @@
 """
-Public Company Page Router - Router para endpoints públicos de páginas de empresa
+Public Company Page Router - Router for public company page endpoints
 """
-from typing import Optional
+from typing import Optional, Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
+from dependency_injector.wiring import inject, Provide
 
 from src.company_page.presentation.controllers.company_page_controller import CompanyPageController
 from src.company_page.presentation.schemas.company_page_response import CompanyPageResponse
-from src.shared.presentation.dependencies import get_command_bus, get_query_bus
+from core.container import Container
 
 # Crear router
 router = APIRouter(prefix="/api/public/company", tags=["Public Company Pages"])
 
 
-def get_controller() -> CompanyPageController:
-    """Dependency para obtener el controller"""
-    command_bus = get_command_bus()
-    query_bus = get_query_bus()
-    return CompanyPageController(command_bus, query_bus)
-
-
-# Endpoints públicos (para mostrar páginas)
+# Public endpoints (for displaying pages)
 
 @router.get("/{company_id}/pages/{page_type}", response_model=CompanyPageResponse)
+@inject
 async def get_public_company_page(
     company_id: str,
     page_type: str,
-    controller: CompanyPageController = Depends(get_controller)
+    controller: Annotated[CompanyPageController, Depends(Provide[Container.company_page_controller])]
 ) -> CompanyPageResponse:
-    """Obtener una página pública de empresa por tipo"""
+    """Get a public company page by type"""
     try:
         page = controller.get_public_page(company_id, page_type)
         
@@ -45,10 +40,11 @@ async def get_public_company_page(
 
 
 @router.get("/{company_id}/pages/{page_type}/default", response_model=CompanyPageResponse)
+@inject
 async def get_default_public_company_page(
     company_id: str,
     page_type: str,
-    controller: CompanyPageController = Depends(get_controller)
+    controller: Annotated[CompanyPageController, Depends(Provide[Container.company_page_controller])]
 ) -> CompanyPageResponse:
-    """Obtener la página por defecto de un tipo específico (alias para get_public_company_page)"""
+    """Get the default page of a specific type (alias for get_public_company_page)"""
     return await get_public_company_page(company_id, page_type, controller)

@@ -1,23 +1,23 @@
 """
-Page Type Enum - Tipos de páginas que puede crear una empresa
+Page Type Enum - Company page types that can be created
 """
 from enum import Enum
 
 
 class PageType(str, Enum):
-    """Tipos de páginas disponibles para empresas"""
+    """Available page types for companies"""
     
     PUBLIC_COMPANY_DESCRIPTION = "public_company_description"
-    """Descripción pública de la empresa que se muestra en la parte pública"""
+    """Public company description shown on the public side"""
     
     JOB_POSITION_DESCRIPTION = "job_position_description"
-    """Descripción de la empresa que se incluye en cada oferta de trabajo"""
+    """Company description included in each job posting"""
     
     DATA_PROTECTION = "data_protection"
-    """Página de protección de datos y privacidad"""
+    """Data protection and privacy page"""
     
     TERMS_OF_USE = "terms_of_use"
-    """Página de condiciones de uso"""
+    """Terms of use page"""
     
     THANK_YOU_APPLICATION = "thank_you_application"
-    """Página de agradecimiento que se muestra después de aplicar"""
+    """Thank you page shown after applying"""

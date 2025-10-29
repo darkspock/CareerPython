@@ -1,5 +1,5 @@
 """
-Company Page Controller - Controller para páginas de empresa
+Company Page Controller - Controller for company pages
 """
 from typing import List, Optional
 
@@ -24,14 +24,14 @@ from src.shared.application.query_bus import QueryBus
 
 
 class CompanyPageController:
-    """Controller para gestión de páginas de empresa"""
+    """Controller for company page management"""
     
     def __init__(self, command_bus: CommandBus, query_bus: QueryBus):
         self.command_bus = command_bus
         self.query_bus = query_bus
     
     def create_page(self, company_id: str, request: CreateCompanyPageRequest) -> CompanyPageResponse:
-        """Crear una nueva página de empresa"""
+        """Create a new company page"""
         
         # Crear comando
         command = CreateCompanyPageCommand(
@@ -54,7 +54,7 @@ class CompanyPageController:
             page_type=request.page_type.value
         )
         
-        page_dto = self.query_bus.handle(query)
+        page_dto = self.query_bus.query(query)
         
         # Convertir DTO a Response
         return self._dto_to_response(page_dto)
@@ -76,7 +76,7 @@ class CompanyPageController:
         
         # Buscar página actualizada
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.handle(query)
+        page_dto = self.query_bus.query(query)
         
         # Convertir DTO a Response
         return self._dto_to_response(page_dto)
@@ -85,18 +85,18 @@ class CompanyPageController:
         """Obtener una página de empresa por ID"""
         
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.handle(query)
+        page_dto = self.query_bus.query(query)
         
         if not page_dto:
             raise ValueError(f"Page with ID {page_id} not found")
         
         return self._dto_to_response(page_dto)
     
-    def list_pages(self, company_id: str, status: Optional[str] = None) -> CompanyPageListResponse:
+    def list_pages(self, company_id: str, page_type: Optional[str] = None, status: Optional[str] = None) -> CompanyPageListResponse:
         """Listar páginas de una empresa"""
         
-        query = ListCompanyPagesQuery(company_id=company_id, status=status)
-        page_dtos = self.query_bus.handle(query)
+        query = ListCompanyPagesQuery(company_id=company_id, page_type=page_type, status=status)
+        page_dtos = self.query_bus.query(query)
         
         # Convertir DTOs a Responses
         pages = [self._dto_to_response(page_dto) for page_dto in page_dtos]
@@ -114,7 +114,7 @@ class CompanyPageController:
         
         # Buscar página publicada
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.handle(query)
+        page_dto = self.query_bus.query(query)
         
         return self._dto_to_response(page_dto)
     
@@ -126,7 +126,7 @@ class CompanyPageController:
         
         # Buscar página archivada
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.handle(query)
+        page_dto = self.query_bus.query(query)
         
         return self._dto_to_response(page_dto)
     
@@ -138,7 +138,7 @@ class CompanyPageController:
         
         # Buscar página marcada como default
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.handle(query)
+        page_dto = self.query_bus.query(query)
         
         return self._dto_to_response(page_dto)
     
@@ -156,7 +156,7 @@ class CompanyPageController:
             page_type=page_type
         )
         
-        page_dto = self.query_bus.handle(query)
+        page_dto = self.query_bus.query(query)
         
         return self._dto_to_response(page_dto) if page_dto else None
     

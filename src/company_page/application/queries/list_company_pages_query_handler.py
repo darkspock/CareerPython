@@ -5,6 +5,7 @@ from typing import List
 
 from src.company.domain.value_objects.company_id import CompanyId
 from src.company_page.domain.enums.page_status import PageStatus
+from src.company_page.domain.enums.page_type import PageType
 from src.company_page.domain.infrastructure.company_page_repository_interface import CompanyPageRepositoryInterface
 from src.company_page.application.dtos.company_page_dto import CompanyPageDto
 from src.company_page.application.mappers.company_page_mapper import CompanyPageMapper
@@ -24,8 +25,15 @@ class ListCompanyPagesQueryHandler(QueryHandler[ListCompanyPagesQuery, List[Comp
         # Convertir string a value object
         company_id = CompanyId(query.company_id)
         
-        # Listar páginas según filtro
-        if query.status:
+        # Listar páginas según filtros
+        if query.page_type and query.status:
+            page_type = PageType(query.page_type)
+            status = PageStatus(query.status)
+            pages = self.repository.list_by_company_type_and_status(company_id, page_type, status)
+        elif query.page_type:
+            page_type = PageType(query.page_type)
+            pages = self.repository.list_by_company_and_type(company_id, page_type)
+        elif query.status:
             status = PageStatus(query.status)
             pages = self.repository.list_by_company_and_status(company_id, status)
         else:

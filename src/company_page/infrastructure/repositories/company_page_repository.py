@@ -127,6 +127,46 @@ class CompanyPageRepository(CompanyPageRepositoryInterface):
         finally:
             session.close()
     
+    def list_by_company_and_type(
+        self, 
+        company_id: CompanyId, 
+        page_type: PageType
+    ) -> List[CompanyPage]:
+        """Listar páginas de una empresa por tipo"""
+        session = self.database.get_session()
+        try:
+            models = session.query(CompanyPageModel).filter(
+                and_(
+                    CompanyPageModel.company_id == company_id.value,
+                    CompanyPageModel.page_type == page_type.value
+                )
+            ).order_by(CompanyPageModel.created_at.desc()).all()
+            
+            return CompanyPageMapper.models_to_entities(models)
+        finally:
+            session.close()
+    
+    def list_by_company_type_and_status(
+        self, 
+        company_id: CompanyId, 
+        page_type: PageType,
+        status: PageStatus
+    ) -> List[CompanyPage]:
+        """Listar páginas de una empresa por tipo y estado"""
+        session = self.database.get_session()
+        try:
+            models = session.query(CompanyPageModel).filter(
+                and_(
+                    CompanyPageModel.company_id == company_id.value,
+                    CompanyPageModel.page_type == page_type.value,
+                    CompanyPageModel.status == status.value
+                )
+            ).order_by(CompanyPageModel.created_at.desc()).all()
+            
+            return CompanyPageMapper.models_to_entities(models)
+        finally:
+            session.close()
+    
     def get_default_by_type(
         self, 
         company_id: CompanyId, 

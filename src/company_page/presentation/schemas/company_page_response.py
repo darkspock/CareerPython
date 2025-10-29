@@ -1,5 +1,5 @@
 """
-Company Page Response Schemas - Schemas de response para páginas de empresa
+Company Page Response Schemas - Response schemas for company pages
 """
 from typing import List, Optional
 from datetime import datetime
@@ -10,51 +10,51 @@ from src.company_page.domain.enums.page_status import PageStatus
 
 
 class CompanyPageResponse(BaseModel):
-    """Response para una página de empresa"""
+    """Response for a company page"""
     
-    id: str = Field(..., description="ID único de la página")
-    company_id: str = Field(..., description="ID de la empresa")
-    page_type: PageType = Field(..., description="Tipo de página")
-    title: str = Field(..., description="Título de la página")
-    html_content: str = Field(..., description="Contenido HTML de la página")
-    plain_text: str = Field(..., description="Texto plano extraído del HTML")
-    word_count: int = Field(..., description="Número de palabras en el contenido")
-    meta_description: Optional[str] = Field(None, description="Meta descripción para SEO")
-    meta_keywords: List[str] = Field(..., description="Keywords para SEO")
-    language: str = Field(..., description="Idioma de la página")
-    status: PageStatus = Field(..., description="Estado de la página")
-    is_default: bool = Field(..., description="Si es la página por defecto para este tipo")
-    version: int = Field(..., description="Versión de la página")
-    created_at: datetime = Field(..., description="Fecha de creación")
-    updated_at: datetime = Field(..., description="Fecha de última actualización")
-    published_at: Optional[datetime] = Field(None, description="Fecha de publicación")
+    id: str = Field(..., description="Unique page ID")
+    company_id: str = Field(..., description="Company ID")
+    page_type: PageType = Field(..., description="Page type")
+    title: str = Field(..., description="Page title")
+    html_content: str = Field(..., description="Page HTML content")
+    plain_text: str = Field(..., description="Plain text extracted from HTML")
+    word_count: int = Field(..., description="Number of words in content")
+    meta_description: Optional[str] = Field(None, description="Meta description for SEO")
+    meta_keywords: List[str] = Field(..., description="SEO keywords")
+    language: str = Field(..., description="Page language")
+    status: PageStatus = Field(..., description="Page status")
+    is_default: bool = Field(..., description="Whether this is the default page for this type")
+    version: int = Field(..., description="Page version")
+    created_at: datetime = Field(..., description="Creation date")
+    updated_at: datetime = Field(..., description="Last update date")
+    published_at: Optional[datetime] = Field(None, description="Publication date")
     
     class Config:
         from_attributes = True
 
 
 class CompanyPageListResponse(BaseModel):
-    """Response para lista de páginas de empresa"""
+    """Response for company page list"""
     
-    pages: List[CompanyPageResponse] = Field(..., description="Lista de páginas")
-    total: int = Field(..., description="Total de páginas")
+    pages: List[CompanyPageResponse] = Field(..., description="List of pages")
+    total: int = Field(..., description="Total number of pages")
     
     class Config:
         from_attributes = True
 
 
 class CompanyPageSummaryResponse(BaseModel):
-    """Response resumido para una página de empresa (para listas)"""
+    """Summary response for a company page (for lists)"""
     
-    id: str = Field(..., description="ID único de la página")
-    page_type: PageType = Field(..., description="Tipo de página")
-    title: str = Field(..., description="Título de la página")
-    status: PageStatus = Field(..., description="Estado de la página")
-    is_default: bool = Field(..., description="Si es la página por defecto para este tipo")
-    version: int = Field(..., description="Versión de la página")
-    created_at: datetime = Field(..., description="Fecha de creación")
-    updated_at: datetime = Field(..., description="Fecha de última actualización")
-    published_at: Optional[datetime] = Field(None, description="Fecha de publicación")
+    id: str = Field(..., description="Unique page ID")
+    page_type: PageType = Field(..., description="Page type")
+    title: str = Field(..., description="Page title")
+    status: PageStatus = Field(..., description="Page status")
+    is_default: bool = Field(..., description="Whether this is the default page for this type")
+    version: int = Field(..., description="Page version")
+    created_at: datetime = Field(..., description="Creation date")
+    updated_at: datetime = Field(..., description="Last update date")
+    published_at: Optional[datetime] = Field(None, description="Publication date")
     
     class Config:
         from_attributes = True

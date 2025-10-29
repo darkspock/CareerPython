@@ -51,6 +51,12 @@ class CompanyCandidateModel(Base):
     )
     workflow_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
     current_stage_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
+    phase_id: Mapped[Optional[str]] = mapped_column(
+        String,
+        ForeignKey("company_phases.id"),
+        nullable=True,
+        index=True
+    )
     invited_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     confirmed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     rejected_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

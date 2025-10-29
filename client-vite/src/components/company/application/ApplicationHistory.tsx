@@ -10,7 +10,7 @@ import type { ApplicationHistoryEntry } from '../../../types/candidateApplicatio
 interface ApplicationHistoryProps {
   history: ApplicationHistoryEntry[];
   currentStageId?: string;
-  getStage Name?: (stageId: string) => string;
+  getStageName?: (stageId: string) => string;
   getUserName?: (userId: string) => string;
   className?: string;
 }

@@ -78,6 +78,9 @@ import PositionDetailPage from './pages/company/PositionDetailPage';
 import EditPositionPage from './pages/company/EditPositionPage';
 import PhasesPage from './pages/company/PhasesPage';
 import EditCompanyPage from './pages/company/EditCompanyPage';
+import CompanyPagesListPage from './pages/company/CompanyPagesListPage';
+import CreateCompanyPagePage from './pages/company/CreateCompanyPagePage';
+import EditCompanyPagePage from './pages/company/EditCompanyPagePage';
 import PublicPositionsPage from './pages/public/PublicPositionsPage';
 import PublicPositionDetailPage from './pages/public/PublicPositionDetailPage';
 import CompanyPublicPositionsPage from './pages/public/CompanyPublicPositionsPage';
@@ -209,6 +212,9 @@ function App() {
                           <Route path="positions/:id/edit" element={<EditPositionPage />} />
                           <Route path="workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="workflows/:workflowId/edit" element={<EditWorkflowPage />} />
+                          <Route path="pages" element={<CompanyPagesListPage />} />
+                          <Route path="pages/create" element={<CreateCompanyPagePage />} />
+                          <Route path="pages/:pageId/edit" element={<EditCompanyPagePage />} />
                           <Route path="settings" element={<CompanySettingsPage />} />
                           <Route path="settings/edit" element={<EditCompanyPage />} />
                           <Route path="settings/workflows" element={<WorkflowsSettingsPage />} />

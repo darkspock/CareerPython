@@ -182,6 +182,7 @@ class CompanyCandidateController:
                 created_by_user_id=read_model.created_by_user_id,
                 workflow_id=read_model.workflow_id,
                 current_stage_id=read_model.current_stage_id,
+                current_phase_id=read_model.phase_id,  # Map phase_id to current_phase_id
                 invited_at=read_model.invited_at,
                 confirmed_at=read_model.confirmed_at,
                 rejected_at=read_model.rejected_at,

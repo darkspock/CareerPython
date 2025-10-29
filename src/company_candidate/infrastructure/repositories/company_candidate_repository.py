@@ -228,6 +228,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
                 created_by_user_id=cc_model.created_by_user_id,
                 workflow_id=cc_model.workflow_id,
                 current_stage_id=cc_model.current_stage_id,
+                phase_id=cc_model.phase_id,  # Get phase_id from model
                 invited_at=cc_model.invited_at,
                 confirmed_at=cc_model.confirmed_at,
                 rejected_at=cc_model.rejected_at,

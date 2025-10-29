@@ -1,17 +1,17 @@
 """
-Page Status Enum - Estados de las páginas de empresa
+Page Status Enum - Company page statuses
 """
 from enum import Enum
 
 
 class PageStatus(str, Enum):
-    """Estados posibles de una página de empresa"""
+    """Possible company page statuses"""
     
     DRAFT = "draft"
-    """Página en borrador, no visible públicamente"""
+    """Draft page, not publicly visible"""
     
     PUBLISHED = "published"
-    """Página publicada y visible públicamente"""
+    """Published page, publicly visible"""
     
     ARCHIVED = "archived"
-    """Página archivada, no visible públicamente"""
+    """Archived page, not publicly visible"""

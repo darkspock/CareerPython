@@ -90,6 +90,44 @@ class CompanyPageRepositoryInterface(ABC):
         pass
     
     @abstractmethod
+    def list_by_company_and_type(
+        self, 
+        company_id: CompanyId, 
+        page_type: PageType
+    ) -> List[CompanyPage]:
+        """
+        Listar páginas de una empresa por tipo.
+        
+        Args:
+            company_id: ID de la empresa
+            page_type: Tipo de página
+            
+        Returns:
+            Lista de páginas del tipo especificado
+        """
+        pass
+    
+    @abstractmethod
+    def list_by_company_type_and_status(
+        self, 
+        company_id: CompanyId, 
+        page_type: PageType,
+        status: PageStatus
+    ) -> List[CompanyPage]:
+        """
+        Listar páginas de una empresa por tipo y estado.
+        
+        Args:
+            company_id: ID de la empresa
+            page_type: Tipo de página
+            status: Estado de las páginas
+            
+        Returns:
+            Lista de páginas del tipo y estado especificados
+        """
+        pass
+    
+    @abstractmethod
     def get_default_by_type(
         self, 
         company_id: CompanyId, 

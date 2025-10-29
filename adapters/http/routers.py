@@ -8,6 +8,8 @@ from adapters.http.company.routers.company_user_router import router as company_
 from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
 from adapters.http.company_workflow.routers.company_workflow_router import router as company_workflow_router
 from adapters.http.company_workflow.routers.workflow_stage_router import router as workflow_stage_router
+from src.company_page.presentation.routers.company_page_router import router as company_page_router
+from src.company_page.presentation.routers.public_company_page_router import router as public_company_page_router
 # from presentation.candidate.routers.home_router import home_router
 # from presentation.candidate.routers import interview_router
 # from presentation.candidate.routers.profile_router import router as profile_router
@@ -27,6 +29,8 @@ __all__ = [
     "company_candidate_router",
     "company_workflow_router",
     "workflow_stage_router",
+    "company_page_router",
+    "public_company_page_router",
     # COMENTADO - Solo admin interview templates por ahora
     # "candidate_router",
     # "user_router",
