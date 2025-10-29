@@ -34,6 +34,9 @@ class CompanyCandidateResponse(BaseModel):
     job_position_id: Optional[str] = None
     job_position_title: Optional[str] = None
     application_status: Optional[str] = None
+    # Workflow and stage info (optional, populated when needed)
+    stage_name: Optional[str] = None
+    workflow_name: Optional[str] = None
 
     class Config:
         from_attributes = True

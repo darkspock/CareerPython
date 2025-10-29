@@ -203,6 +203,9 @@ class CompanyCandidateController:
                 job_position_id=read_model.job_position_id,
                 job_position_title=read_model.job_position_title,
                 application_status=read_model.application_status,
+                # Include workflow and stage info from read model
+                stage_name=read_model.stage_name,
+                workflow_name=read_model.workflow_name,
             )
             responses.append(response)
 

@@ -47,3 +47,6 @@ class CompanyCandidateWithCandidateReadModel:
     job_position_id: Optional[str] = None
     job_position_title: Optional[str] = None
     application_status: Optional[str] = None
+    # Workflow and stage info (from workflow and stage JOINs)
+    workflow_name: Optional[str] = None
+    stage_name: Optional[str] = None

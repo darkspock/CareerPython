@@ -196,7 +196,11 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         """
         session = self._get_session()
 
-        # Perform JOINs between company_candidates, candidates, candidate_applications, and job_positions
+        # Import models for JOIN
+        from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
+        from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+        
+        # Perform JOINs between company_candidates, candidates, candidate_applications, job_positions, workflows, and stages
         results = session.query(
             CompanyCandidateModel,
             CandidateModel.name,
@@ -204,7 +208,9 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             CandidateModel.phone,
             CandidateApplicationModel.job_position_id,
             CandidateApplicationModel.application_status,
-            JobPositionModel.title
+            JobPositionModel.title,
+            CompanyWorkflowModel.name.label('workflow_name'),
+            WorkflowStageModel.name.label('stage_name')
         ).join(
             CandidateModel,
             CompanyCandidateModel.candidate_id == CandidateModel.id
@@ -214,13 +220,19 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         ).outerjoin(
             JobPositionModel,
             CandidateApplicationModel.job_position_id == JobPositionModel.id
+        ).outerjoin(
+            CompanyWorkflowModel,
+            CompanyCandidateModel.workflow_id == CompanyWorkflowModel.id
+        ).outerjoin(
+            WorkflowStageModel,
+            CompanyCandidateModel.current_stage_id == WorkflowStageModel.id
         ).filter(
             CompanyCandidateModel.company_id == str(company_id)
         ).all()
 
         # Convert to read models
         read_models = []
-        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title in results:
+        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name in results:
             read_model = CompanyCandidateWithCandidateReadModel(
                 id=cc_model.id,
                 company_id=cc_model.company_id,
@@ -256,6 +268,9 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
                 job_position_id=job_position_id,
                 job_position_title=job_position_title,
                 application_status=application_status,
+                # Workflow and stage info from JOINs
+                workflow_name=workflow_name,
+                stage_name=stage_name,
             )
             read_models.append(read_model)
 
