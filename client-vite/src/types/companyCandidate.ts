@@ -78,7 +78,7 @@ export interface AssignWorkflowRequest {
 }
 
 export interface ChangeStageRequest {
-  stage_id: string;
+  new_stage_id: string;
 }
 
 export interface CandidateFilters {

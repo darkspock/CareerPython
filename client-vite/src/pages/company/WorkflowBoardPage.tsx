@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   DndContext,
   DragOverlay,
@@ -11,10 +11,10 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Kanban, User, Tag, AlertCircle, RefreshCw } from 'lucide-react';
+import { Kanban, User, Tag, AlertCircle, RefreshCw, List } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import { companyCandidateService } from '../../services/companyCandidateService';
-import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow';
+import type { WorkflowStage } from '../../types/workflow';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 import { getPriorityColor } from '../../types/companyCandidate';
 import { PhaseBadge } from '../../components/phase';  // Phase 12
@@ -143,8 +143,10 @@ function StageColumn({
 
 // Main Kanban Board Component
 export default function WorkflowBoardPage() {
-  const [workflows, setWorkflows] = useState<CompanyWorkflow[]>([]);
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>('');
+  const [searchParams] = useSearchParams();
+  const phaseIdFromUrl = searchParams.get('phase');
+  
+  const [selectedPhaseId, setSelectedPhaseId] = useState<string>('');
   const [stages, setStages] = useState<WorkflowStage[]>([]);
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,55 +173,26 @@ export default function WorkflowBoardPage() {
   };
 
   useEffect(() => {
-    loadWorkflows();
-  }, []);
-
-  useEffect(() => {
-    if (selectedWorkflowId) {
+    if (phaseIdFromUrl) {
+      setSelectedPhaseId(phaseIdFromUrl);
       loadStagesAndCandidates();
     }
-  }, [selectedWorkflowId]);
+  }, [phaseIdFromUrl]);
 
-  const loadWorkflows = async () => {
-    try {
-      setLoading(true);
-      const companyId = getCompanyId();
-      if (!companyId) {
-        setError('Company ID not found');
-        return;
-      }
-
-      const data = await companyWorkflowService.listWorkflowsByCompany(companyId);
-      setWorkflows(data);
-
-      // Select first active workflow by default
-      const activeWorkflow = data.find((w) => w.status === 'ACTIVE');
-      if (activeWorkflow) {
-        setSelectedWorkflowId(activeWorkflow.id);
-      }
-
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load workflows');
-      console.error('Error loading workflows:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadStagesAndCandidates = async () => {
     try {
       setLoading(true);
       const companyId = getCompanyId();
-      if (!companyId) return;
+      if (!companyId || !phaseIdFromUrl) return;
 
-      // Load stages
-      const stagesData = await companyWorkflowService.listStagesByWorkflow(selectedWorkflowId);
+      // Load stages for the selected phase
+      const stagesData = await companyWorkflowService.listStagesByPhase(phaseIdFromUrl);
       setStages(stagesData.sort((a, b) => a.order - b.order));
 
-      // Load candidates
+      // Load candidates for the selected phase
       const candidatesData = await companyCandidateService.listByCompany(companyId);
-      setCandidates(candidatesData.filter((c) => c.current_workflow_id === selectedWorkflowId));
+      setCandidates(candidatesData.filter((c) => c.current_phase_id === phaseIdFromUrl));
 
       setError(null);
     } catch (err: any) {
@@ -262,7 +235,7 @@ export default function WorkflowBoardPage() {
 
     // Update candidate stage
     try {
-      await companyCandidateService.changeStage(candidateId, { stage_id: targetStageId });
+      await companyCandidateService.changeStage(candidateId, { new_stage_id: targetStageId });
 
       // Refresh data
       loadStagesAndCandidates();
@@ -279,7 +252,7 @@ export default function WorkflowBoardPage() {
 
   const activeDragCandidate = candidates.find((c) => c.id === activeId);
 
-  if (loading && workflows.length === 0) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -305,24 +278,16 @@ export default function WorkflowBoardPage() {
           </button>
         </div>
 
-        {/* Workflow Selector */}
-        {workflows.length > 0 && (
+        {/* Back to List View Button */}
+        {phaseIdFromUrl && (
           <div className="flex items-center gap-4">
-            <label className="text-sm font-medium text-gray-700">Workflow:</label>
-            <select
-              value={selectedWorkflowId}
-              onChange={(e) => setSelectedWorkflowId(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            <Link
+              to={`/company/candidates?phase=${phaseIdFromUrl}`}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
             >
-              <option value="">Select a workflow</option>
-              {workflows
-                .filter((w) => w.status === 'ACTIVE')
-                .map((workflow) => (
-                  <option key={workflow.id} value={workflow.id}>
-                    {workflow.name}
-                  </option>
-                ))}
-            </select>
+              <List className="w-4 h-4" />
+              List View
+            </Link>
           </div>
         )}
       </div>
@@ -338,17 +303,17 @@ export default function WorkflowBoardPage() {
       )}
 
       {/* Kanban Board */}
-      {!selectedWorkflowId ? (
+      {!phaseIdFromUrl ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Kanban className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No workflow selected</h3>
-          <p className="text-gray-600">Select a workflow to view the Kanban board</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No phase selected</h3>
+          <p className="text-gray-600">Select a phase from the sidebar to view the Kanban board</p>
         </div>
       ) : stages.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Kanban className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No stages in this workflow</h3>
-          <p className="text-gray-600">Add stages to this workflow in the Settings page</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No stages in this phase</h3>
+          <p className="text-gray-600">Add stages to this phase in the Settings page</p>
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -380,7 +345,7 @@ export default function WorkflowBoardPage() {
       )}
 
       {/* Instructions */}
-      {selectedWorkflowId && stages.length > 0 && (
+      {selectedPhaseId && stages.length > 0 && (
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <User className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />

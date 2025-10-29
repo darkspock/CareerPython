@@ -79,6 +79,15 @@ class WorkflowStageController:
 
         return [WorkflowStageResponseMapper.dto_to_response(dto) for dto in dtos]
 
+    def list_stages_by_phase(self, phase_id: str) -> List[WorkflowStageResponse]:
+        """List all stages for a phase."""
+        from src.company_workflow.application.queries.list_stages_by_phase import ListStagesByPhaseQuery
+        
+        query = ListStagesByPhaseQuery(phase_id=phase_id)
+        dtos: List[WorkflowStageDto] = self._query_bus.query(query)
+
+        return [WorkflowStageResponseMapper.dto_to_response(dto) for dto in dtos]
+
     def get_initial_stage(self, workflow_id: str) -> Optional[WorkflowStageResponse]:
         """Get the initial stage of a workflow."""
         query = GetInitialStageQuery(workflow_id=workflow_id)

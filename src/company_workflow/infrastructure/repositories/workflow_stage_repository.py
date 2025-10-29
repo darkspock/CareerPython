@@ -67,6 +67,24 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             ).all()
             return [self._to_domain(model) for model in models]
 
+    def list_by_phase(self, phase_id) -> List[WorkflowStage]:
+        """List all stages for a phase, ordered by order field"""
+        from src.phase.domain.value_objects.phase_id import PhaseId
+        
+        with self._database.get_session() as session:
+            # First get the workflow for this phase
+            from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
+            workflow = session.query(CompanyWorkflowModel).filter_by(phase_id=str(phase_id)).first()
+            
+            if not workflow:
+                return []
+            
+            # Then get all stages for that workflow
+            models = session.query(WorkflowStageModel).filter_by(
+                workflow_id=str(workflow.id)
+            ).order_by(WorkflowStageModel.order).all()
+            return [self._to_domain(model) for model in models]
+
     def _to_domain(self, model: WorkflowStageModel) -> WorkflowStage:
         """Convert model to domain entity"""
         from decimal import Decimal

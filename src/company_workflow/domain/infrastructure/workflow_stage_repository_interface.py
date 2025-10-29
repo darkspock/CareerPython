@@ -4,6 +4,7 @@ from typing import Optional, List
 from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.phase.domain.value_objects.phase_id import PhaseId
 
 
 class WorkflowStageRepositoryInterface(ABC):
@@ -37,4 +38,9 @@ class WorkflowStageRepositoryInterface(ABC):
     @abstractmethod
     def get_final_stages(self, workflow_id: CompanyWorkflowId) -> List[WorkflowStage]:
         """Get all final stages of a workflow"""
+        pass
+
+    @abstractmethod
+    def list_by_phase(self, phase_id: PhaseId) -> List[WorkflowStage]:
+        """List all stages for a phase, ordered by order field"""
         pass

@@ -67,6 +67,20 @@ def list_stages_by_workflow(
 
 
 @router.get(
+    "/phase/{phase_id}",
+    response_model=List[WorkflowStageResponse],
+    summary="List all stages for a phase"
+)
+@inject
+def list_stages_by_phase(
+        phase_id: str,
+        controller: WorkflowStageController = Depends(Provide[Container.workflow_stage_controller])
+) -> List[WorkflowStageResponse]:
+    """List all stages for a phase"""
+    return controller.list_stages_by_phase(phase_id)
+
+
+@router.get(
     "/workflow/{workflow_id}/initial",
     response_model=WorkflowStageResponse,
     summary="Get the initial stage of a workflow"

@@ -180,6 +180,7 @@ from src.company_workflow.application.queries.list_workflows_by_company import L
 from src.company_workflow.application.queries.list_workflows_by_phase import ListWorkflowsByPhaseQueryHandler
 from src.company_workflow.application.queries.get_stage_by_id import GetStageByIdQueryHandler
 from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQueryHandler
+from src.company_workflow.application.queries.list_stages_by_phase import ListStagesByPhaseQueryHandler
 from src.company_workflow.application.queries.get_initial_stage import GetInitialStageQueryHandler
 from src.company_workflow.application.queries.get_final_stages import GetFinalStagesQueryHandler
 from src.company_workflow.application.queries.get_custom_field_by_id import GetCustomFieldByIdQueryHandler
@@ -798,6 +799,11 @@ class Container(containers.DeclarativeContainer):
 
     list_stages_by_workflow_query_handler = providers.Factory(
         ListStagesByWorkflowQueryHandler,
+        repository=workflow_stage_repository
+    )
+
+    list_stages_by_phase_query_handler = providers.Factory(
+        ListStagesByPhaseQueryHandler,
         repository=workflow_stage_repository
     )
 

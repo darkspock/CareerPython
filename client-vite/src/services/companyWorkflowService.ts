@@ -160,6 +160,15 @@ export const companyWorkflowService = {
   },
 
   /**
+   * List stages for a specific phase
+   */
+  listStagesByPhase: async (phaseId: string): Promise<WorkflowStage[]> => {
+    return ApiClient.get(`/api/workflow-stages/phase/${phaseId}`, {
+      headers: getAuthHeaders(),
+    });
+  },
+
+  /**
    * Get initial stage of a workflow
    */
   getInitialStage: async (workflowId: string): Promise<WorkflowStage> => {

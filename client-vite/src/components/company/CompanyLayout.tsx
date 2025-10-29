@@ -3,7 +3,6 @@ import {
   Building2,
   Users,
   Briefcase,
-  Kanban,
   Settings,
   LogOut,
   Menu,
@@ -71,6 +70,15 @@ export default function CompanyLayout() {
     navigate('/company/login');
   };
 
+  const getPhaseUrl = (phase: Phase) => {
+    // Determine the correct view based on phase configuration
+    if (phase.default_view === 'KANBAN') {
+      return `/company/workflow-board?phase=${phase.id}`;
+    } else {
+      return `/company/candidates?phase=${phase.id}`;
+    }
+  };
+
   const menuItems = [
     { path: '/company/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/company/positions', icon: Briefcase, label: 'Job Positions' },
@@ -78,7 +86,7 @@ export default function CompanyLayout() {
   ];
 
   const isActive = (path: string) => location.pathname === path;
-  const isCandidatesActive = location.pathname.startsWith('/company/candidates');
+  const isCandidatesActive = location.pathname.startsWith('/company/candidates') || location.pathname.startsWith('/company/workflow-board');
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -169,7 +177,7 @@ export default function CompanyLayout() {
                   {phases.map((phase) => (
                     <Link
                       key={phase.id}
-                      to={`/company/candidates?phase=${phase.id}`}
+                      to={getPhaseUrl(phase)}
                       onClick={() => setSidebarOpen(false)}
                       className={`
                         flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
@@ -227,9 +235,7 @@ export default function CompanyLayout() {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside
-        className="sticky top-0 left-0 z-50 h-screen w-64 bg-white border-r border-gray-200 hidden lg:block"
-      >
+      <aside className="sticky top-0 left-0 z-50 h-screen w-64 bg-white border-r border-gray-200 hidden lg:block">
         <div className="flex flex-col h-full">
           {/* Logo/Header */}
           <div className="flex items-center p-6 border-b border-gray-200">
@@ -295,7 +301,7 @@ export default function CompanyLayout() {
                   {phases.map((phase) => (
                     <Link
                       key={phase.id}
-                      to={`/company/candidates?phase=${phase.id}`}
+                      to={getPhaseUrl(phase)}
                       onClick={() => setSidebarOpen(false)}
                       className={`
                         flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
