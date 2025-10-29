@@ -1,8 +1,11 @@
 """
 FastAPI app minimal - Solo admin interview templates
 """
+import os
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # Solo imports esenciales
 from core.container import Container
@@ -88,6 +91,11 @@ app.include_router(phase_router)  # Phase 12: Phase management
 app.include_router(candidate_router)
 app.include_router(user_router)
 app.include_router(ai_test_router)  # Direct AI testing
+
+# Mount static files for uploads (local storage)
+uploads_dir = Path("uploads")
+uploads_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
 # Root endpoint básico
 @app.get("/", tags=["root"])

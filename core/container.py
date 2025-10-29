@@ -86,6 +86,7 @@ from src.interview.interview.Infrastructure.repositories.interview_answer_reposi
 # Company Application Layer - Commands
 from src.company.application.commands.create_company_command import CreateCompanyCommandHandler
 from src.company.application.commands.update_company_command import UpdateCompanyCommandHandler
+from src.company.application.commands.upload_company_logo_command import UploadCompanyLogoCommandHandler
 from src.company.application.commands.suspend_company_command import SuspendCompanyCommandHandler
 from src.company.application.commands.activate_company_command import ActivateCompanyCommandHandler
 from src.company.application.commands.delete_company_command import DeleteCompanyCommandHandler
@@ -1059,6 +1060,12 @@ class Container(containers.DeclarativeContainer):
         repository=company_repository
     )
 
+    upload_company_logo_command_handler = providers.Factory(
+        UploadCompanyLogoCommandHandler,
+        repository=company_repository,
+        storage_service=storage_service
+    )
+
     suspend_company_command_handler = providers.Factory(
         SuspendCompanyCommandHandler,
         repository=company_repository
@@ -1883,6 +1890,71 @@ class Container(containers.DeclarativeContainer):
     # Phase 9: Workflow Analytics Controller
     workflow_analytics_controller = providers.Factory(
         WorkflowAnalyticsController,
+        query_bus=query_bus
+    )
+
+    # Company Pages Module
+    company_page_repository = providers.Factory(
+        'src.company_page.infrastructure.repositories.company_page_repository.CompanyPageRepository',
+        database=database
+    )
+
+    # Company Pages Commands
+    create_company_page_command_handler = providers.Factory(
+        'src.company_page.application.commands.create_company_page_command_handler.CreateCompanyPageCommandHandler',
+        repository=company_page_repository
+    )
+
+    update_company_page_command_handler = providers.Factory(
+        'src.company_page.application.commands.update_company_page_command_handler.UpdateCompanyPageCommandHandler',
+        repository=company_page_repository
+    )
+
+    publish_company_page_command_handler = providers.Factory(
+        'src.company_page.application.commands.publish_company_page_command_handler.PublishCompanyPageCommandHandler',
+        repository=company_page_repository
+    )
+
+    archive_company_page_command_handler = providers.Factory(
+        'src.company_page.application.commands.archive_company_page_command_handler.ArchiveCompanyPageCommandHandler',
+        repository=company_page_repository
+    )
+
+    set_default_page_command_handler = providers.Factory(
+        'src.company_page.application.commands.set_default_page_command_handler.SetDefaultPageCommandHandler',
+        repository=company_page_repository
+    )
+
+    delete_company_page_command_handler = providers.Factory(
+        'src.company_page.application.commands.delete_company_page_command_handler.DeleteCompanyPageCommandHandler',
+        repository=company_page_repository
+    )
+
+    # Company Pages Queries
+    get_company_page_by_id_query_handler = providers.Factory(
+        'src.company_page.application.queries.get_company_page_by_id_query_handler.GetCompanyPageByIdQueryHandler',
+        repository=company_page_repository
+    )
+
+    get_company_page_by_type_query_handler = providers.Factory(
+        'src.company_page.application.queries.get_company_page_by_type_query_handler.GetCompanyPageByTypeQueryHandler',
+        repository=company_page_repository
+    )
+
+    list_company_pages_query_handler = providers.Factory(
+        'src.company_page.application.queries.list_company_pages_query_handler.ListCompanyPagesQueryHandler',
+        repository=company_page_repository
+    )
+
+    get_public_company_page_query_handler = providers.Factory(
+        'src.company_page.application.queries.get_public_company_page_query_handler.GetPublicCompanyPageQueryHandler',
+        repository=company_page_repository
+    )
+
+    # Company Pages Controller
+    company_page_controller = providers.Factory(
+        'src.company_page.presentation.controllers.company_page_controller.CompanyPageController',
+        command_bus=command_bus,
         query_bus=query_bus
     )
 

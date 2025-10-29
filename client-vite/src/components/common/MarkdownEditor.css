@@ -1,0 +1,227 @@
+/* Estilos para el editor WYSIWYG con @uiw/react-md-editor */
+
+.wysiwyg-editor {
+  width: 100%;
+}
+
+.wysiwyg-editor .w-md-editor {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.wysiwyg-editor .w-md-editor-toolbar {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #e9ecef !important;
+  padding: 8px 12px !important;
+}
+
+.wysiwyg-editor .w-md-editor-toolbar button {
+  color: #495057 !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  margin: 0 2px !important;
+}
+
+.wysiwyg-editor .w-md-editor-toolbar button:hover {
+  background-color: #e9ecef !important;
+  color: #212529 !important;
+}
+
+.wysiwyg-editor .w-md-editor-toolbar button.active {
+  background-color: #007bff !important;
+  color: white !important;
+}
+
+.wysiwyg-editor .w-md-editor-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.wysiwyg-editor .w-md-editor-text textarea {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  padding: 16px !important;
+  border: none !important;
+  outline: none !important;
+  resize: none !important;
+}
+
+.wysiwyg-editor .w-md-editor-text textarea::placeholder {
+  color: #6c757d !important;
+  font-style: italic !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview {
+  padding: 16px !important;
+  background-color: #ffffff !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview h1,
+.wysiwyg-editor .w-md-editor-preview h2,
+.wysiwyg-editor .w-md-editor-preview h3,
+.wysiwyg-editor .w-md-editor-preview h4,
+.wysiwyg-editor .w-md-editor-preview h5,
+.wysiwyg-editor .w-md-editor-preview h6 {
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview h1 {
+  font-size: 2em !important;
+  border-bottom: 1px solid #e9ecef !important;
+  padding-bottom: 8px !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview h2 {
+  font-size: 1.5em !important;
+  border-bottom: 1px solid #e9ecef !important;
+  padding-bottom: 6px !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview h3 {
+  font-size: 1.25em !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview p {
+  margin-bottom: 16px !important;
+  line-height: 1.6 !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview ul,
+.wysiwyg-editor .w-md-editor-preview ol {
+  margin-bottom: 16px !important;
+  padding-left: 24px !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview li {
+  margin-bottom: 4px !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview blockquote {
+  margin: 16px 0 !important;
+  padding: 0 16px !important;
+  color: #6c757d !important;
+  border-left: 4px solid #e9ecef !important;
+  background-color: #f8f9fa !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview code {
+  padding: 2px 4px !important;
+  font-size: 0.875em !important;
+  color: #e83e8c !important;
+  background-color: #f8f9fa !important;
+  border-radius: 3px !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview pre {
+  margin: 16px 0 !important;
+  padding: 16px !important;
+  background-color: #f8f9fa !important;
+  border-radius: 6px !important;
+  overflow-x: auto !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview pre code {
+  padding: 0 !important;
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview table {
+  width: 100% !important;
+  margin: 16px 0 !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview table th,
+.wysiwyg-editor .w-md-editor-preview table td {
+  padding: 8px 12px !important;
+  text-align: left !important;
+  border-bottom: 1px solid #e9ecef !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview table th {
+  background-color: #f8f9fa !important;
+  font-weight: 600 !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 4px !important;
+  margin: 8px 0 !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview a {
+  color: #007bff !important;
+  text-decoration: none !important;
+}
+
+.wysiwyg-editor .w-md-editor-preview a:hover {
+  text-decoration: underline !important;
+}
+
+/* Estilos para el modo de pantalla completa */
+.wysiwyg-editor .w-md-editor.w-md-editor-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+  background-color: white !important;
+}
+
+/* Estilos para los botones de modo */
+.wysiwyg-editor .mode-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.wysiwyg-editor .mode-buttons button {
+  padding: 6px 12px;
+  border: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  color: #495057;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.wysiwyg-editor .mode-buttons button:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.wysiwyg-editor .mode-buttons button.active {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+/* Estilos para el texto de ayuda */
+.wysiwyg-editor .help-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.wysiwyg-editor .help-text p {
+  margin: 2px 0;
+}
+
+.wysiwyg-editor .help-text strong {
+  font-weight: 600;
+  color: #495057;
+}

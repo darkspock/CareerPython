@@ -5,16 +5,22 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, ArrowLeft, Save, AlertCircle } from 'lucide-react';
+import { Building2, ArrowLeft, Save, AlertCircle, Upload, Image as ImageIcon, Edit3 } from 'lucide-react';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import type { RecruiterCompany, UpdateRecruiterCompanyRequest } from '../../types/recruiter-company';
+import { ImageEditor } from '../../components/common';
 
 export default function EditCompanyPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [company, setCompany] = useState<RecruiterCompany | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showImageEditor, setShowImageEditor] = useState(false);
+  const [imageToEdit, setImageToEdit] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -112,6 +118,129 @@ export default function EditCompanyPage() {
     setFormData(prev => ({ ...prev, slug }));
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Invalid file type. Please upload a JPEG, PNG, WebP, or SVG image.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('File size exceeds 5MB. Please upload a smaller image.');
+      return;
+    }
+
+    // For SVG files, don't show editor (can't crop SVG)
+    if (file.type === 'image/svg+xml') {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setError(null);
+      return;
+    }
+
+    // For other image types, show editor
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageToEdit(reader.result as string);
+      setShowImageEditor(true);
+    };
+    reader.readAsDataURL(file);
+    setError(null);
+  };
+
+  const handleCropComplete = (croppedImage: string) => {
+    console.log('Starting image conversion...');
+    
+    // Convert base64 to File
+    fetch(croppedImage)
+      .then(res => res.blob())
+      .then(blob => {
+        console.log('Blob created:', blob.size, 'bytes');
+        const file = new File([blob], 'logo.png', { type: 'image/png' });
+        console.log('File created:', file.name, file.size, 'bytes', file.type);
+        
+        setSelectedFile(file);
+        setPreviewUrl(croppedImage);
+        
+        console.log('File set in state, closing editor');
+        // Close editor after successful conversion
+        setShowImageEditor(false);
+        setImageToEdit(null);
+        
+        // Auto-upload the cropped image
+        console.log('Starting auto-upload...');
+        uploadCroppedImage(file);
+      })
+      .catch(err => {
+        console.error('Error converting cropped image:', err);
+        setError('Error processing image');
+        // Close editor even on error
+        setShowImageEditor(false);
+        setImageToEdit(null);
+      });
+  };
+
+  const handleCropCancel = () => {
+    setShowImageEditor(false);
+    setImageToEdit(null);
+  };
+
+  const uploadCroppedImage = async (file: File) => {
+    console.log('Auto-uploading file:', file.name, file.size, 'bytes', file.type);
+
+    const companyId = getCompanyId();
+    if (!companyId) {
+      setError('Company ID not found');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+
+      console.log('Calling upload service...');
+      const updatedCompany = await recruiterCompanyService.uploadLogo(companyId, file);
+      console.log('Upload successful:', updatedCompany);
+
+      // Update local state
+      setCompany(updatedCompany);
+      setFormData(prev => ({
+        ...prev,
+        logo_url: updatedCompany.logo_url || '',
+      }));
+
+      // Clear file selection
+      setSelectedFile(null);
+      setPreviewUrl(null);
+
+      alert('Logo uploaded successfully!');
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload logo');
+      console.error('Error uploading logo:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleUploadLogo = async () => {
+    if (!selectedFile) {
+      console.log('No file selected for upload');
+      return;
+    }
+
+    await uploadCroppedImage(selectedFile);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -206,7 +335,7 @@ export default function EditCompanyPage() {
               id="slug"
               value={formData.slug}
               onChange={(e) => handleChange('slug', e.target.value)}
-              pattern="[a-z0-9-]*"
+              pattern="[a-z0-9\-]*"
               maxLength={255}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="your-company"
@@ -227,21 +356,109 @@ export default function EditCompanyPage() {
           </p>
         </div>
 
-        {/* Logo URL */}
+        {/* Logo Upload */}
         <div>
-          <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700 mb-2">
-            Logo URL
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Company Logo
           </label>
-          <input
-            type="url"
-            id="logo_url"
-            value={formData.logo_url}
-            onChange={(e) => handleChange('logo_url', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="https://example.com/logo.png"
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            URL to your company logo image
+
+          {/* Current Logo Preview */}
+          {(formData.logo_url || previewUrl) && (
+            <div className="mb-4">
+              <div className="flex items-start gap-4">
+                <div className="w-32 h-32 border border-gray-300 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Logo preview"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : formData.logo_url ? (
+                    <img
+                      src={formData.logo_url}
+                      alt="Current logo"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <ImageIcon className="w-12 h-12 text-gray-400" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  {previewUrl && (
+                    <div className="mb-2">
+                      <p className="text-sm font-medium text-gray-700">New logo selected</p>
+                      <p className="text-sm text-gray-500">{selectedFile?.name}</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageToEdit(previewUrl);
+                          setShowImageEditor(true);
+                        }}
+                        className="mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors flex items-center gap-1"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        Edit Image
+                      </button>
+                    </div>
+                  )}
+                  {formData.logo_url && !previewUrl && (
+                    <div className="mb-2">
+                      <p className="text-sm font-medium text-gray-700">Current logo</p>
+                      <p className="text-sm text-gray-500 break-all">{formData.logo_url}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* File Upload */}
+          <div className="flex gap-3">
+            <label className="flex-1">
+              <div className="flex items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 cursor-pointer transition-colors">
+                <Upload className="w-5 h-5 text-gray-400 mr-2" />
+                <span className="text-sm text-gray-600">
+                  {selectedFile ? selectedFile.name : 'Choose logo image'}
+                </span>
+              </div>
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+
+            {selectedFile && (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log('Upload button clicked!');
+                    handleUploadLogo();
+                  }}
+                  disabled={uploading}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {uploading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Upload
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <p className="text-sm text-gray-500 mt-2">
+            Accepted formats: JPEG, PNG, WebP, SVG (max 5MB)
           </p>
         </div>
 
@@ -273,6 +490,17 @@ export default function EditCompanyPage() {
           </button>
         </div>
       </form>
+
+      {/* Image Editor Modal */}
+      {showImageEditor && imageToEdit && (
+        <ImageEditor
+          src={imageToEdit}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          aspectRatio={1}
+          title="Edit Company Logo"
+        />
+      )}
     </div>
   );
 }

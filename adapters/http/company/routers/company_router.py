@@ -5,7 +5,7 @@ import logging
 from typing import List, Annotated, Optional
 
 from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 
 from adapters.http.company.controllers.company_controller import CompanyController
@@ -104,6 +104,41 @@ async def update_company(
 ) -> CompanyResponse:
     """Update a company"""
     return controller.update_company(company_id, request)
+
+
+@router.post("/{company_id}/upload-logo", response_model=CompanyResponse)
+@inject
+async def upload_company_logo(
+        company_id: str,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
+        file: UploadFile = File(...),
+) -> CompanyResponse:
+    """Upload a company logo"""
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/svg+xml"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type. Allowed types: {', '.join(allowed_types)}"
+        )
+
+    # Read file content
+    file_content = await file.read()
+
+    # Validate file size (max 5MB)
+    max_size = 5 * 1024 * 1024  # 5MB
+    if len(file_content) > max_size:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds maximum allowed size of 5MB"
+        )
+
+    return controller.upload_company_logo(
+        company_id=company_id,
+        file_content=file_content,
+        filename=file.filename or "logo.png",
+        content_type=file.content_type or "image/png"
+    )
 
 
 @router.post("/{company_id}/suspend", response_model=CompanyResponse)

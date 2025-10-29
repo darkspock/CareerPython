@@ -72,7 +72,7 @@ class Settings(BaseSettings):
 
     # Storage configuration
     MAX_FILE_SIZE_MB: int = 10
-    ALLOWED_FILE_EXTENSIONS: str = ".pdf,.doc,.docx,.txt"
+    ALLOWED_FILE_EXTENSIONS: str = ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp,.svg"
 
     auth: AuthSettings = AuthSettings()
 

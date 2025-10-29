@@ -1,101 +1,55 @@
-/**
- * WYSIWYG Editor Component using Tiptap
- *
- * A rich text editor that outputs HTML content with basic sanitization
- * for use in resume sections.
- */
-
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import ListItem from '@tiptap/extension-list-item';
-import '../../styles/tiptap.css';
-import {
-  Bold,
-  Italic,
-  Underline,
-  List,
-  ListOrdered,
-  Link as LinkIcon,
-  Unlink
-} from 'lucide-react';
+import Placeholder from '@tiptap/extension-placeholder';
+import './WysiwygEditor.css';
 
 interface WysiwygEditorProps {
-  content: string;
-  onChange: (html: string) => void;
+  value: string;
+  onChange: (content: string) => void;
   placeholder?: string;
-  className?: string;
-  minHeight?: string;
+  height?: number;
   disabled?: boolean;
+  className?: string;
 }
 
-const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
-  content,
+export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
+  value,
   onChange,
-  placeholder = 'Start typing...',
-  className = '',
-  minHeight = '120px',
-  disabled = false
+  placeholder = 'Enter your content...',
+  height = 300,
+  disabled = false,
+  className = ''
 }) => {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        // Disable some extensions we don't need
-        blockquote: false,
-        code: false,
-        codeBlock: false,
-        strike: false,
-        dropcursor: false,
-        gapcursor: false,
+      StarterKit,
+      Image.configure({
+        HTMLAttributes: {
+          class: 'wysiwyg-image',
+        },
       }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          target: '_blank',
-          rel: 'noopener noreferrer',
+          class: 'wysiwyg-link',
         },
       }),
-      BulletList.configure({
-        HTMLAttributes: {
-          class: 'bullet-list',
-        },
+      Placeholder.configure({
+        placeholder: placeholder,
       }),
-      OrderedList.configure({
-        HTMLAttributes: {
-          class: 'ordered-list',
-        },
-      }),
-      ListItem,
     ],
-    content: content || '',
+    content: value,
     editable: !disabled,
     onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      onChange(html);
-    },
-    editorProps: {
-      attributes: {
-        class: `prose prose-sm max-w-none focus:outline-none ${className}`,
-        style: `min-height: ${minHeight}`,
-        placeholder: placeholder,
-      },
+      onChange(editor.getHTML());
     },
   });
 
-  // Update editor content when prop changes
-  React.useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content || '');
-    }
-  }, [content, editor]);
-
-  const setLink = () => {
-    if (!editor) return;
-
-    const previousUrl = editor.getAttributes('link').href;
+  const setLink = useCallback(() => {
+    const previousUrl = editor?.getAttributes('link').href;
     const url = window.prompt('URL', previousUrl);
 
     // cancelled
@@ -105,142 +59,168 @@ const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
 
     // empty
     if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      editor?.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
     }
 
     // update link
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  };
+    editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  }, [editor]);
 
-  const unsetLink = () => {
-    if (!editor) return;
-    editor.chain().focus().unsetLink().run();
-  };
+  const addImage = useCallback(() => {
+    const url = window.prompt('URL de la imagen');
+    if (url) {
+      editor?.chain().focus().setImage({ src: url }).run();
+    }
+  }, [editor]);
 
   if (!editor) {
-    return (
-      <div className="animate-pulse">
-        <div className="border border-gray-300 rounded-lg">
-          <div className="h-10 bg-gray-100 border-b border-gray-300 rounded-t-lg"></div>
-          <div className="p-4" style={{ minHeight }}>
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
+    <div className={`wysiwyg-editor ${className}`}>
       {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b border-gray-200 bg-gray-50 flex-wrap">
-        {/* Text formatting */}
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('bold') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-          title="Bold"
-        >
-          <Bold className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          disabled={!editor.can().chain().focus().toggleItalic().run()}
-          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('italic') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-          title="Italic"
-        >
-          <Italic className="w-4 h-4" />
-        </button>
-
-        {/* Divider */}
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-        {/* Lists */}
-        <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('bulletList') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'
-          }`}
-          title="Bullet List"
-        >
-          <List className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('orderedList') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'
-          }`}
-          title="Numbered List"
-        >
-          <ListOrdered className="w-4 h-4" />
-        </button>
-
-        {/* Divider */}
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-        {/* Links */}
-        <button
-          onClick={setLink}
-          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('link') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'
-          }`}
-          title="Add Link"
-        >
-          <LinkIcon className="w-4 h-4" />
-        </button>
-
-        {editor.isActive('link') && (
+      <div className="wysiwyg-toolbar">
+        <div className="toolbar-group">
           <button
-            onClick={unsetLink}
-            className="p-2 rounded hover:bg-gray-200 transition-colors text-gray-600"
-            title="Remove Link"
+            type="button"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            disabled={!editor.can().chain().focus().toggleBold().run()}
+            className={editor.isActive('bold') ? 'is-active' : ''}
+            title="Negrita"
           >
-            <Unlink className="w-4 h-4" />
+            <strong>B</strong>
           </button>
-        )}
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            disabled={!editor.can().chain().focus().toggleItalic().run()}
+            className={editor.isActive('italic') ? 'is-active' : ''}
+            title="Cursiva"
+          >
+            <em>I</em>
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            disabled={!editor.can().chain().focus().toggleStrike().run()}
+            className={editor.isActive('strike') ? 'is-active' : ''}
+            title="Tachado"
+          >
+            <s>S</s>
+          </button>
+        </div>
 
-        {/* Divider */}
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <div className="toolbar-group">
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
+            title="Título 1"
+          >
+            H1
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+            title="Título 2"
+          >
+            H2
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}
+            title="Título 3"
+          >
+            H3
+          </button>
+        </div>
 
-        {/* Headings */}
-        <select
-          onChange={(e) => {
-            const level = parseInt(e.target.value);
-            if (level === 0) {
-              editor.chain().focus().setParagraph().run();
-            } else {
-              editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 | 4 | 5 | 6 }).run();
-            }
-          }}
-          value={
-            editor.isActive('heading', { level: 1 }) ? 1 :
-            editor.isActive('heading', { level: 2 }) ? 2 :
-            editor.isActive('heading', { level: 3 }) ? 3 : 0
-          }
-          className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value={0}>Paragraph</option>
-          <option value={1}>Heading 1</option>
-          <option value={2}>Heading 2</option>
-          <option value={3}>Heading 3</option>
-        </select>
+        <div className="toolbar-group">
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={editor.isActive('bulletList') ? 'is-active' : ''}
+            title="Lista con viñetas"
+          >
+            • Lista
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={editor.isActive('orderedList') ? 'is-active' : ''}
+            title="Lista numerada"
+          >
+            1. Lista
+          </button>
+        </div>
+
+        <div className="toolbar-group">
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            className={editor.isActive('blockquote') ? 'is-active' : ''}
+            title="Cita"
+          >
+            "
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            className={editor.isActive('codeBlock') ? 'is-active' : ''}
+            title="Bloque de código"
+          >
+            {'</>'}
+          </button>
+        </div>
+
+        <div className="toolbar-group">
+          <button
+            type="button"
+            onClick={setLink}
+            className={editor.isActive('link') ? 'is-active' : ''}
+            title="Enlace"
+          >
+            🔗
+          </button>
+          <button
+            type="button"
+            onClick={addImage}
+            title="Imagen"
+          >
+            🖼️
+          </button>
+        </div>
+
+        <div className="toolbar-group">
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().chain().focus().undo().run()}
+            title="Deshacer"
+          >
+            ↶
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().chain().focus().redo().run()}
+            title="Rehacer"
+          >
+            ↷
+          </button>
+        </div>
       </div>
 
-      {/* Editor */}
-      <div className="p-4">
-        <EditorContent
-          editor={editor}
-          className="focus:outline-none"
-          style={{ minHeight }}
-        />
+      {/* Editor Content */}
+      <div 
+        className="wysiwyg-content"
+        style={{ height: `${height - 60}px` }}
+      >
+        <EditorContent editor={editor} />
       </div>
     </div>
   );

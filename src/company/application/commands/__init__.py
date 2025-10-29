@@ -1,6 +1,7 @@
 """Command handlers for Company module"""
 from .create_company_command import CreateCompanyCommand, CreateCompanyCommandHandler
 from .update_company_command import UpdateCompanyCommand, UpdateCompanyCommandHandler
+from .upload_company_logo_command import UploadCompanyLogoCommand, UploadCompanyLogoCommandHandler
 from .suspend_company_command import SuspendCompanyCommand, SuspendCompanyCommandHandler
 from .activate_company_command import ActivateCompanyCommand, ActivateCompanyCommandHandler
 from .delete_company_command import DeleteCompanyCommand, DeleteCompanyCommandHandler
@@ -15,6 +16,8 @@ __all__ = [
     "CreateCompanyCommandHandler",
     "UpdateCompanyCommand",
     "UpdateCompanyCommandHandler",
+    "UploadCompanyLogoCommand",
+    "UploadCompanyLogoCommandHandler",
     "SuspendCompanyCommand",
     "SuspendCompanyCommandHandler",
     "ActivateCompanyCommand",

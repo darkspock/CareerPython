@@ -37,6 +37,7 @@ class StorageConfig:
 
     def __post_init__(self) -> None:
         if self.allowed_extensions is None:
+            # Default to document extensions, but this should be overridden for specific use cases
             self.allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
 
 

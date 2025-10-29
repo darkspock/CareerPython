@@ -12,6 +12,7 @@ from adapters.http.company.schemas.company_response import CompanyResponse
 from src.company.application.commands import (
     CreateCompanyCommand,
     UpdateCompanyCommand,
+    UploadCompanyLogoCommand,
     SuspendCompanyCommand,
     ActivateCompanyCommand,
     DeleteCompanyCommand,
@@ -296,4 +297,50 @@ class CompanyController:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to delete company: {str(e)}"
+            )
+
+    def upload_company_logo(
+        self,
+        company_id: str,
+        file_content: bytes,
+        filename: str,
+        content_type: str
+    ) -> CompanyResponse:
+        """Upload a company logo"""
+        try:
+            # Execute command
+            command = UploadCompanyLogoCommand(
+                company_id=company_id,
+                file_content=file_content,
+                filename=filename,
+                content_type=content_type
+            )
+            self.command_bus.dispatch(command)
+
+            # Query to get updated company
+            query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
+
+            if not dto:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Company with id {company_id} not found"
+                )
+
+            return CompanyResponseMapper.dto_to_response(dto)
+
+        except CompanyNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+            )
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to upload logo: {str(e)}"
             )

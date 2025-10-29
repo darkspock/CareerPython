@@ -1,0 +1,228 @@
+/* Estilos para el editor WYSIWYG con TipTap */
+
+.wysiwyg-editor {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.wysiwyg-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  min-height: 60px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.toolbar-group:last-child {
+  border-right: none;
+}
+
+.wysiwyg-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 32px;
+  height: 32px;
+  transition: all 0.2s;
+}
+
+.wysiwyg-toolbar button:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.wysiwyg-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wysiwyg-toolbar button.is-active {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.wysiwyg-content {
+  padding: 16px;
+  overflow-y: auto;
+  background-color: white;
+}
+
+/* Estilos del contenido del editor */
+.wysiwyg-content .ProseMirror {
+  outline: none;
+  min-height: 200px;
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  color: #374151;
+}
+
+.wysiwyg-content .ProseMirror p {
+  margin: 0 0 16px 0;
+}
+
+.wysiwyg-content .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.wysiwyg-content .ProseMirror h1,
+.wysiwyg-content .ProseMirror h2,
+.wysiwyg-content .ProseMirror h3,
+.wysiwyg-content .ProseMirror h4,
+.wysiwyg-content .ProseMirror h5,
+.wysiwyg-content .ProseMirror h6 {
+  margin: 24px 0 16px 0;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #111827;
+}
+
+.wysiwyg-content .ProseMirror h1 {
+  font-size: 2em;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+.wysiwyg-content .ProseMirror h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 6px;
+}
+
+.wysiwyg-content .ProseMirror h3 {
+  font-size: 1.25em;
+}
+
+.wysiwyg-content .ProseMirror ul,
+.wysiwyg-content .ProseMirror ol {
+  margin: 16px 0;
+  padding-left: 24px;
+}
+
+.wysiwyg-content .ProseMirror li {
+  margin: 4px 0;
+}
+
+.wysiwyg-content .ProseMirror blockquote {
+  margin: 16px 0;
+  padding: 0 16px;
+  color: #6b7280;
+  border-left: 4px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-radius: 0 4px 4px 0;
+}
+
+.wysiwyg-content .ProseMirror code {
+  padding: 2px 4px;
+  font-size: 0.875em;
+  color: #e11d48;
+  background-color: #f1f5f9;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.wysiwyg-content .ProseMirror pre {
+  margin: 16px 0;
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+}
+
+.wysiwyg-content .ProseMirror pre code {
+  padding: 0;
+  background-color: transparent;
+  color: inherit;
+  border-radius: 0;
+}
+
+.wysiwyg-content .ProseMirror .wysiwyg-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 8px 0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.wysiwyg-content .ProseMirror .wysiwyg-link {
+  color: #3b82f6;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.wysiwyg-content .ProseMirror .wysiwyg-link:hover {
+  border-bottom-color: #3b82f6;
+}
+
+/* Placeholder */
+.wysiwyg-content .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .wysiwyg-toolbar {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .toolbar-group {
+    padding-right: 4px;
+  }
+  
+  .wysiwyg-toolbar button {
+    padding: 4px 6px;
+    font-size: 12px;
+    min-width: 28px;
+    height: 28px;
+  }
+}
+
+/* Focus states */
+.wysiwyg-content .ProseMirror:focus {
+  outline: none;
+}
+
+.wysiwyg-editor:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Disabled state */
+.wysiwyg-editor.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.wysiwyg-editor.disabled .wysiwyg-content .ProseMirror {
+  background-color: #f9fafb;
+}

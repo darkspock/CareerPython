@@ -1,0 +1,222 @@
+# Development Workflow Rules
+
+## Orden de Implementación de Nuevas Features
+
+Al implementar un nuevo módulo o feature en el sistema, seguir estrictamente este orden en 3 fases:
+
+### Fase 1: Domain Layer (Entidades y Lógica de Negocio)
+
+**Tarea: Crear entidades, value objects y enums**
+
+1. **Enums**: Crear todos los enums necesarios en `domain/enums/`
+   - Usar `str, Enum` como base
+   - Documentar cada valor
+
+2. **Value Objects**: Crear value objects en `domain/value_objects/`
+   - Inmutables
+   - Con validaciones propias
+   - Métodos de comparación
+
+3. **Entidades**: Crear entidades en `domain/entities/`
+   - Constructor con todos los parámetros requeridos (sin valores por defecto)
+   - Propiedades públicas (NO usar getters/setters)
+   - Factory method `create()` con valores por defecto y validaciones
+   - Factory method `update()` que recibe TODOS los atributos actualizables
+   - Para cambios de status: método específico por cada transición
+     * Ejemplo: `activate()`, `suspend()`, `archive()`
+     * NO permitir cambio directo de status
+   - Los métodos de factory retornan la entidad
+
+**Ejemplo de Entidad:**
+```python
+@dataclass
+class Company:
+    id: CompanyId
+    name: str
+    domain: str
+    status: CompanyStatus
+    created_at: datetime
+    updated_at: datetime
+
+    @classmethod
+    def create(
+        cls,
+        name: str,
+        domain: str,
+        id: Optional[CompanyId] = None,
+        status: CompanyStatus = CompanyStatus.ACTIVE
+    ) -> "Company":
+        # Validaciones
+        # Valores por defecto
+        return cls(...)
+
+    def update(
+        self,
+        name: str,
+        domain: str,
+    ) -> "Company":
+        return Company(
+            id=self.id,
+            name=name,
+            domain=domain,
+            status=self.status,
+            created_at=self.created_at,
+            updated_at=datetime.now()
+        )
+
+    def suspend(self) -> "Company":
+        return Company(
+            id=self.id,
+            name=self.name,
+            domain=self.domain,
+            status=CompanyStatus.SUSPENDED,
+            created_at=self.created_at,
+            updated_at=datetime.now()
+        )
+
+    def activate(self) -> "Company":
+        # Logic and validations
+        return Company(...)
+```
+
+**FIN DE FASE 1** - Confirmar con el usuario antes de continuar
+
+---
+
+### Fase 2: Infrastructure Layer (Persistencia)
+
+**Tarea: Crear repositorios, mappers, modelos y migraciones**
+
+1. **Interface del Repositorio**: Crear en `domain/infrastructure/{entity}_repository_interface.py`
+   - Abstract Base Class (ABC)
+   - Métodos abstractos que retornan entidades de dominio
+
+2. **Modelo SQLAlchemy**: Crear en `infrastructure/models/{entity}_model.py`
+   - Hereda de Base
+   - Define tabla y columnas
+   - Relaciones si aplica
+
+3. **Repositorio**: Implementar en `infrastructure/repositories/{entity}_repository.py`
+   - Implementa la interface del dominio
+   - Convierte modelos ↔ entidades
+   - Métodos `_to_domain()` y `_to_model()`
+
+4. **Mappers**: Crear en `application/mappers/` o `presentation/mappers/`
+   - Entity → DTO en application layer
+   - DTO → Response en presentation layer
+
+5. **Migración**: Crear con `make revision m="add {entity} table"`
+   - Revisar migración generada
+   - Ajustar si es necesario
+   - Ejecutar con `make migrate`
+
+**FIN DE FASE 2** - Confirmar con el usuario antes de continuar
+
+---
+
+### Fase 3: Application & Presentation Layer (API)
+
+**Tarea: Crear endpoints, requests, actions, comandos y queries**
+
+1. **Commands** (operaciones de escritura): Crear en `application/commands/`
+   - Command dataclass con los datos necesarios
+   - CommandHandler que NO retorna valores (void)
+   - Usar repositorio a través de la interface
+
+2. **Queries** (operaciones de lectura): Crear en `application/queries/`
+   - Query dataclass con criterios de búsqueda
+   - QueryHandler que retorna DTOs
+   - Usar repositorio a través de la interface
+
+3. **DTOs**: Crear en `application/dtos/`
+   - Dataclasses para transferencia de datos
+   - Método `from_entity()` para conversión
+
+4. **Request Schemas**: Crear en `presentation/schemas/`
+   - Modelos Pydantic para validación de input
+   - Nombrar como `{Entity}CreateRequest`, `{Entity}UpdateRequest`
+
+5. **Response Schemas**: Crear en `presentation/schemas/`
+   - Modelos Pydantic para respuestas
+   - Nombrar como `{Entity}Response`, `{Entity}ListResponse`
+
+6. **Controllers**: Crear en `presentation/controllers/`
+   - Lógica de orquestación
+   - Llama a CommandBus/QueryBus
+   - Usa mappers para convertir DTOs a Responses
+   - NO lógica de negocio aquí
+
+7. **Routers**: Crear en `presentation/routers/`
+   - Define endpoints
+   - Valida requests
+   - Llama a controllers
+   - Retorna responses
+   - NO lógica aquí, solo paso de datos
+
+8. **Registrar en Container**: Actualizar `core/container.py`
+   - Registrar repositorios
+   - Registrar handlers
+   - Registrar controllers
+
+**FIN DE FASE 3** - Feature completamente implementada
+
+---
+
+## Reglas Generales
+
+### Entidades
+- Constructor sin valores por defecto
+- Propiedades públicas (no private con @property)
+- Factory methods para creación y actualización
+- Métodos específicos para transiciones de estado
+- Inmutabilidad: los métodos retornan nuevas instancias
+
+### Repositorios
+- Interface en domain layer
+- Implementación en infrastructure layer
+- Retornan siempre entidades de dominio
+- Nunca exponer modelos SQLAlchemy fuera de infrastructure
+
+### Commands vs Queries (CQRS)
+- Commands: void (no retornan valores)
+- Queries: retornan DTOs
+- Handlers en application layer
+- Separación clara de responsabilidades
+
+### Data Flow
+```
+Request → Command/Query → Handler → Repository → Entity
+Entity → Repository → DTO → Mapper → Response
+```
+
+### Naming Conventions
+- Entities: `Company`, `CompanyWorkflow`
+- Models: `CompanyModel`, `CompanyWorkflowModel`
+- Commands: `CreateCompanyCommand`, `UpdateCompanyCommand`
+- Queries: `GetCompanyByIdQuery`, `ListCompaniesQuery`
+- Handlers: `CreateCompanyCommandHandler`, `GetCompanyByIdQueryHandler`
+- DTOs: `CompanyDto`, `CompanyWorkflowDto`
+- Requests: `CreateCompanyRequest`, `UpdateCompanyRequest`
+- Responses: `CompanyResponse`, `CompanyListResponse`
+- Controllers: `CompanyController`
+- Routers: `company_router`
+
+### Testing
+Cada fase debe tener tests:
+- Fase 1: Tests unitarios de entidades y lógica de dominio
+- Fase 2: Tests de repositorios (con DB de test)
+- Fase 3: Tests de endpoints (integration tests)
+
+---
+
+## Workflow Summary
+
+```
+Fase 1: Entidades + Value Objects + Enums → STOP ✋
+         ↓ (confirmar con usuario)
+Fase 2: Repos + Mappers + Models + Migrations → STOP ✋
+         ↓ (confirmar con usuario)
+Fase 3: Endpoints + Requests + Actions + Commands + Queries → DONE ✅
+```
+
+**IMPORTANTE**: No avanzar a la siguiente fase sin confirmación del usuario.
