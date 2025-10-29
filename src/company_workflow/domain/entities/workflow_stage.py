@@ -148,6 +148,7 @@ class WorkflowStage:
             deadline_days=deadline_days if deadline_days is not None else self.deadline_days,
             estimated_cost=estimated_cost if estimated_cost is not None else self.estimated_cost,
             next_phase_id=next_phase_id if next_phase_id is not None else self.next_phase_id,
+            kanban_display=self.kanban_display,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -174,6 +175,7 @@ class WorkflowStage:
             deadline_days=self.deadline_days,
             estimated_cost=self.estimated_cost,
             next_phase_id=self.next_phase_id,
+            kanban_display=self.kanban_display,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -197,6 +199,7 @@ class WorkflowStage:
             deadline_days=self.deadline_days,
             estimated_cost=self.estimated_cost,
             next_phase_id=self.next_phase_id,
+            kanban_display=self.kanban_display,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )
@@ -220,6 +223,7 @@ class WorkflowStage:
             deadline_days=self.deadline_days,
             estimated_cost=self.estimated_cost,
             next_phase_id=self.next_phase_id,
+            kanban_display=self.kanban_display,
             created_at=self.created_at,
             updated_at=datetime.utcnow()
         )

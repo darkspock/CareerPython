@@ -14,7 +14,7 @@ class PageContent:
     plain_text: str  # Para SEO y búsquedas
     word_count: int
     
-    def __post_init__(self):
+    def __post_init__(self)->None:
         """Validar el contenido de la página"""
         if not self.html_content.strip():
             raise ValueError("HTML content cannot be empty")

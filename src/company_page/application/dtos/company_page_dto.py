@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
+from src.company_page.domain.entities.company_page import CompanyPage
+
 
 @dataclass
 class CompanyPageDto:
@@ -39,7 +41,7 @@ class CompanyPageDto:
     published_at: Optional[datetime]
     
     @classmethod
-    def from_entity(cls, entity) -> "CompanyPageDto":
+    def from_entity(cls, entity:CompanyPage) -> "CompanyPageDto":
         """Crear DTO desde entidad de dominio"""
         return cls(
             id=entity.id.value,

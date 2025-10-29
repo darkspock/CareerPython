@@ -1,14 +1,15 @@
 """
 Company Page Router - Router for company page endpoints
 """
-from typing import Optional, Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional, Annotated, List
+from fastapi import APIRouter, Depends, HTTPException, status as http_status
 from dependency_injector.wiring import inject, Provide
 
 from src.company_page.presentation.controllers.company_page_controller import CompanyPageController
 from src.company_page.presentation.schemas.company_page_request import CreateCompanyPageRequest, UpdateCompanyPageRequest
 from src.company_page.presentation.schemas.company_page_response import CompanyPageResponse, CompanyPageListResponse
 from src.company_page.application.queries.list_company_pages_query import ListCompanyPagesQuery
+from src.company_page.application.dtos.company_page_dto import CompanyPageDto
 from core.container import Container
 
 # Crear router
@@ -36,7 +37,7 @@ async def test_company_pages_query(
     try:
         # Intentar usar el QueryBus directamente
         query = ListCompanyPagesQuery(company_id=company_id)
-        result = controller.query_bus.query(query)
+        result: List[CompanyPageDto] = controller.query_bus.query(query)
         return {"message": "QueryBus working", "result": str(result)}
     except Exception as e:
         return {"message": "QueryBus error", "error": str(e)}
@@ -92,7 +93,7 @@ async def test_create_company_page(
     except Exception as e:
         return {"message": "Create page error", "error": str(e)}
 
-@router.post("/{company_id}/pages", response_model=CompanyPageResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/{company_id}/pages", response_model=CompanyPageResponse, status_code=http_status.HTTP_201_CREATED)
 @inject
 async def create_company_page(
     company_id: str,
@@ -103,9 +104,9 @@ async def create_company_page(
     try:
         return controller.create_page(company_id, request)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.get("/{company_id}/pages", response_model=CompanyPageListResponse)
@@ -120,7 +121,7 @@ async def list_company_pages(
     try:
         return controller.list_pages(company_id, page_type, status)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.get("/pages/{page_id}", response_model=CompanyPageResponse)
@@ -133,9 +134,9 @@ async def get_company_page(
     try:
         return controller.get_page(page_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.put("/pages/{page_id}", response_model=CompanyPageResponse)
@@ -149,12 +150,12 @@ async def update_company_page(
     try:
         return controller.update_page(page_id, request)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
-@router.delete("/pages/{page_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/pages/{page_id}", status_code=http_status.HTTP_204_NO_CONTENT)
 @inject
 async def delete_company_page(
     page_id: str,
@@ -164,9 +165,9 @@ async def delete_company_page(
     try:
         controller.delete_page(page_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.post("/pages/{page_id}/publish", response_model=CompanyPageResponse)
@@ -179,9 +180,9 @@ async def publish_company_page(
     try:
         return controller.publish_page(page_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.post("/pages/{page_id}/archive", response_model=CompanyPageResponse)
@@ -194,9 +195,9 @@ async def archive_company_page(
     try:
         return controller.archive_page(page_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.post("/pages/{page_id}/set-default", response_model=CompanyPageResponse)
@@ -209,6 +210,6 @@ async def set_default_company_page(
     try:
         return controller.set_default_page(page_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")

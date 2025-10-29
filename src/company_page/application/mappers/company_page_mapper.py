@@ -1,22 +1,22 @@
 """
 Company Page Mapper - Mappers para conversión entre capas
 """
-from typing import List, Optional
+from typing import List
 
 from src.company.domain.value_objects.company_id import CompanyId
+from src.company_page.application.dtos.company_page_dto import CompanyPageDto
 from src.company_page.domain.entities.company_page import CompanyPage
-from src.company_page.domain.enums.page_type import PageType
 from src.company_page.domain.enums.page_status import PageStatus
-from src.company_page.domain.value_objects.page_id import PageId
+from src.company_page.domain.enums.page_type import PageType
 from src.company_page.domain.value_objects.page_content import PageContent
+from src.company_page.domain.value_objects.page_id import PageId
 from src.company_page.domain.value_objects.page_metadata import PageMetadata
 from src.company_page.infrastructure.models.company_page_model import CompanyPageModel
-from src.company_page.application.dtos.company_page_dto import CompanyPageDto
 
 
 class CompanyPageMapper:
     """Mapper para conversión entre entidades de dominio y modelos de infraestructura"""
-    
+
     @staticmethod
     def entity_to_model(entity: CompanyPage) -> CompanyPageModel:
         """Convertir entidad de dominio a modelo SQLAlchemy"""
@@ -38,7 +38,7 @@ class CompanyPageMapper:
             updated_at=entity.updated_at,
             published_at=entity.published_at
         )
-    
+
     @staticmethod
     def model_to_entity(model: CompanyPageModel) -> CompanyPage:
         """Convertir modelo SQLAlchemy a entidad de dominio"""
@@ -47,14 +47,14 @@ class CompanyPageMapper:
         company_id = CompanyId(model.company_id)
         page_type = PageType(model.page_type)
         page_status = PageStatus(model.status)
-        
+
         # Crear PageContent
         content = PageContent(
             html_content=model.html_content,
             plain_text=model.plain_text,
             word_count=model.word_count
         )
-        
+
         # Crear PageMetadata
         metadata = PageMetadata(
             title=model.title,
@@ -62,7 +62,7 @@ class CompanyPageMapper:
             keywords=model.meta_keywords or [],
             language=model.language
         )
-        
+
         # Crear entidad
         return CompanyPage(
             id=page_id,
@@ -78,17 +78,17 @@ class CompanyPageMapper:
             updated_at=model.updated_at,
             published_at=model.published_at
         )
-    
+
     @staticmethod
     def models_to_entities(models: List[CompanyPageModel]) -> List[CompanyPage]:
         """Convertir lista de modelos a lista de entidades"""
         return [CompanyPageMapper.model_to_entity(model) for model in models]
-    
+
     @staticmethod
     def entity_to_dto(entity: CompanyPage) -> CompanyPageDto:
         """Convertir entidad de dominio a DTO"""
         return CompanyPageDto.from_entity(entity)
-    
+
     @staticmethod
     def entities_to_dtos(entities: List[CompanyPage]) -> List[CompanyPageDto]:
         """Convertir lista de entidades a lista de DTOs"""

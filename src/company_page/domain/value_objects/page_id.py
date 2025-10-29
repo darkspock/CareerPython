@@ -11,7 +11,7 @@ class PageId:
     
     value: str
     
-    def __post_init__(self):
+    def __post_init__(self)->None:
         """Validar que el ID sea un UUID válido"""
         if not self.value:
             raise ValueError("PageId cannot be empty")

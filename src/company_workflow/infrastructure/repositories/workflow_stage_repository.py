@@ -6,6 +6,7 @@ from src.company_workflow.domain.value_objects.company_workflow_id import Compan
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 from src.company_workflow.domain.enums.stage_type import StageType
+from src.phase.domain.value_objects.phase_id import PhaseId
 
 
 class WorkflowStageRepository(WorkflowStageRepositoryInterface):
@@ -67,10 +68,8 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             ).all()
             return [self._to_domain(model) for model in models]
 
-    def list_by_phase(self, phase_id) -> List[WorkflowStage]:
+    def list_by_phase(self, phase_id: PhaseId) -> List[WorkflowStage]:
         """List all stages for a phase, ordered by order field"""
-        from src.phase.domain.value_objects.phase_id import PhaseId
-        
         with self._database.get_session() as session:
             # First get the workflow for this phase
             from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel

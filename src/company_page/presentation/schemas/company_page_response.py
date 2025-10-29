@@ -5,8 +5,7 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-from src.company_page.domain.enums.page_type import PageType
-from src.company_page.domain.enums.page_status import PageStatus
+# Note: Response schemas use plain strings, not domain enums
 
 
 class CompanyPageResponse(BaseModel):
@@ -14,7 +13,7 @@ class CompanyPageResponse(BaseModel):
     
     id: str = Field(..., description="Unique page ID")
     company_id: str = Field(..., description="Company ID")
-    page_type: PageType = Field(..., description="Page type")
+    page_type: str = Field(..., description="Page type")
     title: str = Field(..., description="Page title")
     html_content: str = Field(..., description="Page HTML content")
     plain_text: str = Field(..., description="Plain text extracted from HTML")
@@ -22,7 +21,7 @@ class CompanyPageResponse(BaseModel):
     meta_description: Optional[str] = Field(None, description="Meta description for SEO")
     meta_keywords: List[str] = Field(..., description="SEO keywords")
     language: str = Field(..., description="Page language")
-    status: PageStatus = Field(..., description="Page status")
+    status: str = Field(..., description="Page status")
     is_default: bool = Field(..., description="Whether this is the default page for this type")
     version: int = Field(..., description="Page version")
     created_at: datetime = Field(..., description="Creation date")
@@ -47,9 +46,9 @@ class CompanyPageSummaryResponse(BaseModel):
     """Summary response for a company page (for lists)"""
     
     id: str = Field(..., description="Unique page ID")
-    page_type: PageType = Field(..., description="Page type")
+    page_type: str = Field(..., description="Page type")
     title: str = Field(..., description="Page title")
-    status: PageStatus = Field(..., description="Page status")
+    status: str = Field(..., description="Page status")
     is_default: bool = Field(..., description="Whether this is the default page for this type")
     version: int = Field(..., description="Page version")
     created_at: datetime = Field(..., description="Creation date")

@@ -18,6 +18,7 @@ from src.company_page.application.queries.get_public_company_page_query import G
 from src.company_page.application.dtos.company_page_dto import CompanyPageDto
 from src.company_page.presentation.schemas.company_page_request import CreateCompanyPageRequest, UpdateCompanyPageRequest
 from src.company_page.presentation.schemas.company_page_response import CompanyPageResponse, CompanyPageListResponse
+# Note: Response schemas use plain strings, not domain enums
 
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
@@ -54,9 +55,11 @@ class CompanyPageController:
             page_type=request.page_type.value
         )
         
-        page_dto = self.query_bus.query(query)
+        page_dto:Optional[CompanyPageDto] = self.query_bus.query(query)
         
         # Convertir DTO a Response
+        if not page_dto:
+            raise ValueError(f"Page not found")
         return self._dto_to_response(page_dto)
     
     def update_page(self, page_id: str, request: UpdateCompanyPageRequest) -> CompanyPageResponse:
@@ -76,16 +79,18 @@ class CompanyPageController:
         
         # Buscar página actualizada
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.query(query)
+        page_dto:Optional[CompanyPageDto] = self.query_bus.query(query)
         
         # Convertir DTO a Response
+        if not page_dto:
+            raise ValueError(f"Page not found")
         return self._dto_to_response(page_dto)
     
     def get_page(self, page_id: str) -> CompanyPageResponse:
         """Obtener una página de empresa por ID"""
         
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.query(query)
+        page_dto:Optional[CompanyPageDto] = self.query_bus.query(query)
         
         if not page_dto:
             raise ValueError(f"Page with ID {page_id} not found")
@@ -96,7 +101,7 @@ class CompanyPageController:
         """Listar páginas de una empresa"""
         
         query = ListCompanyPagesQuery(company_id=company_id, page_type=page_type, status=status)
-        page_dtos = self.query_bus.query(query)
+        page_dtos:List[CompanyPageDto] = self.query_bus.query(query)
         
         # Convertir DTOs a Responses
         pages = [self._dto_to_response(page_dto) for page_dto in page_dtos]
@@ -114,8 +119,10 @@ class CompanyPageController:
         
         # Buscar página publicada
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.query(query)
+        page_dto:Optional[CompanyPageDto] = self.query_bus.query(query)
         
+        if not page_dto:
+            raise ValueError(f"Page not found")
         return self._dto_to_response(page_dto)
     
     def archive_page(self, page_id: str) -> CompanyPageResponse:
@@ -126,8 +133,10 @@ class CompanyPageController:
         
         # Buscar página archivada
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.query(query)
+        page_dto:Optional[CompanyPageDto] = self.query_bus.query(query)
         
+        if not page_dto:
+            raise ValueError(f"Page not found")
         return self._dto_to_response(page_dto)
     
     def set_default_page(self, page_id: str) -> CompanyPageResponse:
@@ -138,8 +147,10 @@ class CompanyPageController:
         
         # Buscar página marcada como default
         query = GetCompanyPageByIdQuery(page_id=page_id)
-        page_dto = self.query_bus.query(query)
+        page_dto:Optional[CompanyPageDto] = self.query_bus.query(query)
         
+        if not page_dto:
+            raise ValueError(f"Page not found")
         return self._dto_to_response(page_dto)
     
     def delete_page(self, page_id: str) -> None:
@@ -148,7 +159,7 @@ class CompanyPageController:
         command = DeleteCompanyPageCommand(page_id=page_id)
         self.command_bus.execute(command)
     
-    def get_public_page(self, company_id: str, page_type: str) -> Optional[CompanyPageResponse]:
+    def get_public_page(self, company_id: str, page_type: str) -> CompanyPageResponse:
         """Obtener una página pública de empresa"""
         
         query = GetPublicCompanyPageQuery(
@@ -156,9 +167,11 @@ class CompanyPageController:
             page_type=page_type
         )
         
-        page_dto = self.query_bus.query(query)
+        page_dto:Optional[CompanyPageDto] = self.query_bus.query(query)
         
-        return self._dto_to_response(page_dto) if page_dto else None
+        if not page_dto:
+            raise ValueError(f"Page not found")
+        return self._dto_to_response(page_dto)
     
     def _dto_to_response(self, page_dto: CompanyPageDto) -> CompanyPageResponse:
         """Convertir DTO a Response"""
