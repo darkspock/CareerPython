@@ -7,7 +7,7 @@ from core.database import database
 class FileAttachmentRepository:
     """Repository for file attachment operations"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._database = database
 
     def save(self, file_attachment: FileAttachmentModel) -> FileAttachmentModel:

@@ -145,6 +145,95 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         model = session.query(CompanyCandidateModel).filter_by(id=str(company_candidate_id)).first()
         return self._to_domain(model) if model else None
 
+    def get_by_id_with_candidate_info(self, company_candidate_id: CompanyCandidateId) -> Optional[CompanyCandidateWithCandidateReadModel]:
+        """
+        Get a single company candidate by ID with candidate basic info and position.
+        Uses SQL JOIN for efficient data retrieval.
+        """
+        session = self._get_session()
+
+        # Import models for JOIN
+        from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
+        from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+        # from src.phase.infrastructure.models.phase_model import PhaseModel  # Temporarily disabled
+        
+        # Perform JOINs between company_candidates, candidates, candidate_applications, job_positions, workflows, and stages
+        result = session.query(
+            CompanyCandidateModel,
+            CandidateModel.name,
+            CandidateModel.email,
+            CandidateModel.phone,
+            CandidateApplicationModel.job_position_id,
+            CandidateApplicationModel.application_status,
+            JobPositionModel.title,
+            CompanyWorkflowModel.name.label('workflow_name'),
+            WorkflowStageModel.name.label('stage_name')
+        ).join(
+            CandidateModel,
+            CompanyCandidateModel.candidate_id == CandidateModel.id
+        ).outerjoin(
+            CandidateApplicationModel,
+            CompanyCandidateModel.candidate_id == CandidateApplicationModel.candidate_id
+        ).outerjoin(
+            JobPositionModel,
+            CandidateApplicationModel.job_position_id == JobPositionModel.id
+        ).outerjoin(
+            CompanyWorkflowModel,
+            CompanyCandidateModel.workflow_id == CompanyWorkflowModel.id
+        ).outerjoin(
+            WorkflowStageModel,
+            CompanyCandidateModel.current_stage_id == WorkflowStageModel.id
+        ).filter(
+            CompanyCandidateModel.id == str(company_candidate_id)
+        ).first()
+
+        if not result:
+            return None
+
+        cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name = result
+        
+        return CompanyCandidateWithCandidateReadModel(
+            id=cc_model.id,
+            company_id=cc_model.company_id,
+            candidate_id=cc_model.candidate_id,
+            status=cc_model.status,
+            ownership_status=cc_model.ownership_status,
+            created_by_user_id=cc_model.created_by_user_id,
+            workflow_id=cc_model.workflow_id,
+            current_stage_id=cc_model.current_stage_id,
+            phase_id=cc_model.phase_id,
+            invited_at=cc_model.invited_at,
+            confirmed_at=cc_model.confirmed_at,
+            rejected_at=cc_model.rejected_at,
+            archived_at=cc_model.archived_at,
+            visibility_settings=cc_model.visibility_settings or {},
+            tags=cc_model.tags or [],
+            internal_notes=cc_model.internal_notes or '',
+            position=cc_model.position,
+            department=cc_model.department,
+            priority=cc_model.priority,
+            lead_id=cc_model.lead_id,
+            source=cc_model.source,
+            resume_url=cc_model.resume_url,
+            resume_uploaded_by=cc_model.resume_uploaded_by,
+            resume_uploaded_at=cc_model.resume_uploaded_at,
+            created_at=cc_model.created_at,
+            updated_at=cc_model.updated_at,
+            # Candidate info from JOIN
+            candidate_name=candidate_name,
+            candidate_email=candidate_email,
+            candidate_phone=candidate_phone,
+            # Job position info from candidate_application JOIN
+            job_position_id=job_position_id,
+            job_position_title=job_position_title,
+            application_status=application_status,
+            # Workflow and stage info from JOINs
+            workflow_name=workflow_name,
+            stage_name=stage_name,
+            # Phase info from JOIN (temporarily disabled)
+            phase_name=None,
+        )
+
     def get_by_company_and_candidate(
         self,
         company_id: CompanyId,
@@ -199,6 +288,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         # Import models for JOIN
         from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
         from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+        # from src.phase.infrastructure.models.phase_model import PhaseModel  # Temporarily disabled
         
         # Perform JOINs between company_candidates, candidates, candidate_applications, job_positions, workflows, and stages
         results = session.query(
@@ -271,6 +361,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
                 # Workflow and stage info from JOINs
                 workflow_name=workflow_name,
                 stage_name=stage_name,
+                # Phase info from JOIN (temporarily disabled)
+                phase_name=None,
             )
             read_models.append(read_model)
 

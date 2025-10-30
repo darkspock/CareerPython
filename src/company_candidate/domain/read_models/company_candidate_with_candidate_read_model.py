@@ -50,3 +50,5 @@ class CompanyCandidateWithCandidateReadModel:
     # Workflow and stage info (from workflow and stage JOINs)
     workflow_name: Optional[str] = None
     stage_name: Optional[str] = None
+    # Phase info (from phase JOIN)
+    phase_name: Optional[str] = None

@@ -141,6 +141,7 @@ from src.company_candidate.application.commands.change_stage_command import Chan
 
 # CompanyCandidate Application Layer - Queries
 from src.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQueryHandler
+from src.company_candidate.application.queries.get_company_candidate_by_id_with_candidate_info import GetCompanyCandidateByIdWithCandidateInfoQueryHandler
 from src.company_candidate.application.queries.get_company_candidate_by_company_and_candidate import GetCompanyCandidateByCompanyAndCandidateQueryHandler
 from src.company_candidate.application.queries.list_company_candidates_by_company import ListCompanyCandidatesByCompanyQueryHandler
 from src.company_candidate.application.queries.list_company_candidates_by_candidate import ListCompanyCandidatesByCandidateQueryHandler
@@ -753,6 +754,11 @@ class Container(containers.DeclarativeContainer):
     # CompanyCandidate Query Handlers
     get_company_candidate_by_id_query_handler = providers.Factory(
         GetCompanyCandidateByIdQueryHandler,
+        repository=company_candidate_repository
+    )
+
+    get_company_candidate_by_id_with_candidate_info_query_handler = providers.Factory(
+        GetCompanyCandidateByIdWithCandidateInfoQueryHandler,
         repository=company_candidate_repository
     )
 

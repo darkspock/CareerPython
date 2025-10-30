@@ -370,28 +370,6 @@ export default function CandidateDetailPage() {
                     </div>
                   </div>
 
-                  {/* Workflow Information */}
-                  {(candidate.workflow_name || candidate.stage_name) && (
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                        Workflow Status
-                      </h3>
-                      <div className="space-y-2">
-                        {candidate.workflow_name && (
-                          <div className="text-gray-700">
-                            <span className="font-medium">Workflow:</span>{' '}
-                            {candidate.workflow_name}
-                          </div>
-                        )}
-                        {candidate.stage_name && (
-                          <div className="text-gray-700">
-                            <span className="font-medium">Current Stage:</span>{' '}
-                            {candidate.stage_name}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Tags */}
                   {candidate.tags.length > 0 && (
@@ -601,6 +579,33 @@ export default function CandidateDetailPage() {
                   {candidate.ownership_status.replace('_', ' ')}
                 </span>
               </div>
+
+              {/* Workflow Information */}
+              {(candidate.workflow_name || candidate.stage_name || candidate.phase_name) && (
+                <div>
+                  <label className="text-sm text-gray-600 block mb-2">Workflow Status</label>
+                  <div className="space-y-2">
+                    {candidate.phase_name && (
+                      <div className="text-sm">
+                        <span className="text-gray-600">Phase:</span>{' '}
+                        <span className="font-medium text-gray-900">{candidate.phase_name}</span>
+                      </div>
+                    )}
+                    {candidate.workflow_name && (
+                      <div className="text-sm">
+                        <span className="text-gray-600">Workflow:</span>{' '}
+                        <span className="font-medium text-gray-900">{candidate.workflow_name}</span>
+                      </div>
+                    )}
+                    {candidate.stage_name && (
+                      <div className="text-sm">
+                        <span className="text-gray-600">Stage:</span>{' '}
+                        <span className="font-medium text-gray-900">{candidate.stage_name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

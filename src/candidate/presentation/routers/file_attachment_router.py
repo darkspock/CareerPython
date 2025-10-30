@@ -6,6 +6,11 @@ from src.candidate.presentation.schemas.file_attachment_response import FileAtta
 from core.container import Container
 import io
 
+try:
+    import jwt  # type: ignore
+except ImportError:
+    jwt = None
+
 router = APIRouter(prefix="/api/candidates", tags=["file-attachments"])
 
 def get_file_attachment_controller() -> FileAttachmentController:
@@ -24,13 +29,12 @@ async def upload_candidate_file(
     description: str | None = Form(None),
     authorization: Optional[str] = Header(None),
     controller: FileAttachmentController = Depends(get_file_attachment_controller)
-):
+) -> FileAttachmentResponse:
     """Upload a file for a candidate"""
     # Extract company_id from JWT token
     company_id = None
-    if authorization and authorization.startswith("Bearer "):
+    if authorization and authorization.startswith("Bearer ") and jwt:
         try:
-            import jwt
             token = authorization.split(" ")[1]
             payload = jwt.decode(token, options={"verify_signature": False})
             company_id = payload.get("company_id")
@@ -43,7 +47,7 @@ async def upload_candidate_file(
 async def get_candidate_files(
     candidate_id: str,
     controller: FileAttachmentController = Depends(get_file_attachment_controller)
-):
+) -> List[FileAttachmentResponse]:
     """Get all files for a candidate"""
     return await controller.get_candidate_files(candidate_id)
 
@@ -52,7 +56,7 @@ async def delete_candidate_file(
     candidate_id: str,
     file_id: str,
     controller: FileAttachmentController = Depends(get_file_attachment_controller)
-):
+) -> dict:
     """Delete a file for a candidate"""
     await controller.delete_file(candidate_id, file_id)
     return {"message": "File deleted successfully"}
@@ -62,7 +66,7 @@ async def download_file(
     candidate_id: str,
     file_id: str,
     controller: FileAttachmentController = Depends(get_file_attachment_controller)
-):
+) -> StreamingResponse:
     """Download a file"""
     # Get file info first to set proper headers
     file_attachment = controller._file_repository.get_by_id(file_id)

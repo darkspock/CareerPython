@@ -37,6 +37,8 @@ class CompanyCandidateResponse(BaseModel):
     # Workflow and stage info (optional, populated when needed)
     stage_name: Optional[str] = None
     workflow_name: Optional[str] = None
+    # Phase info (optional, populated when needed)
+    phase_name: Optional[str] = None
 
     class Config:
         from_attributes = True

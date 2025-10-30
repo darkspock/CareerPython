@@ -47,6 +47,7 @@ export interface CompanyCandidate {
   candidate_phone?: string;
   workflow_name?: string;
   stage_name?: string;
+  phase_name?: string;
   // Job position data (from candidate_application)
   job_position_id?: string;
   job_position_title?: string;

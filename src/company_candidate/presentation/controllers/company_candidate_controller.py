@@ -126,23 +126,53 @@ class CompanyCandidateController:
 
     def get_company_candidate_by_id(self, company_candidate_id: str) -> Optional[CompanyCandidateResponse]:
         """Get a company candidate by ID"""
-        query = GetCompanyCandidateByIdQuery(id=CompanyCandidateId(company_candidate_id))
-        dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)
+        from src.company_candidate.application.queries.get_company_candidate_by_id_with_candidate_info import (
+            GetCompanyCandidateByIdWithCandidateInfoQuery
+        )
+        
+        query = GetCompanyCandidateByIdWithCandidateInfoQuery(id=CompanyCandidateId(company_candidate_id))
+        read_model: Optional[CompanyCandidateWithCandidateReadModel] = self._query_bus.query(query)
 
-        if not dto:
+        if not read_model:
             return None
 
-        # Get candidate basic info
-        from src.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery
-        candidate_query = GetCandidateByIdQuery(id=CandidateId.from_string(dto.candidate_id))
-        candidate_dto: Optional[CandidateDto] = self._query_bus.query(candidate_query)
-
-        # Create response with combined data
-        response = CompanyCandidateResponseMapper.dto_to_response(dto)
-        if candidate_dto:
-            response.candidate_name = candidate_dto.name
-            response.candidate_email = candidate_dto.email
-            response.candidate_phone = candidate_dto.phone
+        # Map read model directly to response
+        response = CompanyCandidateResponse(
+            id=read_model.id,
+            company_id=read_model.company_id,
+            candidate_id=read_model.candidate_id,
+            status=read_model.status,
+            ownership_status=read_model.ownership_status,
+            created_by_user_id=read_model.created_by_user_id,
+            workflow_id=read_model.workflow_id,
+            current_stage_id=read_model.current_stage_id,
+            phase_id=read_model.phase_id,
+            invited_at=read_model.invited_at,
+            confirmed_at=read_model.confirmed_at,
+            rejected_at=read_model.rejected_at,
+            archived_at=read_model.archived_at,
+            visibility_settings=read_model.visibility_settings,
+            tags=read_model.tags,
+            internal_notes=read_model.internal_notes,
+            position=read_model.position,
+            department=read_model.department,
+            priority=read_model.priority,
+            created_at=read_model.created_at,
+            updated_at=read_model.updated_at,
+            # Include candidate info from read model
+            candidate_name=read_model.candidate_name,
+            candidate_email=read_model.candidate_email,
+            candidate_phone=read_model.candidate_phone,
+            # Include job position info from read model
+            job_position_id=read_model.job_position_id,
+            job_position_title=read_model.job_position_title,
+            application_status=read_model.application_status,
+            # Include workflow and stage info from read model
+            stage_name=read_model.stage_name,
+            workflow_name=read_model.workflow_name,
+            # Include phase info from read model
+            phase_name=read_model.phase_name,
+        )
 
         return response
 
@@ -206,6 +236,8 @@ class CompanyCandidateController:
                 # Include workflow and stage info from read model
                 stage_name=read_model.stage_name,
                 workflow_name=read_model.workflow_name,
+                # Include phase info from read model
+                phase_name=read_model.phase_name,
             )
             responses.append(response)
 
