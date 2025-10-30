@@ -355,9 +355,14 @@ export default function CandidatesListPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="min-w-[200px] max-w-[300px]">
-                        <div className="text-sm font-medium text-gray-900 truncate">
+                        <button
+                          onClick={() => navigate(`/company/candidates/${candidate.id}`)}
+                          className={`text-sm font-medium text-gray-900 truncate hover:text-blue-600 hover:underline cursor-pointer text-left ${
+                            candidate.status === 'ARCHIVED' ? 'line-through' : ''
+                          }`}
+                        >
                           {candidate.candidate_name || 'N/A'}
-                        </div>
+                        </button>
                         <div className="text-sm text-gray-500 truncate">
                           {candidate.candidate_email || 'N/A'}
                         </div>

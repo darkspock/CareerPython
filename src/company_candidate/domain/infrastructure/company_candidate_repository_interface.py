@@ -22,6 +22,14 @@ class CompanyCandidateRepositoryInterface(ABC):
         pass
 
     @abstractmethod
+    def get_by_id_with_candidate_info(self, company_candidate_id: CompanyCandidateId) -> Optional[CompanyCandidateWithCandidateReadModel]:
+        """
+        Get a single company candidate by ID with candidate basic info.
+        Returns read model (not entity) with data from both tables via JOIN.
+        """
+        pass
+
+    @abstractmethod
     def get_by_company_and_candidate(
         self,
         company_id: CompanyId,

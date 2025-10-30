@@ -138,7 +138,7 @@ export const getStageTypeColor = (type: StageType): string => {
 
 export type FieldType =
   | 'TEXT'
-  | 'TEXT_AREA'
+  | 'TEXTAREA'
   | 'NUMBER'
   | 'CURRENCY'
   | 'DATE'
@@ -146,7 +146,10 @@ export type FieldType =
   | 'MULTI_SELECT'
   | 'RADIO'
   | 'CHECKBOX'
-  | 'FILE';
+  | 'FILE'
+  | 'URL'
+  | 'EMAIL'
+  | 'PHONE';
 
 export type FieldVisibility =
   | 'VISIBLE'
@@ -241,7 +244,7 @@ export interface TextConfig {
 export const getFieldTypeLabel = (type: FieldType): string => {
   switch (type) {
     case 'TEXT': return 'Short Text';
-    case 'TEXT_AREA': return 'Long Text';
+    case 'TEXTAREA': return 'Long Text';
     case 'NUMBER': return 'Number';
     case 'CURRENCY': return 'Currency';
     case 'DATE': return 'Date';
@@ -250,6 +253,9 @@ export const getFieldTypeLabel = (type: FieldType): string => {
     case 'RADIO': return 'Radio Buttons';
     case 'CHECKBOX': return 'Checkbox';
     case 'FILE': return 'File Upload';
+    case 'URL': return 'URL';
+    case 'EMAIL': return 'Email';
+    case 'PHONE': return 'Phone';
     default: return type;
   }
 };

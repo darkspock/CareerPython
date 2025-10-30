@@ -5,6 +5,7 @@ from .invitation_status import InvitationStatus
 from .candidate_priority import CandidatePriority
 from .comment_visibility import CommentVisibility
 from .access_action import AccessAction
+from .comment_review_status import CommentReviewStatus
 
 __all__ = [
     "CompanyCandidateStatus",
@@ -13,4 +14,5 @@ __all__ = [
     "CandidatePriority",
     "CommentVisibility",
     "AccessAction",
+    "CommentReviewStatus",
 ]

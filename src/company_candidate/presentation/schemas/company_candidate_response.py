@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 
 class CompanyCandidateResponse(BaseModel):
@@ -39,6 +39,8 @@ class CompanyCandidateResponse(BaseModel):
     workflow_name: Optional[str] = None
     # Phase info (optional, populated when needed)
     phase_name: Optional[str] = None
+    # Custom field values (optional, populated when needed)
+    custom_field_values: Optional[Dict[str, Any]] = None
 
     class Config:
         from_attributes = True

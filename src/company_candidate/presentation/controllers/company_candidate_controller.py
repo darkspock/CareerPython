@@ -129,12 +129,22 @@ class CompanyCandidateController:
         from src.company_candidate.application.queries.get_company_candidate_by_id_with_candidate_info import (
             GetCompanyCandidateByIdWithCandidateInfoQuery
         )
+        from src.company_workflow.application.queries.get_custom_field_values_by_company_candidate import (
+            GetCustomFieldValuesByCompanyCandidateQuery
+        )
         
         query = GetCompanyCandidateByIdWithCandidateInfoQuery(id=CompanyCandidateId(company_candidate_id))
         read_model: Optional[CompanyCandidateWithCandidateReadModel] = self._query_bus.query(query)
 
         if not read_model:
             return None
+
+        # Get custom field values
+        from typing import Dict, Any
+        custom_field_values_query = GetCustomFieldValuesByCompanyCandidateQuery(
+            company_candidate_id=CompanyCandidateId(company_candidate_id)
+        )
+        custom_field_values: Dict[str, Any] = self._query_bus.query(custom_field_values_query)
 
         # Map read model directly to response
         response = CompanyCandidateResponse(
@@ -172,6 +182,8 @@ class CompanyCandidateController:
             workflow_name=read_model.workflow_name,
             # Include phase info from read model
             phase_name=read_model.phase_name,
+            # Include custom field values
+            custom_field_values=custom_field_values,
         )
 
         return response

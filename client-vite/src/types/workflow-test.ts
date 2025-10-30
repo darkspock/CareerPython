@@ -1,7 +1,7 @@
 // Test file to verify exports
 export type FieldType =
   | 'TEXT'
-  | 'TEXT_AREA'
+  | 'TEXTAREA'
   | 'NUMBER'
   | 'CURRENCY'
   | 'DATE'
@@ -9,6 +9,9 @@ export type FieldType =
   | 'MULTI_SELECT'
   | 'RADIO'
   | 'CHECKBOX'
-  | 'FILE';
+  | 'FILE'
+  | 'URL'
+  | 'EMAIL'
+  | 'PHONE';
 
 export { FieldType as FieldTypeTest };

@@ -39,36 +39,48 @@ export const FieldVisibilityMatrix: React.FC<FieldVisibilityMatrixProps> = ({
   const visibilityOptions: FieldVisibility[] = ['VISIBLE', 'HIDDEN', 'READ_ONLY', 'REQUIRED'];
 
   useEffect(() => {
-    loadConfigurations();
-  }, [stages, fields]);
+    if (stages.length > 0 && fields.length > 0) {
+      loadConfigurations();
+    }
+  }, [stages.length, fields.length, workflowId]);
 
   const getCellKey = (stageId: string, fieldId: string) => `${stageId}-${fieldId}`;
 
   const loadConfigurations = async () => {
+    if (stages.length === 0 || fields.length === 0) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
+      setError(null);
       const newMatrix = new Map<string, MatrixCell>();
 
       // Load configurations for each stage
       for (const stage of stages) {
-        const configs = await CustomFieldService.listFieldConfigurationsByStage(stage.id);
+        try {
+          const configs = await CustomFieldService.listFieldConfigurationsByStage(stage.id);
 
-        // Create matrix cells for this stage
-        for (const field of fields) {
-          const config = configs.find(c => c.custom_field_id === field.id);
-          const cellKey = getCellKey(stage.id, field.id);
+          // Create matrix cells for this stage
+          for (const field of fields) {
+            const config = configs.find(c => c.custom_field_id === field.id);
+            const cellKey = getCellKey(stage.id, field.id);
 
-          newMatrix.set(cellKey, {
-            stageId: stage.id,
-            fieldId: field.id,
-            configuration: config,
-            visibility: config?.visibility || 'VISIBLE' // Default to VISIBLE
-          });
+            newMatrix.set(cellKey, {
+              stageId: stage.id,
+              fieldId: field.id,
+              configuration: config,
+              visibility: config?.visibility || 'VISIBLE' // Default to VISIBLE
+            });
+          }
+        } catch (stageErr) {
+          console.warn(`Failed to load configurations for stage ${stage.id}:`, stageErr);
+          // Continue with other stages even if one fails
         }
       }
 
       setMatrix(newMatrix);
-      setError(null);
 
       // Notify parent of all configurations
       const allConfigs = Array.from(newMatrix.values())
@@ -77,7 +89,7 @@ export const FieldVisibilityMatrix: React.FC<FieldVisibilityMatrixProps> = ({
       onConfigurationsChange?.(allConfigs);
     } catch (err) {
       setError('Failed to load field configurations');
-      console.error(err);
+      console.error('Error loading field configurations:', err);
     } finally {
       setIsLoading(false);
     }

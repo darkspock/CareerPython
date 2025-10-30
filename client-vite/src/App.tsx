@@ -67,6 +67,7 @@ import AddCandidatePage from './pages/company/AddCandidatePage';
 import CandidateDetailPage from './pages/company/CandidateDetailPage';
 import EditCandidatePage from './pages/company/EditCandidatePage';
 import WorkflowsSettingsPage from './pages/company/WorkflowsSettingsPage';
+import WorkflowAdvancedConfigPage from './pages/company/WorkflowAdvancedConfigPage';
 import CompanySettingsPage from './pages/company/CompanySettingsPage';
 import CompanyRolesPage from './pages/company/CompanyRolesPage';
 import PositionsListPage from './pages/company/PositionsListPage';
@@ -212,6 +213,7 @@ function App() {
                           <Route path="positions/:id/edit" element={<EditPositionPage />} />
                           <Route path="workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="workflows/:workflowId/edit" element={<EditWorkflowPage />} />
+                          <Route path="workflows/:workflowId/advanced-config" element={<WorkflowAdvancedConfigPage />} />
                           <Route path="pages" element={<CompanyPagesListPage />} />
                           <Route path="pages/create" element={<CreateCompanyPagePage />} />
                           <Route path="pages/:pageId/edit" element={<EditCompanyPagePage />} />

@@ -212,7 +212,7 @@ export const ValidationRuleEditor: React.FC<ValidationRuleEditorProps> = ({
           className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="">-- Select a stage --</option>
-          {stages.map(stage => (
+          {stages && stages.map(stage => (
             <option key={stage.id} value={stage.id}>
               {stage.name}
             </option>
@@ -248,7 +248,7 @@ export const ValidationRuleEditor: React.FC<ValidationRuleEditorProps> = ({
           {!loading && rules.length === 0 && (
             <p className="text-sm text-gray-500">No validation rules for this stage yet.</p>
           )}
-          {!loading && rules.map(rule => (
+          {!loading && rules && rules.map(rule => (
             <div
               key={rule.id}
               className={`border rounded-lg p-4 ${rule.is_active ? 'bg-white' : 'bg-gray-50'}`}
@@ -351,7 +351,7 @@ export const ValidationRuleEditor: React.FC<ValidationRuleEditorProps> = ({
                 disabled={!isAddingRule}
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
-                {customFields.map(field => (
+                {customFields && customFields.map(field => (
                   <option key={field.id} value={field.id}>
                     {field.field_name} ({field.field_type})
                   </option>

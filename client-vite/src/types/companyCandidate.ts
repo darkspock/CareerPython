@@ -52,6 +52,8 @@ export interface CompanyCandidate {
   job_position_id?: string;
   job_position_title?: string;
   application_status?: string;
+  // Custom field values
+  custom_field_values?: Record<string, any>;
 }
 
 export interface CreateCompanyCandidateRequest {

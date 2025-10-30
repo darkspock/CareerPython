@@ -29,20 +29,21 @@ from src.company_workflow.infrastructure.models.workflow_stage_model import Work
 from src.company_workflow.infrastructure.models.custom_field_model import CustomFieldModel
 from src.company_workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
 from src.candidate.infrastructure.models.candidate_model import CandidateModel
+from src.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
 from src.job_position.infrastructure.models.job_position_model import JobPositionModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
 from src.candidate_stage.infrastructure.models.candidate_stage_model import CandidateStageModel
 from src.interview.interview.Infrastructure.models.interview_model import InterviewModel
 from src.interview.interview.Infrastructure.models.interview_answer_model import InterviewAnswerModel
-from src.staff.infrastructure.models.staff_model import StaffModel
-from src.resume.infrastructure.models.resume_model import ResumeModel
-from src.company_role.infrastructure.models.company_role_model import CompanyRoleModel
-from src.position_stage_assignment.infrastructure.models.position_stage_assignment_model import PositionStageAssignmentModel
-from src.email_template.infrastructure.models.email_template_model import EmailTemplateModel
-from src.talent_pool.infrastructure.models.talent_pool_entry_model import TalentPoolEntryModel
-from src.field_validation.infrastructure.models.validation_rule_model import ValidationRuleModel
-from src.shared.infrastructure.models.async_job_model import AsyncJobModel
+# from src.staff.infrastructure.models.staff_model import StaffModel
+# from src.resume.infrastructure.models.resume_model import ResumeModel
+# from src.company_role.infrastructure.models.company_role_model import CompanyRoleModel
+# from src.position_stage_assignment.infrastructure.models.position_stage_assignment_model import PositionStageAssignmentModel
+# from src.email_template.infrastructure.models.email_template_model import EmailTemplateModel
+# from src.talent_pool.infrastructure.models.talent_pool_entry_model import TalentPoolEntryModel
+# from src.field_validation.infrastructure.models.validation_rule_model import ValidationRuleModel
+# from src.shared.infrastructure.models.async_job_model import AsyncJobModel
 
 # Import enums
 from src.phase.domain.enums.phase_status_enum import PhaseStatus
@@ -70,6 +71,7 @@ def clear_all_data(session):
 
     # Order matters due to foreign key constraints
     tables = [
+        'file_attachments',
         'company_candidates',
         'candidates',
         'job_positions',
@@ -359,7 +361,56 @@ def create_phases_and_workflows(session, company_id: str) -> dict:
     print(f"    - Evaluation (Kanban)")
     print(f"    - Offer and Pre-Onboarding (List)\n")
 
-    return phases
+    # Get initial stages for each workflow
+    workflow_info = {}
+    
+    # Get initial stage for workflow1 (Sourcing)
+    initial_stage1 = session.execute(
+        text("""
+            SELECT id FROM workflow_stages
+            WHERE workflow_id = :workflow_id AND stage_type = 'INITIAL'
+            ORDER BY "order" ASC
+            LIMIT 1
+        """),
+        {"workflow_id": workflow1_id}
+    ).fetchone()
+    
+    # Get initial stage for workflow2 (Evaluation)
+    initial_stage2 = session.execute(
+        text("""
+            SELECT id FROM workflow_stages
+            WHERE workflow_id = :workflow_id AND stage_type = 'INITIAL'
+            ORDER BY "order" ASC
+            LIMIT 1
+        """),
+        {"workflow_id": workflow2_id}
+    ).fetchone()
+    
+    # Get initial stage for workflow3 (Offer)
+    initial_stage3 = session.execute(
+        text("""
+            SELECT id FROM workflow_stages
+            WHERE workflow_id = :workflow_id AND stage_type = 'INITIAL'
+            ORDER BY "order" ASC
+            LIMIT 1
+        """),
+        {"workflow_id": workflow3_id}
+    ).fetchone()
+    
+    workflow_info[workflow1_id] = {
+        'phase_id': phase1_id,
+        'initial_stage_id': initial_stage1[0] if initial_stage1 else None
+    }
+    workflow_info[workflow2_id] = {
+        'phase_id': phase2_id,
+        'initial_stage_id': initial_stage2[0] if initial_stage2 else None
+    }
+    workflow_info[workflow3_id] = {
+        'phase_id': phase3_id,
+        'initial_stage_id': initial_stage3[0] if initial_stage3 else None
+    }
+
+    return {'phases': phases, 'workflows': workflow_info}
 
 
 def create_candidates(session, company_id: str) -> list[str]:
@@ -543,8 +594,8 @@ def create_job_positions(session, company_id: str, phases: dict) -> list[str]:
     return position_ids
 
 
-def create_company_candidates(session, company_id: str, candidate_ids: list[str], phases: dict):
-    """Create company_candidates relationships"""
+def create_company_candidates(session, company_id: str, candidate_ids: list[str], phases_and_workflows: dict):
+    """Create company_candidates relationships and assign them to random workflows"""
     print("🔗 Creating company-candidate relationships...")
 
     # Get admin company_user ID
@@ -565,23 +616,37 @@ def create_company_candidates(session, company_id: str, candidate_ids: list[str]
     admin_company_user_id = admin_company_user_result[0]
     now = datetime.now(UTC)
     
-    # Distribute candidates across phases
-    phase_list = list(phases.values())
+    # Get workflows info
+    workflows_info = phases_and_workflows.get('workflows', {})
+    workflow_ids = list(workflows_info.keys())
+    
+    if not workflow_ids:
+        print("  ⚠️  No workflows found, skipping workflow assignment")
+        return
+    
+    # Import random for random workflow assignment
+    import random
     
     for i, candidate_id in enumerate(candidate_ids):
-        phase_id = phase_list[i % len(phase_list)]
+        # Randomly select a workflow
+        workflow_id = random.choice(workflow_ids)
+        workflow_data = workflows_info[workflow_id]
+        phase_id = workflow_data['phase_id']
+        initial_stage_id = workflow_data['initial_stage_id']
         
         session.execute(text("""
             INSERT INTO company_candidates 
-            (id, company_id, candidate_id, phase_id, status, ownership_status, created_by_user_id, 
+            (id, company_id, candidate_id, phase_id, workflow_id, current_stage_id, status, ownership_status, created_by_user_id, 
              priority, invited_at, source, visibility_settings, tags, internal_notes, created_at, updated_at)
-            VALUES (:id, :company_id, :candidate_id, :phase_id, :status, :ownership_status, :created_by_user_id, 
+            VALUES (:id, :company_id, :candidate_id, :phase_id, :workflow_id, :current_stage_id, :status, :ownership_status, :created_by_user_id, 
                     :priority, :invited_at, :source, :visibility_settings, :tags, :internal_notes, :created_at, :updated_at)
         """), {
             'id': generate_ulid(),
             'company_id': company_id,
             'candidate_id': candidate_id,
             'phase_id': phase_id,
+            'workflow_id': workflow_id,
+            'current_stage_id': initial_stage_id,
             'status': 'ACTIVE',
             'ownership_status': 'COMPANY_OWNED',
             'created_by_user_id': admin_company_user_id,
@@ -596,7 +661,7 @@ def create_company_candidates(session, company_id: str, candidate_ids: list[str]
         })
 
     session.commit()
-    print(f"  ✓ Created {len(candidate_ids)} company-candidate relationships\n")
+    print(f"  ✓ Created {len(candidate_ids)} company-candidate relationships with random workflow assignments\n")
 
 
 def link_candidates_to_positions(session, company_id: str, candidate_ids: list[str],
@@ -669,19 +734,19 @@ def main():
         company_id, user_id = create_company_and_admin(session)
 
         # Step 3: Create phases and workflows
-        phases = create_phases_and_workflows(session, company_id)
+        phases_and_workflows = create_phases_and_workflows(session, company_id)
 
         # Step 4: Create candidates
         candidate_ids = create_candidates(session, company_id)
 
         # Step 5: Create job positions (commented out for simplicity - model structure complex)
-        # position_ids = create_job_positions(session, company_id, phases)
+        # position_ids = create_job_positions(session, company_id, phases_and_workflows['phases'])
 
         # Step 6: Link candidates to positions (commented out for simplicity)
-        # link_candidates_to_positions(session, company_id, candidate_ids, position_ids, phases)
+        # link_candidates_to_positions(session, company_id, candidate_ids, position_ids, phases_and_workflows['phases'])
         
-        # Step 7: Create company_candidates relationships
-        create_company_candidates(session, company_id, candidate_ids, phases)
+        # Step 7: Create company_candidates relationships with random workflow assignments
+        create_company_candidates(session, company_id, candidate_ids, phases_and_workflows)
 
     print("="*60)
     print("✅ DATABASE RESET AND SEED COMPLETED!")

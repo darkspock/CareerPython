@@ -138,6 +138,11 @@ from src.company_candidate.application.commands.archive_company_candidate_comman
 from src.company_candidate.application.commands.transfer_ownership_command import TransferOwnershipCommandHandler
 from src.company_candidate.application.commands.assign_workflow_command import AssignWorkflowCommandHandler
 from src.company_candidate.application.commands.change_stage_command import ChangeStageCommandHandler
+from src.company_candidate.application.commands.create_candidate_comment_command import CreateCandidateCommentCommandHandler
+from src.company_candidate.application.commands.update_candidate_comment_command import UpdateCandidateCommentCommandHandler
+from src.company_candidate.application.commands.delete_candidate_comment_command import DeleteCandidateCommentCommandHandler
+from src.company_candidate.application.commands.mark_comment_as_pending_command import MarkCommentAsPendingCommandHandler
+from src.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCommentAsReviewedCommandHandler
 
 # CompanyCandidate Application Layer - Queries
 from src.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQueryHandler
@@ -146,12 +151,18 @@ from src.company_candidate.application.queries.get_company_candidate_by_company_
 from src.company_candidate.application.queries.list_company_candidates_by_company import ListCompanyCandidatesByCompanyQueryHandler
 from src.company_candidate.application.queries.list_company_candidates_by_candidate import ListCompanyCandidatesByCandidateQueryHandler
 from src.company_candidate.application.queries.list_company_candidates_with_candidate_info import ListCompanyCandidatesWithCandidateInfoQueryHandler
+from src.company_candidate.application.queries.get_candidate_comment_by_id import GetCandidateCommentByIdQueryHandler
+from src.company_candidate.application.queries.list_candidate_comments_by_company_candidate import ListCandidateCommentsByCompanyCandidateQueryHandler
+from src.company_candidate.application.queries.list_candidate_comments_by_stage import ListCandidateCommentsByStageQueryHandler
+from src.company_candidate.application.queries.count_pending_comments_query import CountPendingCommentsQueryHandler
 
 # CompanyCandidate Infrastructure
 from src.company_candidate.infrastructure.repositories.company_candidate_repository import CompanyCandidateRepository
+from src.company_candidate.infrastructure.repositories.candidate_comment_repository import CandidateCommentRepository
 
 # CompanyCandidate Presentation Controllers
 from src.company_candidate.presentation.controllers.company_candidate_controller import CompanyCandidateController
+from src.company_candidate.presentation.controllers.candidate_comment_controller import CandidateCommentController
 
 # CompanyWorkflow Application Layer - Commands
 from src.company_workflow.application.commands.create_workflow_command import CreateWorkflowCommandHandler
@@ -188,16 +199,24 @@ from src.company_workflow.application.queries.get_custom_field_by_id import GetC
 from src.company_workflow.application.queries.list_custom_fields_by_workflow import ListCustomFieldsByWorkflowQueryHandler
 from src.company_workflow.application.queries.list_field_configurations_by_stage import ListFieldConfigurationsByStageQueryHandler
 from src.company_workflow.application.queries.get_field_configuration_by_id import GetFieldConfigurationByIdQueryHandler
+from src.company_workflow.application.queries.get_custom_field_values_by_company_candidate import GetCustomFieldValuesByCompanyCandidateQueryHandler
+from src.company_workflow.application.queries.get_all_custom_field_values_by_company_candidate import GetAllCustomFieldValuesByCompanyCandidateQueryHandler
+from src.company_workflow.application.commands.create_custom_field_value_command import CreateCustomFieldValueCommandHandler
+from src.company_workflow.application.commands.update_custom_field_value_command import UpdateCustomFieldValueCommandHandler
+from src.company_workflow.application.commands.delete_custom_field_value_command import DeleteCustomFieldValueCommandHandler
+from src.company_workflow.application.queries.get_custom_field_value_by_id import GetCustomFieldValueByIdQueryHandler
 
 # CompanyWorkflow Infrastructure
 from src.company_workflow.infrastructure.repositories.company_workflow_repository import CompanyWorkflowRepository
 from src.company_workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
 from src.company_workflow.infrastructure.repositories.custom_field_repository import CustomFieldRepository
+from src.company_workflow.infrastructure.repositories.custom_field_value_repository import CustomFieldValueRepository
 from src.company_workflow.infrastructure.repositories.field_configuration_repository import FieldConfigurationRepository
 
 # CompanyWorkflow Presentation Controllers
 from src.company_workflow.presentation.controllers.company_workflow_controller import CompanyWorkflowController
 from src.company_workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
+from src.company_workflow.presentation.controllers.custom_field_value_controller import CustomFieldValueController
 from src.company_workflow.presentation.controllers.custom_field_controller import CustomFieldController
 
 # FieldValidation Application Layer - Commands
@@ -499,6 +518,11 @@ class Container(containers.DeclarativeContainer):
 
     custom_field_repository = providers.Factory(
         CustomFieldRepository,
+        database=database
+    )
+
+    custom_field_value_repository = providers.Factory(
+        CustomFieldValueRepository,
         database=database
     )
 
@@ -846,6 +870,41 @@ class Container(containers.DeclarativeContainer):
         repository=field_configuration_repository
     )
 
+    get_custom_field_values_by_company_candidate_query_handler = providers.Factory(
+        GetCustomFieldValuesByCompanyCandidateQueryHandler,
+        custom_field_value_repository=custom_field_value_repository,
+        custom_field_repository=custom_field_repository,
+        company_candidate_repository=company_candidate_repository
+    )
+
+    get_all_custom_field_values_by_company_candidate_query_handler = providers.Factory(
+        GetAllCustomFieldValuesByCompanyCandidateQueryHandler,
+        custom_field_value_repository=custom_field_value_repository,
+        custom_field_repository=custom_field_repository
+    )
+
+    # Custom Field Value Command Handlers
+    create_custom_field_value_command_handler = providers.Factory(
+        CreateCustomFieldValueCommandHandler,
+        repository=custom_field_value_repository
+    )
+
+    update_custom_field_value_command_handler = providers.Factory(
+        UpdateCustomFieldValueCommandHandler,
+        repository=custom_field_value_repository
+    )
+
+    delete_custom_field_value_command_handler = providers.Factory(
+        DeleteCustomFieldValueCommandHandler,
+        repository=custom_field_value_repository
+    )
+
+    # Custom Field Value Query Handlers
+    get_custom_field_value_by_id_query_handler = providers.Factory(
+        GetCustomFieldValueByIdQueryHandler,
+        repository=custom_field_value_repository
+    )
+
     # FieldValidation Query Handlers
     get_validation_rule_by_id_query_handler = providers.Factory(
         GetValidationRuleByIdQueryHandler,
@@ -1177,6 +1236,59 @@ class Container(containers.DeclarativeContainer):
     change_stage_command_handler = providers.Factory(
         ChangeStageCommandHandler,
         repository=company_candidate_repository
+    )
+
+    # CandidateComment Repository
+    candidate_comment_repository = providers.Factory(
+        CandidateCommentRepository,
+        database=database
+    )
+
+    # CandidateComment Command Handlers
+    create_candidate_comment_command_handler = providers.Factory(
+        CreateCandidateCommentCommandHandler,
+        repository=candidate_comment_repository
+    )
+
+    update_candidate_comment_command_handler = providers.Factory(
+        UpdateCandidateCommentCommandHandler,
+        repository=candidate_comment_repository
+    )
+
+    delete_candidate_comment_command_handler = providers.Factory(
+        DeleteCandidateCommentCommandHandler,
+        repository=candidate_comment_repository
+    )
+
+    mark_comment_as_pending_command_handler = providers.Factory(
+        MarkCommentAsPendingCommandHandler,
+        repository=candidate_comment_repository
+    )
+
+    mark_comment_as_reviewed_command_handler = providers.Factory(
+        MarkCommentAsReviewedCommandHandler,
+        repository=candidate_comment_repository
+    )
+
+    # CandidateComment Query Handlers
+    get_candidate_comment_by_id_query_handler = providers.Factory(
+        GetCandidateCommentByIdQueryHandler,
+        repository=candidate_comment_repository
+    )
+
+    list_candidate_comments_by_company_candidate_query_handler = providers.Factory(
+        ListCandidateCommentsByCompanyCandidateQueryHandler,
+        repository=candidate_comment_repository
+    )
+
+    list_candidate_comments_by_stage_query_handler = providers.Factory(
+        ListCandidateCommentsByStageQueryHandler,
+        repository=candidate_comment_repository
+    )
+
+    count_pending_comments_query_handler = providers.Factory(
+        CountPendingCommentsQueryHandler,
+        repository=candidate_comment_repository
     )
 
     # CompanyWorkflow Command Handlers
@@ -1795,6 +1907,12 @@ class Container(containers.DeclarativeContainer):
         query_bus=query_bus
     )
 
+    candidate_comment_controller = providers.Factory(
+        CandidateCommentController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
     company_workflow_controller = providers.Factory(
         CompanyWorkflowController,
         command_bus=command_bus,
@@ -1812,6 +1930,13 @@ class Container(containers.DeclarativeContainer):
         CustomFieldController,
         command_bus=command_bus,
         query_bus=query_bus
+    )
+
+    custom_field_value_controller = providers.Factory(
+        CustomFieldValueController,
+        command_bus=command_bus,
+        query_bus=query_bus,
+        custom_field_value_repository=custom_field_value_repository
     )
 
     validation_rule_controller = providers.Factory(

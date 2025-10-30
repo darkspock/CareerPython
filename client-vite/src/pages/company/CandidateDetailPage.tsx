@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
+  ArrowRight,
   Edit,
   Archive,
   Mail,
@@ -18,17 +19,26 @@ import {
   Paperclip,
   FileText,
   Download,
-  Trash2
+  Trash2,
+  MessageSquare
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import { fileUploadService, type AttachedFile } from '../../services/fileUploadService';
+import { workflowStageService, type WorkflowStage } from '../../services/workflowStageService';
+import { customFieldValueService } from '../../services/customFieldValueService';
+import { companyWorkflowService } from '../../services/companyWorkflowService';
 import type { CompanyCandidate } from '../../types/companyCandidate';
+import type { CompanyWorkflow } from '../../types/workflow';
 import {
   getCandidateStatusColor,
   getPriorityColor,
   getOwnershipColor
 } from '../../types/companyCandidate';
 import { StageTimeline } from '../../components/candidate';
+import CustomFieldsCard from '../../components/candidate/CustomFieldsCard';
+import CommentsCard from '../../components/candidate/CommentsCard';
+import { candidateCommentService } from '../../services/candidateCommentService';
+import type { CandidateComment } from '../../types/candidateComment';
 
 export default function CandidateDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +46,7 @@ export default function CandidateDetailPage() {
   const [candidate, setCandidate] = useState<CompanyCandidate | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'history'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'documents' | 'history'>('info');
   
   // Notes editing state
   const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -46,6 +56,23 @@ export default function CandidateDetailPage() {
   // File attachment state
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
+
+  // Stage transition state
+  const [availableStages, setAvailableStages] = useState<WorkflowStage[]>([]);
+  const [nextStage, setNextStage] = useState<WorkflowStage | null>(null);
+  const [failStages, setFailStages] = useState<WorkflowStage[]>([]);
+  const [changingStage, setChangingStage] = useState(false);
+
+  // Comments state
+  const [allComments, setAllComments] = useState<CandidateComment[]>([]);
+  const [pendingCommentsCount, setPendingCommentsCount] = useState(0);
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  // Workflow tabs state
+  const [allCustomFieldValues, setAllCustomFieldValues] = useState<Record<string, Record<string, any>>>({});
+  const [availableWorkflows, setAvailableWorkflows] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
+  const [loadingWorkflows, setLoadingWorkflows] = useState(false);
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -82,6 +109,17 @@ export default function CandidateDetailPage() {
         // Don't fail the entire load if files can't be loaded
         setAttachedFiles([]);
       }
+
+      // Load workflow stages if candidate has a workflow
+      if (data.workflow_id) {
+        await loadWorkflowStages(data.workflow_id, data.current_stage_id);
+      }
+      
+      // Load all comments
+      await loadAllComments();
+      
+      // Load workflows with custom fields or comments (after comments are loaded)
+      await loadWorkflowsWithData();
       
       setError(null);
     } catch (err: any) {
@@ -89,6 +127,112 @@ export default function CandidateDetailPage() {
       console.error('Error loading candidate:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadWorkflowStages = async (workflowId: string, currentStageId?: string) => {
+    try {
+      const stages = await workflowStageService.getStagesByWorkflow(workflowId);
+      setAvailableStages(stages);
+
+      // Find current stage order
+      const currentStage = stages.find(stage => stage.id === currentStageId);
+      const currentOrder = currentStage?.order || 0;
+
+      // Get next stage
+      const next = await workflowStageService.getNextStage(workflowId, currentOrder);
+      setNextStage(next);
+
+      // Get fail stages
+      const fail = await workflowStageService.getFailStages(workflowId);
+      setFailStages(fail);
+    } catch (err) {
+      console.error('Error loading workflow stages:', err);
+    }
+  };
+
+  const loadAllComments = async () => {
+    if (!id) return;
+
+    try {
+      setLoadingComments(true);
+      const comments = await candidateCommentService.getCommentsByCompanyCandidate(id);
+      setAllComments(comments || []);
+      
+      // Count pending comments
+      const pendingCount = await candidateCommentService.countPendingComments(id);
+      setPendingCommentsCount(pendingCount || 0);
+    } catch (err: any) {
+      console.error('Error loading comments:', err);
+      // Don't fail the entire load if comments can't be loaded
+      setAllComments([]);
+      setPendingCommentsCount(0);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const loadWorkflowsWithData = async () => {
+    if (!id) return;
+
+    try {
+      setLoadingWorkflows(true);
+      
+      // Get all custom field values organized by workflow_id
+      const allValues = await customFieldValueService.getAllCustomFieldValuesByCompanyCandidate(id);
+      setAllCustomFieldValues(allValues);
+      
+      // Get unique workflow IDs from custom fields and comments
+      const workflowIds = new Set<string>();
+      
+      // Add workflows with custom fields
+      Object.keys(allValues).forEach(workflowId => {
+        if (Object.keys(allValues[workflowId]).length > 0) {
+          workflowIds.add(workflowId);
+        }
+      });
+      
+      // Add workflows with comments
+      allComments.forEach(comment => {
+        if (comment.workflow_id) {
+          workflowIds.add(comment.workflow_id);
+        }
+      });
+      
+      // Add current workflow if candidate has one
+      if (candidate?.workflow_id) {
+        workflowIds.add(candidate.workflow_id);
+      }
+      
+      // Fetch workflow names for all workflows
+      const workflowsData: Array<{ id: string; name: string }> = [];
+      for (const workflowId of workflowIds) {
+        try {
+          const workflow = await companyWorkflowService.getWorkflow(workflowId);
+          workflowsData.push({ id: workflowId, name: workflow.name });
+        } catch (err) {
+          console.warn(`Failed to load workflow ${workflowId}:`, err);
+          // Use workflow_id as fallback name if we can't load it
+          workflowsData.push({ id: workflowId, name: workflowId });
+        }
+      }
+      
+      setAvailableWorkflows(workflowsData);
+      
+      // Set selected workflow to current workflow if available, otherwise first one
+      if (candidate?.workflow_id && workflowIds.has(candidate.workflow_id)) {
+        setSelectedWorkflowId(candidate.workflow_id);
+      } else if (workflowsData.length > 0) {
+        setSelectedWorkflowId(workflowsData[0].id);
+      } else {
+        setSelectedWorkflowId(null);
+      }
+    } catch (err: any) {
+      console.error('Error loading workflows with data:', err);
+      setAvailableWorkflows([]);
+      setSelectedWorkflowId(null);
+    } finally {
+      setLoadingWorkflows(false);
     }
   };
 
@@ -208,6 +352,49 @@ export default function CandidateDetailPage() {
     }
   };
 
+  const handleChangeStage = async (newStageId: string) => {
+    if (!id) return;
+
+    try {
+      setChangingStage(true);
+      await companyCandidateService.changeStage(id, { new_stage_id: newStageId });
+      
+      // Reload candidate to get updated stage info
+      await loadCandidate();
+    } catch (err: any) {
+      setError(err.message || 'Failed to change stage');
+      console.error('Error changing stage:', err);
+    } finally {
+      setChangingStage(false);
+    }
+  };
+
+  const handleUpdateCustomFieldValue = async (fieldKey: string, value: any) => {
+    if (!id || !candidate) return;
+
+    try {
+      // Find the custom field ID from the current values
+      const currentFieldValue = candidate.custom_field_values?.[fieldKey];
+      if (!currentFieldValue) {
+        console.error('Custom field not found:', fieldKey);
+        return;
+      }
+
+      // Update the custom field value
+      await customFieldValueService.upsertCustomFieldValue(
+        id,
+        currentFieldValue.field_id,
+        value
+      );
+
+      // Reload candidate to get updated custom field values
+      await loadCandidate();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update custom field value');
+      console.error('Error updating custom field value:', err);
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -305,9 +492,9 @@ export default function CandidateDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-4 space-y-6">
           {/* Tabs */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="border-b border-gray-200">
@@ -324,13 +511,28 @@ export default function CandidateDetailPage() {
                 </button>
                 <button
                   onClick={() => setActiveTab('notes')}
-                  className={`py-4 border-b-2 font-medium transition-colors ${
+                  className={`py-4 border-b-2 font-medium transition-colors relative ${
                     activeTab === 'notes'
                       ? 'border-blue-600 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   Notes
+                  {pendingCommentsCount > 0 && (
+                    <span className="absolute top-2 right-0 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {pendingCommentsCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('documents')}
+                  className={`py-4 border-b-2 font-medium transition-colors ${
+                    activeTab === 'documents'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Documents
                 </button>
                 <button
                   onClick={() => setActiveTab('history')}
@@ -393,6 +595,95 @@ export default function CandidateDetailPage() {
               {/* Notes Tab */}
               {activeTab === 'notes' && (
                 <div className="space-y-6">
+                  {/* All Comments Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      All Comments
+                    </h3>
+                    {loadingComments ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                        <p className="text-sm text-gray-600">Loading comments...</p>
+                      </div>
+                    ) : allComments.length === 0 ? (
+                      <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500 mb-2">No comments yet</p>
+                        <p className="text-sm text-gray-400">Comments from all stages will appear here</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {allComments.map((comment) => (
+                          <div
+                            key={comment.id}
+                            className={`p-4 rounded-lg border ${
+                              comment.review_status === 'pending'
+                                ? 'bg-yellow-50 border-yellow-200'
+                                : 'bg-white border-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <p className="text-gray-900 whitespace-pre-wrap mb-3">{comment.comment}</p>
+                                <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {new Date(comment.created_at).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </span>
+                                  {comment.workflow_name && (
+                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                      {comment.workflow_name}
+                                    </span>
+                                  )}
+                                  {comment.stage_name && (
+                                    <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
+                                      {comment.stage_name}
+                                    </span>
+                                  )}
+                                  {comment.created_by_user_name && (
+                                    <span>By {comment.created_by_user_name}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    if (comment.review_status === 'pending') {
+                                      await candidateCommentService.markAsReviewed(comment.id);
+                                    } else {
+                                      await candidateCommentService.markAsPending(comment.id);
+                                    }
+                                    await loadAllComments();
+                                  } catch (err: any) {
+                                    setError(err.message || 'Failed to update comment status');
+                                  }
+                                }}
+                                className={`p-1.5 rounded transition-colors ${
+                                  comment.review_status === 'pending'
+                                    ? 'text-yellow-600 hover:bg-yellow-100'
+                                    : 'text-gray-400 hover:bg-gray-100'
+                                }`}
+                                title={comment.review_status === 'pending' ? 'Mark as reviewed' : 'Mark as pending'}
+                              >
+                                {comment.review_status === 'pending' ? (
+                                  <Clock className="w-4 h-4" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Internal Notes Section */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -449,7 +740,12 @@ export default function CandidateDetailPage() {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
 
+              {/* Documents Tab */}
+              {activeTab === 'documents' && (
+                <div className="space-y-6">
                   {/* File Attachments Section */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -533,57 +829,227 @@ export default function CandidateDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Additional Data and Comments - Side by side */}
+          {availableWorkflows.length > 0 ? (
+            <div className="space-y-4">
+              {/* Workflow Tabs - Only show if more than one workflow */}
+              {availableWorkflows.length > 1 && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                  <div className="border-b border-gray-200">
+                    <nav className="flex gap-2 px-4 overflow-x-auto">
+                      {availableWorkflows.map((workflow) => (
+                        <button
+                          key={workflow.id}
+                          onClick={() => setSelectedWorkflowId(workflow.id)}
+                          className={`px-4 py-3 border-b-2 font-medium transition-colors whitespace-nowrap ${
+                            selectedWorkflowId === workflow.id
+                              ? 'border-blue-600 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          {workflow.name}
+                        </button>
+                      ))}
+                    </nav>
+                  </div>
+                </div>
+              )}
+
+              {/* Content for selected workflow */}
+              {selectedWorkflowId && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Additional Data Section */}
+                  {allCustomFieldValues[selectedWorkflowId] && Object.keys(allCustomFieldValues[selectedWorkflowId]).length > 0 && (
+                    <CustomFieldsCard 
+                      customFieldValues={allCustomFieldValues[selectedWorkflowId]}
+                      onUpdateValue={async (fieldKey: string, value: any) => {
+                        // Find the custom field ID from the current values
+                        const currentFieldValue = allCustomFieldValues[selectedWorkflowId]?.[fieldKey];
+                        if (!currentFieldValue) {
+                          console.error('Custom field not found:', fieldKey);
+                          return;
+                        }
+
+                        try {
+                          // Update the custom field value
+                          await customFieldValueService.upsertCustomFieldValue(
+                            id!,
+                            currentFieldValue.field_id,
+                            value
+                          );
+
+                          // Reload workflows with data to refresh the display
+                          await loadWorkflowsWithData();
+                        } catch (err: any) {
+                          setError(err.message || 'Failed to update custom field value');
+                          console.error('Error updating custom field value:', err);
+                        }
+                      }}
+                      isEditable={true}
+                    />
+                  )}
+
+                  {/* Comments Card - Shows all comments for selected workflow */}
+                  {(() => {
+                    const workflowComments = allComments.filter(c => c.workflow_id === selectedWorkflowId);
+                    if (workflowComments.length === 0) return null;
+                    
+                    // Get current stage for this workflow to allow adding new comments
+                    const currentStageId = candidate.workflow_id === selectedWorkflowId ? candidate.current_stage_id : null;
+                    
+                    return (
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Comments</h3>
+                        {loadingComments ? (
+                          <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <p className="text-sm text-gray-600">Loading comments...</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {workflowComments.map((comment) => (
+                              <div
+                                key={comment.id}
+                                className={`p-4 rounded-lg border ${
+                                  comment.review_status === 'pending'
+                                    ? 'bg-yellow-50 border-yellow-200'
+                                    : 'bg-gray-50 border-gray-200'
+                                }`}
+                              >
+                                <p className="text-gray-900 whitespace-pre-wrap mb-3">{comment.comment}</p>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      {new Date(comment.created_at).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })}
+                                    </span>
+                                    {comment.stage_name && (
+                                      <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
+                                        {comment.stage_name}
+                                      </span>
+                                    )}
+                                    {comment.created_by_user_name && (
+                                      <span>By {comment.created_by_user_name}</span>
+                                    )}
+                                  </div>
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        if (comment.review_status === 'pending') {
+                                          await candidateCommentService.markAsReviewed(comment.id);
+                                        } else {
+                                          await candidateCommentService.markAsPending(comment.id);
+                                        }
+                                        await loadAllComments();
+                                      } catch (err: any) {
+                                        setError(err.message || 'Failed to update comment status');
+                                      }
+                                    }}
+                                    className={`p-1.5 rounded transition-colors ${
+                                      comment.review_status === 'pending'
+                                        ? 'text-yellow-600 hover:bg-yellow-100'
+                                        : 'text-gray-400 hover:bg-gray-100'
+                                    }`}
+                                    title={comment.review_status === 'pending' ? 'Mark as reviewed' : 'Mark as pending'}
+                                  >
+                                    {comment.review_status === 'pending' ? (
+                                      <Clock className="w-4 h-4" />
+                                    ) : (
+                                      <CheckCircle className="w-4 h-4" />
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* Allow adding comments if we have a current stage for this workflow */}
+                        {currentStageId && candidate.workflow_id === selectedWorkflowId && (
+                          <CommentsCard
+                            companyCandidateId={id!}
+                            stageId={currentStageId}
+                            currentWorkflowId={selectedWorkflowId}
+                            onCommentChange={async () => {
+                              await loadAllComments();
+                              await loadWorkflowsWithData();
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Fallback: Show current workflow custom fields if available, even if workflows not loaded yet */
+            candidate.workflow_id && candidate.custom_field_values && Object.keys(candidate.custom_field_values).length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <CustomFieldsCard 
+                  customFieldValues={candidate.custom_field_values}
+                  onUpdateValue={handleUpdateCustomFieldValue}
+                  isEditable={true}
+                />
+                {candidate.current_stage_id && (
+                  <CommentsCard
+                    companyCandidateId={id!}
+                    stageId={candidate.current_stage_id}
+                    currentWorkflowId={candidate.workflow_id || undefined}
+                    onCommentChange={loadAllComments}
+                  />
+                )}
+              </div>
+            )
+          )}
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="lg:col-span-1 space-y-6">
           {/* Status Card */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Status</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Status</h3>
             <div className="space-y-4">
-              {/* Current Status */}
-              <div>
-                <label className="text-sm text-gray-600 block mb-2">Current Status</label>
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(candidate.status)}
+              {/* Current Status - Only show when inactive */}
+              {candidate.status !== 'active' && (
+                <div>
+                  <label className="text-sm text-gray-600 block mb-2">Current Status</label>
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(candidate.status)}
+                    <span
+                      className={`px-3 py-1 text-sm font-medium rounded-full ${getCandidateStatusColor(
+                        candidate.status
+                      )}`}
+                    >
+                      {candidate.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Priority - Only show when not MEDIUM */}
+              {candidate.priority !== 'MEDIUM' && (
+                <div>
+                  <label className="text-sm text-gray-600 block mb-2">Priority</label>
                   <span
-                    className={`px-3 py-1 text-sm font-medium rounded-full ${getCandidateStatusColor(
-                      candidate.status
+                    className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${getPriorityColor(
+                      candidate.priority
                     )}`}
                   >
-                    {candidate.status.replace('_', ' ')}
+                    {candidate.priority}
                   </span>
                 </div>
-              </div>
-
-              {/* Priority */}
-              <div>
-                <label className="text-sm text-gray-600 block mb-2">Priority</label>
-                <span
-                  className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${getPriorityColor(
-                    candidate.priority
-                  )}`}
-                >
-                  {candidate.priority}
-                </span>
-              </div>
-
-              {/* Ownership */}
-              <div>
-                <label className="text-sm text-gray-600 block mb-2">Ownership</label>
-                <span
-                  className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${getOwnershipColor(
-                    candidate.ownership_status
-                  )}`}
-                >
-                  {candidate.ownership_status.replace('_', ' ')}
-                </span>
-              </div>
+              )}
 
               {/* Workflow Information */}
               {(candidate.workflow_name || candidate.stage_name || candidate.phase_name) && (
                 <div>
-                  <label className="text-sm text-gray-600 block mb-2">Workflow Status</label>
                   <div className="space-y-2">
                     {candidate.phase_name && (
                       <div className="text-sm">
@@ -593,16 +1059,90 @@ export default function CandidateDetailPage() {
                     )}
                     {candidate.workflow_name && (
                       <div className="text-sm">
-                        <span className="text-gray-600">Workflow:</span>{' '}
                         <span className="font-medium text-gray-900">{candidate.workflow_name}</span>
                       </div>
                     )}
                     {candidate.stage_name && (
                       <div className="text-sm">
-                        <span className="text-gray-600">Stage:</span>{' '}
                         <span className="font-medium text-gray-900">{candidate.stage_name}</span>
                       </div>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Stage Transitions */}
+              {candidate.workflow_id && (nextStage || failStages.length > 0) && (
+                <div>
+                  <label className="text-sm text-gray-600 block mb-2">Actions</label>
+                  <div className="flex flex-wrap gap-2">
+                    {/* Next Stage Button */}
+                    {nextStage && (
+                      <div className="relative group">
+                        <button
+                          onClick={() => handleChangeStage(nextStage.id)}
+                          disabled={changingStage}
+                          className="flex items-center justify-center p-2 rounded-lg transition-colors disabled:opacity-50"
+                          style={{
+                            backgroundColor: nextStage.style?.background_color || '#3B82F6',
+                            color: nextStage.style?.color || '#FFFFFF'
+                          }}
+                        >
+                          {changingStage ? (
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              {nextStage.style?.icon ? (
+                                <span className="text-base" dangerouslySetInnerHTML={{ __html: nextStage.style.icon }} />
+                              ) : (
+                                <ArrowRight className="w-4 h-4" />
+                              )}
+                            </>
+                          )}
+                        </button>
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                          Move to: {nextStage.name}
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                            <div className="border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Fail Stages Buttons */}
+                    {failStages.map((stage) => (
+                      <div key={stage.id} className="relative group">
+                        <button
+                          onClick={() => handleChangeStage(stage.id)}
+                          disabled={changingStage}
+                          className="flex items-center justify-center p-2 rounded-lg transition-colors disabled:opacity-50"
+                          style={{
+                            backgroundColor: stage.style?.background_color || '#DC2626',
+                            color: stage.style?.color || '#FFFFFF'
+                          }}
+                        >
+                          {changingStage ? (
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              {stage.style?.icon ? (
+                                <span className="text-base" dangerouslySetInnerHTML={{ __html: stage.style.icon }} />
+                              ) : (
+                                <X className="w-4 h-4" />
+                              )}
+                            </>
+                          )}
+                        </button>
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                          Move to: {stage.name}
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                            <div className="border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

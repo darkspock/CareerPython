@@ -34,7 +34,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
 
   const fieldTypes: FieldType[] = [
     'TEXT',
-    'TEXT_AREA',
+    'TEXTAREA',
     'NUMBER',
     'CURRENCY',
     'DATE',
@@ -42,19 +42,24 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
     'MULTI_SELECT',
     'RADIO',
     'CHECKBOX',
-    'FILE'
+    'FILE',
+    'URL',
+    'EMAIL',
+    'PHONE'
   ];
 
   useEffect(() => {
     loadFields();
   }, [workflowId]);
 
-  const loadFields = async () => {
+  const loadFields = async (notifyParent: boolean = true) => {
     try {
       setIsLoading(true);
       const loadedFields = await CustomFieldService.listCustomFieldsByWorkflow(workflowId);
       setFields(loadedFields);
-      onFieldsChange?.(loadedFields);
+      if (notifyParent) {
+        onFieldsChange?.(loadedFields);
+      }
       setError(null);
     } catch (err) {
       setError('Failed to load custom fields');
@@ -93,6 +98,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
       field_type: field.field_type,
       field_config: field.field_config || {}
     });
+    // Don't reload fields when editing - keep the current state
   };
 
   const handleCancel = () => {
@@ -126,7 +132,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
         };
         await CustomFieldService.updateCustomField(editingField.id, request);
       }
-      await loadFields();
+      await loadFields(true); // Notify parent after successful save
       handleCancel();
     } catch (err) {
       setError('Failed to save custom field');
@@ -139,7 +145,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
 
     try {
       await CustomFieldService.deleteCustomField(fieldId);
-      await loadFields();
+      await loadFields(true); // Notify parent after successful operation
     } catch (err) {
       setError('Failed to delete custom field');
       console.error(err);
@@ -153,7 +159,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
       await CustomFieldService.reorderCustomField(field.id, {
         new_order_index: field.order_index - 1
       });
-      await loadFields();
+      await loadFields(true); // Notify parent after successful operation
     } catch (err) {
       setError('Failed to reorder field');
       console.error(err);
@@ -167,7 +173,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
       await CustomFieldService.reorderCustomField(field.id, {
         new_order_index: field.order_index + 1
       });
-      await loadFields();
+      await loadFields(true); // Notify parent after successful operation
     } catch (err) {
       setError('Failed to reorder field');
       console.error(err);

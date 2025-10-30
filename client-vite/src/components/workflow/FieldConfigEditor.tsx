@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { FieldType } from '../../types/workflow';
 
 interface FieldConfigEditorProps {
@@ -12,13 +12,36 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
   config,
   onChange
 }) => {
+  const [localConfig, setLocalConfig] = useState<Record<string, any>>(config);
+  const isUpdatingFromProps = useRef(false);
+
+  // Update local config when prop changes, but avoid infinite loops
+  useEffect(() => {
+    if (!isUpdatingFromProps.current) {
+      setLocalConfig(config);
+    }
+    isUpdatingFromProps.current = false;
+  }, [config]);
+
   const updateConfig = (key: string, value: any) => {
-    onChange({ ...config, [key]: value });
+    const newConfig = { ...localConfig, [key]: value };
+    setLocalConfig(newConfig);
+    // Don't call onChange immediately - let the parent handle it
+  };
+
+  const updateConfigAndNotify = (key: string, value: any) => {
+    const newConfig = { ...localConfig, [key]: value };
+    setLocalConfig(newConfig);
+    isUpdatingFromProps.current = true;
+    onChange(newConfig);
   };
 
   const updateArrayConfig = (key: string, value: string) => {
     const items = value.split('\n').filter(item => item.trim());
-    onChange({ ...config, [key]: items });
+    const newConfig = { ...localConfig, [key]: items };
+    setLocalConfig(newConfig);
+    isUpdatingFromProps.current = true;
+    onChange(newConfig);
   };
 
   // Render config editor based on field type
@@ -32,7 +55,7 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
             Options * (one per line)
           </label>
           <textarea
-            value={config.options?.join('\n') || ''}
+            value={localConfig.options?.join('\n') || ''}
             onChange={(e) => updateArrayConfig('options', e.target.value)}
             className="w-full px-3 py-2 border rounded font-mono text-sm"
             rows={5}
@@ -53,8 +76,10 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
             </label>
             <input
               type="number"
-              value={config.min ?? ''}
-              onChange={(e) => updateConfig('min', e.target.value ? parseFloat(e.target.value) : undefined)}
+              value={localConfig.min ?? ''}
+              onChange={(e) => updateConfig('min', e.target.value)}
+              onBlur={(e) => updateConfigAndNotify('min', e.target.value ? parseFloat(e.target.value) : undefined)}
+              onFocus={(e) => e.target.select()}
               className="w-full px-3 py-2 border rounded"
               placeholder="No minimum"
             />
@@ -65,8 +90,10 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
             </label>
             <input
               type="number"
-              value={config.max ?? ''}
-              onChange={(e) => updateConfig('max', e.target.value ? parseFloat(e.target.value) : undefined)}
+              value={localConfig.max ?? ''}
+              onChange={(e) => updateConfig('max', e.target.value)}
+              onBlur={(e) => updateConfigAndNotify('max', e.target.value ? parseFloat(e.target.value) : undefined)}
+              onFocus={(e) => e.target.select()}
               className="w-full px-3 py-2 border rounded"
               placeholder="No maximum"
             />
@@ -83,8 +110,10 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
             </label>
             <input
               type="text"
-              value={config.currency_code || 'USD'}
-              onChange={(e) => updateConfig('currency_code', e.target.value.toUpperCase())}
+              value={localConfig.currency_code || 'USD'}
+              onChange={(e) => updateConfig('currency_code', e.target.value)}
+              onBlur={(e) => updateConfigAndNotify('currency_code', e.target.value.toUpperCase())}
+              onFocus={(e) => e.target.select()}
               className="w-full px-3 py-2 border rounded"
               placeholder="USD"
               maxLength={3}
@@ -99,8 +128,10 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
             </label>
             <input
               type="number"
-              value={config.min ?? ''}
-              onChange={(e) => updateConfig('min', e.target.value ? parseFloat(e.target.value) : undefined)}
+              value={localConfig.min ?? ''}
+              onChange={(e) => updateConfig('min', e.target.value)}
+              onBlur={(e) => updateConfigAndNotify('min', e.target.value ? parseFloat(e.target.value) : undefined)}
+              onFocus={(e) => e.target.select()}
               className="w-full px-3 py-2 border rounded"
               placeholder="No minimum"
             />
@@ -111,8 +142,10 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
             </label>
             <input
               type="number"
-              value={config.max ?? ''}
-              onChange={(e) => updateConfig('max', e.target.value ? parseFloat(e.target.value) : undefined)}
+              value={localConfig.max ?? ''}
+              onChange={(e) => updateConfig('max', e.target.value)}
+              onBlur={(e) => updateConfigAndNotify('max', e.target.value ? parseFloat(e.target.value) : undefined)}
+              onFocus={(e) => e.target.select()}
               className="w-full px-3 py-2 border rounded"
               placeholder="No maximum"
             />
@@ -128,7 +161,7 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
               Allowed Extensions (optional, one per line)
             </label>
             <textarea
-              value={config.allowed_extensions?.join('\n') || ''}
+              value={localConfig.allowed_extensions?.join('\n') || ''}
               onChange={(e) => updateArrayConfig('allowed_extensions', e.target.value)}
               className="w-full px-3 py-2 border rounded font-mono text-sm"
               rows={4}
@@ -144,7 +177,7 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
             </label>
             <input
               type="number"
-              value={config.max_size_mb ?? ''}
+              value={localConfig.max_size_mb ?? ''}
               onChange={(e) => updateConfig('max_size_mb', e.target.value ? parseFloat(e.target.value) : undefined)}
               className="w-full px-3 py-2 border rounded"
               placeholder="No limit"
@@ -163,7 +196,7 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
           </label>
           <input
             type="number"
-            value={config.max_length ?? ''}
+            value={localConfig.max_length ?? ''}
             onChange={(e) => updateConfig('max_length', e.target.value ? parseInt(e.target.value) : undefined)}
             className="w-full px-3 py-2 border rounded"
             placeholder="No limit"
@@ -175,7 +208,7 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
         </div>
       );
 
-    case 'TEXT_AREA':
+    case 'TEXTAREA':
     case 'DATE':
     case 'CHECKBOX':
     default:

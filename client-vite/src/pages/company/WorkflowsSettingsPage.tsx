@@ -109,6 +109,10 @@ export default function WorkflowsSettingsPage() {
     navigate(`/company/workflows/${workflowId}/edit`);
   };
 
+  const handleAdvancedConfig = (workflowId: string) => {
+    navigate(`/company/workflows/${workflowId}/advanced-config`);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -236,9 +240,18 @@ export default function WorkflowsSettingsPage() {
                   <button
                     onClick={() => handleEditWorkflow(workflow.id)}
                     className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                    title="Edit workflow"
+                    title="Edit workflow stages"
                   >
                     <Edit className="w-4 h-4 mx-auto" />
+                  </button>
+
+                  {/* Advanced Configuration button */}
+                  <button
+                    onClick={() => handleAdvancedConfig(workflow.id)}
+                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                    title="Advanced configuration (Custom Fields & Validations)"
+                  >
+                    <Settings className="w-4 h-4 mx-auto" />
                   </button>
 
                   {/* Set as default button */}

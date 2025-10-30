@@ -6,6 +6,7 @@ from src.job_position.infrastructure.models.job_position_model import JobPositio
 from src.company.infrastructure.models.company_model import CompanyModel
 from src.company.infrastructure.models.company_user_model import CompanyUserModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
 from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
 from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 from src.company_workflow.infrastructure.models.custom_field_model import CustomFieldModel
@@ -29,6 +30,7 @@ __all__ = [
     "CompanyModel",
     "CompanyUserModel",
     "CompanyCandidateModel",
+    "CandidateCommentModel",
     "CompanyWorkflowModel",
     "WorkflowStageModel",
     "CustomFieldModel",
