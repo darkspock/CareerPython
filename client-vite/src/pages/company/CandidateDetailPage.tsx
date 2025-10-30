@@ -860,7 +860,7 @@ export default function CandidateDetailPage() {
               {selectedWorkflowId && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Additional Data Section */}
-                  {allCustomFieldValues[selectedWorkflowId] && Object.keys(allCustomFieldValues[selectedWorkflowId]).length > 0 && (
+                  {allCustomFieldValues[selectedWorkflowId] && Object.keys(allCustomFieldValues[selectedWorkflowId]).length > 0 ? (
                     <CustomFieldsCard 
                       customFieldValues={allCustomFieldValues[selectedWorkflowId]}
                       onUpdateValue={async (fieldKey: string, value: any) => {
@@ -888,14 +888,16 @@ export default function CandidateDetailPage() {
                       }}
                       isEditable={true}
                     />
+                  ) : (
+                    <div></div>
                   )}
 
                   {/* Comments Card - Shows comments for current stage only */}
-                  {candidate.workflow_id === selectedWorkflowId && candidate.current_stage_id && (
+                  {candidate.current_stage_id && (
                     <CommentsCard
                       companyCandidateId={id!}
                       stageId={candidate.current_stage_id}
-                      currentWorkflowId={selectedWorkflowId}
+                      currentWorkflowId={candidate.workflow_id || undefined}
                       onCommentChange={async () => {
                         await loadAllComments();
                         await loadWorkflowsWithData();
@@ -907,13 +909,17 @@ export default function CandidateDetailPage() {
             </div>
           ) : (
             /* Fallback: Show current workflow custom fields if available, even if workflows not loaded yet */
-            candidate.workflow_id && candidate.custom_field_values && Object.keys(candidate.custom_field_values).length > 0 && (
+            (candidate.workflow_id || candidate.current_stage_id) && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <CustomFieldsCard 
-                  customFieldValues={candidate.custom_field_values}
-                  onUpdateValue={handleUpdateCustomFieldValue}
-                  isEditable={true}
-                />
+                {candidate.custom_field_values && Object.keys(candidate.custom_field_values).length > 0 ? (
+                  <CustomFieldsCard 
+                    customFieldValues={candidate.custom_field_values}
+                    onUpdateValue={handleUpdateCustomFieldValue}
+                    isEditable={true}
+                  />
+                ) : (
+                  <div></div>
+                )}
                 {candidate.current_stage_id && (
                   <CommentsCard
                     companyCandidateId={id!}

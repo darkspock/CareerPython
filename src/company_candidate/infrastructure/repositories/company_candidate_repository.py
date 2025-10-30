@@ -288,7 +288,18 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         # Import models for JOIN
         from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
         from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+        from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
+        from src.company_candidate.domain.enums.comment_review_status import CommentReviewStatus
+        from sqlalchemy import func
         # from src.phase.infrastructure.models.phase_model import PhaseModel  # Temporarily disabled
+        
+        # Subquery to count pending comments per company candidate
+        pending_comments_subquery = session.query(
+            CandidateCommentModel.company_candidate_id,
+            func.count(CandidateCommentModel.id).label('pending_count')
+        ).filter(
+            CandidateCommentModel.review_status == CommentReviewStatus.PENDING.value
+        ).group_by(CandidateCommentModel.company_candidate_id).subquery()
         
         # Perform JOINs between company_candidates, candidates, candidate_applications, job_positions, workflows, and stages
         results = session.query(
@@ -300,7 +311,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             CandidateApplicationModel.application_status,
             JobPositionModel.title,
             CompanyWorkflowModel.name.label('workflow_name'),
-            WorkflowStageModel.name.label('stage_name')
+            WorkflowStageModel.name.label('stage_name'),
+            func.coalesce(pending_comments_subquery.c.pending_count, 0).label('pending_comments_count')
         ).join(
             CandidateModel,
             CompanyCandidateModel.candidate_id == CandidateModel.id
@@ -316,13 +328,16 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         ).outerjoin(
             WorkflowStageModel,
             CompanyCandidateModel.current_stage_id == WorkflowStageModel.id
+        ).outerjoin(
+            pending_comments_subquery,
+            CompanyCandidateModel.id == pending_comments_subquery.c.company_candidate_id
         ).filter(
             CompanyCandidateModel.company_id == str(company_id)
         ).all()
 
         # Convert to read models
         read_models = []
-        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name in results:
+        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name, pending_comments_count in results:
             read_model = CompanyCandidateWithCandidateReadModel(
                 id=cc_model.id,
                 company_id=cc_model.company_id,
@@ -363,6 +378,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
                 stage_name=stage_name,
                 # Phase info from JOIN (temporarily disabled)
                 phase_name=None,
+                # Comment counts
+                pending_comments_count=int(pending_comments_count) if pending_comments_count else 0,
             )
             read_models.append(read_model)
 

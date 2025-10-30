@@ -54,6 +54,8 @@ export interface CompanyCandidate {
   application_status?: string;
   // Custom field values
   custom_field_values?: Record<string, any>;
+  // Comment counts
+  pending_comments_count?: number;
 }
 
 export interface CreateCompanyCandidateRequest {

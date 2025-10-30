@@ -250,6 +250,8 @@ class CompanyCandidateController:
                 workflow_name=read_model.workflow_name,
                 # Include phase info from read model
                 phase_name=read_model.phase_name,
+                # Include comment counts from read model
+                pending_comments_count=read_model.pending_comments_count,
             )
             responses.append(response)
 

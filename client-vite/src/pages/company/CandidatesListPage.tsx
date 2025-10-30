@@ -18,7 +18,8 @@ import {
   AlertCircle,
   Flag,
   Building2,
-  User
+  User,
+  MessageSquare
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import type { CompanyCandidate } from '../../types/companyCandidate';
@@ -336,11 +337,6 @@ export default function CandidatesListPage() {
                   <tr key={candidate.id} className="hover:bg-gray-50">
                     <td className="px-2 py-4 whitespace-nowrap w-[50px] max-w-[50px] min-w-[50px]">
                       <div className="flex items-center gap-1 justify-center">
-                        {getStatusIcon(candidate.status) && (
-                          <Tooltip text={getStatusLabel(candidate.status)}>
-                            {getStatusIcon(candidate.status)}
-                          </Tooltip>
-                        )}
                         {getPriorityIcon(candidate.priority) && (
                           <Tooltip text={candidate.priority.charAt(0).toUpperCase() + candidate.priority.slice(1)}>
                             {getPriorityIcon(candidate.priority)}
@@ -351,6 +347,16 @@ export default function CandidatesListPage() {
                             {getOwnershipIcon(candidate.ownership_status)}
                           </Tooltip>
                         )}
+                        {(candidate.pending_comments_count ?? 0) > 0 && (
+                          <Tooltip text={`${candidate.pending_comments_count} pending comment${candidate.pending_comments_count! > 1 ? 's' : ''}`}>
+                            <div className="relative">
+                              <MessageSquare className="w-4 h-4 text-yellow-600" />
+                              <span className="absolute -top-1 -right-1 bg-yellow-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                {candidate.pending_comments_count! > 9 ? '9+' : candidate.pending_comments_count}
+                              </span>
+                            </div>
+                          </Tooltip>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -358,7 +364,7 @@ export default function CandidatesListPage() {
                         <button
                           onClick={() => navigate(`/company/candidates/${candidate.id}`)}
                           className={`text-sm font-medium text-gray-900 truncate hover:text-blue-600 hover:underline cursor-pointer text-left ${
-                            candidate.status === 'ARCHIVED' ? 'line-through' : ''
+                            candidate.status?.toLowerCase() === 'archived' ? 'line-through' : ''
                           }`}
                         >
                           {candidate.candidate_name || 'N/A'}

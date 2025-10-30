@@ -41,6 +41,8 @@ class CompanyCandidateResponse(BaseModel):
     phase_name: Optional[str] = None
     # Custom field values (optional, populated when needed)
     custom_field_values: Optional[Dict[str, Any]] = None
+    # Comment counts (optional, populated when needed)
+    pending_comments_count: int = 0
 
     class Config:
         from_attributes = True

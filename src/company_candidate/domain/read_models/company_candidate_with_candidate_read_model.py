@@ -52,3 +52,5 @@ class CompanyCandidateWithCandidateReadModel:
     stage_name: Optional[str] = None
     # Phase info (from phase JOIN)
     phase_name: Optional[str] = None
+    # Comment counts
+    pending_comments_count: int = 0
