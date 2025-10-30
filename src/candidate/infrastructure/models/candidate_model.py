@@ -49,3 +49,4 @@ class CandidateModel(Base):
     educations: Mapped[List["CandidateEducationModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
     projects: Mapped[List["CandidateProjectModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
     applications: Mapped[List["CandidateApplicationModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
+    file_attachments: Mapped[List["FileAttachmentModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821

@@ -13,7 +13,7 @@ export default function AddCandidatePage() {
     candidate_name: '',
     candidate_email: '',
     candidate_phone: '',
-    priority: 'medium' as Priority,
+    priority: 'MEDIUM' as Priority,
     tags: [] as string[],
     internal_notes: '',
   });
@@ -196,9 +196,9 @@ export default function AddCandidatePage() {
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
                 </select>
               </div>
             </div>

@@ -34,6 +34,7 @@ from src.field_validation.presentation.routers.validation_rule_router import rou
 from src.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
 from src.company_page.presentation.routers.company_page_router import router as company_page_router
 from src.company_page.presentation.routers.public_company_page_router import router as public_company_page_router
+from src.candidate.presentation.routers.file_attachment_router import router as file_attachment_router
 from adapters.http.shared.routes.user_router import user_router
 from adapters.http.shared.routes.ai_test_router import router as ai_test_router
 # Phase 10: Public Position Router
@@ -91,6 +92,7 @@ app.include_router(validation_rule_router)  # Field validation rules
 app.include_router(position_stage_assignment_router)  # Position stage assignment management
 app.include_router(company_page_router)  # Company pages management
 app.include_router(public_company_page_router)  # Public company pages
+app.include_router(file_attachment_router)  # File attachment management
 app.include_router(phase_router)  # Phase 12: Phase management
 app.include_router(candidate_router)
 app.include_router(user_router)
