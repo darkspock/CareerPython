@@ -890,101 +890,18 @@ export default function CandidateDetailPage() {
                     />
                   )}
 
-                  {/* Comments Card - Shows all comments for selected workflow */}
-                  {(() => {
-                    const workflowComments = allComments.filter(c => c.workflow_id === selectedWorkflowId);
-                    if (workflowComments.length === 0) return null;
-                    
-                    // Get current stage for this workflow to allow adding new comments
-                    const currentStageId = candidate.workflow_id === selectedWorkflowId ? candidate.current_stage_id : null;
-                    
-                    return (
-                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Comments</h3>
-                        {loadingComments ? (
-                          <div className="text-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                            <p className="text-sm text-gray-600">Loading comments...</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            {workflowComments.map((comment) => (
-                              <div
-                                key={comment.id}
-                                className={`p-4 rounded-lg border ${
-                                  comment.review_status === 'pending'
-                                    ? 'bg-yellow-50 border-yellow-200'
-                                    : 'bg-gray-50 border-gray-200'
-                                }`}
-                              >
-                                <p className="text-gray-900 whitespace-pre-wrap mb-3">{comment.comment}</p>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      {new Date(comment.created_at).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })}
-                                    </span>
-                                    {comment.stage_name && (
-                                      <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
-                                        {comment.stage_name}
-                                      </span>
-                                    )}
-                                    {comment.created_by_user_name && (
-                                      <span>By {comment.created_by_user_name}</span>
-                                    )}
-                                  </div>
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        if (comment.review_status === 'pending') {
-                                          await candidateCommentService.markAsReviewed(comment.id);
-                                        } else {
-                                          await candidateCommentService.markAsPending(comment.id);
-                                        }
-                                        await loadAllComments();
-                                      } catch (err: any) {
-                                        setError(err.message || 'Failed to update comment status');
-                                      }
-                                    }}
-                                    className={`p-1.5 rounded transition-colors ${
-                                      comment.review_status === 'pending'
-                                        ? 'text-yellow-600 hover:bg-yellow-100'
-                                        : 'text-gray-400 hover:bg-gray-100'
-                                    }`}
-                                    title={comment.review_status === 'pending' ? 'Mark as reviewed' : 'Mark as pending'}
-                                  >
-                                    {comment.review_status === 'pending' ? (
-                                      <Clock className="w-4 h-4" />
-                                    ) : (
-                                      <CheckCircle className="w-4 h-4" />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {/* Allow adding comments if we have a current stage for this workflow */}
-                        {currentStageId && candidate.workflow_id === selectedWorkflowId && (
-                          <CommentsCard
-                            companyCandidateId={id!}
-                            stageId={currentStageId}
-                            currentWorkflowId={selectedWorkflowId}
-                            onCommentChange={async () => {
-                              await loadAllComments();
-                              await loadWorkflowsWithData();
-                            }}
-                          />
-                        )}
-                      </div>
-                    );
-                  })()}
+                  {/* Comments Card - Shows comments for current stage only */}
+                  {candidate.workflow_id === selectedWorkflowId && candidate.current_stage_id && (
+                    <CommentsCard
+                      companyCandidateId={id!}
+                      stageId={candidate.current_stage_id}
+                      currentWorkflowId={selectedWorkflowId}
+                      onCommentChange={async () => {
+                        await loadAllComments();
+                        await loadWorkflowsWithData();
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </div>

@@ -165,12 +165,7 @@ export default function CommentsCard({ companyCandidateId, stageId, currentWorkf
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
           <p className="text-sm text-gray-600">Loading comments...</p>
         </div>
-      ) : comments.length === 0 ? (
-        <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-          <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 mb-2">No comments yet</p>
-        </div>
-      ) : (
+      ) : comments.length > 0 && (
         <div className="space-y-4">
           {comments.map((comment) => (
             <div
