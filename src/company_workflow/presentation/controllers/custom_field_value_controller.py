@@ -12,6 +12,7 @@ from src.company_workflow.application.queries.get_custom_field_value_by_id impor
 from src.company_workflow.application.queries.get_custom_field_values_by_company_candidate import GetCustomFieldValuesByCompanyCandidateQuery
 from src.company_workflow.application.queries.get_all_custom_field_values_by_company_candidate import GetAllCustomFieldValuesByCompanyCandidateQuery
 from src.company_workflow.application.queries.get_custom_field_by_id import GetCustomFieldByIdQuery
+from src.company_workflow.application.dtos.custom_field_dto import CustomFieldDto
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
 from src.company_workflow.infrastructure.repositories.custom_field_value_repository import CustomFieldValueRepository
 from src.company_workflow.presentation.schemas.create_custom_field_value_request import CreateCustomFieldValueRequest
@@ -131,7 +132,7 @@ class CustomFieldValueController:
         
         # Get custom field to obtain field_key and workflow_id
         custom_field_query = GetCustomFieldByIdQuery(id=custom_field_id)
-        custom_field_dto = self._query_bus.query(custom_field_query)
+        custom_field_dto: Optional[CustomFieldDto] = self._query_bus.query(custom_field_query)
         if not custom_field_dto:
             raise ValueError(f"Custom field with id {custom_field_id} not found")
         
@@ -154,7 +155,10 @@ class CustomFieldValueController:
         if existing_value:
             # Update existing - merge with existing values
             update_request = UpdateCustomFieldValueRequest(values=values_to_store)
-            return self.update_custom_field_value(str(existing_value.id), update_request)
+            result = self.update_custom_field_value(str(existing_value.id), update_request)
+            if not result:
+                raise ValueError(f"Failed to update custom field value")
+            return result
         else:
             # Create new CustomFieldValue record for this workflow
             create_request = CreateCustomFieldValueRequest(

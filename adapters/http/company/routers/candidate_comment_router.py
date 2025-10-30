@@ -38,10 +38,10 @@ def get_company_user_id_from_token(token: str = Security(oauth2_scheme)) -> str:
         data = json.loads(decoded)
         company_user_id = data.get('company_user_id')
         
-        if not company_user_id:
+        if not company_user_id or not isinstance(company_user_id, str):
             raise HTTPException(status_code=401, detail="company_user_id not found in token")
         
-        return company_user_id
+        return str(company_user_id)
     except Exception as e:
         log.error(f"Error extracting company_user_id from token: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
