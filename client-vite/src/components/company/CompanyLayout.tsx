@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import { phaseService } from '../../services/phaseService';
 import type { Phase } from '../../types/phase';
+import UserSettingsMenu from './UserSettingsMenu';
 
 export default function CompanyLayout() {
   const navigate = useNavigate();
@@ -239,17 +240,6 @@ export default function CompanyLayout() {
               );
             })}
           </nav>
-
-          {/* Logout Button */}
-          <div className="p-4 border-t border-gray-200">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-3 w-full text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </button>
-          </div>
         </div>
       </aside>
 
@@ -382,35 +372,64 @@ export default function CompanyLayout() {
             })}
           </nav>
 
-          {/* Logout Button */}
-          <div className="p-4 border-t border-gray-200">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-3 w-full text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </button>
-          </div>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Top Bar (Mobile) */}
-        <header className="lg:hidden bg-white border-b border-gray-200 p-4">
-          <div className="flex items-center justify-between">
+        {/* Top Bar (Desktop & Mobile) */}
+        <header className="bg-white border-b border-gray-200 relative z-10 overflow-visible">
+          <div className="flex items-center justify-between px-4 py-3 overflow-visible">
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 lg:hidden"
             >
               <Menu className="w-6 h-6" />
             </button>
-            <div className="flex items-center gap-2">
+            
+            {/* Title - Only on mobile */}
+            <div className="flex items-center gap-2 lg:hidden">
               <Building2 className="w-6 h-6 text-blue-600" />
               <span className="font-semibold text-gray-900">Company Dashboard</span>
             </div>
-            <div className="w-6" /> {/* Spacer for centering */}
+            
+            {/* Navigation Menu (Desktop) */}
+            <nav className="hidden lg:flex items-center gap-1 flex-1 relative">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.path);
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`
+                      flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
+                      ${
+                        active
+                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }
+                    `}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+              
+              {/* Separator */}
+              <div className="flex-1" />
+              <div className="h-6 w-px bg-gray-300 mx-2" />
+              
+              {/* User Settings Menu */}
+              <UserSettingsMenu onLogout={handleLogout} />
+            </nav>
+            
+            {/* Mobile: User Menu */}
+            <div className="lg:hidden">
+              <UserSettingsMenu onLogout={handleLogout} />
+            </div>
           </div>
         </header>
 
