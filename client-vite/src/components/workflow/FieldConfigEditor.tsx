@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Settings } from 'lucide-react';
 import type { FieldType } from '../../types/workflow';
+import { FieldOptionsI18nModal, type FieldOption } from './FieldOptionsI18nModal';
 
 interface FieldConfigEditorProps {
   fieldType: FieldType;
@@ -13,6 +15,7 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
   onChange
 }) => {
   const [localConfig, setLocalConfig] = useState<Record<string, any>>(config);
+  const [showI18nModal, setShowI18nModal] = useState(false);
   const isUpdatingFromProps = useRef(false);
 
   // Update local config when prop changes, but avoid infinite loops
@@ -49,22 +52,76 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
     case 'DROPDOWN':
     case 'MULTI_SELECT':
     case 'RADIO':
+    case 'CHECKBOX':
+      // Check if options are in new format (with IDs and i18n)
+      const hasNewFormat = localConfig.options?.some((opt: any) => 
+        typeof opt === 'object' && opt.id && opt.labels
+      );
+
+      // Convert options to FieldOption format for modal
+      const convertToFieldOptions = (): FieldOption[] => {
+        if (!localConfig.options || localConfig.options.length === 0) {
+          return [];
+        }
+
+        return localConfig.options.map((opt: any, index: number) => {
+          if (typeof opt === 'object' && opt.id && opt.labels) {
+            // Already in new format
+            return {
+              id: opt.id,
+              sort: opt.sort ?? index,
+              labels: opt.labels || []
+            };
+          } else {
+            // Old format (string) - convert to new format
+            return {
+              id: `legacy_${Date.now()}_${index}`,
+              sort: index,
+              labels: [
+                { language: 'en', label: typeof opt === 'string' ? opt : String(opt) }
+              ]
+            };
+          }
+        });
+      };
+
+      const handleSaveOptions = (newOptions: FieldOption[]) => {
+        // Convert FieldOptions to config format
+        const optionsData = newOptions.map(opt => ({
+          id: opt.id,
+          sort: opt.sort,
+          labels: opt.labels
+        }));
+        
+        const newConfig = { ...localConfig, options: optionsData };
+        setLocalConfig(newConfig);
+        isUpdatingFromProps.current = true;
+        onChange(newConfig);
+        setShowI18nModal(false);
+      };
+
       return (
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Options * (one per line)
-          </label>
-          <textarea
-            value={localConfig.options?.join('\n') || ''}
-            onChange={(e) => updateArrayConfig('options', e.target.value)}
-            className="w-full px-3 py-2 border rounded font-mono text-sm"
-            rows={5}
-            placeholder="Option 1&#10;Option 2&#10;Option 3"
+        <>
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowI18nModal(true)}
+              className="flex items-center gap-1 px-2 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+              title="Edit options with i18n support"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Options</span>
+            </button>
+          </div>
+
+          <FieldOptionsI18nModal
+            isOpen={showI18nModal}
+            options={convertToFieldOptions()}
+            availableLanguages={['en', 'es']}
+            onClose={() => setShowI18nModal(false)}
+            onSave={handleSaveOptions}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Enter each option on a new line
-          </p>
-        </div>
+        </>
       );
 
     case 'NUMBER':
