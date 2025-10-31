@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import type { WorkflowStage } from '../../types/workflow';
@@ -16,6 +17,7 @@ export const RowStageSection: React.FC<RowStageSectionProps> = ({
   candidates,
   onCandidateClick
 }) => {
+  const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({
     id: stage.id,
   });
@@ -53,7 +55,7 @@ export const RowStageSection: React.FC<RowStageSectionProps> = ({
       >
         {candidates.length === 0 ? (
           <div className="empty-state">
-            <span className="text-gray-500 text-sm">No candidates in this stage</span>
+            <span className="text-gray-500 text-sm">{t('company.workflowBoard.noCandidatesInStage')}</span>
           </div>
         ) : (
           <SortableContext items={candidates.map(c => c.id)} strategy={verticalListSortingStrategy}>

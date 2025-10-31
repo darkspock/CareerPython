@@ -212,5 +212,245 @@
       "workflows": "Workflows",
       "analytics": "Analytics"
     }
+  },
+  "company": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "jobPositions": "Job Positions",
+      "settings": "Settings",
+      "candidates": "Candidates",
+      "searchAllCandidates": "Search All Candidates",
+      "workflowBoard": "Workflow Board"
+    },
+    "userSettings": {
+      "title": "User Settings",
+      "language": "Language",
+      "logout": "Logout"
+    },
+    "dashboard": {
+      "title": "Company Recruitment Dashboard",
+      "subtitle": "Manage your recruitment process efficiently",
+      "stats": {
+        "totalCandidates": "Total Candidates",
+        "activePositions": "Active Positions",
+        "pendingInterviews": "Pending Interviews",
+        "activeWorkflows": "Active Workflows"
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "manageCandidates": "Manage Candidates",
+        "manageCandidatesDesc": "View and manage applicants",
+        "jobPositions": "Job Positions",
+        "jobPositionsDesc": "Create and manage positions",
+        "workflowBoard": "Workflow Board",
+        "workflowBoardDesc": "Track candidates through stages",
+        "workflows": "Workflows",
+        "workflowsDesc": "Manage recruitment workflows"
+      },
+      "comingSoon": {
+        "title": "Dashboard Under Development",
+        "description": "The company dashboard is currently under active development. More features including candidate management, job positions, interviews, and workflows will be available soon."
+      }
+    },
+    "candidates": {
+      "title": "Candidates",
+      "addCandidate": "Add Candidate",
+      "search": "Search candidates...",
+      "noCandidates": "No candidates",
+      "name": "Name",
+      "email": "Email",
+      "status": "Status",
+      "workflow": "Workflow",
+      "stage": "Stage",
+      "pendingComments": "Pending Comments",
+      "additionalData": "Additional Data",
+      "comments": "Comments",
+      "notes": "Notes",
+      "documents": "Documents",
+      "applicationStatus": "Application Status",
+      "dates": "Dates",
+      "workflowInformation": "Workflow Information",
+      "currentStage": "Current Stage",
+      "moveToStage": "Move to: {{stage}}",
+      "failStages": "Mark as Failed",
+      "nextStage": "Next Stage",
+      "noComments": "No comments yet",
+      "addComment": "Add Comment",
+      "allComments": "All Comments",
+      "viewAllComments": "View all comments in Notes tab",
+      "managePipeline": "Manage your candidate pipeline",
+      "backToCandidates": "Back to Candidates",
+      "edit": "Edit",
+      "archive": "Archive",
+      "editCandidateDetails": "Edit candidate details",
+      "archiveCandidate": "Archive this candidate",
+      "tabs": {
+        "information": "Information",
+        "notes": "Notes",
+        "documents": "Documents",
+        "history": "History"
+      },
+      "detail": {
+        "contactInformation": "Contact Information",
+        "loadingComments": "Loading comments...",
+        "noCommentsYet": "No comments yet",
+        "commentsFromAllStages": "Comments from all stages will appear here",
+        "by": "By",
+        "markAsReviewed": "Mark as reviewed",
+        "markAsPending": "Mark as pending",
+        "internalNotes": "Internal Notes",
+        "editNotes": "Edit Notes",
+        "addInternalNotes": "Add internal notes about this candidate...",
+        "saveNotes": "Save Notes",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "noNotesAvailable": "No notes available",
+        "fileAttachments": "File Attachments",
+        "addFile": "Add File",
+        "clickAddFile": "Click \"Add File\" to attach documents",
+        "uploadingFile": "Uploading file...",
+        "noFilesAttached": "No files attached",
+        "download": "Download",
+        "delete": "Delete",
+        "confirmDelete": "Are you sure you want to delete this file?",
+        "workflowInformation": "Workflow Information",
+        "created": "Created",
+        "updated": "Updated"
+      },
+      "comments": {
+        "addComment": "Add Comment",
+        "writeComment": "Write a comment...",
+        "cancel": "Cancel",
+        "submit": "Submit",
+        "noComments": "No comments for this stage",
+        "loading": "Loading comments...",
+        "failedToLoad": "Failed to load comments",
+        "failedToAdd": "Failed to add comment",
+        "failedToUpdate": "Failed to update comment status"
+      },
+      "customFields": {
+        "notSpecified": "Not specified",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "detail": {
+        "noAdditionalData": "No additional data configured for this candidate.",
+        "lastUpdated": "Last Updated",
+        "stageTimeline": "Stage Timeline",
+        "currentStatus": "Current Status",
+        "priority": "Priority",
+        "actions": "Actions",
+        "phase": "Phase"
+      }
+    },
+    "workflowBoard": {
+      "title": "Workflow Board",
+      "dragAndDropDescription": "Drag and drop candidates through stages",
+      "refresh": "Refresh",
+      "listView": "List View",
+      "dropCandidatesHere": "Drop candidates here",
+      "howToUseTitle": "How to use the Kanban Board",
+      "howToUseDescription": "Drag and drop candidate cards between columns and rows to move them through your workflow stages. Click on a candidate card or name to view their full details. Row stages show only candidate names for quick reference.",
+      "selectPhase": "Please select a phase to view the workflow board.",
+      "noPhaseSelected": "No Phase Selected",
+      "selectPhaseFromSidebar": "Select a phase from the sidebar to view the Kanban board",
+      "noCandidatesInStage": "No candidates in this stage",
+      "noStagesInPhase": "No stages in this phase",
+      "addStagesToPhase": "Add stages to this phase in the Settings page"
+    },
+    "settings": {
+      "title": "Company Settings",
+      "subtitle": "Configure your company's workflows, roles, and recruitment process",
+      "companyIdNotFound": "Company ID not found",
+      "configInitializedSuccess": "Configuration initialized successfully! 4 default phases have been created.",
+      "phasesAlreadyExist": "Phases already exist for this company. To reset, please delete existing phases first from the Phase Management page.",
+      "configInitializationFailed": "Failed to initialize configuration: {{error}}",
+      "companyProfile": {
+        "title": "Company Profile",
+        "description": "Edit your company name, domain, and public URL slug"
+      },
+      "contentPages": {
+        "title": "Content Pages",
+        "description": "Manage company pages and content"
+      },
+      "phaseManagement": {
+        "title": "Phase Management",
+        "description": "Organize recruitment into high-level phases"
+      },
+      "workflowSettings": {
+        "title": "Workflow Settings",
+        "description": "Manage recruitment workflows and stages"
+      },
+      "companyRoles": {
+        "title": "Company Roles",
+        "description": "Define roles that can be assigned to workflow stages"
+      },
+      "quickAccess": {
+        "title": "Quick Access",
+        "createWorkflow": {
+          "title": "Create New Workflow",
+          "description": "Set up a new recruitment workflow"
+        },
+        "addRole": {
+          "title": "Add Company Role",
+          "description": "Define a new role for your team"
+        }
+      },
+      "initializePhases": {
+        "title": "Initialize Default Phases",
+        "description": "Initialize your company's phase configuration with the default setup. This will create 4 standard phases (Sourcing, Evaluation, Offer & Pre-Onboarding, and Talent Pool) with their default workflows. Only works if you don't have existing phases.",
+        "button": "Initialize Default Phases"
+      },
+      "modal": {
+        "title": "Initialize Default Phases?",
+        "description": "This action will initialize 4 default phases with their workflows:",
+        "phases": {
+          "sourcing": {
+            "name": "Sourcing",
+            "type": "Kanban",
+            "description": "Screening and filtering process"
+          },
+          "evaluation": {
+            "name": "Evaluation",
+            "type": "Kanban",
+            "description": "Interview and assessment"
+          },
+          "offer": {
+            "name": "Offer and Pre-Onboarding",
+            "type": "List",
+            "description": "Offer negotiation and documents"
+          },
+          "talentPool": {
+            "name": "Talent Pool",
+            "type": "List",
+            "description": "Long-term candidate tracking"
+          }
+        },
+        "note": "Note: This will only work if you don't have existing phases. If phases already exist, you'll need to delete them first from the Phase Management page.",
+        "initializing": "Initializing...",
+        "confirmButton": "Yes, Initialize Phases"
+      }
+    },
+    "workflows": {
+      "title": "Workflow Settings",
+      "subtitle": "Manage your recruitment workflows and stages",
+      "createWorkflow": "Create Workflow",
+      "filterByPhase": "Phase",
+      "failedToLoad": "Failed to load workflows",
+      "failedToSetDefault": "Failed to set default workflow: {{error}}",
+      "failedToDelete": "Failed to delete workflow: {{error}}",
+      "confirmDelete": "Are you sure you want to delete this workflow? This action cannot be undone.",
+      "noWorkflowsYet": "No workflows yet",
+      "createFirstWorkflow": "Create your first workflow to organize your recruitment process",
+      "activeCandidates": "Active Candidates",
+      "activePositions": "Active Open Positions",
+      "editStages": "Edit workflow stages",
+      "advancedConfig": "Advanced configuration (Custom Fields & Validations)",
+      "setAsDefault": "Set as default",
+      "stages": "Stages",
+      "moreStages": "+{{count}} more",
+      "aboutTitle": "About Workflows",
+      "aboutDescription": "Workflows help you organize your recruitment process into stages. Each workflow can have multiple stages, and you can assign candidates to workflows to track their progress through your hiring pipeline. Set one workflow as default to automatically assign new candidates to it."
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, Settings, Trash2, Star, CheckCircle, Edit, Filter } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import { phaseService } from '../../services/phaseService';
@@ -8,6 +9,7 @@ import type { Phase } from '../../types/phase';
 import { getWorkflowStatusColor } from '../../types/workflow';
 
 export default function WorkflowsSettingsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<CompanyWorkflow[]>([]);
   const [allWorkflows, setAllWorkflows] = useState<CompanyWorkflow[]>([]);
@@ -59,7 +61,7 @@ export default function WorkflowsSettingsPage() {
       setLoading(true);
       const companyId = getCompanyId();
       if (!companyId) {
-        setError('Company ID not found');
+        setError(t('company.settings.companyIdNotFound'));
         return;
       }
 
@@ -68,7 +70,7 @@ export default function WorkflowsSettingsPage() {
       setWorkflows(data);
       setError(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to load workflows');
+      setError(err.message || t('company.workflows.failedToLoad'));
       console.error('Error loading workflows:', err);
     } finally {
       setLoading(false);
@@ -86,18 +88,18 @@ export default function WorkflowsSettingsPage() {
       await companyWorkflowService.setAsDefault(workflowId);
       loadWorkflows();
     } catch (err: any) {
-      alert('Failed to set default workflow: ' + err.message);
+      alert(t('company.workflows.failedToSetDefault', { error: err.message }));
     }
   };
 
   const handleDelete = async (workflowId: string) => {
-    if (!confirm('Are you sure you want to delete this workflow? This action cannot be undone.')) return;
+    if (!confirm(t('company.workflows.confirmDelete'))) return;
 
     try {
       await companyWorkflowService.deleteWorkflow(workflowId);
       loadWorkflows();
     } catch (err: any) {
-      alert('Failed to delete workflow: ' + err.message);
+      alert(t('company.workflows.failedToDelete', { error: err.message }));
     }
   };
 
@@ -126,15 +128,15 @@ export default function WorkflowsSettingsPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Workflow Settings</h1>
-          <p className="text-gray-600 mt-1">Manage your recruitment workflows and stages</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('company.workflows.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('company.workflows.subtitle')}</p>
         </div>
         <button
           onClick={handleCreateWorkflow}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Create Workflow
+          {t('company.workflows.createWorkflow')}
         </button>
       </div>
 
@@ -143,7 +145,7 @@ export default function WorkflowsSettingsPage() {
         <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-4">
             <Filter className="w-5 h-5 text-gray-500" />
-            <label className="text-sm font-medium text-gray-700">Phase:</label>
+            <label className="text-sm font-medium text-gray-700">{t('company.workflows.filterByPhase')}:</label>
             <select
               value={selectedPhaseId}
               onChange={(e) => setSelectedPhaseId(e.target.value)}
@@ -170,16 +172,16 @@ export default function WorkflowsSettingsPage() {
       {workflows.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No workflows yet</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('company.workflows.noWorkflowsYet')}</h3>
           <p className="text-gray-600 mb-4">
-            Create your first workflow to organize your recruitment process
+            {t('company.workflows.createFirstWorkflow')}
           </p>
           <button
             onClick={handleCreateWorkflow}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
-            Create Workflow
+            {t('company.workflows.createWorkflow')}
           </button>
         </div>
       ) : (
@@ -224,13 +226,13 @@ export default function WorkflowsSettingsPage() {
                     <p className="text-2xl font-bold text-gray-900">
                       {workflow.active_candidate_count || 0}
                     </p>
-                    <p className="text-sm text-gray-600">Active Candidates</p>
+                    <p className="text-sm text-gray-600">{t('company.workflows.activeCandidates')}</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-gray-900">
                       {workflow.active_position_count || 0}
                     </p>
-                    <p className="text-sm text-gray-600">Active Open Positions</p>
+                    <p className="text-sm text-gray-600">{t('company.workflows.activePositions')}</p>
                   </div>
                 </div>
 
@@ -240,7 +242,7 @@ export default function WorkflowsSettingsPage() {
                   <button
                     onClick={() => handleEditWorkflow(workflow.id)}
                     className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                    title="Edit workflow stages"
+                    title={t('company.workflows.editStages')}
                   >
                     <Edit className="w-4 h-4 mx-auto" />
                   </button>
@@ -249,7 +251,7 @@ export default function WorkflowsSettingsPage() {
                   <button
                     onClick={() => handleAdvancedConfig(workflow.id)}
                     className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-                    title="Advanced configuration (Custom Fields & Validations)"
+                    title={t('company.workflows.advancedConfig')}
                   >
                     <Settings className="w-4 h-4 mx-auto" />
                   </button>
@@ -259,7 +261,7 @@ export default function WorkflowsSettingsPage() {
                     <button
                       onClick={() => handleSetDefault(workflow.id)}
                       className="flex-1 px-3 py-2 text-sm bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors"
-                      title="Set as default"
+                      title={t('company.workflows.setAsDefault')}
                     >
                       <Star className="w-4 h-4 mx-auto" />
                     </button>
@@ -269,7 +271,7 @@ export default function WorkflowsSettingsPage() {
                   <button
                     onClick={() => handleDelete(workflow.id)}
                     className="flex-1 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
-                    title="Delete"
+                    title={t('common.delete')}
                   >
                     <Trash2 className="w-4 h-4 mx-auto" />
                   </button>
@@ -279,7 +281,7 @@ export default function WorkflowsSettingsPage() {
               {/* Stages Preview */}
               {workflow.stages && workflow.stages.length > 0 && (
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                  <p className="text-xs font-medium text-gray-500 uppercase mb-2">Stages</p>
+                  <p className="text-xs font-medium text-gray-500 uppercase mb-2">{t('company.workflows.stages')}</p>
                   <div className="flex flex-wrap gap-1">
                     {workflow.stages.slice(0, 3).map((stage) => (
                       <span
@@ -291,7 +293,7 @@ export default function WorkflowsSettingsPage() {
                     ))}
                     {workflow.stages.length > 3 && (
                       <span className="px-2 py-1 text-xs bg-white border border-gray-200 rounded text-gray-700">
-                        +{workflow.stages.length - 3} more
+                        {t('company.workflows.moreStages', { count: workflow.stages.length - 3 })}
                       </span>
                     )}
                   </div>
@@ -307,12 +309,9 @@ export default function WorkflowsSettingsPage() {
         <div className="flex items-start gap-3">
           <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
           <div>
-            <h4 className="font-semibold text-blue-900 mb-1">About Workflows</h4>
+            <h4 className="font-semibold text-blue-900 mb-1">{t('company.workflows.aboutTitle')}</h4>
             <p className="text-blue-800 text-sm">
-              Workflows help you organize your recruitment process into stages. Each workflow
-              can have multiple stages, and you can assign candidates to workflows to track
-              their progress through your hiring pipeline. Set one workflow as default to
-              automatically assign new candidates to it.
+              {t('company.workflows.aboutDescription')}
             </p>
           </div>
         </div>

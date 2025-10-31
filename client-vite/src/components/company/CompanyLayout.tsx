@@ -14,12 +14,14 @@ import {
   Search
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import { phaseService } from '../../services/phaseService';
 import type { Phase } from '../../types/phase';
 import UserSettingsMenu from './UserSettingsMenu';
 
 export default function CompanyLayout() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -82,9 +84,9 @@ export default function CompanyLayout() {
   };
 
   const menuItems = [
-    { path: '/company/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/company/positions', icon: Briefcase, label: 'Job Positions' },
-    { path: '/company/settings', icon: Settings, label: 'Settings' },
+    { path: '/company/dashboard', icon: LayoutDashboard, label: t('company.navigation.dashboard') },
+    { path: '/company/positions', icon: Briefcase, label: t('company.navigation.jobPositions') },
+    { path: '/company/settings', icon: Settings, label: t('company.navigation.settings') },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -164,7 +166,7 @@ export default function CompanyLayout() {
               >
                 <div className="flex items-center gap-3">
                   <Users className="w-5 h-5" />
-                  <span>Candidates</span>
+                  <span>{t('company.navigation.candidates')}</span>
                 </div>
                 {candidatesMenuOpen ? (
                   <ChevronDown className="w-4 h-4" />
@@ -190,7 +192,7 @@ export default function CompanyLayout() {
                     `}
                   >
                     <Search className="w-4 h-4" />
-                    <span>Search All Candidates</span>
+                    <span>{t('company.navigation.searchAllCandidates')}</span>
                   </Link>
                   
                   {/* Phase-specific views */}
@@ -295,7 +297,7 @@ export default function CompanyLayout() {
               >
                 <div className="flex items-center gap-3">
                   <Users className="w-5 h-5" />
-                  <span>Candidates</span>
+                  <span>{t('company.navigation.candidates')}</span>
                 </div>
                 {candidatesMenuOpen ? (
                   <ChevronDown className="w-4 h-4" />
@@ -321,7 +323,7 @@ export default function CompanyLayout() {
                     `}
                   >
                     <Search className="w-4 h-4" />
-                    <span>Search All Candidates</span>
+                    <span>{t('company.navigation.searchAllCandidates')}</span>
                   </Link>
                   
                   {/* Phase-specific views */}
@@ -391,7 +393,7 @@ export default function CompanyLayout() {
             {/* Title - Only on mobile */}
             <div className="flex items-center gap-2 lg:hidden">
               <Building2 className="w-6 h-6 text-blue-600" />
-              <span className="font-semibold text-gray-900">Company Dashboard</span>
+              <span className="font-semibold text-gray-900">{t('company.dashboard.title')}</span>
             </div>
             
             {/* Navigation Menu (Desktop) */}

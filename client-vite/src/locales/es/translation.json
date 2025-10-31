@@ -212,5 +212,245 @@
       "workflows": "Flujos de trabajo",
       "analytics": "Análisis"
     }
+  },
+  "company": {
+    "navigation": {
+      "dashboard": "Panel",
+      "jobPositions": "Posiciones de Trabajo",
+      "settings": "Configuración",
+      "candidates": "Candidatos",
+      "searchAllCandidates": "Buscar Todos los Candidatos",
+      "workflowBoard": "Tablero de Flujo"
+    },
+    "userSettings": {
+      "title": "Configuración de Usuario",
+      "language": "Idioma",
+      "logout": "Cerrar Sesión"
+    },
+    "dashboard": {
+      "title": "Panel de Reclutamiento de la Empresa",
+      "subtitle": "Gestiona tu proceso de reclutamiento eficientemente",
+      "stats": {
+        "totalCandidates": "Total de Candidatos",
+        "activePositions": "Posiciones Activas",
+        "pendingInterviews": "Entrevistas Pendientes",
+        "activeWorkflows": "Flujos de Trabajo Activos"
+      },
+      "quickActions": {
+        "title": "Acciones Rápidas",
+        "manageCandidates": "Gestionar Candidatos",
+        "manageCandidatesDesc": "Ver y gestionar candidatos",
+        "jobPositions": "Posiciones de Trabajo",
+        "jobPositionsDesc": "Crear y gestionar posiciones",
+        "workflowBoard": "Tablero de Flujo",
+        "workflowBoardDesc": "Seguir candidatos por etapas",
+        "workflows": "Flujos de Trabajo",
+        "workflowsDesc": "Gestionar flujos de reclutamiento"
+      },
+      "comingSoon": {
+        "title": "Panel en Desarrollo",
+        "description": "El panel de la empresa está actualmente en desarrollo activo. Próximamente estarán disponibles más funciones incluyendo gestión de candidatos, posiciones de trabajo, entrevistas y flujos de trabajo."
+      }
+    },
+    "candidates": {
+      "title": "Candidatos",
+      "addCandidate": "Añadir Candidato",
+      "search": "Buscar candidatos...",
+      "noCandidates": "No hay candidatos",
+      "name": "Nombre",
+      "email": "Email",
+      "status": "Estado",
+      "workflow": "Flujo de Trabajo",
+      "stage": "Etapa",
+      "pendingComments": "Comentarios Pendientes",
+      "additionalData": "Datos Adicionales",
+      "comments": "Comentarios",
+      "notes": "Notas",
+      "documents": "Documentos",
+      "applicationStatus": "Estado de la Solicitud",
+      "dates": "Fechas",
+      "workflowInformation": "Información del Flujo",
+      "currentStage": "Etapa Actual",
+      "moveToStage": "Mover a: {{stage}}",
+      "failStages": "Marcar como Fallido",
+      "nextStage": "Siguiente Etapa",
+      "noComments": "No hay comentarios aún",
+      "addComment": "Añadir Comentario",
+      "allComments": "Todos los Comentarios",
+      "viewAllComments": "Ver todos los comentarios en la pestaña Notas",
+      "managePipeline": "Gestiona tu pipeline de candidatos",
+      "backToCandidates": "Volver a Candidatos",
+      "edit": "Editar",
+      "archive": "Archivar",
+      "editCandidateDetails": "Editar detalles del candidato",
+      "archiveCandidate": "Archivar este candidato",
+      "tabs": {
+        "information": "Información",
+        "notes": "Notas",
+        "documents": "Documentos",
+        "history": "Historial"
+      },
+      "detail": {
+        "contactInformation": "Información de Contacto",
+        "loadingComments": "Cargando comentarios...",
+        "noCommentsYet": "No hay comentarios aún",
+        "commentsFromAllStages": "Los comentarios de todas las etapas aparecerán aquí",
+        "by": "Por",
+        "markAsReviewed": "Marcar como revisado",
+        "markAsPending": "Marcar como pendiente",
+        "internalNotes": "Notas Internas",
+        "editNotes": "Editar Notas",
+        "addInternalNotes": "Añadir notas internas sobre este candidato...",
+        "saveNotes": "Guardar Notas",
+        "saving": "Guardando...",
+        "cancel": "Cancelar",
+        "noNotesAvailable": "No hay notas disponibles",
+        "fileAttachments": "Archivos Adjuntos",
+        "addFile": "Añadir Archivo",
+        "clickAddFile": "Haz clic en \"Añadir Archivo\" para adjuntar documentos",
+        "uploadingFile": "Subiendo archivo...",
+        "noFilesAttached": "No hay archivos adjuntos",
+        "download": "Descargar",
+        "delete": "Eliminar",
+        "confirmDelete": "¿Estás seguro de que quieres eliminar este archivo?",
+        "workflowInformation": "Información del Flujo",
+        "created": "Creado",
+        "updated": "Actualizado"
+      },
+      "comments": {
+        "addComment": "Añadir Comentario",
+        "writeComment": "Escribir un comentario...",
+        "cancel": "Cancelar",
+        "submit": "Enviar",
+        "noComments": "No hay comentarios para esta etapa",
+        "loading": "Cargando comentarios...",
+        "failedToLoad": "Error al cargar comentarios",
+        "failedToAdd": "Error al añadir comentario",
+        "failedToUpdate": "Error al actualizar estado del comentario"
+      },
+      "customFields": {
+        "notSpecified": "No especificado",
+        "yes": "Sí",
+        "no": "No"
+      },
+      "detail": {
+        "noAdditionalData": "No hay datos adicionales configurados para este candidato.",
+        "lastUpdated": "Última Actualización",
+        "stageTimeline": "Historial de Etapas",
+        "currentStatus": "Estado Actual",
+        "priority": "Prioridad",
+        "actions": "Acciones",
+        "phase": "Fase"
+      }
+    },
+    "workflowBoard": {
+      "title": "Tablero de Flujo",
+      "dragAndDropDescription": "Arrastra y suelta candidatos a través de las etapas",
+      "refresh": "Actualizar",
+      "listView": "Vista de Lista",
+      "dropCandidatesHere": "Arrastra candidatos aquí",
+      "howToUseTitle": "Cómo usar el Tablero Kanban",
+      "howToUseDescription": "Arrastra y suelta las tarjetas de candidatos entre columnas y filas para moverlos a través de las etapas de tu flujo de trabajo. Haz clic en una tarjeta de candidato o nombre para ver sus detalles completos. Las etapas de fila muestran solo los nombres de los candidatos para referencia rápida.",
+      "selectPhase": "Por favor selecciona una fase para ver el tablero de flujo.",
+      "noPhaseSelected": "No hay Fase Seleccionada",
+      "selectPhaseFromSidebar": "Selecciona una fase del menú lateral para ver el tablero Kanban",
+      "noCandidatesInStage": "No hay candidatos en esta etapa",
+      "noStagesInPhase": "No hay etapas en esta fase",
+      "addStagesToPhase": "Añade etapas a esta fase en la página de Configuración"
+    },
+    "settings": {
+      "title": "Configuración de la Empresa",
+      "subtitle": "Configura los flujos de trabajo, roles y proceso de reclutamiento de tu empresa",
+      "companyIdNotFound": "ID de empresa no encontrado",
+      "configInitializedSuccess": "¡Configuración inicializada con éxito! Se han creado 4 fases por defecto.",
+      "phasesAlreadyExist": "Ya existen fases para esta empresa. Para reiniciar, por favor elimina las fases existentes primero desde la página de Gestión de Fases.",
+      "configInitializationFailed": "Error al inicializar la configuración: {{error}}",
+      "companyProfile": {
+        "title": "Perfil de la Empresa",
+        "description": "Edita el nombre de tu empresa, dominio y slug de URL pública"
+      },
+      "contentPages": {
+        "title": "Páginas de Contenido",
+        "description": "Gestiona las páginas y el contenido de la empresa"
+      },
+      "phaseManagement": {
+        "title": "Gestión de Fases",
+        "description": "Organiza el reclutamiento en fases de alto nivel"
+      },
+      "workflowSettings": {
+        "title": "Configuración de Flujos de Trabajo",
+        "description": "Gestiona los flujos de trabajo y etapas de reclutamiento"
+      },
+      "companyRoles": {
+        "title": "Roles de la Empresa",
+        "description": "Define roles que pueden asignarse a las etapas del flujo de trabajo"
+      },
+      "quickAccess": {
+        "title": "Acceso Rápido",
+        "createWorkflow": {
+          "title": "Crear Nuevo Flujo de Trabajo",
+          "description": "Configura un nuevo flujo de trabajo de reclutamiento"
+        },
+        "addRole": {
+          "title": "Añadir Rol de Empresa",
+          "description": "Define un nuevo rol para tu equipo"
+        }
+      },
+      "initializePhases": {
+        "title": "Inicializar Fases por Defecto",
+        "description": "Inicializa la configuración de fases de tu empresa con la configuración por defecto. Esto creará 4 fases estándar (Búsqueda, Evaluación, Oferta y Pre-Onboarding, y Pool de Talento) con sus flujos de trabajo por defecto. Solo funciona si no tienes fases existentes.",
+        "button": "Inicializar Fases por Defecto"
+      },
+      "modal": {
+        "title": "¿Inicializar Fases por Defecto?",
+        "description": "Esta acción inicializará 4 fases por defecto con sus flujos de trabajo:",
+        "phases": {
+          "sourcing": {
+            "name": "Búsqueda",
+            "type": "Kanban",
+            "description": "Proceso de selección y filtrado"
+          },
+          "evaluation": {
+            "name": "Evaluación",
+            "type": "Kanban",
+            "description": "Entrevista y evaluación"
+          },
+          "offer": {
+            "name": "Oferta y Pre-Onboarding",
+            "type": "Lista",
+            "description": "Negociación de ofertas y documentos"
+          },
+          "talentPool": {
+            "name": "Pool de Talento",
+            "type": "Lista",
+            "description": "Seguimiento de candidatos a largo plazo"
+          }
+        },
+        "note": "Nota: Esto solo funcionará si no tienes fases existentes. Si ya existen fases, necesitarás eliminarlas primero desde la página de Gestión de Fases.",
+        "initializing": "Inicializando...",
+        "confirmButton": "Sí, Inicializar Fases"
+      }
+    },
+    "workflows": {
+      "title": "Configuración de Flujos de Trabajo",
+      "subtitle": "Gestiona tus flujos de trabajo y etapas de reclutamiento",
+      "createWorkflow": "Crear Flujo de Trabajo",
+      "filterByPhase": "Fase",
+      "failedToLoad": "Error al cargar flujos de trabajo",
+      "failedToSetDefault": "Error al establecer flujo por defecto: {{error}}",
+      "failedToDelete": "Error al eliminar flujo de trabajo: {{error}}",
+      "confirmDelete": "¿Estás seguro de que quieres eliminar este flujo de trabajo? Esta acción no se puede deshacer.",
+      "noWorkflowsYet": "Aún no hay flujos de trabajo",
+      "createFirstWorkflow": "Crea tu primer flujo de trabajo para organizar tu proceso de reclutamiento",
+      "activeCandidates": "Candidatos Activos",
+      "activePositions": "Posiciones Abiertas Activas",
+      "editStages": "Editar etapas del flujo de trabajo",
+      "advancedConfig": "Configuración avanzada (Campos Personalizados y Validaciones)",
+      "setAsDefault": "Establecer como predeterminado",
+      "stages": "Etapas",
+      "moreStages": "+{{count}} más",
+      "aboutTitle": "Acerca de los Flujos de Trabajo",
+      "aboutDescription": "Los flujos de trabajo te ayudan a organizar tu proceso de reclutamiento en etapas. Cada flujo de trabajo puede tener múltiples etapas, y puedes asignar candidatos a flujos de trabajo para rastrear su progreso a través de tu pipeline de contratación. Establece un flujo de trabajo como predeterminado para asignar automáticamente nuevos candidatos a él."
+    }
   }
 }

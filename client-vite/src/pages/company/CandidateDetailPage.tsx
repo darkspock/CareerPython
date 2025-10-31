@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   ArrowRight,
@@ -41,6 +42,7 @@ import { candidateCommentService } from '../../services/candidateCommentService'
 import type { CandidateComment } from '../../types/candidateComment';
 
 export default function CandidateDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [candidate, setCandidate] = useState<CompanyCandidate | null>(null);
@@ -434,7 +436,7 @@ export default function CandidateDetailPage() {
           className="mt-4 flex items-center gap-2 text-red-700 hover:text-red-900"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Candidates
+          {t('company.candidates.backToCandidates')}
         </button>
       </div>
     );
@@ -449,7 +451,7 @@ export default function CandidateDetailPage() {
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Candidates
+          {t('company.candidates.backToCandidates')}
         </button>
 
         <div className="flex items-start justify-between">
@@ -475,18 +477,18 @@ export default function CandidateDetailPage() {
             <button
               onClick={() => navigate(`/company/candidates/${id}/edit`)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              title="Edit candidate details"
+              title={t('company.candidates.editCandidateDetails')}
             >
               <Edit className="w-4 h-4" />
-              Edit
+              {t('company.candidates.edit')}
             </button>
             <button
               onClick={handleArchive}
               className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              title="Archive this candidate"
+              title={t('company.candidates.archiveCandidate')}
             >
               <Archive className="w-4 h-4" />
-              Archive
+              {t('company.candidates.archive')}
             </button>
           </div>
         </div>
@@ -507,7 +509,7 @@ export default function CandidateDetailPage() {
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  Information
+                  {t('company.candidates.tabs.information')}
                 </button>
                 <button
                   onClick={() => setActiveTab('notes')}
@@ -517,7 +519,7 @@ export default function CandidateDetailPage() {
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  Notes
+                  {t('company.candidates.tabs.notes')}
                   {pendingCommentsCount > 0 && (
                     <span className="absolute top-2 right-0 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                       {pendingCommentsCount}
@@ -532,7 +534,7 @@ export default function CandidateDetailPage() {
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  Documents
+                  {t('company.candidates.tabs.documents')}
                 </button>
                 <button
                   onClick={() => setActiveTab('history')}
@@ -542,7 +544,7 @@ export default function CandidateDetailPage() {
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  History
+                  {t('company.candidates.tabs.history')}
                 </button>
               </nav>
             </div>
@@ -554,7 +556,7 @@ export default function CandidateDetailPage() {
                   {/* Contact Information */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Contact Information
+                      {t('company.candidates.detail.contactInformation')}
                     </h3>
                     <div className="space-y-3">
                       {candidate.candidate_email && (
@@ -598,18 +600,18 @@ export default function CandidateDetailPage() {
                   {/* All Comments Section */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      All Comments
+                      {t('company.candidates.allComments')}
                     </h3>
                     {loadingComments ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                        <p className="text-sm text-gray-600">Loading comments...</p>
+                        <p className="text-sm text-gray-600">{t('company.candidates.detail.loadingComments')}</p>
                       </div>
                     ) : allComments.length === 0 ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                         <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 mb-2">No comments yet</p>
-                        <p className="text-sm text-gray-400">Comments from all stages will appear here</p>
+                        <p className="text-gray-500 mb-2">{t('company.candidates.detail.noCommentsYet')}</p>
+                        <p className="text-sm text-gray-400">{t('company.candidates.detail.commentsFromAllStages')}</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -647,7 +649,7 @@ export default function CandidateDetailPage() {
                                     </span>
                                   )}
                                   {comment.created_by_user_name && (
-                                    <span>By {comment.created_by_user_name}</span>
+                                    <span>{t('company.candidates.detail.by')} {comment.created_by_user_name}</span>
                                   )}
                                 </div>
                               </div>
@@ -661,7 +663,7 @@ export default function CandidateDetailPage() {
                                     }
                                     await loadAllComments();
                                   } catch (err: any) {
-                                    setError(err.message || 'Failed to update comment status');
+                                    setError(err.message || t('company.candidates.comments.failedToUpdate'));
                                   }
                                 }}
                                 className={`p-1.5 rounded transition-colors ${
@@ -669,7 +671,7 @@ export default function CandidateDetailPage() {
                                     ? 'text-yellow-600 hover:bg-yellow-100'
                                     : 'text-gray-400 hover:bg-gray-100'
                                 }`}
-                                title={comment.review_status === 'pending' ? 'Mark as reviewed' : 'Mark as pending'}
+                                title={comment.review_status === 'pending' ? t('company.candidates.detail.markAsReviewed') : t('company.candidates.detail.markAsPending')}
                               >
                                 {comment.review_status === 'pending' ? (
                                   <Clock className="w-4 h-4" />
@@ -688,7 +690,7 @@ export default function CandidateDetailPage() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Internal Notes
+                        {t('company.candidates.detail.internalNotes')}
                       </h3>
                       {!isEditingNotes && (
                         <button
@@ -696,7 +698,7 @@ export default function CandidateDetailPage() {
                           className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           <Edit className="w-4 h-4" />
-                          Edit Notes
+                          {t('company.candidates.detail.editNotes')}
                         </button>
                       )}
                     </div>
@@ -706,7 +708,7 @@ export default function CandidateDetailPage() {
                         <textarea
                           value={notesText}
                           onChange={(e) => setNotesText(e.target.value)}
-                          placeholder="Add internal notes about this candidate..."
+                          placeholder={t('company.candidates.detail.addInternalNotes')}
                           className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                         />
                         <div className="flex items-center gap-2">
@@ -716,7 +718,7 @@ export default function CandidateDetailPage() {
                             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             <Save className="w-4 h-4" />
-                            {savingNotes ? 'Saving...' : 'Save Notes'}
+                            {savingNotes ? t('company.candidates.detail.saving') : t('company.candidates.detail.saveNotes')}
                           </button>
                           <button
                             onClick={handleCancelEditingNotes}
@@ -724,7 +726,7 @@ export default function CandidateDetailPage() {
                             className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             <X className="w-4 h-4" />
-                            Cancel
+                            {t('company.candidates.detail.cancel')}
                           </button>
                         </div>
                       </div>
@@ -735,7 +737,7 @@ export default function CandidateDetailPage() {
                             {candidate.internal_notes}
                           </p>
                         ) : (
-                          <p className="text-gray-500 italic">No notes available</p>
+                          <p className="text-gray-500 italic">{t('company.candidates.detail.noNotesAvailable')}</p>
                         )}
                       </div>
                     )}
@@ -750,11 +752,11 @@ export default function CandidateDetailPage() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Attached Files
+                        {t('company.candidates.detail.fileAttachments')}
                       </h3>
                       <label className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
                         <Plus className="w-4 h-4" />
-                        Add File
+                        {t('company.candidates.detail.addFile')}
                         <input
                           type="file"
                           onChange={handleFileUpload}
@@ -768,8 +770,8 @@ export default function CandidateDetailPage() {
                     {attachedFiles.length === 0 ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                         <Paperclip className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 mb-2">No files attached</p>
-                        <p className="text-sm text-gray-400">Click "Add File" to attach documents</p>
+                        <p className="text-gray-500 mb-2">{t('company.candidates.detail.noFilesAttached')}</p>
+                        <p className="text-sm text-gray-400">{t('company.candidates.detail.clickAddFile')}</p>
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -793,14 +795,14 @@ export default function CandidateDetailPage() {
                               <button
                                 onClick={() => handleDownloadFile(file)}
                                 className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                                title="Download file"
+                                title={t('company.candidates.detail.download')}
                               >
                                 <Download className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteFile(file.id)}
                                 className="p-1 text-gray-500 hover:text-red-600 transition-colors"
-                                title="Delete file"
+                                title={t('company.candidates.detail.delete')}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -813,7 +815,7 @@ export default function CandidateDetailPage() {
                     {uploadingFile && (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                        <p className="text-sm text-gray-600">Uploading file...</p>
+                        <p className="text-sm text-gray-600">{t('company.candidates.detail.uploadingFile')}</p>
                       </div>
                     )}
                   </div>
@@ -823,7 +825,7 @@ export default function CandidateDetailPage() {
               {/* History Tab - Phase 12: Stage Timeline */}
               {activeTab === 'history' && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Stage Timeline</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('company.candidates.detail.stageTimeline', { defaultValue: 'Stage Timeline' })}</h3>
                   <StageTimeline candidate={candidate} companyId={getCompanyId() || ''} />
                 </div>
               )}
@@ -937,12 +939,12 @@ export default function CandidateDetailPage() {
         <div className="lg:col-span-1 space-y-6">
           {/* Status Card */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Status</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('company.candidates.applicationStatus')}</h3>
             <div className="space-y-4">
               {/* Current Status - Only show when inactive */}
               {candidate.status !== 'active' && (
                 <div>
-                  <label className="text-sm text-gray-600 block mb-2">Current Status</label>
+                  <label className="text-sm text-gray-600 block mb-2">{t('company.candidates.detail.currentStatus', { defaultValue: 'Current Status' })}</label>
                   <div className="flex items-center gap-2">
                     {getStatusIcon(candidate.status)}
                     <span
@@ -959,7 +961,7 @@ export default function CandidateDetailPage() {
               {/* Priority - Only show when not MEDIUM */}
               {candidate.priority !== 'MEDIUM' && (
                 <div>
-                  <label className="text-sm text-gray-600 block mb-2">Priority</label>
+                  <label className="text-sm text-gray-600 block mb-2">{t('company.candidates.detail.priority', { defaultValue: 'Priority' })}</label>
                   <span
                     className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${getPriorityColor(
                       candidate.priority
@@ -976,7 +978,7 @@ export default function CandidateDetailPage() {
                   <div className="space-y-2">
                     {candidate.phase_name && (
                       <div className="text-sm">
-                        <span className="text-gray-600">Phase:</span>{' '}
+                        <span className="text-gray-600">{t('company.candidates.detail.phase')}:</span>{' '}
                         <span className="font-medium text-gray-900">{candidate.phase_name}</span>
                       </div>
                     )}
@@ -997,7 +999,7 @@ export default function CandidateDetailPage() {
               {/* Stage Transitions */}
               {candidate.workflow_id && (nextStage || failStages.length > 0) && (
                 <div>
-                  <label className="text-sm text-gray-600 block mb-2">Actions</label>
+                  <label className="text-sm text-gray-600 block mb-2">{t('company.candidates.detail.actions', { defaultValue: 'Actions' })}</label>
                   <div className="flex flex-wrap gap-2">
                     {/* Next Stage Button */}
                     {nextStage && (
@@ -1025,7 +1027,7 @@ export default function CandidateDetailPage() {
                         </button>
                         {/* Tooltip */}
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                          Move to: {nextStage.name}
+                          {t('company.candidates.moveToStage', { stage: nextStage.name })}
                           <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
                             <div className="border-4 border-transparent border-t-gray-900"></div>
                           </div>
@@ -1059,7 +1061,7 @@ export default function CandidateDetailPage() {
                         </button>
                         {/* Tooltip */}
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                          Move to: {stage.name}
+                          {t('company.candidates.moveToStage', { stage: stage.name })}
                           <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
                             <div className="border-4 border-transparent border-t-gray-900"></div>
                           </div>
@@ -1074,16 +1076,16 @@ export default function CandidateDetailPage() {
 
           {/* Dates Card */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Dates</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('company.candidates.dates')}</h3>
             <div className="space-y-3 text-sm">
               <div>
-                <span className="text-gray-600">Created:</span>
+                <span className="text-gray-600">{t('company.candidates.detail.created')}:</span>
                 <p className="font-medium text-gray-900">
                   {new Date(candidate.created_at).toLocaleDateString()}
                 </p>
               </div>
               <div>
-                <span className="text-gray-600">Last Updated:</span>
+                <span className="text-gray-600">{t('company.candidates.detail.lastUpdated', { defaultValue: 'Last Updated' })}:</span>
                 <p className="font-medium text-gray-900">
                   {new Date(candidate.updated_at).toLocaleDateString()}
                 </p>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   DndContext,
   DragOverlay,
@@ -172,6 +173,7 @@ function StageColumn({
   rowStages: WorkflowStage[];
   onMoveToStage: (candidateId: string, stageId: string) => void;
 }) {
+  const { t } = useTranslation();
   const { setNodeRef } = useSortable({ id: stage.id });
 
   return (
@@ -212,7 +214,7 @@ function StageColumn({
         <SortableContext items={candidates.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           {candidates.length === 0 ? (
             <div className="text-center py-8 text-gray-400 text-sm">
-              Drop candidates here
+              {t('company.workflowBoard.dropCandidatesHere')}
             </div>
           ) : (
             candidates.map((candidate) => (
@@ -233,6 +235,7 @@ function StageColumn({
 
 // Main Kanban Board Component
 export default function WorkflowBoardPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const phaseIdFromUrl = searchParams.get('phase');
   
@@ -381,8 +384,8 @@ export default function WorkflowBoardPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">No Phase Selected</h2>
-          <p className="text-gray-600 mb-6">Please select a phase to view the workflow board.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('company.workflowBoard.noPhaseSelected')}</h2>
+          <p className="text-gray-600 mb-6">{t('company.workflowBoard.selectPhase')}</p>
           <Link
             to="/company/phases"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -402,16 +405,16 @@ export default function WorkflowBoardPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {phase ? phase.name : 'Workflow Board'}
+              {phase ? phase.name : t('company.workflowBoard.title')}
             </h1>
-            <p className="text-gray-600 mt-1">Drag and drop candidates through stages</p>
+            <p className="text-gray-600 mt-1">{t('company.workflowBoard.dragAndDropDescription')}</p>
           </div>
           <button
             onClick={loadStagesAndCandidates}
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {t('company.workflowBoard.refresh')}
           </button>
         </div>
 
@@ -423,7 +426,7 @@ export default function WorkflowBoardPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
             >
               <List className="w-4 h-4" />
-              List View
+              {t('company.workflowBoard.listView')}
             </Link>
           </div>
         )}
@@ -443,14 +446,14 @@ export default function WorkflowBoardPage() {
       {!phaseIdFromUrl ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Kanban className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No phase selected</h3>
-          <p className="text-gray-600">Select a phase from the sidebar to view the Kanban board</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('company.workflowBoard.noPhaseSelected')}</h3>
+          <p className="text-gray-600">{t('company.workflowBoard.selectPhaseFromSidebar')}</p>
         </div>
       ) : stages.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Kanban className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No stages in this phase</h3>
-          <p className="text-gray-600">Add stages to this phase in the Settings page</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('company.workflowBoard.noStagesInPhase')}</h3>
+          <p className="text-gray-600">{t('company.workflowBoard.addStagesToPhase')}</p>
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -514,12 +517,10 @@ export default function WorkflowBoardPage() {
             <User className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
               <h4 className="font-semibold text-blue-900 text-sm mb-1">
-                How to use the Kanban Board
+                {t('company.workflowBoard.howToUseTitle')}
               </h4>
               <p className="text-blue-800 text-sm">
-                Drag and drop candidate cards between columns and rows to move them through your
-                workflow stages. Click on a candidate card or name to view their full details.
-                Row stages show only candidate names for quick reference.
+                {t('company.workflowBoard.howToUseDescription')}
               </p>
             </div>
           </div>

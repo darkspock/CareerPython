@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Edit2, Save, X, Calendar, DollarSign, Hash, Mail, Phone, Globe, FileText, CheckSquare, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface CustomFieldValue {
   id: string | null;
@@ -43,11 +44,11 @@ const getFieldIcon = (fieldType: string) => {
   }
 };
 
-const formatFieldValue = (fieldValue: CustomFieldValue): string => {
+const formatFieldValue = (fieldValue: CustomFieldValue, t: (key: string) => string): string => {
   const { value, field_type, field_config } = fieldValue;
   
   if (value === null || value === undefined || value === '') {
-    return 'Not specified';
+    return t('company.candidates.customFields.notSpecified');
   }
 
   switch (field_type) {
@@ -57,7 +58,7 @@ const formatFieldValue = (fieldValue: CustomFieldValue): string => {
     case 'DATE':
       return new Date(value).toLocaleDateString();
     case 'BOOLEAN':
-      return value ? 'Yes' : 'No';
+      return value ? t('company.candidates.customFields.yes') : t('company.candidates.customFields.no');
     case 'DROPDOWN':
       return String(value);
     case 'NUMBER':
@@ -149,7 +150,7 @@ const renderFieldInput = (
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
           <span className="ml-2 text-sm text-gray-700">
-            {value ? 'Yes' : 'No'}
+            {value ? t('company.candidates.customFields.yes') : t('company.candidates.customFields.no')}
           </span>
         </div>
       );
@@ -210,15 +211,15 @@ export default function CustomFieldsCard({
   if (!customFieldValues || Object.keys(customFieldValues).length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Data</h3>
-        <p className="text-gray-500 text-sm">No additional data configured for this candidate.</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('company.candidates.additionalData')}</h3>
+        <p className="text-gray-500 text-sm">{t('company.candidates.detail.noAdditionalData', { defaultValue: 'No additional data configured for this candidate.' })}</p>
       </div>
     );
   }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Data</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('company.candidates.additionalData')}</h3>
       <div className="space-y-4">
         {Object.entries(customFieldValues).map(([fieldKey, fieldValue]) => (
           <div key={fieldKey} className="border-b border-gray-100 pb-4 last:border-b-0">
@@ -242,27 +243,27 @@ export default function CustomFieldsCard({
             
             {editingField === fieldKey ? (
               <div className="space-y-3">
-                {renderFieldInput(fieldValue, editingValue, setEditingValue)}
+                {renderFieldInput(fieldValue, editingValue, setEditingValue, t)}
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleSave(fieldKey)}
                     className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 flex items-center space-x-1"
                   >
                     <Save className="w-3 h-3" />
-                    <span>Save</span>
+                    <span>{t('common.save')}</span>
                   </button>
                   <button
                     onClick={handleCancel}
                     className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-400 flex items-center space-x-1"
                   >
                     <X className="w-3 h-3" />
-                    <span>Cancel</span>
+                    <span>{t('common.cancel')}</span>
                   </button>
                 </div>
               </div>
             ) : (
               <div className="text-gray-700">
-                {formatFieldValue(fieldValue)}
+                {formatFieldValue(fieldValue, t)}
               </div>
             )}
           </div>

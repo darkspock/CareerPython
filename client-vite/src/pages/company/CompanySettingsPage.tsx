@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle, Building2, FileText } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 
 export default function CompanySettingsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -22,7 +24,7 @@ export default function CompanySettingsPage() {
   const handleResetConfiguration = async () => {
     const companyId = getCompanyId();
     if (!companyId) {
-      alert('Company ID not found');
+      alert(t('company.settings.companyIdNotFound'));
       return;
     }
 
@@ -32,43 +34,43 @@ export default function CompanySettingsPage() {
       setShowResetModal(false);
 
       if (result && result.length > 0) {
-        alert('Configuration initialized successfully! 4 default phases have been created.');
+        alert(t('company.settings.configInitializedSuccess'));
         navigate('/company/settings/phases');
       } else {
-        alert('Phases already exist for this company. To reset, please delete existing phases first from the Phase Management page.');
+        alert(t('company.settings.phasesAlreadyExist'));
       }
     } catch (error: any) {
       const errorMessage = error.message || 'Unknown error occurred';
-      alert('Failed to initialize configuration: ' + errorMessage);
+      alert(t('company.settings.configInitializationFailed', { error: errorMessage }));
     } finally {
       setResetting(false);
     }
   };
   const settingsCards = [
     {
-      title: 'Content Pages',
-      description: 'Manage company pages and content',
+      title: t('company.settings.contentPages.title'),
+      description: t('company.settings.contentPages.description'),
       icon: FileText,
       path: '/company/pages',
       color: 'indigo',
     },
     {
-      title: 'Phase Management',
-      description: 'Organize recruitment into high-level phases',
+      title: t('company.settings.phaseManagement.title'),
+      description: t('company.settings.phaseManagement.description'),
       icon: Layers,
       path: '/company/settings/phases',
       color: 'purple',
     },
     {
-      title: 'Workflow Settings',
-      description: 'Manage recruitment workflows and stages',
+      title: t('company.settings.workflowSettings.title'),
+      description: t('company.settings.workflowSettings.description'),
       icon: Workflow,
       path: '/company/settings/workflows',
       color: 'blue',
     },
     {
-      title: 'Company Roles',
-      description: 'Define roles that can be assigned to workflow stages',
+      title: t('company.settings.companyRoles.title'),
+      description: t('company.settings.companyRoles.description'),
       icon: Users,
       path: '/company/settings/roles',
       color: 'green',
@@ -81,10 +83,10 @@ export default function CompanySettingsPage() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Settings className="w-8 h-8 text-gray-700" />
-          <h1 className="text-3xl font-bold text-gray-900">Company Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('company.settings.title')}</h1>
         </div>
         <p className="text-gray-600">
-          Configure your company's workflows, roles, and recruitment process
+          {t('company.settings.subtitle')}
         </p>
       </div>
 
@@ -101,10 +103,10 @@ export default function CompanySettingsPage() {
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                Company Profile
+                {t('company.settings.companyProfile.title')}
               </h2>
               <p className="text-gray-600 text-sm">
-                Edit your company name, domain, and public URL slug
+                {t('company.settings.companyProfile.description')}
               </p>
             </div>
           </div>
@@ -147,7 +149,7 @@ export default function CompanySettingsPage() {
 
       {/* Quick Access Section */}
       <div className="mt-12 bg-gray-50 rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Access</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('company.settings.quickAccess.title')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
             to="/company/settings/workflows/create"
@@ -157,8 +159,8 @@ export default function CompanySettingsPage() {
               +
             </div>
             <div>
-              <div className="font-medium text-gray-900">Create New Workflow</div>
-              <div className="text-sm text-gray-500">Set up a new recruitment workflow</div>
+              <div className="font-medium text-gray-900">{t('company.settings.quickAccess.createWorkflow.title')}</div>
+              <div className="text-sm text-gray-500">{t('company.settings.quickAccess.createWorkflow.description')}</div>
             </div>
           </Link>
           <Link
@@ -169,8 +171,8 @@ export default function CompanySettingsPage() {
               +
             </div>
             <div>
-              <div className="font-medium text-gray-900">Add Company Role</div>
-              <div className="text-sm text-gray-500">Define a new role for your team</div>
+              <div className="font-medium text-gray-900">{t('company.settings.quickAccess.addRole.title')}</div>
+              <div className="text-sm text-gray-500">{t('company.settings.quickAccess.addRole.description')}</div>
             </div>
           </Link>
         </div>
@@ -181,18 +183,16 @@ export default function CompanySettingsPage() {
         <div className="flex items-start gap-3">
           <RotateCcw className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
           <div className="flex-1">
-            <h2 className="text-lg font-semibold text-blue-900 mb-2">Initialize Default Phases</h2>
+            <h2 className="text-lg font-semibold text-blue-900 mb-2">{t('company.settings.initializePhases.title')}</h2>
             <p className="text-blue-800 text-sm mb-4">
-              Initialize your company's phase configuration with the default setup. This will create 4
-              standard phases (Sourcing, Evaluation, Offer & Pre-Onboarding, and Talent Pool) with
-              their default workflows. Only works if you don't have existing phases.
+              {t('company.settings.initializePhases.description')}
             </p>
             <button
               onClick={() => setShowResetModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
-              Initialize Default Phases
+              {t('company.settings.initializePhases.button')}
             </button>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function CompanySettingsPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
-                      Initialize Default Phases?
+                      {t('company.settings.modal.title')}
                     </h3>
                   </div>
                 </div>
@@ -226,17 +226,16 @@ export default function CompanySettingsPage() {
                 {/* Content */}
                 <div className="mt-4">
                   <p className="text-sm text-gray-600 mb-4">
-                    This action will initialize 4 default phases with their workflows:
+                    {t('company.settings.modal.description')}
                   </p>
                   <ul className="list-disc list-inside text-sm text-gray-600 space-y-2 mb-4 ml-4">
-                    <li><strong>Sourcing</strong> (Kanban) - Screening and filtering process</li>
-                    <li><strong>Evaluation</strong> (Kanban) - Interview and assessment</li>
-                    <li><strong>Offer and Pre-Onboarding</strong> (List) - Offer negotiation and documents</li>
-                    <li><strong>Talent Pool</strong> (List) - Long-term candidate tracking</li>
+                    <li><strong>{t('company.settings.modal.phases.sourcing.name')}</strong> ({t('company.settings.modal.phases.sourcing.type')}) - {t('company.settings.modal.phases.sourcing.description')}</li>
+                    <li><strong>{t('company.settings.modal.phases.evaluation.name')}</strong> ({t('company.settings.modal.phases.evaluation.type')}) - {t('company.settings.modal.phases.evaluation.description')}</li>
+                    <li><strong>{t('company.settings.modal.phases.offer.name')}</strong> ({t('company.settings.modal.phases.offer.type')}) - {t('company.settings.modal.phases.offer.description')}</li>
+                    <li><strong>{t('company.settings.modal.phases.talentPool.name')}</strong> ({t('company.settings.modal.phases.talentPool.type')}) - {t('company.settings.modal.phases.talentPool.description')}</li>
                   </ul>
                   <p className="text-sm text-blue-700 font-medium">
-                    Note: This will only work if you don't have existing phases. If phases already exist,
-                    you'll need to delete them first from the Phase Management page.
+                    {t('company.settings.modal.note')}
                   </p>
                 </div>
               </div>
@@ -249,7 +248,7 @@ export default function CompanySettingsPage() {
                   disabled={resetting}
                   className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
@@ -260,12 +259,12 @@ export default function CompanySettingsPage() {
                   {resetting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Initializing...
+                      {t('company.settings.modal.initializing')}
                     </>
                   ) : (
                     <>
                       <RotateCcw className="w-4 h-4" />
-                      Yes, Initialize Phases
+                      {t('company.settings.modal.confirmButton')}
                     </>
                   )}
                 </button>
