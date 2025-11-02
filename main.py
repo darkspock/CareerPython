@@ -18,7 +18,7 @@ from adapters.http.candidate.routers.resume_router import router as resume_route
 from adapters.http.candidate.routers.file_router import file_router
 from adapters.http.candidate.routers.job_router import job_router
 from adapters.http.company.routers.company_router import router as company_router
-from adapters.http.company.routers.company_registration_router import router as company_registration_router
+from adapters.http.company.routers.company_registration_router import router as company_registration_router, users_router as users_public_router
 from adapters.http.company.routers.company_user_router import router as company_user_router
 from adapters.http.company.routers.company_role_router import router as company_role_router
 from adapters.http.company.routers.company_candidate_application_router import router as company_candidate_application_router

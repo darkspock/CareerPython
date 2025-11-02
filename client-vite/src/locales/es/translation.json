@@ -264,7 +264,7 @@
       "stage": "Etapa",
       "pendingComments": "Comentarios Pendientes",
       "additionalData": "Datos Adicionales",
-      "comments": "Comentarios",
+      "commentsLabel": "Comentarios",
       "notes": "Notas",
       "documents": "Documentos",
       "applicationStatus": "Estado de la Solicitud",
@@ -315,7 +315,14 @@
         "confirmDelete": "¿Estás seguro de que quieres eliminar este archivo?",
         "workflowInformation": "Información del Flujo",
         "created": "Creado",
-        "updated": "Actualizado"
+        "updated": "Actualizado",
+        "noAdditionalData": "No hay datos adicionales configurados para este candidato.",
+        "lastUpdated": "Última Actualización",
+        "stageTimeline": "Historial de Etapas",
+        "currentStatus": "Estado Actual",
+        "priority": "Prioridad",
+        "actions": "Acciones",
+        "phase": "Fase"
       },
       "comments": {
         "addComment": "Añadir Comentario",
@@ -332,15 +339,6 @@
         "notSpecified": "No especificado",
         "yes": "Sí",
         "no": "No"
-      },
-      "detail": {
-        "noAdditionalData": "No hay datos adicionales configurados para este candidato.",
-        "lastUpdated": "Última Actualización",
-        "stageTimeline": "Historial de Etapas",
-        "currentStatus": "Estado Actual",
-        "priority": "Prioridad",
-        "actions": "Acciones",
-        "phase": "Fase"
       }
     },
     "workflowBoard": {
@@ -451,6 +449,160 @@
       "moreStages": "+{{count}} más",
       "aboutTitle": "Acerca de los Flujos de Trabajo",
       "aboutDescription": "Los flujos de trabajo te ayudan a organizar tu proceso de reclutamiento en etapas. Cada flujo de trabajo puede tener múltiples etapas, y puedes asignar candidatos a flujos de trabajo para rastrear su progreso a través de tu pipeline de contratación. Establece un flujo de trabajo como predeterminado para asignar automáticamente nuevos candidatos a él."
+    }
+  },
+  "landing": {
+    "nav": {
+      "benefits": "Beneficios",
+      "pricing": "Precios",
+      "testimonials": "Testimonios",
+      "contact": "Contacto",
+      "register": "Registrarse"
+    },
+    "hero": {
+      "badge": "🌟 Revoluciona tu Reclutamiento con IA",
+      "title": "Recluta Talentos Excepcionales con",
+      "titleHighlight": "Inteligencia Artificial",
+      "subtitle": "Ahorra hasta un 70% en costos y tiempo en tu proceso de selección. Nuestra plataforma con IA es 100% personalizable, con flujos automáticos, nutrición inteligente de candidatos para construir relaciones duraderas y asistencia predictiva que encuentra los matches perfectos. ¡Convierte candidatos en empleados leales y embajadores de tu marca!",
+      "ctaPrimary": "Empezar Gratis",
+      "ctaSecondary": "Conocer Más",
+      "trustTitle": "Confían en nosotros:",
+      "companies": "+100 Empresas",
+      "candidates": "+10,000 Candidatos",
+      "satisfaction": "98% Satisfacción"
+    },
+    "benefits": {
+      "title": "¿Por qué elegirnos?",
+      "subtitle": "Todo lo que necesitas para transformar tu proceso de selección",
+      "reduceCosts": {
+        "title": "Reduce Costes y Tiempo",
+        "description": "Automatiza procesos repetitivos y reduce significativamente el tiempo y costes de contratación."
+      },
+      "customizable": {
+        "title": "Completamente Personalizable",
+        "description": "Adapta la plataforma a las necesidades específicas de tu empresa con flujos de trabajo y configuraciones personalizadas."
+      },
+      "completeFlow": {
+        "title": "Flujo Completo",
+        "description": "Gestiona todo el proceso de reclutamiento desde la captación hasta la contratación en una sola plataforma."
+      },
+      "aiAssistance": {
+        "title": "Asistencia de IA",
+        "description": "Utiliza inteligencia artificial para mejorar la selección de candidatos y optimizar tu proceso de contratación."
+      }
+    },
+    "pricing": {
+      "title": "Precios simples y transparentes",
+      "subtitle": "Elige el plan que mejor se adapte a tu negocio",
+      "startup": {
+        "name": "Startup",
+        "price": "Gratis",
+        "description": "Perfecto para startups y equipos pequeños",
+        "features": {
+          "users": "Hasta 5 usuarios",
+          "workflows": "Flujos de trabajo personalizados",
+          "ai": "Asistencia de IA básica",
+          "candidates": "Gestión de candidatos",
+          "support": "Soporte por email"
+        },
+        "cta": "Empezar gratis"
+      },
+      "enterprise": {
+        "name": "Empresa",
+        "price": "9,99€",
+        "priceSubtext": "por usuario/mes",
+        "description": "Para empresas que necesitan más",
+        "features": {
+          "users": "Usuarios ilimitados",
+          "startupFeatures": "Todas las funciones de Startup",
+          "ai": "Asistencia de IA avanzada",
+          "analytics": "Análisis e informes",
+          "support": "Soporte prioritario",
+          "integrations": "Integraciones avanzadas",
+          "customization": "Personalización completa"
+        },
+        "cta": "Empezar Ahora",
+        "badge": "Más Popular"
+      },
+      "note": "Todos los planes incluyen prueba gratuita. Sin tarjetas de crédito requeridas."
+    },
+    "testimonials": {
+      "title": "Lo que dicen nuestros clientes",
+      "subtitle": "Miles de empresas confían en nosotros para su proceso de selección",
+      "testimonial1": {
+        "name": "María González",
+        "role": "Directora de RR. HH.",
+        "company": "TechStart Solutions",
+        "content": "La plataforma ha reducido nuestro tiempo de contratación en un 60%. La asistencia de IA es increíble y nos ayuda a encontrar los mejores candidatos."
+      },
+      "testimonial2": {
+        "name": "Carlos Martínez",
+        "role": "CEO",
+        "company": "InnovateCorp",
+        "content": "La personalización de workflows nos permite adaptar el proceso exactamente a nuestras necesidades. El ROI ha sido excelente desde el primer mes."
+      },
+      "testimonial3": {
+        "name": "Ana Rodríguez",
+        "role": "Responsable de Talento",
+        "company": "Digital Ventures",
+        "content": "La integración fue sencilla y el soporte siempre está disponible. Nuestro equipo de reclutamiento está muy satisfecho con las herramientas."
+      }
+    },
+    "contact": {
+      "title": "¿Tienes preguntas?",
+      "subtitle": "Estamos aquí para ayudarte. Contacta con nosotros y te responderemos pronto.",
+      "email": "Email",
+      "phone": "Teléfono",
+      "location": "Ubicación",
+      "locationValue": "España",
+      "emailValue": "contacto@careerpython.com",
+      "phoneValue": "+34 900 000 000"
+    },
+    "footer": {
+      "description": "Transformando el proceso de reclutamiento con inteligencia artificial.",
+      "product": "Producto",
+      "features": "Características",
+      "pricing": "Precios",
+      "api": "API",
+      "company": "Empresa",
+      "about": "Sobre Nosotros",
+      "blog": "Blog",
+      "contact": "Contacto",
+      "legal": "Legal",
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "cookies": "Cookies",
+      "rights": "Todos los derechos reservados."
+    },
+    "contactForm": {
+      "fields": {
+        "name": "Nombre Completo",
+        "email": "Email",
+        "company": "Empresa",
+        "phone": "Teléfono",
+        "message": "Mensaje"
+      },
+      "placeholders": {
+        "name": "Tu nombre",
+        "email": "tu@email.com",
+        "company": "Nombre de tu empresa",
+        "phone": "+34 600 000 000",
+        "message": "Cuéntanos cómo podemos ayudarte..."
+      },
+      "errors": {
+        "nameRequired": "El nombre es requerido",
+        "emailRequired": "El email es requerido",
+        "emailInvalid": "El email no es válido",
+        "messageRequired": "El mensaje es requerido",
+        "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
+        "sendError": "Error al enviar el mensaje"
+      },
+      "success": {
+        "title": "¡Mensaje enviado!",
+        "message": "Te responderemos pronto."
+      },
+      "sending": "Enviando...",
+      "submit": "Enviar Mensaje"
     }
   }
 }

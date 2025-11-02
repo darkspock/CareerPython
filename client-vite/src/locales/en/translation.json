@@ -264,7 +264,7 @@
       "stage": "Stage",
       "pendingComments": "Pending Comments",
       "additionalData": "Additional Data",
-      "comments": "Comments",
+      "commentsLabel": "Comments",
       "notes": "Notes",
       "documents": "Documents",
       "applicationStatus": "Application Status",
@@ -315,7 +315,14 @@
         "confirmDelete": "Are you sure you want to delete this file?",
         "workflowInformation": "Workflow Information",
         "created": "Created",
-        "updated": "Updated"
+        "updated": "Updated",
+        "noAdditionalData": "No additional data configured for this candidate.",
+        "lastUpdated": "Last Updated",
+        "stageTimeline": "Stage Timeline",
+        "currentStatus": "Current Status",
+        "priority": "Priority",
+        "actions": "Actions",
+        "phase": "Phase"
       },
       "comments": {
         "addComment": "Add Comment",
@@ -332,15 +339,6 @@
         "notSpecified": "Not specified",
         "yes": "Yes",
         "no": "No"
-      },
-      "detail": {
-        "noAdditionalData": "No additional data configured for this candidate.",
-        "lastUpdated": "Last Updated",
-        "stageTimeline": "Stage Timeline",
-        "currentStatus": "Current Status",
-        "priority": "Priority",
-        "actions": "Actions",
-        "phase": "Phase"
       }
     },
     "workflowBoard": {
@@ -451,6 +449,160 @@
       "moreStages": "+{{count}} more",
       "aboutTitle": "About Workflows",
       "aboutDescription": "Workflows help you organize your recruitment process into stages. Each workflow can have multiple stages, and you can assign candidates to workflows to track their progress through your hiring pipeline. Set one workflow as default to automatically assign new candidates to it."
+    }
+  },
+  "landing": {
+    "nav": {
+      "benefits": "Benefits",
+      "pricing": "Pricing",
+      "testimonials": "Testimonials",
+      "contact": "Contact",
+      "register": "Sign Up"
+    },
+    "hero": {
+      "badge": "🌟 Revolutionize Your Recruitment with AI",
+      "title": "Recruit Exceptional Talent with",
+      "titleHighlight": "Artificial Intelligence",
+      "subtitle": "Save up to 70% on costs and time in your selection process. Our AI platform is 100% customizable, with automated workflows, intelligent candidate nurturing to build lasting relationships, and predictive assistance that finds perfect matches. Turn candidates into loyal employees and brand ambassadors!",
+      "ctaPrimary": "Start Free",
+      "ctaSecondary": "Learn More",
+      "trustTitle": "Trusted by:",
+      "companies": "+100 Companies",
+      "candidates": "+10,000 Candidates",
+      "satisfaction": "98% Satisfaction"
+    },
+    "benefits": {
+      "title": "Why choose us?",
+      "subtitle": "Everything you need to transform your selection process",
+      "reduceCosts": {
+        "title": "Reduce Costs and Time",
+        "description": "Automate repetitive processes and significantly reduce hiring time and costs."
+      },
+      "customizable": {
+        "title": "Fully Customizable",
+        "description": "Adapt the platform to your company's specific needs with customizable workflows and configurations."
+      },
+      "completeFlow": {
+        "title": "Complete Flow",
+        "description": "Manage the entire recruitment process from sourcing to hiring in a single platform."
+      },
+      "aiAssistance": {
+        "title": "AI Assistance",
+        "description": "Use artificial intelligence to improve candidate selection and optimize your hiring process."
+      }
+    },
+    "pricing": {
+      "title": "Simple and transparent pricing",
+      "subtitle": "Choose the plan that best fits your business",
+      "startup": {
+        "name": "Startup",
+        "price": "Free",
+        "description": "Perfect for startups and small teams",
+        "features": {
+          "users": "Up to 5 users",
+          "workflows": "Custom workflows",
+          "ai": "Basic AI assistance",
+          "candidates": "Candidate management",
+          "support": "Email support"
+        },
+        "cta": "Start free"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "€9.99",
+        "priceSubtext": "per user/month",
+        "description": "For companies that need more",
+        "features": {
+          "users": "Unlimited users",
+          "startupFeatures": "All Startup features",
+          "ai": "Advanced AI assistance",
+          "analytics": "Analytics and reports",
+          "support": "Priority support",
+          "integrations": "Advanced integrations",
+          "customization": "Complete customization"
+        },
+        "cta": "Start Now",
+        "badge": "Most Popular"
+      },
+      "note": "All plans include a free trial. No credit card required."
+    },
+    "testimonials": {
+      "title": "What our clients say",
+      "subtitle": "Thousands of companies trust us for their selection process",
+      "testimonial1": {
+        "name": "María González",
+        "role": "HR Director",
+        "company": "TechStart Solutions",
+        "content": "The platform has reduced our hiring time by 60%. The AI assistance is incredible and helps us find the best candidates."
+      },
+      "testimonial2": {
+        "name": "Carlos Martínez",
+        "role": "CEO",
+        "company": "InnovateCorp",
+        "content": "Workflow customization allows us to adapt the process exactly to our needs. The ROI has been excellent since the first month."
+      },
+      "testimonial3": {
+        "name": "Ana Rodríguez",
+        "role": "Talent Manager",
+        "company": "Digital Ventures",
+        "content": "Integration was simple and support is always available. Our recruitment team is very satisfied with the tools."
+      }
+    },
+    "contact": {
+      "title": "Have questions?",
+      "subtitle": "We're here to help. Contact us and we'll respond soon.",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location",
+      "locationValue": "Spain",
+      "emailValue": "contacto@careerpython.com",
+      "phoneValue": "+34 900 000 000"
+    },
+    "footer": {
+      "description": "Transforming the recruitment process with artificial intelligence.",
+      "product": "Product",
+      "features": "Features",
+      "pricing": "Pricing",
+      "api": "API",
+      "company": "Company",
+      "about": "About Us",
+      "blog": "Blog",
+      "contact": "Contact",
+      "legal": "Legal",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "cookies": "Cookies",
+      "rights": "All rights reserved."
+    },
+    "contactForm": {
+      "fields": {
+        "name": "Full Name",
+        "email": "Email",
+        "company": "Company",
+        "phone": "Phone",
+        "message": "Message"
+      },
+      "placeholders": {
+        "name": "Your name",
+        "email": "your@email.com",
+        "company": "Your company name",
+        "phone": "+1 555 000 0000",
+        "message": "Tell us how we can help you..."
+      },
+      "errors": {
+        "nameRequired": "Name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Email is not valid",
+        "messageRequired": "Message is required",
+        "messageMinLength": "Message must be at least 10 characters",
+        "sendError": "Error sending message"
+      },
+      "success": {
+        "title": "Message sent!",
+        "message": "We'll get back to you soon."
+      },
+      "sending": "Sending...",
+      "submit": "Send Message"
     }
   }
 }

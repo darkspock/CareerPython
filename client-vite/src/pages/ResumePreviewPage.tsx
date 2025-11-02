@@ -14,7 +14,7 @@ const ResumePreviewPageRoute: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = 'Resume Preview - CareerPython';
+    document.title = 'Resume Preview - ATSMonkey';
   }, []);
 
   const handleBack = () => {

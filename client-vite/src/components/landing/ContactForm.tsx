@@ -8,6 +8,7 @@
  * @param {Function} [props.onSubmit] - Submit handler
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Mail, User, Building, Phone, MessageSquare, Send, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface ContactFormProps {
@@ -23,6 +24,7 @@ export interface ContactFormData {
 }
 
 export default function ContactForm({ onSubmit }: ContactFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
@@ -38,19 +40,19 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
     const newErrors: Partial<Record<keyof ContactFormData, string>> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es requerido';
+      newErrors.name = t('landing.contactForm.errors.nameRequired');
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'El email es requerido';
+      newErrors.email = t('landing.contactForm.errors.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'El email no es válido';
+      newErrors.email = t('landing.contactForm.errors.emailInvalid');
     }
 
     if (!formData.message.trim()) {
-      newErrors.message = 'El mensaje es requerido';
+      newErrors.message = t('landing.contactForm.errors.messageRequired');
     } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'El mensaje debe tener al menos 10 caracteres';
+      newErrors.message = t('landing.contactForm.errors.messageMinLength');
     }
 
     setErrors(newErrors);
@@ -86,7 +88,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
       // Reset success message after 5 seconds
       setTimeout(() => setSuccess(false), 5000);
     } catch (error: any) {
-      setErrors({ message: error.message || 'Error al enviar el mensaje' });
+      setErrors({ message: error.message || t('landing.contactForm.errors.sendError') });
     } finally {
       setLoading(false);
     }
@@ -109,8 +111,8 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start space-x-3">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-green-800 font-medium">¡Mensaje enviado!</p>
-            <p className="text-green-700 text-sm">Te responderemos pronto.</p>
+            <p className="text-green-800 font-medium">{t('landing.contactForm.success.title')}</p>
+            <p className="text-green-700 text-sm">{t('landing.contactForm.success.message')}</p>
           </div>
         </div>
       )}
@@ -125,7 +127,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            Nombre Completo *
+            {t('landing.contactForm.fields.name')} *
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -141,7 +143,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
                   ? 'border-red-300 focus:ring-red-500'
                   : 'border-gray-300 focus:ring-blue-500'
               }`}
-              placeholder="Tu nombre"
+              placeholder={t('landing.contactForm.placeholders.name')}
             />
           </div>
           {errors.name && (
@@ -151,7 +153,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            Email *
+            {t('landing.contactForm.fields.email')} *
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -167,7 +169,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
                   ? 'border-red-300 focus:ring-red-500'
                   : 'border-gray-300 focus:ring-blue-500'
               }`}
-              placeholder="tu@email.com"
+              placeholder={t('landing.contactForm.placeholders.email')}
             />
           </div>
           {errors.email && (
@@ -177,7 +179,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
 
         <div>
           <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
-            Empresa
+            {t('landing.contactForm.fields.company')}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -189,14 +191,14 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
               value={formData.company}
               onChange={(e) => handleChange('company', e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Nombre de tu empresa"
+              placeholder={t('landing.contactForm.placeholders.company')}
             />
           </div>
         </div>
 
         <div>
           <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-            Teléfono
+            {t('landing.contactForm.fields.phone')}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -208,7 +210,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="+34 600 000 000"
+              placeholder={t('landing.contactForm.placeholders.phone')}
             />
           </div>
         </div>
@@ -216,7 +218,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
 
       <div>
         <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-          Mensaje *
+          {t('landing.contactForm.fields.message')} *
         </label>
         <div className="relative">
           <div className="absolute top-3 left-3 pointer-events-none">
@@ -232,7 +234,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
                 ? 'border-red-300 focus:ring-red-500'
                 : 'border-gray-300 focus:ring-blue-500'
             }`}
-            placeholder="Cuéntanos cómo podemos ayudarte..."
+            placeholder={t('landing.contactForm.placeholders.message')}
           />
         </div>
         {errors.message && typeof errors.message === 'string' && (
@@ -248,12 +250,12 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
         {loading ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Enviando...</span>
+            <span>{t('landing.contactForm.sending')}</span>
           </>
         ) : (
           <>
             <Send className="w-5 h-5" />
-            <span>Enviar Mensaje</span>
+            <span>{t('landing.contactForm.submit')}</span>
           </>
         )}
       </button>

@@ -39,12 +39,14 @@ from src.company.application.queries import (
     ListCompaniesQuery,
 )
 from src.company.domain import CompanyId, CompanyStatusEnum
-from src.company.domain.value_objects import CompanyId as CompanyIdVO, UserId
+from src.company.domain.value_objects import CompanyId as CompanyIdVO
+from src.user.domain.value_objects.UserId import UserId
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError, CompanyDomainAlreadyExistsError,
 )
-from src.user.domain.exceptions.user_exceptions import EmailAlreadyExistException, UserNotFoundException
+from src.user.domain.exceptions.user_exceptions import EmailAlreadyExistException, UserNotFoundError
+from src.shared.domain.exceptions import InvalidCredentialsException
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 import ulid
@@ -435,10 +437,11 @@ class CompanyController:
             
             # Get user ID using query
             from src.user.application.queries.get_user_by_email_query import GetUserByEmailQuery
-            user_dto = self.query_bus.query(GetUserByEmailQuery(email=request.email))
+            from src.user.application.queries.dtos.auth_dto import CurrentUserDto
+            user_dto: Optional[CurrentUserDto] = self.query_bus.query(GetUserByEmailQuery(email=request.email))
             
             if not user_dto:
-                raise UserNotFoundException(f"User with email {request.email} not found")
+                raise UserNotFoundError(user_id=request.email)
             
             return LinkUserResponse(
                 company_id=str(company_id.value),
@@ -447,9 +450,14 @@ class CompanyController:
                 redirect_url="/company/dashboard"
             )
             
-        except UserNotFoundException as e:
+        except UserNotFoundError as e:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado."
+            )
+        except InvalidCredentialsException as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Email o contraseña incorrectos."
             )
         except CompanyDomainAlreadyExistsError as e:

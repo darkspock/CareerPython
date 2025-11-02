@@ -10,7 +10,7 @@ import ResumeManagement from '../components/resume/ResumeManagement';
 
 const ResumePage: React.FC = () => {
   useEffect(() => {
-    document.title = 'Resume Management - CareerPython';
+    document.title = 'Resume Management - ATSMonkey';
   }, []);
 
   return (

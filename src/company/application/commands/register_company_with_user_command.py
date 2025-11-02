@@ -1,6 +1,6 @@
 """Command and handler for registering a company with a new user"""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from src.shared.application.command_bus import Command, CommandHandler, CommandBus
 from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface
@@ -8,7 +8,7 @@ from src.user.domain.services.password_service import PasswordService
 from src.user.domain.value_objects.UserId import UserId
 from src.user.domain.entities.user import User
 from src.user.domain.exceptions.user_exceptions import EmailAlreadyExistException
-from src.company.domain.repositories.company_repository_interface import CompanyRepositoryInterface
+from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyDomainAlreadyExistsError
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
@@ -95,7 +95,7 @@ class RegisterCompanyWithUserCommandHandler(CommandHandler[RegisterCompanyWithUs
                 raise CompanyDomainAlreadyExistsError(f"Company with domain {command.company_domain} already exists")
             
             # Prepare company settings (include contact info if provided)
-            company_settings = {}
+            company_settings: Dict[str, Any] = {}
             if command.company_contact_phone:
                 company_settings["contact_phone"] = command.company_contact_phone
             if command.company_address:

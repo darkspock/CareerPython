@@ -14,7 +14,7 @@ const ResumeEditorPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = 'Resume Editor - CareerPython';
+    document.title = 'Resume Editor - ATSMonkey';
   }, []);
 
   const handleBack = () => {

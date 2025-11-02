@@ -55,7 +55,7 @@ const AdminDashboard: React.FC = () => {
       <div>
         <h2 className="text-3xl font-bold text-gray-900">Admin Dashboard</h2>
         <p className="text-gray-600 mt-2">
-          Welcome to the CareerPython administration panel
+          Welcome to the ATSMonkey administration panel
         </p>
       </div>
 

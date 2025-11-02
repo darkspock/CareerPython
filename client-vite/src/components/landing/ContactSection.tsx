@@ -6,20 +6,23 @@
  * @component
  */
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SectionContainer from './SectionContainer';
 import ContactForm from './ContactForm';
 import { Mail, Phone, MapPin } from 'lucide-react';
 
 export default function ContactSection() {
+  const { t } = useTranslation();
+
   return (
     <SectionContainer backgroundColor="gray" id="contact">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            ¿Tienes preguntas?
+            {t('landing.contact.title')}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Estamos aquí para ayudarte. Contáctanos y te responderemos pronto.
+            {t('landing.contact.subtitle')}
           </p>
         </div>
 
@@ -28,24 +31,24 @@ export default function ContactSection() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
               <Mail className="w-8 h-8" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Email</h3>
-            <p className="text-gray-600">contacto@careerpython.com</p>
+            <h3 className="font-semibold text-gray-900 mb-2">{t('landing.contact.email')}</h3>
+            <p className="text-gray-600">{t('landing.contact.emailValue')}</p>
           </div>
 
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
               <Phone className="w-8 h-8" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Teléfono</h3>
-            <p className="text-gray-600">+34 900 000 000</p>
+            <h3 className="font-semibold text-gray-900 mb-2">{t('landing.contact.phone')}</h3>
+            <p className="text-gray-600">{t('landing.contact.phoneValue')}</p>
           </div>
 
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
               <MapPin className="w-8 h-8" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Ubicación</h3>
-            <p className="text-gray-600">España</p>
+            <h3 className="font-semibold text-gray-900 mb-2">{t('landing.contact.location')}</h3>
+            <p className="text-gray-600">{t('landing.contact.locationValue')}</p>
           </div>
         </div>
 

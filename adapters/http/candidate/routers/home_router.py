@@ -7,7 +7,7 @@ home_router = APIRouter()
 def read_root() -> dict[str, str]:
     """Endpoint raíz"""
     return {
-        "message": "CareerPython API - SOLID Architecture",
+        "message": "ATSMonkey API - SOLID Architecture",
         "version": "2.0.0",
         "architecture": "SOLID Principles"
     }

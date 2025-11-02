@@ -1,14 +1,15 @@
 """Command and handler for linking an existing user to a new company"""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from src.shared.application.command_bus import Command, CommandHandler, CommandBus
 from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.user.domain.value_objects.UserId import UserId
 from src.user.domain.entities.user import User
 from src.user.domain.services.password_service import PasswordService
-from src.user.domain.exceptions.user_exceptions import UserNotFoundException
-from src.company.domain.repositories.company_repository_interface import CompanyRepositoryInterface
+from src.user.domain.exceptions.user_exceptions import UserNotFoundError
+from src.shared.domain.exceptions import InvalidCredentialsException
+from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyDomainAlreadyExistsError
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
@@ -72,11 +73,11 @@ class LinkUserToCompanyCommandHandler(CommandHandler[LinkUserToCompanyCommand]):
             # Step 1: Authenticate user
             user = self.user_repository.get_by_email(command.user_email)
             if not user:
-                raise UserNotFoundException(f"User with email {command.user_email} not found")
+                raise UserNotFoundError(user_id=command.user_email)
             
             # Verify password
             if not PasswordService.verify_password(command.user_password, user.hashed_password):
-                raise CompanyValidationError("Invalid email or password")
+                raise InvalidCredentialsException("Invalid email or password")
             
             log.info(f"User authenticated successfully: {command.user_email}")
             
@@ -86,7 +87,7 @@ class LinkUserToCompanyCommandHandler(CommandHandler[LinkUserToCompanyCommand]):
                 raise CompanyDomainAlreadyExistsError(f"Company with domain {command.company_domain} already exists")
             
             # Prepare company settings
-            company_settings = {}
+            company_settings: Dict[str, Any] = {}
             if command.company_contact_phone:
                 company_settings["contact_phone"] = command.company_contact_phone
             if command.company_address:
@@ -119,7 +120,7 @@ class LinkUserToCompanyCommandHandler(CommandHandler[LinkUserToCompanyCommand]):
             
             log.info(f"User linked to company successfully: {command.company_name}")
             
-        except (UserNotFoundException, CompanyDomainAlreadyExistsError, CompanyValidationError):
+        except (UserNotFoundError, InvalidCredentialsException, CompanyDomainAlreadyExistsError, CompanyValidationError):
             # Re-raise domain exceptions
             raise
         except Exception as e:

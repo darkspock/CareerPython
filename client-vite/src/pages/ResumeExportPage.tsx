@@ -48,7 +48,7 @@ const ResumeExportPage: React.FC = () => {
   const quickTemplate = searchParams.get('template') || 'professional';
 
   useEffect(() => {
-    document.title = 'Export Resume - CareerPython';
+    document.title = 'Export Resume - ATSMonkey';
     if (id) {
       loadResumeData();
       loadExportHistory();

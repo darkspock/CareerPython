@@ -16,7 +16,7 @@ from adapters.http.company.schemas.company_registration_response import (
     CompanyRegistrationResponse,
     LinkUserResponse,
 )
-from adapters.http.shared.schemas.user import UserExistsResponse
+from adapters.http.shared.schemas.token import UserExistsResponse
 from adapters.http.shared.controllers.user import UserController
 from core.container import Container
 
@@ -75,8 +75,8 @@ from fastapi import Query
 @users_router.get("/check-email")
 @inject
 async def check_email_exists(
-    email: str = Query(..., description="Email to check"),
     user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])],
+    email: str = Query(..., description="Email to check"),
 ) -> dict:
     """
     Check if an email already exists (public endpoint for registration)

@@ -16,7 +16,7 @@ const EditorDiagnosticPage: React.FC = () => {
     console.log('🔍 EditorDiagnosticPage loaded');
     console.log('📝 Resume ID:', id);
     console.log('🧩 HybridResumeEditor imported successfully');
-    document.title = 'Diagnostic Resume Editor - CareerPython';
+    document.title = 'Diagnostic Resume Editor - ATSMonkey';
   }, [id]);
 
   const handleBack = () => {

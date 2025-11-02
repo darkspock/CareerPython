@@ -6,51 +6,45 @@
  * @component
  */
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SectionContainer from './SectionContainer';
 import { Star, Quote } from 'lucide-react';
 
-interface Testimonial {
-  name: string;
-  role: string;
-  company?: string;
-  content: string;
-  rating: number;
-  avatar?: string;
-}
-
-const testimonials: Testimonial[] = [
-  {
-    name: 'María González',
-    role: 'Directora de Recursos Humanos',
-    company: 'TechStart Solutions',
-    content: 'La plataforma ha reducido nuestro tiempo de contratación en un 60%. La asistencia de IA es increíble y nos ayuda a encontrar los mejores candidatos.',
-    rating: 5
-  },
-  {
-    name: 'Carlos Martínez',
-    role: 'CEO',
-    company: 'InnovateCorp',
-    content: 'La personalización de workflows nos permite adaptar el proceso exactamente a nuestras necesidades. El ROI ha sido excelente desde el primer mes.',
-    rating: 5
-  },
-  {
-    name: 'Ana Rodríguez',
-    role: 'Gerente de Talento',
-    company: 'Digital Ventures',
-    content: 'La integración fue sencilla y el soporte siempre está disponible. Nuestro equipo de reclutamiento está muy satisfecho con las herramientas.',
-    rating: 5
-  }
-];
-
 export default function TestimonialsSection() {
+  const { t } = useTranslation();
+
+  const testimonials = [
+    {
+      name: t('landing.testimonials.testimonial1.name'),
+      role: t('landing.testimonials.testimonial1.role'),
+      company: t('landing.testimonials.testimonial1.company'),
+      content: t('landing.testimonials.testimonial1.content'),
+      rating: 5
+    },
+    {
+      name: t('landing.testimonials.testimonial2.name'),
+      role: t('landing.testimonials.testimonial2.role'),
+      company: t('landing.testimonials.testimonial2.company'),
+      content: t('landing.testimonials.testimonial2.content'),
+      rating: 5
+    },
+    {
+      name: t('landing.testimonials.testimonial3.name'),
+      role: t('landing.testimonials.testimonial3.role'),
+      company: t('landing.testimonials.testimonial3.company'),
+      content: t('landing.testimonials.testimonial3.content'),
+      rating: 5
+    }
+  ];
+
   return (
     <SectionContainer backgroundColor="white" id="testimonials">
       <div className="text-center mb-12">
         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Lo que dicen nuestros clientes
+          {t('landing.testimonials.title')}
         </h2>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Miles de empresas confían en nosotros para su proceso de reclutamiento
+          {t('landing.testimonials.subtitle')}
         </p>
       </div>
 

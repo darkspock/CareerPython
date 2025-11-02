@@ -6,63 +6,57 @@
  * @component
  */
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SectionContainer from './SectionContainer';
 import CTAButton from './CTAButton';
 import { Check, Zap } from 'lucide-react';
 
-interface PricingPlan {
-  name: string;
-  price: string;
-  priceSubtext?: string;
-  description: string;
-  features: string[];
-  ctaText: string;
-  highlight?: boolean;
-}
-
-const plans: PricingPlan[] = [
-  {
-    name: 'Startup',
-    price: 'Gratis',
-    description: 'Perfecto para startups y equipos pequeños',
-    features: [
-      'Hasta 5 usuarios',
-      'Flujos de trabajo personalizados',
-      'Asistencia de IA básica',
-      'Gestión de candidatos',
-      'Soporte por email'
-    ],
-    ctaText: 'Empezar Gratis',
-    highlight: false
-  },
-  {
-    name: 'Empresa',
-    price: '9,99€',
-    priceSubtext: 'por usuario/mes',
-    description: 'Para empresas que necesitan más',
-    features: [
-      'Usuarios ilimitados',
-      'Todas las funciones de Startup',
-      'Asistencia de IA avanzada',
-      'Analytics y reportes',
-      'Soporte prioritario',
-      'Integraciones avanzadas',
-      'Personalización completa'
-    ],
-    ctaText: 'Empezar Ahora',
-    highlight: true
-  }
-];
-
 export default function PricingSection() {
+  const { t } = useTranslation();
+  
+  const plans = [
+    {
+      name: t('landing.pricing.startup.name'),
+      price: t('landing.pricing.startup.price'),
+      priceSubtext: undefined,
+      description: t('landing.pricing.startup.description'),
+      features: [
+        t('landing.pricing.startup.features.users'),
+        t('landing.pricing.startup.features.workflows'),
+        t('landing.pricing.startup.features.ai'),
+        t('landing.pricing.startup.features.candidates'),
+        t('landing.pricing.startup.features.support')
+      ],
+      ctaText: t('landing.pricing.startup.cta'),
+      highlight: false
+    },
+    {
+      name: t('landing.pricing.enterprise.name'),
+      price: t('landing.pricing.enterprise.price'),
+      priceSubtext: t('landing.pricing.enterprise.priceSubtext'),
+      description: t('landing.pricing.enterprise.description'),
+      features: [
+        t('landing.pricing.enterprise.features.users'),
+        t('landing.pricing.enterprise.features.startupFeatures'),
+        t('landing.pricing.enterprise.features.ai'),
+        t('landing.pricing.enterprise.features.analytics'),
+        t('landing.pricing.enterprise.features.support'),
+        t('landing.pricing.enterprise.features.integrations'),
+        t('landing.pricing.enterprise.features.customization')
+      ],
+      ctaText: t('landing.pricing.enterprise.cta'),
+      highlight: true,
+      badge: t('landing.pricing.enterprise.badge')
+    }
+  ];
   return (
     <SectionContainer backgroundColor="gray" id="pricing">
       <div className="text-center mb-12">
         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Precios simples y transparentes
+          {t('landing.pricing.title')}
         </h2>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Elige el plan que mejor se adapte a tu empresa
+          {t('landing.pricing.subtitle')}
         </p>
       </div>
 
@@ -76,10 +70,10 @@ export default function PricingSection() {
                 : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
             }`}
           >
-            {plan.highlight && (
+            {plan.highlight && (plan as any).badge && (
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                  Más Popular
+                  {(plan as any).badge}
                 </span>
               </div>
             )}
@@ -127,7 +121,7 @@ export default function PricingSection() {
 
       <div className="text-center mt-8">
         <p className="text-sm text-gray-500">
-          Todos los planes incluyen prueba gratuita. Sin tarjetas de crédito requeridas.
+          {t('landing.pricing.note')}
         </p>
       </div>
     </SectionContainer>
