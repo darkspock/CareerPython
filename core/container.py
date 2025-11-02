@@ -85,6 +85,8 @@ from src.interview.interview.Infrastructure.repositories.interview_answer_reposi
 
 # Company Application Layer - Commands
 from src.company.application.commands.create_company_command import CreateCompanyCommandHandler
+from src.company.application.commands.register_company_with_user_command import RegisterCompanyWithUserCommandHandler
+from src.company.application.commands.link_user_to_company_command import LinkUserToCompanyCommandHandler
 from src.company.application.commands.update_company_command import UpdateCompanyCommandHandler
 from src.company.application.commands.upload_company_logo_command import UploadCompanyLogoCommandHandler
 from src.company.application.commands.suspend_company_command import SuspendCompanyCommandHandler
@@ -1574,6 +1576,22 @@ class Container(containers.DeclarativeContainer):
     create_company_command_handler = providers.Factory(
         CreateCompanyCommandHandler,
         repository=company_repository,
+        command_bus=command_bus
+    )
+
+    register_company_with_user_command_handler = providers.Factory(
+        RegisterCompanyWithUserCommandHandler,
+        user_repository=user_repository,
+        company_repository=company_repository,
+        company_user_repository=company_user_repository,
+        command_bus=command_bus
+    )
+
+    link_user_to_company_command_handler = providers.Factory(
+        LinkUserToCompanyCommandHandler,
+        user_repository=user_repository,
+        company_repository=company_repository,
+        company_user_repository=company_user_repository,
         command_bus=command_bus
     )
 

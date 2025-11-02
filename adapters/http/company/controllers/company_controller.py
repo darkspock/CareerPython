@@ -9,6 +9,14 @@ from adapters.http.company.schemas.company_request import (
     UpdateCompanyRequest,
 )
 from adapters.http.company.schemas.company_response import CompanyResponse
+from adapters.http.company.schemas.company_registration_request import (
+    CompanyRegistrationRequest,
+    LinkUserRequest,
+)
+from adapters.http.company.schemas.company_registration_response import (
+    CompanyRegistrationResponse,
+    LinkUserResponse,
+)
 from src.company.application.commands import (
     CreateCompanyCommand,
     UpdateCompanyCommand,
@@ -16,6 +24,12 @@ from src.company.application.commands import (
     SuspendCompanyCommand,
     ActivateCompanyCommand,
     DeleteCompanyCommand,
+)
+from src.company.application.commands.register_company_with_user_command import (
+    RegisterCompanyWithUserCommand,
+)
+from src.company.application.commands.link_user_to_company_command import (
+    LinkUserToCompanyCommand,
 )
 from src.company.application.dtos.company_dto import CompanyDto
 from src.company.application.queries import (
@@ -25,12 +39,15 @@ from src.company.application.queries import (
     ListCompaniesQuery,
 )
 from src.company.domain import CompanyId, CompanyStatusEnum
+from src.company.domain.value_objects import CompanyId as CompanyIdVO, UserId
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError, CompanyDomainAlreadyExistsError,
 )
+from src.user.domain.exceptions.user_exceptions import EmailAlreadyExistException, UserNotFoundException
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
+import ulid
 
 
 class CompanyController:
@@ -343,4 +360,117 @@ class CompanyController:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to upload logo: {str(e)}"
+            )
+    
+    def register_company_with_user(self, request: CompanyRegistrationRequest) -> CompanyRegistrationResponse:
+        """Register a new company with a new user"""
+        try:
+            # Generate IDs
+            user_id = UserId.from_string(str(ulid.new()))
+            company_id = CompanyIdVO.from_string(str(ulid.new()))
+            
+            # Execute command
+            command = RegisterCompanyWithUserCommand(
+                user_id=user_id,
+                user_email=request.email,
+                user_password=request.password,
+                user_full_name=request.full_name,
+                company_id=company_id,
+                company_name=request.company_name,
+                company_domain=request.domain,
+                company_logo_url=request.logo_url,
+                company_contact_phone=request.contact_phone,
+                company_address=request.address,
+                include_example_data=request.include_example_data,
+            )
+            self.command_bus.dispatch(command)
+            
+            return CompanyRegistrationResponse(
+                company_id=str(company_id.value),
+                user_id=str(user_id.value),
+                message="Company and user registered successfully",
+                redirect_url="/company/dashboard"
+            )
+            
+        except EmailAlreadyExistException as e:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Este email ya está registrado. ¿Ya tienes una cuenta?"
+            )
+        except CompanyDomainAlreadyExistsError as e:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Este dominio ya está en uso. Por favor, elige otro."
+            )
+        except CompanyValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al registrar la empresa: {str(e)}"
+            )
+    
+    def link_user_to_company(self, request: LinkUserRequest) -> LinkUserResponse:
+        """Link an existing user to a new company"""
+        try:
+            # Generate company ID
+            company_id = CompanyIdVO.from_string(str(ulid.new()))
+            
+            # Execute command
+            command = LinkUserToCompanyCommand(
+                user_email=request.email,
+                user_password=request.password,
+                company_id=company_id,
+                company_name=request.company_name,
+                company_domain=request.domain,
+                company_logo_url=request.logo_url,
+                company_contact_phone=request.contact_phone,
+                company_address=request.address,
+                include_example_data=request.include_example_data,
+            )
+            self.command_bus.dispatch(command)
+            
+            # Get user ID using query
+            from src.user.application.queries.get_user_by_email_query import GetUserByEmailQuery
+            user_dto = self.query_bus.query(GetUserByEmailQuery(email=request.email))
+            
+            if not user_dto:
+                raise UserNotFoundException(f"User with email {request.email} not found")
+            
+            return LinkUserResponse(
+                company_id=str(company_id.value),
+                user_id=user_dto.user_id,  # CurrentUserDto has user_id field
+                message="Usuario vinculado a la empresa exitosamente",
+                redirect_url="/company/dashboard"
+            )
+            
+        except UserNotFoundException as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Email o contraseña incorrectos."
+            )
+        except CompanyDomainAlreadyExistsError as e:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Este dominio ya está en uso."
+            )
+        except CompanyValidationError as e:
+            # This can include password validation errors
+            error_msg = str(e)
+            if "password" in error_msg.lower() or "invalid" in error_msg.lower():
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Email o contraseña incorrectos."
+                )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al vincular la cuenta: {str(e)}"
             )

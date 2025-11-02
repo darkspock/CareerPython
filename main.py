@@ -18,6 +18,7 @@ from adapters.http.candidate.routers.resume_router import router as resume_route
 from adapters.http.candidate.routers.file_router import file_router
 from adapters.http.candidate.routers.job_router import job_router
 from adapters.http.company.routers.company_router import router as company_router
+from adapters.http.company.routers.company_registration_router import router as company_registration_router
 from adapters.http.company.routers.company_user_router import router as company_user_router
 from adapters.http.company.routers.company_role_router import router as company_role_router
 from adapters.http.company.routers.company_candidate_application_router import router as company_candidate_application_router
@@ -78,6 +79,8 @@ app.include_router(public_position_router)  # Phase 10: Public job board (no aut
 app.include_router(resume_router)  # Register resume router first
 app.include_router(file_router)  # File operations (PDF analysis)
 app.include_router(job_router)  # Job status polling for frontend
+app.include_router(company_registration_router)  # Public company registration (no auth)
+app.include_router(users_public_router)  # Public users endpoints (check-email)
 app.include_router(company_router)  # Company management
 app.include_router(company_user_router)  # Company user management
 app.include_router(company_role_router)  # Company role management
@@ -141,6 +144,7 @@ container.wire(modules=[
     "adapters.http.candidate.routers.resume_router",
     "adapters.http.candidate.routers.file_router",
     "adapters.http.candidate.routers.job_router",
+    "adapters.http.company.routers.company_registration_router",  # Public registration (includes users_router)
     "adapters.http.company.routers.company_router",
     "adapters.http.company.routers.company_user_router",
     "adapters.http.company.routers.company_role_router",

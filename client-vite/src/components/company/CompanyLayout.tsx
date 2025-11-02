@@ -86,11 +86,13 @@ export default function CompanyLayout() {
   const menuItems = [
     { path: '/company/dashboard', icon: LayoutDashboard, label: t('company.navigation.dashboard') },
     { path: '/company/positions', icon: Briefcase, label: t('company.navigation.jobPositions') },
+    { path: '/company/users', icon: Users, label: 'Usuarios' },
     { path: '/company/settings', icon: Settings, label: t('company.navigation.settings') },
   ];
 
   const isActive = (path: string) => location.pathname === path;
   const isCandidatesActive = location.pathname.startsWith('/company/candidates') || location.pathname.startsWith('/company/workflow-board');
+  const isUsersActive = location.pathname.startsWith('/company/users');
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

@@ -478,6 +478,7 @@ Mapeo sugerido de roles:
    - Opción A: Roles fijos predefinidos (más simple, actual)
    - Opción B: Roles configurables dinámicamente (más flexible, más complejo)
    - **Recomendación**: Empezar con roles fijos, migrar a dinámicos después
+   - **Elección**: Opción B
 
 2. **Duración de expiración de invitaciones**
    - Propuesta: 7 días (similar a password reset: 24 horas)
@@ -490,6 +491,7 @@ Mapeo sugerido de roles:
 4. **Nombres finales de roles**
    - Requiere aprobación del equipo
    - Los 6 roles propuestos vs. mantener solo los 3 actuales más algunos nuevos
+   - **Decisión**: nuevos roles propuestos. 
 
 ## Próximos Pasos
 

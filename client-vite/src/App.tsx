@@ -82,9 +82,13 @@ import EditCompanyPage from './pages/company/EditCompanyPage';
 import CompanyPagesListPage from './pages/company/CompanyPagesListPage';
 import CreateCompanyPagePage from './pages/company/CreateCompanyPagePage';
 import EditCompanyPagePage from './pages/company/EditCompanyPagePage';
+import UsersManagementPage from './pages/company/UsersManagementPage';
 import PublicPositionsPage from './pages/public/PublicPositionsPage';
 import PublicPositionDetailPage from './pages/public/PublicPositionDetailPage';
 import CompanyPublicPositionsPage from './pages/public/CompanyPublicPositionsPage';
+import AcceptInvitationPage from './pages/public/AcceptInvitationPage';
+import CompanyLandingPage from './pages/public/CompanyLandingPage';
+import CompanyRegisterPage from './pages/public/CompanyRegisterPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import UsersManagement from './components/admin/UsersManagement';
 import CandidatesManagement from './components/admin/CandidatesManagement';
@@ -130,6 +134,9 @@ function App() {
                         <Route path="/positions" element={<PublicPositionsPage />} />
                         <Route path="/positions/:slugOrId" element={<PublicPositionDetailPage />} />
                         <Route path="/companies/:companySlug/open-positions" element={<CompanyPublicPositionsPage />} />
+                        <Route path="/invitations/accept" element={<AcceptInvitationPage />} />
+                        <Route path="/company/landing" element={<CompanyLandingPage />} />
+                        <Route path="/company/register" element={<CompanyRegisterPage />} />
                         <Route path="/candidate/dashboard" element={<HomePage />} />
                         <Route path="/candidate/search" element={<CandidatesPage />} />
                         {/* REMOVED: /auth/login - using specific /candidate/auth/login, /admin/auth/login, and /company/auth/login instead */}
