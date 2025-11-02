@@ -13,8 +13,8 @@ from src.user.domain.value_objects.UserId import UserId
 @dataclass
 class GetUserPermissionsQuery(Query):
     """Query to get permissions for a company user"""
-    company_id: str
-    user_id: str
+    company_id: CompanyId  # Value Object
+    user_id: UserId  # Value Object
 
 
 class GetUserPermissionsQueryHandler(QueryHandler[GetUserPermissionsQuery, Optional[Dict[str, Any]]]):
@@ -25,8 +25,8 @@ class GetUserPermissionsQueryHandler(QueryHandler[GetUserPermissionsQuery, Optio
 
     def handle(self, query: GetUserPermissionsQuery) -> Optional[Dict[str, Any]]:
         """Execute the query - returns dict with permissions or None"""
-        company_id = CompanyId.from_string(query.company_id)
-        user_id = UserId.from_string(query.user_id)
+        company_id = query.company_id
+        user_id = query.user_id
 
         company_user = self.company_user_repository.get_by_company_and_user(company_id, user_id)
 

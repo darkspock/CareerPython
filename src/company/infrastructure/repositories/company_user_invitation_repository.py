@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, List
 
 from core.database import DatabaseInterface
@@ -12,6 +13,8 @@ from src.company.domain.infrastructure.company_user_invitation_repository_interf
 )
 from src.company.infrastructure.models.company_user_invitation_model import CompanyUserInvitationModel
 
+logger = logging.getLogger(__name__)
+
 
 class CompanyUserInvitationRepository(CompanyUserInvitationRepositoryInterface):
     """Company user invitation repository implementation"""
@@ -21,10 +24,15 @@ class CompanyUserInvitationRepository(CompanyUserInvitationRepositoryInterface):
 
     def save(self, invitation: CompanyUserInvitation) -> None:
         """Save or update a company user invitation"""
-        model = self._to_model(invitation)
-        with self.database.get_session() as session:
-            session.merge(model)
-            session.commit()
+        try:
+            model = self._to_model(invitation)
+            with self.database.get_session() as session:
+                session.merge(model)
+                session.commit()
+                logger.info(f"Saved invitation {invitation.id} for email {invitation.email}")
+        except Exception as e:
+            logger.error(f"Error saving invitation {invitation.id}: {str(e)}", exc_info=True)
+            raise
 
     def get_by_id(self, invitation_id: CompanyUserInvitationId) -> Optional[CompanyUserInvitation]:
         """Get a company user invitation by ID"""
@@ -36,11 +44,17 @@ class CompanyUserInvitationRepository(CompanyUserInvitationRepositoryInterface):
 
     def get_by_token(self, token: InvitationToken) -> Optional[CompanyUserInvitation]:
         """Get a company user invitation by token"""
-        with self.database.get_session() as session:
-            model = session.query(CompanyUserInvitationModel).filter(
-                CompanyUserInvitationModel.token == str(token)
-            ).first()
-            return self._to_domain(model) if model else None
+        try:
+            with self.database.get_session() as session:
+                model = session.query(CompanyUserInvitationModel).filter(
+                    CompanyUserInvitationModel.token == str(token)
+                ).first()
+                if model:
+                    logger.debug(f"Found invitation by token for email {model.email}")
+                return self._to_domain(model) if model else None
+        except Exception as e:
+            logger.error(f"Error getting invitation by token: {str(e)}", exc_info=True)
+            raise
 
     def get_by_email_and_company(
         self,
@@ -76,11 +90,19 @@ class CompanyUserInvitationRepository(CompanyUserInvitationRepositoryInterface):
 
     def delete(self, invitation_id: CompanyUserInvitationId) -> None:
         """Delete a company user invitation"""
-        with self.database.get_session() as session:
-            session.query(CompanyUserInvitationModel).filter(
-                CompanyUserInvitationModel.id == str(invitation_id)
-            ).delete()
-            session.commit()
+        try:
+            with self.database.get_session() as session:
+                deleted_count = session.query(CompanyUserInvitationModel).filter(
+                    CompanyUserInvitationModel.id == str(invitation_id)
+                ).delete()
+                session.commit()
+                if deleted_count > 0:
+                    logger.info(f"Deleted invitation {invitation_id}")
+                else:
+                    logger.warning(f"Attempted to delete non-existent invitation {invitation_id}")
+        except Exception as e:
+            logger.error(f"Error deleting invitation {invitation_id}: {str(e)}", exc_info=True)
+            raise
 
     def _to_domain(self, model: CompanyUserInvitationModel) -> CompanyUserInvitation:
         """Convert model to domain entity"""

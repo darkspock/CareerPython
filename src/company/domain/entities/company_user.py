@@ -84,70 +84,48 @@ class CompanyUser:
         self,
         role: CompanyUserRole,
         permissions: CompanyUserPermissions,
-    ) -> "CompanyUser":
+    ) -> None:
         """
         Updates the company user with new values
-        Returns a new instance (immutability)
+        Modifies the instance directly (mutability)
 
         Args:
             role: New role
             permissions: New permissions
-
-        Returns:
-            CompanyUser: New instance with updated data
         """
-        return CompanyUser(
-            id=self.id,
-            company_id=self.company_id,
-            user_id=self.user_id,
-            role=role,
-            permissions=permissions,
-            status=self.status,
-            created_at=self.created_at,
-            updated_at=datetime.utcnow(),
-        )
+        self.role = role
+        self.permissions = permissions
+        self.updated_at = datetime.utcnow()
 
-    def activate(self) -> "CompanyUser":
+    def activate(self) -> None:
         """
         Activates the company user
-
-        Returns:
-            CompanyUser: New instance with ACTIVE status
+        Modifies the instance directly (mutability)
         """
         if self.status == CompanyUserStatus.ACTIVE:
-            return self
+            return
 
-        return CompanyUser(
-            id=self.id,
-            company_id=self.company_id,
-            user_id=self.user_id,
-            role=self.role,
-            permissions=self.permissions,
-            status=CompanyUserStatus.ACTIVE,
-            created_at=self.created_at,
-            updated_at=datetime.utcnow(),
-        )
+        self.status = CompanyUserStatus.ACTIVE
+        self.updated_at = datetime.utcnow()
 
-    def deactivate(self) -> "CompanyUser":
+    def deactivate(self) -> None:
         """
         Deactivates the company user
-
-        Returns:
-            CompanyUser: New instance with INACTIVE status
+        Modifies the instance directly (mutability)
         """
         if self.status == CompanyUserStatus.INACTIVE:
-            return self
+            return
 
-        return CompanyUser(
-            id=self.id,
-            company_id=self.company_id,
-            user_id=self.user_id,
-            role=self.role,
-            permissions=self.permissions,
-            status=CompanyUserStatus.INACTIVE,
-            created_at=self.created_at,
-            updated_at=datetime.utcnow(),
-        )
+        self.status = CompanyUserStatus.INACTIVE
+        self.updated_at = datetime.utcnow()
+
+    def remove(self) -> None:
+        """
+        Prepares the company user for removal by deactivating it
+        Does not delete physically - the actual deletion logic should be in the Command Handler
+        Modifies the instance directly (mutability)
+        """
+        self.deactivate()
 
     def is_active(self) -> bool:
         """Checks if user is active"""

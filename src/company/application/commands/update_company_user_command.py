@@ -36,11 +36,11 @@ class UpdateCompanyUserCommandHandler(CommandHandler):
         except ValueError:
             raise CompanyValidationError(f"Invalid role: {command.role}")
 
-        # Update using entity method (returns new instance)
-        updated_company_user = company_user.update(
+        # Update using entity method (modifies instance directly)
+        company_user.update(
             role=role,
             permissions=CompanyUserPermissions.from_dict(command.permissions),
         )
 
         # Persist
-        self.repository.save(updated_company_user)
+        self.repository.save(company_user)

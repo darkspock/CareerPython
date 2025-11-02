@@ -26,8 +26,8 @@ class ActivateCompanyUserCommandHandler(CommandHandler):
         if not company_user:
             raise CompanyNotFoundError(f"Company user with id {command.id} not found")
 
-        # Activate using entity method (returns new instance)
-        activated_company_user = company_user.activate()
+        # Activate using entity method (modifies instance directly)
+        company_user.activate()
 
         # Persist
-        self.repository.save(activated_company_user)
+        self.repository.save(company_user)
