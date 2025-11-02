@@ -16,7 +16,8 @@ from src.company.application.queries import (
     ListCompanyUsersByCompanyQuery,
 )
 from src.company.application.dtos.company_user_dto import CompanyUserDto
-from src.company.domain import CompanyUserRole, CompanyId
+from src.company.domain import CompanyUserRole
+from src.company.domain.value_objects import CompanyId, CompanyUserId
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError,
@@ -27,7 +28,6 @@ from adapters.http.company.schemas.company_user_request import (
     UpdateCompanyUserRequest,
 )
 from adapters.http.company.schemas.company_user_response import CompanyUserResponse
-from src.company.domain.value_objects import CompanyUserId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.user.domain.value_objects.UserId import UserId
@@ -263,10 +263,19 @@ class CompanyUserController:
                 detail=f"Failed to deactivate company user: {str(e)}"
             )
 
-    def remove_company_user(self, company_user_id: str) -> None:
+    def remove_company_user(
+        self,
+        company_id: str,
+        user_id: str,
+        current_user_id: str
+    ) -> None:
         """Remove a user from a company"""
         try:
-            command = RemoveCompanyUserCommand(id=company_user_id)
+            command = RemoveCompanyUserCommand(
+                company_id=CompanyId.from_string(company_id),
+                user_id_to_remove=UserId.from_string(user_id),
+                current_user_id=UserId.from_string(current_user_id)
+            )
             self.command_bus.dispatch(command)
 
         except CompanyNotFoundError as e:
@@ -274,8 +283,138 @@ class CompanyUserController:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=str(e)
             )
+        except CompanyValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to remove company user: {str(e)}"
+            )
+
+    def invite_company_user(
+        self,
+        company_id: str,
+        request,
+        current_user_id: str
+    ):
+        """Invite a user to a company"""
+        from src.company.application.commands.invite_company_user_command import (
+            InviteCompanyUserCommand
+        )
+        from src.company.application.queries.get_invitation_by_email_and_company_query import (
+            GetInvitationByEmailAndCompanyQuery
+        )
+        from adapters.http.company.mappers.company_user_invitation_mapper import (
+            CompanyUserInvitationResponseMapper
+        )
+        from adapters.http.company.schemas.company_user_invitation_response import (
+            UserInvitationLinkResponse
+        )
+        
+        try:
+            # Convert role string to enum if provided
+            role = None
+            if request.role:
+                try:
+                    role = CompanyUserRole(request.role.lower())
+                except ValueError:
+                    role = CompanyUserRole.RECRUITER
+            
+            # Execute command
+            command = InviteCompanyUserCommand(
+                company_id=CompanyId.from_string(company_id),
+                email=request.email,
+                invited_by_user_id=CompanyUserId.from_string(current_user_id),
+                role=role
+            )
+            self.command_bus.dispatch(command)
+
+            # Query to get created invitation
+            query = GetInvitationByEmailAndCompanyQuery(
+                email=request.email,
+                company_id=CompanyId.from_string(company_id)
+            )
+            dto = self.query_bus.query(query)
+
+            if not dto:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Invitation created but not found"
+                )
+
+            return CompanyUserInvitationResponseMapper.dto_to_link_response(dto)
+
+        except CompanyValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to invite company user: {str(e)}"
+            )
+
+    def assign_role_to_user(
+        self,
+        company_id: str,
+        user_id: str,
+        request
+    ) -> CompanyUserResponse:
+        """Assign a role to a company user"""
+        from src.company.application.commands.assign_role_to_user_command import (
+            AssignRoleToUserCommand
+        )
+        
+        try:
+            # Convert role string to enum
+            try:
+                role = CompanyUserRole(request.role.lower())
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid role: {request.role}"
+                )
+            
+            # Execute command
+            command = AssignRoleToUserCommand(
+                company_id=CompanyId.from_string(company_id),
+                user_id=UserId.from_string(user_id),
+                role=role,
+                permissions=request.permissions
+            )
+            self.command_bus.dispatch(command)
+
+            # Query to get updated company user
+            query = GetCompanyUserByCompanyAndUserQuery(
+                company_id=company_id,
+                user_id=user_id
+            )
+            dto: Optional[CompanyUserDto] = self.query_bus.query(query)
+
+            if not dto:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Company user not found"
+                )
+
+            return CompanyUserResponseMapper.dto_to_response(dto)
+
+        except CompanyNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+            )
+        except CompanyValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to assign role: {str(e)}"
             )

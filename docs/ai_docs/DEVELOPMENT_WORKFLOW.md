@@ -2,6 +2,8 @@
 
 Este documento describe el workflow estándar para implementar nuevos módulos o features en CareerPython.
 
+> ⚠️ **IMPORTANTE**: Antes de crear Commands o Queries, lee [TYPING_RULES.md](./TYPING_RULES.md) sobre las reglas críticas de tipado con Value Objects.
+
 ## Filosofía de Desarrollo
 
 El proyecto sigue **Clean Architecture** y **Domain-Driven Design (DDD)** con separación estricta de capas:
@@ -128,58 +130,32 @@ class Company:
         if not name or len(name) < 3:
             raise ValueError("El nombre debe tener al menos 3 caracteres")
 
-        # Retorna nueva instancia (inmutabilidad)
-        return Company(
-            id=self.id,
-            name=name,
-            domain=domain,
-            logo_url=logo_url,
-            status=self.status,
-            created_at=self.created_at,
-            updated_at=datetime.now(),
-        )
+        # Modifica la instancia directamente (mutabilidad)
+        self.name = name
+        self.domain = domain
+        self.logo_url = logo_url
+        self.updated_at = datetime.now()
 
-    def suspend(self, reason: Optional[str] = None) -> "Company":
+    def suspend(self, reason: Optional[str] = None) -> None:
         """Suspende la empresa"""
         if self.status == CompanyStatus.DELETED:
             raise ValueError("No se puede suspender una empresa eliminada")
 
-        return Company(
-            id=self.id,
-            name=self.name,
-            domain=self.domain,
-            logo_url=self.logo_url,
-            status=CompanyStatus.SUSPENDED,
-            created_at=self.created_at,
-            updated_at=datetime.now(),
-        )
+        self.status = CompanyStatus.SUSPENDED
+        self.updated_at = datetime.now()
 
-    def activate(self) -> "Company":
+    def activate(self) -> None:
         """Activa la empresa"""
         if self.status == CompanyStatus.DELETED:
             raise ValueError("No se puede activar una empresa eliminada")
 
-        return Company(
-            id=self.id,
-            name=self.name,
-            domain=self.domain,
-            logo_url=self.logo_url,
-            status=CompanyStatus.ACTIVE,
-            created_at=self.created_at,
-            updated_at=datetime.now(),
-        )
+        self.status = CompanyStatus.ACTIVE
+        self.updated_at = datetime.now()
 
-    def delete(self) -> "Company":
+    def delete(self) -> None:
         """Marca la empresa como eliminada (soft delete)"""
-        return Company(
-            id=self.id,
-            name=self.name,
-            domain=self.domain,
-            logo_url=self.logo_url,
-            status=CompanyStatus.DELETED,
-            created_at=self.created_at,
-            updated_at=datetime.now(),
-        )
+        self.status = CompanyStatus.DELETED
+        self.updated_at = datetime.now()
 ```
 
 **Reglas de Entidades**:
@@ -188,7 +164,7 @@ class Company:
 3. **Factory method `create()`**: Con valores por defecto y validaciones
 4. **Factory method `update()`**: Recibe TODOS los atributos actualizables
 5. **Métodos específicos para status**: Un método por cada transición de estado
-6. **Inmutabilidad**: Los métodos retornan nuevas instancias
+6. **Mutabilidad**: Los métodos modifican la instancia directamente (NO retornan nuevas instancias)
 7. **Validaciones en métodos**: Lógica de negocio encapsulada
 
 **❌ NO HACER**:
@@ -211,8 +187,8 @@ def __init__(self, id, name, status=CompanyStatus.ACTIVE):
 
 **✅ HACER**:
 ```python
-# Bien: Método específico para cambio de status
-company = company.suspend()
+# Bien: Método específico para cambio de status (modifica la instancia)
+company.suspend()
 
 # Bien: Propiedades públicas
 print(company.name)
@@ -562,6 +538,14 @@ class CreateCompanyCommandHandler(CommandHandler[CreateCompanyCommand]):
 - Handler NO retorna valores (void)
 - Usa repositorio a través de interface
 - Lógica de negocio en entidad
+- **TIPADO CRÍTICO**: Los campos deben usar Value Objects directamente, NO strings:
+  - ✅ `company_id: CompanyId` 
+  - ✅ `user_id: UserId`
+  - ✅ `role: CompanyUserRole`
+  - ❌ `company_id: str` (INCORRECTO)
+  - ❌ `user_id: str` (INCORRECTO)
+  - ❌ `role: str` (INCORRECTO)
+- La conversión de strings a value objects se hace en el Controller/Router, NO en el Handler
 
 #### 3.3. Queries (Lectura)
 
@@ -579,7 +563,7 @@ from ...domain.infrastructure.company_repository_interface import CompanyReposit
 @dataclass
 class GetCompanyByIdQuery(Query):
     """Query para obtener empresa por ID"""
-    company_id: str
+    company_id: CompanyId  # ✅ Usa value object, NO str
 
 class GetCompanyByIdQueryHandler(QueryHandler[GetCompanyByIdQuery, Optional[CompanyDto]]):
     """Handler para obtener empresa por ID"""
@@ -589,8 +573,8 @@ class GetCompanyByIdQueryHandler(QueryHandler[GetCompanyByIdQuery, Optional[Comp
 
     def handle(self, query: GetCompanyByIdQuery) -> Optional[CompanyDto]:
         """Ejecuta la query - retorna DTO"""
-        company_id = CompanyId(query.company_id)
-        entity = self.repository.get_by_id(company_id)
+        # ✅ El handler recibe value objects directamente, no necesita conversión
+        entity = self.repository.get_by_id(query.company_id)
 
         if not entity:
             return None
@@ -602,6 +586,14 @@ class GetCompanyByIdQueryHandler(QueryHandler[GetCompanyByIdQuery, Optional[Comp
 - Dataclass con criterios de búsqueda
 - Handler retorna DTOs
 - Convierte entidad → DTO usando mapper
+- **TIPADO CRÍTICO**: Los campos deben usar Value Objects directamente, NO strings:
+  - ✅ `company_id: CompanyId`
+  - ✅ `token: InvitationToken`
+  - ✅ `user_id: UserId`
+  - ❌ `company_id: str` (INCORRECTO)
+  - ❌ `token: str` (INCORRECTO)
+  - ❌ `user_id: str` (INCORRECTO)
+- La conversión de strings a value objects se hace en el Controller/Router, NO en el Handler
 
 #### 3.4. Request Schemas
 
@@ -698,7 +690,9 @@ class CompanyController:
 
     def get_company(self, company_id: str) -> Optional[CompanyResponse]:
         """Obtiene una empresa por ID"""
-        query = GetCompanyByIdQuery(company_id=company_id)
+        # ⚠️ IMPORTANTE: Conversión de strings a value objects en Controller
+        from ...domain.value_objects.company_id import CompanyId
+        query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
         dto = self.query_bus.query(query)
 
         if not dto:

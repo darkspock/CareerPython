@@ -39,6 +39,7 @@ from src.company_page.presentation.routers.public_company_page_router import rou
 from src.candidate.presentation.routers.file_attachment_router import router as file_attachment_router
 from adapters.http.shared.routes.user_router import user_router
 from adapters.http.shared.routes.ai_test_router import router as ai_test_router
+from adapters.http.invitations.routers.invitation_router import router as invitation_router
 # Phase 10: Public Position Router
 from src.job_position.presentation.routers.public_position_router import router as public_position_router
 # Phase 12: Phase Router
@@ -100,6 +101,7 @@ app.include_router(file_attachment_router)  # File attachment management
 app.include_router(phase_router)  # Phase 12: Phase management
 app.include_router(candidate_router)
 app.include_router(user_router)
+app.include_router(invitation_router)  # Public invitation endpoints
 app.include_router(ai_test_router)  # Direct AI testing
 
 # Mount static files for uploads (local storage)
@@ -157,4 +159,5 @@ container.wire(modules=[
     "src.company_page.presentation.routers.company_page_router",  # Company Pages management
     "src.company_page.presentation.routers.public_company_page_router",  # Public Company Pages
     "adapters.http.shared.routes.user_router",
+    "adapters.http.invitations.routers.invitation_router",
 ])

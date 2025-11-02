@@ -54,29 +54,21 @@ class Company:
         self,
         name: str,
         domain: str,
-    ) -> "Company":
-        return Company(
-            id=self.id,
-            name=name,
-            domain=domain,
-            status=self.status,
-            created_at=self.created_at,
-            updated_at=datetime.now()
-        )
+    ) -> None:
+        # Validaciones
+        self.name = name
+        self.domain = domain
+        self.updated_at = datetime.now()
 
-    def suspend(self) -> "Company":
-        return Company(
-            id=self.id,
-            name=self.name,
-            domain=self.domain,
-            status=CompanyStatus.SUSPENDED,
-            created_at=self.created_at,
-            updated_at=datetime.now()
-        )
+    def suspend(self) -> None:
+        # Validaciones
+        self.status = CompanyStatus.SUSPENDED
+        self.updated_at = datetime.now()
 
-    def activate(self) -> "Company":
+    def activate(self) -> None:
         # Logic and validations
-        return Company(...)
+        self.status = CompanyStatus.ACTIVE
+        self.updated_at = datetime.now()
 ```
 
 **FIN DE FASE 1** - Confirmar con el usuario antes de continuar
@@ -122,11 +114,19 @@ class Company:
    - Command dataclass con los datos necesarios
    - CommandHandler que NO retorna valores (void)
    - Usar repositorio a través de la interface
+   - ⚠️ **TIPADO CRÍTICO**: Los campos deben usar Value Objects directamente, NO strings:
+     * ✅ `company_id: CompanyId`, `user_id: UserId`, `role: CompanyUserRole`
+     * ❌ `company_id: str`, `user_id: str`, `role: str` (INCORRECTO)
+   - La conversión string → value object se hace en Controller/Router, NO en Handler
 
 2. **Queries** (operaciones de lectura): Crear en `application/queries/`
    - Query dataclass con criterios de búsqueda
    - QueryHandler que retorna DTOs
    - Usar repositorio a través de la interface
+   - ⚠️ **TIPADO CRÍTICO**: Los campos deben usar Value Objects directamente, NO strings:
+     * ✅ `company_id: CompanyId`, `token: InvitationToken`, `user_id: UserId`
+     * ❌ `company_id: str`, `token: str`, `user_id: str` (INCORRECTO)
+   - La conversión string → value object se hace en Controller/Router, NO en Handler
 
 3. **DTOs**: Crear en `application/dtos/`
    - Dataclasses para transferencia de datos
@@ -169,7 +169,7 @@ class Company:
 - Propiedades públicas (no private con @property)
 - Factory methods para creación y actualización
 - Métodos específicos para transiciones de estado
-- Inmutabilidad: los métodos retornan nuevas instancias
+- Mutabilidad: los métodos modifican la instancia directamente (NO retornan nuevas instancias)
 
 ### Repositorios
 - Interface en domain layer
@@ -182,6 +182,11 @@ class Company:
 - Queries: retornan DTOs
 - Handlers en application layer
 - Separación clara de responsabilidades
+- **TIPADO CRÍTICO**: Commands y Queries DEBEN usar Value Objects directamente:
+  - IDs: `CompanyId`, `UserId`, `CompanyUserId`, etc. (NO `str`)
+  - Tokens: `InvitationToken`, etc. (NO `str`)
+  - Enums: `CompanyUserRole`, etc. (NO `str`)
+  - Conversión string → value object: SOLO en Controller/Router
 
 ### Data Flow
 ```

@@ -8,8 +8,18 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
 
 from adapters.http.company.controllers.company_user_controller import CompanyUserController
-from adapters.http.company.schemas.company_user_request import UpdateCompanyUserRequest, AddCompanyUserRequest
+from adapters.http.company.schemas.company_user_request import (
+    UpdateCompanyUserRequest,
+    AddCompanyUserRequest,
+    AssignRoleRequest,
+)
 from adapters.http.company.schemas.company_user_response import CompanyUserResponse
+from adapters.http.company.schemas.company_user_invitation_request import (
+    InviteCompanyUserRequest,
+)
+from adapters.http.company.schemas.company_user_invitation_response import (
+    UserInvitationLinkResponse,
+)
 from core.container import Container
 
 log = logging.getLogger(__name__)
@@ -92,11 +102,39 @@ async def deactivate_company_user(
     return controller.deactivate_company_user(company_user_id)
 
 
-@router.delete("/users/{company_user_id}", status_code=204)
+@router.delete("/{company_id}/users/{user_id}", status_code=204)
 @inject
 async def remove_company_user(
-        company_user_id: str,
+        company_id: str,
+        user_id: str,
+        current_user_id: str,  # TODO: Get from authentication context
         controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
 ) -> None:
     """Remove a user from a company"""
-    controller.remove_company_user(company_user_id)
+    # TODO: Get current_user_id from authenticated user context
+    controller.remove_company_user(company_id, user_id, current_user_id)
+
+
+@router.post("/{company_id}/users/invite", response_model=UserInvitationLinkResponse, status_code=201)
+@inject
+async def invite_company_user(
+        company_id: str,
+        request: InviteCompanyUserRequest,
+        current_user_id: str,  # TODO: Get from authentication context
+        controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
+) -> UserInvitationLinkResponse:
+    """Invite a user to a company"""
+    # TODO: Get current_user_id from authenticated user context
+    return controller.invite_company_user(company_id, request, current_user_id)
+
+
+@router.put("/{company_id}/users/{user_id}/role", response_model=CompanyUserResponse)
+@inject
+async def assign_role_to_user(
+        company_id: str,
+        user_id: str,
+        request: AssignRoleRequest,
+        controller: Annotated[CompanyUserController, Depends(Provide[Container.company_user_controller])],
+) -> CompanyUserResponse:
+    """Assign a role to a company user"""
+    return controller.assign_role_to_user(company_id, user_id, request)

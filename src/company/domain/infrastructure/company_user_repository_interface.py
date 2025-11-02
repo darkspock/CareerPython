@@ -48,3 +48,8 @@ class CompanyUserRepositoryInterface(ABC):
     def get_by_user_id(self, user_id: UserId) -> Optional[CompanyUser]:
         """Get a company user by user ID"""
         pass
+
+    @abstractmethod
+    def count_admins_by_company(self, company_id: CompanyId) -> int:
+        """Count the number of admin users for a company"""
+        pass

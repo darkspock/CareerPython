@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 
 class EmailServiceInterface(ABC):
@@ -54,4 +54,16 @@ class EmailServiceInterface(ABC):
     @abstractmethod
     def get_failed_emails(self) -> List[Dict[str, Any]]:
         """Get list of failed email attempts"""
+        pass
+
+    @abstractmethod
+    async def send_user_invitation(
+        self,
+        email: str,
+        company_name: str,
+        invitation_link: str,
+        inviter_name: Optional[str] = None,
+        custom_message: Optional[str] = None
+    ) -> bool:
+        """Send user invitation email to join a company"""
         pass

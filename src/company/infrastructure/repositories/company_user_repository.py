@@ -78,6 +78,16 @@ class CompanyUserRepository(CompanyUserRepositoryInterface):
             ).first()
             return self._to_domain(model) if model else None
 
+    def count_admins_by_company(self, company_id: CompanyId) -> int:
+        """Count the number of admin users for a company"""
+        with self.database.get_session() as session:
+            count = session.query(CompanyUserModel).filter(
+                CompanyUserModel.company_id == str(company_id),
+                CompanyUserModel.role == CompanyUserRole.ADMIN.value,
+                CompanyUserModel.status == CompanyUserStatus.ACTIVE.value
+            ).count()
+            return count
+
     def _to_domain(self, model: CompanyUserModel) -> CompanyUser:
         """Convert model to domain entity"""
         return CompanyUser(

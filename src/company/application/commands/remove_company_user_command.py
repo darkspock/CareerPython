@@ -1,15 +1,18 @@
 from dataclasses import dataclass
 
-from src.company.domain.value_objects import CompanyUserId
+from src.company.domain.value_objects import CompanyId, CompanyUserId
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
-from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
+from src.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyNotFoundError
 from src.shared.application.command_bus import Command, CommandHandler
+from src.user.domain.value_objects.UserId import UserId
 
 
 @dataclass
 class RemoveCompanyUserCommand(Command):
     """Command to remove a user from a company"""
-    id: str
+    company_id: CompanyId
+    user_id_to_remove: UserId
+    current_user_id: UserId  # For validation of no self-removal
 
 
 class RemoveCompanyUserCommandHandler(CommandHandler):
@@ -20,11 +23,26 @@ class RemoveCompanyUserCommandHandler(CommandHandler):
 
     def execute(self, command: RemoveCompanyUserCommand) -> None:
         """Execute the command - NO return value"""
-        company_user_id = CompanyUserId.from_string(command.id)
-        company_user = self.repository.get_by_id(company_user_id)
+        # Validate that current_user_id != user_id_to_remove
+        if command.current_user_id == command.user_id_to_remove:
+            raise CompanyValidationError("Cannot remove yourself from the company")
 
+        company_id = command.company_id
+        user_id_to_remove = command.user_id_to_remove
+
+        # Find CompanyUser to remove
+        company_user = self.repository.get_by_company_and_user(company_id, user_id_to_remove)
         if not company_user:
-            raise CompanyNotFoundError(f"Company user with id {command.id} not found")
+            raise CompanyNotFoundError(
+                f"Company user with user_id {user_id_to_remove} not found for company {company_id}"
+            )
+
+        # Validate that it's not the last admin
+        admin_count = self.repository.count_admins_by_company(company_id)
+        if company_user.is_admin() and admin_count <= 1:
+            raise CompanyValidationError(
+                "Cannot remove the last admin user. At least one admin must remain."
+            )
 
         # Delete from repository
-        self.repository.delete(company_user_id)
+        self.repository.delete(company_user.id)

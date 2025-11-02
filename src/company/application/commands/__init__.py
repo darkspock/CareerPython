@@ -10,6 +10,9 @@ from .update_company_user_command import UpdateCompanyUserCommand, UpdateCompany
 from .activate_company_user_command import ActivateCompanyUserCommand, ActivateCompanyUserCommandHandler
 from .deactivate_company_user_command import DeactivateCompanyUserCommand, DeactivateCompanyUserCommandHandler
 from .remove_company_user_command import RemoveCompanyUserCommand, RemoveCompanyUserCommandHandler
+from .invite_company_user_command import InviteCompanyUserCommand, InviteCompanyUserCommandHandler
+from .accept_user_invitation_command import AcceptUserInvitationCommand, AcceptUserInvitationCommandHandler
+from .assign_role_to_user_command import AssignRoleToUserCommand, AssignRoleToUserCommandHandler
 
 __all__ = [
     "CreateCompanyCommand",
@@ -34,4 +37,10 @@ __all__ = [
     "DeactivateCompanyUserCommandHandler",
     "RemoveCompanyUserCommand",
     "RemoveCompanyUserCommandHandler",
+    "InviteCompanyUserCommand",
+    "InviteCompanyUserCommandHandler",
+    "AcceptUserInvitationCommand",
+    "AcceptUserInvitationCommandHandler",
+    "AssignRoleToUserCommand",
+    "AssignRoleToUserCommandHandler",
 ]

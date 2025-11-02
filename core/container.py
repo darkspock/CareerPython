@@ -95,6 +95,9 @@ from src.company.application.commands.update_company_user_command import UpdateC
 from src.company.application.commands.activate_company_user_command import ActivateCompanyUserCommandHandler
 from src.company.application.commands.deactivate_company_user_command import DeactivateCompanyUserCommandHandler
 from src.company.application.commands.remove_company_user_command import RemoveCompanyUserCommandHandler
+from src.company.application.commands.invite_company_user_command import InviteCompanyUserCommandHandler
+from src.company.application.commands.accept_user_invitation_command import AcceptUserInvitationCommandHandler
+from src.company.application.commands.assign_role_to_user_command import AssignRoleToUserCommandHandler
 
 # Company Application Layer - Queries
 from src.company.application.queries.get_company_by_id import GetCompanyByIdQueryHandler
@@ -105,10 +108,14 @@ from src.company.application.queries.get_company_user_by_id import GetCompanyUse
 from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQueryHandler
 from src.company.application.queries.list_company_users_by_company import ListCompanyUsersByCompanyQueryHandler
 from src.company.application.queries.authenticate_company_user_query import AuthenticateCompanyUserQueryHandler
+from src.company.application.queries.get_user_invitation_query import GetUserInvitationQueryHandler
+from src.company.application.queries.get_user_permissions_query import GetUserPermissionsQueryHandler
+from src.company.application.queries.get_invitation_by_email_and_company_query import GetInvitationByEmailAndCompanyQueryHandler
 
 # Company Infrastructure
 from src.company.infrastructure.repositories.company_repository import CompanyRepository
 from src.company.infrastructure.repositories.company_user_repository import CompanyUserRepository
+from src.company.infrastructure.repositories.company_user_invitation_repository import CompanyUserInvitationRepository
 
 # Company Presentation Controllers
 from adapters.http.company.controllers.company_controller import CompanyController as CompanyManagementController
@@ -493,6 +500,11 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
+    company_user_invitation_repository = providers.Factory(
+        CompanyUserInvitationRepository,
+        database=database
+    )
+
     # CompanyRole Repository
     company_role_repository = providers.Factory(
         CompanyRoleRepository,
@@ -757,6 +769,21 @@ class Container(containers.DeclarativeContainer):
     list_company_users_by_company_query_handler = providers.Factory(
         ListCompanyUsersByCompanyQueryHandler,
         company_user_repository=company_user_repository
+    )
+
+    get_user_invitation_query_handler = providers.Factory(
+        GetUserInvitationQueryHandler,
+        invitation_repository=company_user_invitation_repository
+    )
+
+    get_user_permissions_query_handler = providers.Factory(
+        GetUserPermissionsQueryHandler,
+        company_user_repository=company_user_repository
+    )
+
+    get_invitation_by_email_and_company_query_handler = providers.Factory(
+        GetInvitationByEmailAndCompanyQueryHandler,
+        invitation_repository=company_user_invitation_repository
     )
 
     get_companies_stats_query_handler = providers.Factory(
@@ -1176,6 +1203,26 @@ class Container(containers.DeclarativeContainer):
 
     remove_company_user_command_handler = providers.Factory(
         RemoveCompanyUserCommandHandler,
+        repository=company_user_repository
+    )
+
+    invite_company_user_command_handler = providers.Factory(
+        InviteCompanyUserCommandHandler,
+        invitation_repository=company_user_invitation_repository,
+        company_user_repository=company_user_repository,
+        company_repository=company_repository,
+        email_service=email_service
+    )
+
+    accept_user_invitation_command_handler = providers.Factory(
+        AcceptUserInvitationCommandHandler,
+        invitation_repository=company_user_invitation_repository,
+        company_user_repository=company_user_repository,
+        user_repository=user_repository
+    )
+
+    assign_role_to_user_command_handler = providers.Factory(
+        AssignRoleToUserCommandHandler,
         repository=company_user_repository
     )
 

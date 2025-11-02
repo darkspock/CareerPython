@@ -185,6 +185,45 @@ class MailgunService(EmailServiceInterface):
             self.logger.error(f"Error getting failed emails: {str(e)}")
             return []
 
+    async def send_user_invitation(
+        self,
+        email: str,
+        company_name: str,
+        invitation_link: str,
+        inviter_name: Optional[str] = None,
+        custom_message: Optional[str] = None
+    ) -> bool:
+        """Send user invitation email to join a company"""
+        try:
+            # Build custom message section if provided
+            custom_message_section = ""
+            if custom_message:
+                custom_message_section = f"""
+            <div class="invitation-message">
+                <p><strong>Message from {inviter_name or 'the team'}:</strong></p>
+                <p class="custom-message">{custom_message}</p>
+            </div>
+            """
+            
+            template_data = {
+                "company_name": company_name,
+                "invitation_link": invitation_link,
+                "inviter_name": inviter_name or "the team",
+                "custom_message": custom_message or "",
+                "custom_message_section": custom_message_section,
+                "user_email": email.split("@")[0],
+                "support_email": settings.SUPPORT_EMAIL
+            }
+
+            html_content = self._load_template("user_invitation.html", template_data)
+            subject = f"You've been invited to join {company_name} on CareerPython"
+
+            return self._send_email(email, subject, html_content)
+
+        except Exception as e:
+            self.logger.error(f"Error sending user invitation email: {str(e)}")
+            raise EmailSendingException(f"Failed to send user invitation email: {str(e)}")
+
     def _send_email(self, to_email: str, subject: str, html_content: str, text_content: Optional[str] = None) -> bool:
         """Send email through Mailgun API"""
         try:
