@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, model_validator
 
 
 class InviteCompanyUserRequest(BaseModel):
@@ -28,12 +28,27 @@ class AcceptInvitationRequest(BaseModel):
     password: Optional[str] = None  # Required if user is new
     user_id: Optional[str] = None  # If user already exists
 
-    @field_validator('email', 'name', 'password')
-    @classmethod
-    def validate_new_user_fields(cls, v: Optional[str], info) -> Optional[str]:
-        """Validate that if user_id is not provided, all new user fields are provided"""
-        # This will be validated at handler level for better error messages
-        return v
+    @model_validator(mode='after')
+    def validate_mutually_exclusive_fields(self) -> 'AcceptInvitationRequest':
+        """Validate that either user_id OR (email, name, password) are provided, but not both"""
+        has_user_id = self.user_id is not None
+        has_new_user_fields = all([
+            self.email is not None,
+            self.name is not None,
+            self.password is not None
+        ])
+        
+        if has_user_id and (self.email is not None or self.name is not None or self.password is not None):
+            raise ValueError(
+                "If user_id is provided, email, name, and password must not be provided"
+            )
+        
+        if not has_user_id and not has_new_user_fields:
+            raise ValueError(
+                "Either user_id must be provided, or all of email, name, and password must be provided"
+            )
+        
+        return self
 
 
 class AssignRoleRequest(BaseModel):

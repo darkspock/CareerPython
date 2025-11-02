@@ -1,8 +1,21 @@
 from typing import List, Optional
-import ulid
 
+import ulid
 from fastapi import HTTPException, status
 
+from adapters.http.company.mappers.company_user_mapper import CompanyUserResponseMapper
+from adapters.http.company.schemas.company_user_invitation_request import (
+    AssignRoleRequest,
+    InviteCompanyUserRequest,
+)
+from adapters.http.company.schemas.company_user_invitation_response import (
+    UserInvitationLinkResponse,
+)
+from adapters.http.company.schemas.company_user_request import (
+    AddCompanyUserRequest,
+    UpdateCompanyUserRequest,
+)
+from adapters.http.company.schemas.company_user_response import CompanyUserResponse
 from src.company.application.commands import (
     AddCompanyUserCommand,
     UpdateCompanyUserCommand,
@@ -10,24 +23,19 @@ from src.company.application.commands import (
     DeactivateCompanyUserCommand,
     RemoveCompanyUserCommand,
 )
+from src.company.application.dtos import CompanyUserInvitationDto
+from src.company.application.dtos.company_user_dto import CompanyUserDto
 from src.company.application.queries import (
     GetCompanyUserByIdQuery,
     GetCompanyUserByCompanyAndUserQuery,
     ListCompanyUsersByCompanyQuery,
 )
-from src.company.application.dtos.company_user_dto import CompanyUserDto
 from src.company.domain import CompanyUserRole
-from src.company.domain.value_objects import CompanyId, CompanyUserId
 from src.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError,
 )
-from adapters.http.company.mappers.company_user_mapper import CompanyUserResponseMapper
-from adapters.http.company.schemas.company_user_request import (
-    AddCompanyUserRequest,
-    UpdateCompanyUserRequest,
-)
-from adapters.http.company.schemas.company_user_response import CompanyUserResponse
+from src.company.domain.value_objects import CompanyId, CompanyUserId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.user.domain.value_objects.UserId import UserId
@@ -41,9 +49,9 @@ class CompanyUserController:
         self.query_bus = query_bus
 
     def add_company_user(
-        self,
-        company_id: str,
-        request: AddCompanyUserRequest
+            self,
+            company_id: str,
+            request: AddCompanyUserRequest
     ) -> CompanyUserResponse:
         """Add a user to a company"""
         try:
@@ -111,9 +119,9 @@ class CompanyUserController:
             )
 
     def get_company_user_by_company_and_user(
-        self,
-        company_id: str,
-        user_id: str
+            self,
+            company_id: str,
+            user_id: str
     ) -> CompanyUserResponse:
         """Get a company user by company and user IDs"""
         try:
@@ -140,9 +148,9 @@ class CompanyUserController:
             )
 
     def list_company_users(
-        self,
-        company_id: str,
-        active_only: bool = False
+            self,
+            company_id: str,
+            active_only: bool = False
     ) -> List[CompanyUserResponse]:
         """List all users for a company"""
         try:
@@ -161,9 +169,9 @@ class CompanyUserController:
             )
 
     def update_company_user(
-        self,
-        company_user_id: str,
-        request: UpdateCompanyUserRequest
+            self,
+            company_user_id: str,
+            request: UpdateCompanyUserRequest
     ) -> CompanyUserResponse:
         """Update a company user"""
         try:
@@ -264,10 +272,10 @@ class CompanyUserController:
             )
 
     def remove_company_user(
-        self,
-        company_id: str,
-        user_id: str,
-        current_user_id: str
+            self,
+            company_id: str,
+            user_id: str,
+            current_user_id: str
     ) -> None:
         """Remove a user from a company"""
         try:
@@ -295,11 +303,11 @@ class CompanyUserController:
             )
 
     def invite_company_user(
-        self,
-        company_id: str,
-        request,
-        current_user_id: str
-    ):
+            self,
+            company_id: CompanyId,
+            request: InviteCompanyUserRequest,
+            current_user_id: CompanyUserId
+    ) -> UserInvitationLinkResponse:
         """Invite a user to a company"""
         from src.company.application.commands.invite_company_user_command import (
             InviteCompanyUserCommand
@@ -310,10 +318,7 @@ class CompanyUserController:
         from adapters.http.company.mappers.company_user_invitation_mapper import (
             CompanyUserInvitationResponseMapper
         )
-        from adapters.http.company.schemas.company_user_invitation_response import (
-            UserInvitationLinkResponse
-        )
-        
+
         try:
             # Convert role string to enum if provided
             role = None
@@ -322,12 +327,12 @@ class CompanyUserController:
                     role = CompanyUserRole(request.role.lower())
                 except ValueError:
                     role = CompanyUserRole.RECRUITER
-            
+
             # Execute command
             command = InviteCompanyUserCommand(
-                company_id=CompanyId.from_string(company_id),
+                company_id=company_id,
                 email=request.email,
-                invited_by_user_id=CompanyUserId.from_string(current_user_id),
+                invited_by_user_id=current_user_id,
                 role=role
             )
             self.command_bus.dispatch(command)
@@ -335,9 +340,9 @@ class CompanyUserController:
             # Query to get created invitation
             query = GetInvitationByEmailAndCompanyQuery(
                 email=request.email,
-                company_id=CompanyId.from_string(company_id)
+                company_id=company_id
             )
-            dto = self.query_bus.query(query)
+            dto: Optional[CompanyUserInvitationDto] = self.query_bus.query(query)
 
             if not dto:
                 raise HTTPException(
@@ -359,16 +364,16 @@ class CompanyUserController:
             )
 
     def assign_role_to_user(
-        self,
-        company_id: str,
-        user_id: str,
-        request
+            self,
+            company_id: str,
+            user_id: str,
+            request: AssignRoleRequest
     ) -> CompanyUserResponse:
         """Assign a role to a company user"""
         from src.company.application.commands.assign_role_to_user_command import (
             AssignRoleToUserCommand
         )
-        
+
         try:
             # Convert role string to enum
             try:
@@ -378,7 +383,7 @@ class CompanyUserController:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid role: {request.role}"
                 )
-            
+
             # Execute command
             command = AssignRoleToUserCommand(
                 company_id=CompanyId.from_string(company_id),

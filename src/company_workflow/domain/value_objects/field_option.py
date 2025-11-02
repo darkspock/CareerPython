@@ -1,6 +1,7 @@
 """Field Option Value Object - represents a single option/check value with i18n support."""
 from dataclasses import dataclass
 from typing import List, Dict, Optional
+
 import ulid
 
 
@@ -10,7 +11,7 @@ class FieldOptionLabel:
     language: str  # Language code (e.g., "en", "es")
     label: str  # The translated label text
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.language:
             raise ValueError("Language code cannot be empty")
         if not self.label:
@@ -36,7 +37,7 @@ class FieldOption:
     sort: int  # Order index (0-based)
     labels: List[FieldOptionLabel]  # i18n labels array
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.id:
             raise ValueError("Option ID cannot be empty")
         if self.sort < 0:
@@ -46,18 +47,18 @@ class FieldOption:
 
     @staticmethod
     def create(
-        labels: List[Dict[str, str]],  # [{"language": "en", "label": "Option 1"}, ...]
-        sort: int = 0,
-        id: Optional[str] = None
+            labels: List[Dict[str, str]],  # [{"language": "en", "label": "Option 1"}, ...]
+            sort: int = 0,
+            id: Optional[str] = None
     ) -> "FieldOption":
         """Factory method to create a new field option"""
         option_id = id if id else str(ulid.new())
-        
+
         field_option_labels = [
             FieldOptionLabel(language=label["language"], label=label["label"])
             for label in labels
         ]
-        
+
         return FieldOption(
             id=option_id,
             sort=sort,
@@ -76,16 +77,16 @@ class FieldOption:
         """
         if not self.labels:
             return ""
-        
+
         # If no language specified, return first label
         if not language:
             return self.labels[0].label
-        
+
         # Try to find label for requested language
         for label in self.labels:
             if label.language == language:
                 return label.label
-        
+
         # Fallback to first label
         return self.labels[0].label
 
@@ -93,18 +94,18 @@ class FieldOption:
         """Update or add a label for a specific language"""
         new_labels = []
         updated = False
-        
+
         for label in self.labels:
             if label.language == language:
                 new_labels.append(FieldOptionLabel(language=language, label=new_label))
                 updated = True
             else:
                 new_labels.append(label)
-        
+
         # If language doesn't exist, add it
         if not updated:
             new_labels.append(FieldOptionLabel(language=language, label=new_label))
-        
+
         return FieldOption(
             id=self.id,
             sort=self.sort,
@@ -114,10 +115,10 @@ class FieldOption:
     def remove_label(self, language: str) -> "FieldOption":
         """Remove a label for a specific language (must have at least one remaining)"""
         new_labels = [label for label in self.labels if label.language != language]
-        
+
         if not new_labels:
             raise ValueError("Cannot remove last label from option")
-        
+
         return FieldOption(
             id=self.id,
             sort=self.sort,
@@ -128,7 +129,7 @@ class FieldOption:
         """Change the sort order of this option"""
         if new_sort < 0:
             raise ValueError("Sort index cannot be negative")
-        
+
         return FieldOption(
             id=self.id,
             sort=new_sort,
@@ -157,4 +158,3 @@ class FieldOption:
                 for label in data["labels"]
             ]
         )
-

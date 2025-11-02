@@ -1942,6 +1942,16 @@ class Container(containers.DeclarativeContainer):
         query_bus=query_bus
     )
 
+    # Invitation Controller
+    from adapters.http.invitations.controllers.invitation_controller import (
+        InvitationController
+    )
+    invitation_controller = providers.Factory(
+        InvitationController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
     company_role_controller = providers.Factory(
         CompanyRoleController,
         command_bus=command_bus,

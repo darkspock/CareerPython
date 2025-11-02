@@ -8,19 +8,21 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
 
 from adapters.http.company.controllers.company_user_controller import CompanyUserController
-from adapters.http.company.schemas.company_user_request import (
-    UpdateCompanyUserRequest,
-    AddCompanyUserRequest,
-    AssignRoleRequest,
-)
-from adapters.http.company.schemas.company_user_response import CompanyUserResponse
 from adapters.http.company.schemas.company_user_invitation_request import (
+    AssignRoleRequest,
     InviteCompanyUserRequest,
 )
 from adapters.http.company.schemas.company_user_invitation_response import (
     UserInvitationLinkResponse,
 )
+from adapters.http.company.schemas.company_user_request import (
+    AddCompanyUserRequest,
+    UpdateCompanyUserRequest,
+)
+from adapters.http.company.schemas.company_user_response import CompanyUserResponse
 from core.container import Container
+from src.company.domain import CompanyId
+from src.company.domain.value_objects import CompanyUserId
 
 log = logging.getLogger(__name__)
 
@@ -125,7 +127,8 @@ async def invite_company_user(
 ) -> UserInvitationLinkResponse:
     """Invite a user to a company"""
     # TODO: Get current_user_id from authenticated user context
-    return controller.invite_company_user(company_id, request, current_user_id)
+    return controller.invite_company_user(CompanyId.from_string(company_id), request,
+                                          CompanyUserId.from_string(current_user_id))
 
 
 @router.put("/{company_id}/users/{user_id}/role", response_model=CompanyUserResponse)
