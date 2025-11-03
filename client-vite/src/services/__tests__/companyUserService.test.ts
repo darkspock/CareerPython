@@ -86,15 +86,19 @@ describe('CompanyUserService', () => {
           user_id: 'user-1',
           role: 'admin',
           permissions: {
+            can_create_candidates: true,
+            can_delete_candidates: true,
+            can_view_candidates: true,
+            can_invite_candidates: true,
+            can_add_comments: true,
             can_manage_users: true,
-            can_manage_positions: true,
-            can_view_resumes: true,
-            can_manage_resumes: true,
-            can_invite_users: true,
-            can_assign_roles: true
+            can_change_settings: true,
+            can_change_phase: true,
+            can_view_analytics: true
           },
           status: 'active',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }
       ];
 
@@ -174,15 +178,19 @@ describe('CompanyUserService', () => {
         user_id: 'user-456',
         role: 'admin',
         permissions: {
+          can_create_candidates: true,
+          can_delete_candidates: true,
+          can_view_candidates: true,
+          can_invite_candidates: true,
+          can_add_comments: true,
           can_manage_users: true,
-          can_manage_positions: true,
-          can_view_resumes: true,
-          can_manage_resumes: true,
-          can_invite_users: true,
-          can_assign_roles: true
+          can_change_settings: true,
+          can_change_phase: true,
+          can_view_analytics: true
         },
         status: 'active',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       mockedApi.authenticatedRequest = jest.fn().mockResolvedValue(mockUser);
@@ -207,12 +215,15 @@ describe('CompanyUserService', () => {
   describe('getUserPermissions', () => {
     it('should fetch user permissions successfully', async () => {
       const mockPermissions: CompanyUserPermissions = {
+        can_create_candidates: true,
+        can_delete_candidates: false,
+        can_view_candidates: true,
+        can_invite_candidates: true,
+        can_add_comments: false,
         can_manage_users: true,
-        can_manage_positions: true,
-        can_view_resumes: true,
-        can_manage_resumes: false,
-        can_invite_users: true,
-        can_assign_roles: true
+        can_change_settings: false,
+        can_change_phase: true,
+        can_view_analytics: true
       };
 
       mockedApi.authenticatedRequest = jest.fn().mockResolvedValue(mockPermissions);

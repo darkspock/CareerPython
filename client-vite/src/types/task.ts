@@ -2,18 +2,19 @@
 
 import { ApplicationStatus, TaskStatus } from './candidateApplication';
 
-// Re-export TaskStatus for convenience
-export type { TaskStatus };
+// Re-export TaskStatus for convenience (as value, not type)
+export { TaskStatus };
 
 /**
  * Priority level for tasks
  */
-export enum PriorityLevel {
-  CRITICAL = 'critical',
-  HIGH = 'high',
-  MEDIUM = 'medium',
-  LOW = 'low'
-}
+export const PriorityLevel = {
+  CRITICAL: 'critical',
+  HIGH: 'high',
+  MEDIUM: 'medium',
+  LOW: 'low'
+} as const;
+export type PriorityLevel = typeof PriorityLevel[keyof typeof PriorityLevel];
 
 /**
  * Task DTO with enriched candidate and position information

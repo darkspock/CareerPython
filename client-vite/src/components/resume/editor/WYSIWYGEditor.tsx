@@ -16,7 +16,6 @@ import {
   AlignCenter,
   AlignRight,
   Link,
-  Type,
   Save,
   Eye,
   EyeOff

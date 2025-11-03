@@ -12,7 +12,6 @@ import {
   Clock,
   Briefcase,
   Building2,
-  Home,
   Send,
   AlertCircle,
   CheckCircle
@@ -26,7 +25,7 @@ export default function PublicPositionDetailPage() {
   const [position, setPosition] = useState<Position | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [applicationSuccess, setApplicationSuccess] = useState(false);
+  const [applicationSuccess, _setApplicationSuccess] = useState(false);
 
   useEffect(() => {
     if (slugOrId) {
@@ -161,12 +160,12 @@ export default function PublicPositionDetailPage() {
                     <span>{getExperienceLevelLabel(position.experience_level)}</span>
                   </div>
                 )}
-                {position.salary_range_max && (
+                {position.salary_range?.max_amount && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <DollarSign className="w-5 h-5 text-gray-400" />
                     <span>
-                      {position.salary_range_min && `$${position.salary_range_min.toLocaleString()} - `}
-                      ${position.salary_range_max.toLocaleString()}
+                      {position.salary_range.min_amount && `$${position.salary_range.min_amount.toLocaleString()} - `}
+                      ${position.salary_range.max_amount.toLocaleString()}
                     </span>
                   </div>
                 )}
@@ -197,17 +196,17 @@ export default function PublicPositionDetailPage() {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Requirements</h2>
                 <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                  {position.requirements}
+                  {typeof position.requirements === 'string' ? position.requirements : JSON.stringify(position.requirements || {})}
                 </div>
               </div>
             )}
 
             {/* Responsibilities */}
-            {position.responsibilities && (
+            {(position as any).responsibilities && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Responsibilities</h2>
                 <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                  {position.responsibilities}
+                  {(position as any).responsibilities}
                 </div>
               </div>
             )}

@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 export default function CompanyDashboardPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [companyName] = useState("My Company"); // TODO: Get from API
+  const [_companyName] = useState("My Company"); // TODO: Get from API
 
   return (
     <div>

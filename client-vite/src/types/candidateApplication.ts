@@ -1,20 +1,22 @@
 // Phase 5: Candidate Application types with workflow stage tracking
 
-export enum ApplicationStatus {
-  APPLIED = 'applied',
-  REVIEWING = 'reviewing',
-  INTERVIEWED = 'interviewed',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-  WITHDRAWN = 'withdrawn'
-}
+export const ApplicationStatus = {
+  APPLIED: 'applied',
+  REVIEWING: 'reviewing',
+  INTERVIEWED: 'interviewed',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+  WITHDRAWN: 'withdrawn'
+} as const;
+export type ApplicationStatus = typeof ApplicationStatus[keyof typeof ApplicationStatus];
 
-export enum TaskStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  BLOCKED = 'blocked'
-}
+export const TaskStatus = {
+  PENDING: 'pending',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+  BLOCKED: 'blocked'
+} as const;
+export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
 export interface CandidateApplication {
   id: string;

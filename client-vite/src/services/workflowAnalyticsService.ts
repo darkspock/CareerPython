@@ -3,8 +3,8 @@
  * Phase 9: Service for workflow analytics API calls
  */
 
-import api from '@/lib/api';
-import type { WorkflowAnalytics, StageBottleneck } from '@/types/workflowAnalytics';
+import { api } from '../lib/api';
+import type { WorkflowAnalytics, StageBottleneck } from '../types/workflowAnalytics';
 
 export interface AnalyticsFilters {
   date_range_start?: string; // ISO date string
@@ -39,8 +39,7 @@ export class WorkflowAnalyticsService {
       ? `${this.BASE_PATH}/${workflowId}/analytics?${queryString}`
       : `${this.BASE_PATH}/${workflowId}/analytics`;
 
-    const response = await api.get(url);
-    return await response.json();
+    return await api.authenticatedRequest<WorkflowAnalytics>(url);
   }
 
   /**
@@ -67,8 +66,7 @@ export class WorkflowAnalyticsService {
       ? `${this.BASE_PATH}/${workflowId}/bottlenecks?${queryString}`
       : `${this.BASE_PATH}/${workflowId}/bottlenecks`;
 
-    const response = await api.get(url);
-    return await response.json();
+    return await api.authenticatedRequest<StageBottleneck[]>(url);
   }
 
   // Convenience methods

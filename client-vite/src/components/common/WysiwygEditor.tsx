@@ -7,22 +7,27 @@ import Placeholder from '@tiptap/extension-placeholder';
 import './WysiwygEditor.css';
 
 interface WysiwygEditorProps {
-  value: string;
+  value?: string;
+  content?: string; // Alias for value for backward compatibility
   onChange: (content: string) => void;
   placeholder?: string;
   height?: number;
+  minHeight?: string; // CSS string like "150px"
   disabled?: boolean;
   className?: string;
 }
 
 export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   value,
+  content,
   onChange,
   placeholder = 'Enter your content...',
   height = 300,
+  minHeight,
   disabled = false,
   className = ''
 }) => {
+  const editorValue = value || content || '';
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -41,7 +46,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         placeholder: placeholder,
       }),
     ],
-    content: value,
+    content: editorValue,
     editable: !disabled,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
@@ -218,7 +223,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       {/* Editor Content */}
       <div 
         className="wysiwyg-content"
-        style={{ height: `${height - 60}px` }}
+        style={minHeight ? { minHeight } : { height: `${height - 60}px` }}
       >
         <EditorContent editor={editor} />
       </div>

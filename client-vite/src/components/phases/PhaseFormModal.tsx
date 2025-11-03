@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
-import type { Phase, CreatePhaseRequest, UpdatePhaseRequest, DefaultView } from '../../types/phase';
+import type { Phase, CreatePhaseRequest, UpdatePhaseRequest } from '../../types/phase';
+import { DefaultView } from '../../types/phase';
 
 interface PhaseFormModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ export default function PhaseFormModal({
 }: PhaseFormModalProps) {
   const [name, setName] = useState('');
   const [sortOrder, setSortOrder] = useState(0);
-  const [defaultView, setDefaultView] = useState<DefaultView>('KANBAN');
+  const [defaultView, setDefaultView] = useState<DefaultView>(DefaultView.KANBAN);
   const [objective, setObjective] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export default function PhaseFormModal({
         // Create mode - reset form
         setName('');
         setSortOrder(0);
-        setDefaultView('KANBAN');
+        setDefaultView(DefaultView.KANBAN);
         setObjective('');
       }
       setError(null);

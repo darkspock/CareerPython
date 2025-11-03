@@ -104,7 +104,7 @@ export default function HomePage() {
 
       setCompletionStatus({
         // Check for basic profile info using correct field names from CandidateResponse
-        basicInfo: profile && profile.name && profile.email ? true : false,
+        basicInfo: profile && typeof profile === 'object' && 'name' in profile && 'email' in profile && profile.name && profile.email ? true : false,
         experience: Array.isArray(experiences) && experiences.length > 0,
         education: Array.isArray(educations) && educations.length > 0,
         projects: Array.isArray(projects) && projects.length > 0,

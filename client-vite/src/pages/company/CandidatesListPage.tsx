@@ -4,19 +4,11 @@ import { useTranslation } from 'react-i18next';
 import {
   Plus,
   Search,
-  Filter,
-  MoreVertical,
   Eye,
   Edit,
-  Trash2,
   Archive,
   UserPlus,
-  Tag,
   Briefcase,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  AlertCircle,
   Flag,
   Building2,
   User,
@@ -24,15 +16,11 @@ import {
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import type { CompanyCandidate } from '../../types/companyCandidate';
-import {
-  getCandidateStatusColor,
-  getPriorityColor,
-  getOwnershipColor
-} from '../../types/companyCandidate';
 import { Tooltip } from '../../components/ui/Tooltip';
 
-// Helper functions for icons
-const getStatusIcon = (status: string) => {
+// Helper functions for icons (unused but kept for potential future use)
+/*
+const _getStatusIcon = (status: string) => {
   switch (status) {
     case 'ACTIVE':
       return null; // Don't show icon for active status
@@ -48,6 +36,7 @@ const getStatusIcon = (status: string) => {
       return <AlertCircle className="w-4 h-4 text-gray-600" />;
   }
 };
+*/
 
 const getPriorityIcon = (priority: string) => {
   switch (priority) {
@@ -73,9 +62,11 @@ const getOwnershipIcon = (ownership: string) => {
   }
 };
 
-const getStatusLabel = (status: string) => {
+/*
+const _getStatusLabel = (status: string) => {
   return status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
 };
+*/
 
 export default function CandidatesListPage() {
   const { t } = useTranslation();
@@ -157,7 +148,6 @@ export default function CandidatesListPage() {
       const { PositionService } = await import('../../services/positionService');
       const response = await PositionService.getPositions({
         company_id: companyId,
-        status: 'OPEN' // Only show open positions
       });
       setPositions(response.positions || []);
     } catch (err: any) {
@@ -390,13 +380,13 @@ export default function CandidatesListPage() {
                               Status: {candidate.application_status}
                             </div>
                           )}
-                          {candidate.workflow_id && candidate.current_stage_id && (
+                          {candidate.current_workflow_id && candidate.current_stage_id && (
                             <div className="text-xs text-gray-500">
                               {candidate.stage_name} - {candidate.workflow_name}
                             </div>
                           )}
                         </>
-                      ) : candidate.workflow_id && candidate.current_stage_id ? (
+                      ) : candidate.current_workflow_id && candidate.current_stage_id ? (
                         <>
                           <div className="text-sm text-gray-900">
                             {candidate.stage_name || 'No stage'}

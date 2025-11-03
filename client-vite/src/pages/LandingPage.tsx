@@ -16,12 +16,12 @@ const generateRandomEmail = () => {
 };
 
 export default function LandingPage() {
-  const [name, setName] = useState("");
+  const [_name, _setName] = useState("");
   const [email, setEmail] = useState(generateRandomEmail()); // Pre-populate with random email for testing
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [_searchParams] = useSearchParams();
   const { updateCandidateData, jobPositionId, clearCandidateData } = useOnboarding();
 
   // Clear localStorage when landing page loads to start fresh onboarding flow
@@ -32,8 +32,8 @@ export default function LandingPage() {
     // Log existing data before clearing (for debugging)
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      const value = localStorage.getItem(key);
-      console.log(`  ${key}: ${value ? value.substring(0, 50) + (value.length > 50 ? '...' : '') : 'null'}`);
+      const value = localStorage.getItem(key || '');
+      console.log(`  ${key || 'unknown'}: ${value ? value.substring(0, 50) + (value.length > 50 ? '...' : '') : 'null'}`);
     }
 
     // Clear all authentication and onboarding data

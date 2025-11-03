@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, Trash2, FileText, Calendar, Download } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, FileText, Calendar } from 'lucide-react';
 import { CandidateProfileLayout } from '../../components/candidate-profile';
 import { api } from '../../lib/api';
 
@@ -23,11 +23,6 @@ interface ResumeData {
   custom_content?: Record<string, any>;
 }
 
-interface ResumeListResponse {
-  resumes: ResumeData[];
-  total_count: number;
-  message?: string;
-}
 
 const ResumesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -44,8 +39,12 @@ const ResumesPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getResumes();
-      setResumes(data.resumes || []);
+      const data = await api.getResumes() as { resumes?: ResumeData[] } | ResumeData[];
+      if (Array.isArray(data)) {
+        setResumes(data);
+      } else {
+        setResumes(data.resumes || []);
+      }
     } catch (error) {
       console.error('Error loading resumes:', error);
       setError('Error al cargar los CVs');

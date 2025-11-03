@@ -87,8 +87,6 @@ export default function EditCandidatePage() {
       setLoading(true);
 
       await companyCandidateService.update(id!, {
-        position: formData.position || undefined,
-        department: formData.department || undefined,
         priority: formData.priority,
         tags: formData.tags,
         internal_notes: formData.internal_notes || undefined,

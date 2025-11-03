@@ -40,7 +40,7 @@ export default function AcceptInvitationPage() {
   const navigate = useNavigate();
   const token = searchParams.get('token');
 
-  const { invitation, loading, error: invitationError, refresh: refreshInvitation } = useInvitation(token);
+  const { invitation, loading, error: invitationError, refresh: _refreshInvitation } = useInvitation(token);
   const { acceptInvitation, loading: submitting, error: acceptError, success, reset: resetAccept } = useAcceptInvitation();
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);

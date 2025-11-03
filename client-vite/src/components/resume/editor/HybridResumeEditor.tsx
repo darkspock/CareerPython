@@ -18,13 +18,11 @@ import {
   Clock,
   AlertCircle,
   User,
-  Settings,
   Edit3,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import WysiwygEditor from '../../common/WysiwygEditor';
 import VariableSectionEditor from './VariableSectionEditor';
 import ResumePreview from './ResumePreview';
 import { api } from '../../../lib/api';
@@ -54,7 +52,7 @@ const HybridResumeEditor: React.FC<HybridResumeEditorProps> = ({
   const [generalInfoExpanded, setGeneralInfoExpanded] = useState(false);
   const [editingGeneralInfo, setEditingGeneralInfo] = useState(false);
 
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const initialDataRef = useRef<string>('');
 
   // Load resume data
@@ -626,7 +624,7 @@ const HybridResumeEditor: React.FC<HybridResumeEditorProps> = ({
             >
               <ResumePreview
                 resumeData={resumeData}
-                template={resumeData.formatting_preferences?.template || 'professional'}
+                template={(resumeData.formatting_preferences?.template as 'professional' | 'modern' | 'minimal' | 'creative') || 'professional'}
                 onTemplateChange={(template) => {
                   const updatedFormatting = {
                     ...resumeData.formatting_preferences,

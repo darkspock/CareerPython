@@ -8,15 +8,45 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { api } from '../lib/api';
-import type {
-  Resume,
-  ResumeListResponse,
-  ResumeStatistics,
-  CreateResumeRequest,
-  UpdateResumeNameRequest,
-  LoadingState,
-  ErrorState
-} from '../types/resume';
+import type { Resume } from '../types/resume';
+
+// Local types for useResumes hook
+interface ResumeListResponse {
+  resumes: Resume[];
+  total?: number;
+}
+
+interface ResumeStatistics {
+  total_resumes: number;
+  active_resumes: number;
+  archived_resumes: number;
+  resume_types?: {
+    GENERAL?: number;
+    POSITION?: number;
+    ROLE?: number;
+  };
+}
+
+interface CreateResumeRequest {
+  name: string;
+  resume_type?: string;
+}
+
+interface UpdateResumeNameRequest {
+  name: string;
+}
+
+interface LoadingState {
+  isLoading: boolean;
+  operation?: string;
+}
+
+interface ErrorState {
+  hasError: boolean;
+  message?: string;
+  code?: string;
+  details?: Record<string, any>;
+}
 
 interface UseResumesState {
   resumes: Resume[];
@@ -162,7 +192,12 @@ export function useResumes(): UseResumesState & UseResumesActions {
     clearError();
 
     try {
-      const resume = await api.createGeneralResume(data) as Resume;
+      // api.createGeneralResume already handles candidate_id internally
+      const resume = await (api.createGeneralResume as any)({
+        name: data.name,
+        general_data: {},
+        include_ai_enhancement: false
+      }) as Resume;
       setState(prev => ({
         ...prev,
         resumes: [resume, ...prev.resumes],

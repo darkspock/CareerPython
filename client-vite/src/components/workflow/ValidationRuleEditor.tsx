@@ -45,7 +45,7 @@ const COMPARISON_OPERATORS: ComparisonOperator[] = ['gt', 'gte', 'lt', 'lte', 'e
 const SEVERITIES: ValidationSeverity[] = ['warning', 'error'];
 
 export const ValidationRuleEditor: React.FC<ValidationRuleEditorProps> = ({
-  workflowId,
+  workflowId: _workflowId,
   stages,
   customFields,
   onRulesChange

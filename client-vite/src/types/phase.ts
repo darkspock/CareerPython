@@ -3,16 +3,18 @@
  * Phase 12: Multi-phase recruitment workflow system
  */
 
-export enum DefaultView {
-  KANBAN = 'KANBAN',
-  LIST = 'LIST',
-}
+export const DefaultView = {
+  KANBAN: 'KANBAN',
+  LIST: 'LIST',
+} as const;
+export type DefaultView = typeof DefaultView[keyof typeof DefaultView];
 
-export enum PhaseStatus {
-  DRAFT = 'DRAFT',
-  ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED',
-}
+export const PhaseStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+export type PhaseStatus = typeof PhaseStatus[keyof typeof PhaseStatus];
 
 export interface Phase {
   id: string;

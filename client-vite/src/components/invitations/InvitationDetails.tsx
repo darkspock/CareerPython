@@ -12,7 +12,6 @@
  * @param {CompanyUserInvitation} props.invitation - The invitation object to display
  */
 // Invitation details component
-import React from 'react';
 import type { CompanyUserInvitation } from '../../types/companyUser';
 import {
   getInvitationStatusColor,

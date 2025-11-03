@@ -269,10 +269,10 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
                 <span>Updated: {formatDate(resume.updated_at)}</span>
               </div>
             )}
-            {resume.last_generated_at && (
+            {(resume as any).last_generated_at && (
               <div className="flex items-center">
                 <Download className="w-4 h-4 mr-2" />
-                <span>Last exported: {formatDate(resume.last_generated_at)}</span>
+                <span>Last exported: {formatDate((resume as any).last_generated_at)}</span>
               </div>
             )}
           </div>

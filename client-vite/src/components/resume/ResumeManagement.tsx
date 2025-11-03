@@ -163,19 +163,19 @@ const ResumeManagement: React.FC<ResumeManagementProps> = ({ className = '' }) =
           />
           <ResumeStatsCard
             title="General Resumes"
-            value={statistics.resume_types.GENERAL || 0}
+            value={statistics.resume_types?.GENERAL || 0}
             icon={<FileText className="w-5 h-5" />}
             color="green"
           />
           <ResumeStatsCard
             title="Position Specific"
-            value={statistics.resume_types.POSITION || 0}
+            value={statistics.resume_types?.POSITION || 0}
             icon={<FileText className="w-5 h-5" />}
             color="purple"
           />
           <ResumeStatsCard
             title="Role Specific"
-            value={statistics.resume_types.ROLE || 0}
+            value={statistics.resume_types?.ROLE || 0}
             icon={<FileText className="w-5 h-5" />}
             color="orange"
           />

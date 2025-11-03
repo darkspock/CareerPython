@@ -67,12 +67,12 @@ interface FormData {
   expectedRoles: Role[];
 }
 
-interface ProcessingStatusResponse {
-  status: string;
-  message: string;
-  error?: string;
-  asset_id?: string;
-}
+// interface ProcessingStatusResponse {
+//   status: string;
+//   message: string;
+//   error?: string;
+//   asset_id?: string;
+// }
 
 interface CandidateData {
   name?: string;
@@ -81,6 +81,7 @@ interface CandidateData {
   country?: string;
   phone?: string;
   email?: string;
+  linkedin_url?: string;
   job_category?: string;
   languages?: Record<string, string>;
   skills?: string[];
@@ -90,6 +91,15 @@ interface CandidateData {
   work_modality?: string[];
   current_roles?: string[];
   expected_roles?: string[];
+  // Frontend-only fields
+  linkedinUrl?: string;
+  dateOfBirth?: string;
+  jobCategory?: string;
+  currentAnnualSalary?: string;
+  expectedAnnualSalary?: string;
+  workModality?: string[];
+  currentRoles?: Role[];
+  expectedRoles?: Role[];
 }
 
 export default function CompleteProfilePage() {
@@ -113,14 +123,14 @@ export default function CompleteProfilePage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isReviewMode, setIsReviewMode] = useState(false);
+  const [isReviewMode, _setIsReviewMode] = useState(false);
   const [isLoadingCandidate, setIsLoadingCandidate] = useState(false);
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
   // New state for PDF analysis polling and countdown
-  const [analysisJobId, setAnalysisJobId] = useState<string | null>(null);
+  const [_analysisJobId, setAnalysisJobId] = useState<string | null>(null);
   const [isPollingAnalysis, setIsPollingAnalysis] = useState(false);
   const [analysisCompleted, setAnalysisCompleted] = useState(false);
   const [countdown, setCountdown] = useState(30); // Reduced to 30s
@@ -133,7 +143,7 @@ export default function CompleteProfilePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { updateCandidateData, jobPositionId, candidateData, nextStep } = useOnboarding();
+  const { updateCandidateData: _updateCandidateData, jobPositionId: _jobPositionId, candidateData: _candidateDataFromHook, nextStep } = useOnboarding();
 
   // Cleanup function for intervals
   const clearIntervals = () => {
@@ -195,7 +205,7 @@ export default function CompleteProfilePage() {
     // Start polling
     const poll = async () => {
       try {
-        const response = await api.getJobStatus(jobId);
+        const response = await api.getJobStatus(jobId) as { status: string; message?: string; error?: string; asset_id?: string };
         console.log('📊 Analysis job status:', response);
 
         if (response.status === 'completed') {
@@ -245,34 +255,34 @@ export default function CompleteProfilePage() {
     pollingIntervalRef.current = setInterval(poll, 3000);
   };
 
-  const checkProcessingStatus = async () => {
-    // PDF processing status is now handled by PDFProcessingPage
-    // CompleteProfilePage only receives completed/failed status via URL params
-    console.log('PDF processing status is handled by PDFProcessingPage - loading candidate data');
-    await loadCandidateData();
-    return true; // Always return true since we only arrive here after processing
-  };
+  // const _checkProcessingStatus = async () => {
+  //   // PDF processing status is now handled by PDFProcessingPage
+  //   // CompleteProfilePage only receives completed/failed status via URL params
+  //   console.log('PDF processing status is handled by PDFProcessingPage - loading candidate data');
+  //   await loadCandidateData();
+  //   return true; // Always return true since we only arrive here after processing
+  // };
 
   const loadCandidateData = async (userEmail?: string) => {
     setIsLoadingCandidate(true);
     try {
       // Try to get full profile summary first
-      let candidateData: CandidateData;
+      let candidateDataFromBackend: CandidateData;
       try {
         const profileSummary = await api.getMyProfileSummary() as any;
-        candidateData = profileSummary.candidate;
+        candidateDataFromBackend = profileSummary.candidate;
         console.log('Loaded profile summary:', profileSummary);
       } catch (summaryError) {
         console.log('Profile summary not available, trying basic profile:', summaryError);
-        candidateData = await api.getMyProfile() as CandidateData;
+        candidateDataFromBackend = await api.getMyProfile() as CandidateData;
       }
       
       // Map job category from backend format to frontend format
       let jobCategoryKey = "OTHER";
-      if (candidateData.job_category) {
+      if (candidateDataFromBackend.job_category) {
         // Find the key that matches the value
         const categoryEntry = Object.entries(JobCategoryMapping).find(
-          ([key, value]) => value === candidateData.job_category
+          ([_key, value]) => value === candidateDataFromBackend.job_category
         );
         if (categoryEntry) {
           jobCategoryKey = categoryEntry[0];
@@ -280,22 +290,22 @@ export default function CompleteProfilePage() {
       }
       
       setFormData({
-        name: candidateData.name || "",
-        dateOfBirth: candidateData.date_of_birth || "1990-01-01",
-        city: candidateData.city || "",
-        country: candidateData.country || "",
-        phone: candidateData.phone || "",
-        email: userEmail || candidateData.email || "",
-        linkedinUrl: candidateData.linkedin_url || "",
+        name: candidateDataFromBackend.name || "",
+        dateOfBirth: candidateDataFromBackend.date_of_birth || "1990-01-01",
+        city: candidateDataFromBackend.city || "",
+        country: candidateDataFromBackend.country || "",
+        phone: candidateDataFromBackend.phone || "",
+        email: userEmail || candidateDataFromBackend.email || "",
+        linkedinUrl: candidateDataFromBackend.linkedin_url || "",
         jobCategory: jobCategoryKey,
-        languages: convertLanguagesFromBackend(candidateData.languages),
-        skills: candidateData.skills || [],
-        expectedAnnualSalary: candidateData.expected_annual_salary?.toString() || "",
-        currentAnnualSalary: candidateData.current_annual_salary?.toString() || "",
-        relocation: candidateData.relocation || false,
-        workModality: candidateData.work_modality || [],
-        currentRoles: convertRolesFromBackend(candidateData.current_roles),
-        expectedRoles: convertRolesFromBackend(candidateData.expected_roles),
+        languages: convertLanguagesFromBackend(candidateDataFromBackend.languages),
+        skills: candidateDataFromBackend.skills || [],
+        expectedAnnualSalary: candidateDataFromBackend.expected_annual_salary?.toString() || "",
+        currentAnnualSalary: candidateDataFromBackend.current_annual_salary?.toString() || "",
+        relocation: candidateDataFromBackend.relocation || false,
+        workModality: candidateDataFromBackend.work_modality || [],
+        currentRoles: candidateDataFromBackend.current_roles ? convertRolesFromBackend(candidateDataFromBackend.current_roles) : [],
+        expectedRoles: candidateDataFromBackend.expected_roles ? convertRolesFromBackend(candidateDataFromBackend.expected_roles) : [],
       });
     } catch (error) {
       console.error('Error loading candidate data:', error);
@@ -346,8 +356,8 @@ export default function CompleteProfilePage() {
       if (!token) return;
 
       // Obtener email desde el estado del hook primero, luego desde el JWT token
-      console.log('🔍 CompleteProfile - candidateData:', candidateData);
-      let userEmail = candidateData.email || "";
+      console.log('🔍 CompleteProfile - candidateData:', _candidateDataFromHook);
+      let userEmail = _candidateDataFromHook?.email || "";
       console.log('📧 Email from candidateData:', userEmail);
 
       if (!userEmail) {
@@ -396,22 +406,22 @@ export default function CompleteProfilePage() {
       } else {
         // En modo normal, pre-llenar con datos del estado del hook (incluyendo email)
         const newFormData = {
-          name: candidateData.name || "",
-          dateOfBirth: candidateData.dateOfBirth || "1990-01-01",
-          city: candidateData.city || "",
-          country: candidateData.country || "",
-          phone: candidateData.phone || "",
+          name: _candidateDataFromHook?.name || "",
+          dateOfBirth: _candidateDataFromHook?.dateOfBirth || "1990-01-01",
+          city: _candidateDataFromHook?.city || "",
+          country: _candidateDataFromHook?.country || "",
+          phone: _candidateDataFromHook?.phone || "",
           email: userEmail,
-          linkedinUrl: candidateData.linkedinUrl || "",
-          jobCategory: candidateData.jobCategory || "OTHER",
-          languages: convertLanguagesFromBackend(candidateData.languages),
-          skills: candidateData.skills || [],
-          expectedAnnualSalary: candidateData.expectedAnnualSalary || "",
-          currentAnnualSalary: candidateData.currentAnnualSalary || "",
-          relocation: candidateData.relocation || false,
-          workModality: candidateData.workModality || [],
-          currentRoles: convertRolesFromBackend(candidateData.current_roles),
-          expectedRoles: convertRolesFromBackend(candidateData.expected_roles),
+          linkedinUrl: _candidateDataFromHook?.linkedinUrl || "",
+          jobCategory: _candidateDataFromHook?.jobCategory || "OTHER",
+          languages: _candidateDataFromHook?.languages ? convertLanguagesFromBackend(_candidateDataFromHook.languages) : [],
+          skills: _candidateDataFromHook?.skills || [],
+          expectedAnnualSalary: _candidateDataFromHook?.expectedAnnualSalary?.toString() || "",
+          currentAnnualSalary: _candidateDataFromHook?.currentAnnualSalary?.toString() || "",
+          relocation: _candidateDataFromHook?.relocation || false,
+          workModality: _candidateDataFromHook?.workModality || [],
+          currentRoles: [],
+          expectedRoles: [],
         };
         console.log('🎯 Setting form data:', newFormData);
         setFormData(newFormData);
@@ -419,7 +429,7 @@ export default function CompleteProfilePage() {
     };
 
     loadUserData();
-  }, [searchParams, candidateData.email, candidateData.name, isPollingAnalysis, analysisCompleted]);
+  }, [searchParams, _candidateDataFromHook?.email, _candidateDataFromHook?.name, isPollingAnalysis, analysisCompleted]);
 
   // Cleanup intervals when component unmounts
   useEffect(() => {
@@ -429,34 +439,34 @@ export default function CompleteProfilePage() {
     };
   }, []);
 
-  // Separate useEffect to update form data when candidateData changes
+  // Separate useEffect to update form data when candidateDataFromHook changes
   useEffect(() => {
-    if (candidateData.email) {
-      console.log('✅ Pre-filling form with email:', candidateData.email);
+    if (_candidateDataFromHook?.email) {
+      console.log('✅ Pre-filling form with email:', _candidateDataFromHook.email);
       setFormData(prev => ({
         ...prev,
-        email: candidateData.email,
-        name: candidateData.name || prev.name,
-        city: candidateData.city || prev.city,
-        country: candidateData.country || prev.country,
-        phone: candidateData.phone || prev.phone,
-        linkedinUrl: candidateData.linkedinUrl || prev.linkedinUrl,
-        jobCategory: candidateData.jobCategory || prev.jobCategory || "OTHER",
-        dateOfBirth: candidateData.dateOfBirth || prev.dateOfBirth || "1990-01-01",
-        languages: candidateData.languages ?
-          Object.entries(candidateData.languages)
-            .filter(([key, value]) => value !== 'none')
+        email: _candidateDataFromHook.email || prev.email,
+        name: _candidateDataFromHook.name || prev.name,
+        city: _candidateDataFromHook.city || prev.city,
+        country: _candidateDataFromHook.country || prev.country,
+        phone: _candidateDataFromHook.phone || prev.phone,
+        linkedinUrl: _candidateDataFromHook.linkedinUrl || prev.linkedinUrl,
+        jobCategory: _candidateDataFromHook.jobCategory || prev.jobCategory || "OTHER",
+        dateOfBirth: _candidateDataFromHook.dateOfBirth || prev.dateOfBirth || "1990-01-01",
+        languages: _candidateDataFromHook.languages ?
+          Object.entries(_candidateDataFromHook.languages)
+            .filter(([_key, value]) => value !== 'none')
             .map(([key, value]) => ({ language: key, level: value })) : prev.languages,
-        skills: candidateData.skills || prev.skills,
-        expectedAnnualSalary: candidateData.expectedAnnualSalary || prev.expectedAnnualSalary,
-        currentAnnualSalary: candidateData.currentAnnualSalary || prev.currentAnnualSalary,
-        relocation: candidateData.relocation !== undefined ? candidateData.relocation : prev.relocation,
-        workModality: candidateData.workModality || prev.workModality,
-        currentRoles: convertRolesFromBackend(candidateData.current_roles) || prev.currentRoles,
-        expectedRoles: convertRolesFromBackend(candidateData.expected_roles) || prev.expectedRoles,
+        skills: _candidateDataFromHook.skills || prev.skills,
+        expectedAnnualSalary: _candidateDataFromHook.expectedAnnualSalary?.toString() || prev.expectedAnnualSalary,
+        currentAnnualSalary: _candidateDataFromHook.currentAnnualSalary?.toString() || prev.currentAnnualSalary,
+        relocation: _candidateDataFromHook.relocation !== undefined ? _candidateDataFromHook.relocation : prev.relocation,
+        workModality: _candidateDataFromHook.workModality || prev.workModality,
+        currentRoles: prev.currentRoles, // Keep existing roles
+        expectedRoles: prev.expectedRoles, // Keep existing roles
       }));
     }
-  }, [candidateData.email, candidateData.name, candidateData.city, candidateData.country, candidateData.phone, candidateData.jobCategory, candidateData.dateOfBirth]);
+  }, [_candidateDataFromHook?.email, _candidateDataFromHook?.name, _candidateDataFromHook?.city, _candidateDataFromHook?.country, _candidateDataFromHook?.phone, _candidateDataFromHook?.jobCategory, _candidateDataFromHook?.dateOfBirth]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {

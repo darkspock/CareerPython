@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { CreatePositionRequest } from '../../types/position';
-import { WORK_LOCATION_OPTIONS, LANGUAGE_OPTIONS, LANGUAGE_LEVEL_OPTIONS, DESIRED_ROLE_OPTIONS } from '../../types/position';
-import { WorkflowSelector, PhaseWorkflowSelector } from '../../components/workflow';
+import { PhaseWorkflowSelector } from '../../components/workflow';
 import { WysiwygEditor } from '../../components/common';
 
 export default function CreatePositionPage() {

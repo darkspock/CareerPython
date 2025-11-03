@@ -403,7 +403,7 @@ export const api = {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          candidate_id: profile.id,
+          candidate_id: (profile as { id?: string })?.id || '',
           ...data
         }),
       });

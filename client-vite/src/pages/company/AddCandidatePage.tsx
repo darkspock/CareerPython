@@ -89,8 +89,6 @@ export default function AddCandidatePage() {
         candidate_name: formData.candidate_name,
         candidate_email: formData.candidate_email,
         candidate_phone: formData.candidate_phone || undefined,
-        created_by_user_id: companyUserId,
-        source: 'manual_import', // Source indicating manual addition by company
         priority: formData.priority,
         tags: formData.tags,
         internal_notes: formData.internal_notes || undefined,

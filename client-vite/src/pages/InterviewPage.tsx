@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 // import InterviewList from '../components/interview/InterviewList'; // Temporarily disabled
-import LoadingSpinner from '../components/common/LoadingSpinner';
+// import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorAlert from '../components/common/ErrorAlert';
 // import { Interview, InterviewFilters, InterviewStatus } from '../types/interview'; // Temporarily disabled
 
@@ -45,14 +45,14 @@ const InterviewPage: React.FC = () => {
     window.location.href = '/interviews/templates';
   };
 
-  const getActiveInterviewDefaults = (): any => { // Temporarily using any
-    if (activeInterview) {
-      return {
-        status: 'IN_PROGRESS' // Temporarily using string literal
-      };
-    }
-    return {};
-  };
+  // const getActiveInterviewDefaults = (): any => { // Temporarily using any
+  //   if (activeInterview) {
+  //     return {
+  //       status: 'IN_PROGRESS' // Temporarily using string literal
+  //     };
+  //   }
+  //   return {};
+  // };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -149,7 +149,7 @@ const InterviewPage: React.FC = () => {
         {/* Error Alert */}
         {error && (
           <div className="mb-6">
-            <ErrorAlert message={error} onRetry={loadActiveInterview} />
+            <ErrorAlert message={error} onDismiss={() => {}} />
           </div>
         )}
 

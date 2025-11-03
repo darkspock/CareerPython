@@ -1,10 +1,7 @@
-import type {
-  Interview,
-  InterviewProgress,
-  InterviewType,
+import {
   QuestionCategory,
   QuestionDifficulty,
-  ConversationalQuestion
+  InterviewType
 } from '../types/interview';
 
 // Analytics Data Types
@@ -215,7 +212,7 @@ export interface InterviewImprovementRecommendation {
 }
 
 class InterviewAnalyticsService {
-  private readonly API_BASE = '/api/interviews/analytics';
+  // private readonly API_BASE = '/api/interviews/analytics';
 
   // Interview Completion Analytics
   async generateCompletionAnalytics(interviewId: string): Promise<InterviewCompletionAnalytics> {
@@ -431,7 +428,7 @@ class InterviewAnalyticsService {
     };
   }
 
-  private async fetchInterviewResponses(interviewId: string): Promise<any[]> {
+  private async fetchInterviewResponses(_interviewId: string): Promise<any[]> {
     // Mock response data with varying quality and timing
     return [
       {
@@ -458,7 +455,7 @@ class InterviewAnalyticsService {
     ];
   }
 
-  private async fetchInterviewProgress(interviewId: string): Promise<any> {
+  private async fetchInterviewProgress(_interviewId: string): Promise<any> {
     return {
       questionsTotal: 15,
       questionsAnswered: 12,
@@ -594,7 +591,7 @@ class InterviewAnalyticsService {
     };
   }
 
-  private generateBehavioralInsights(responses: any[], progress: any): any {
+  private generateBehavioralInsights(responses: any[], _progress: any): any {
     // Analyze communication style based on response patterns
     const averageLength = responses.reduce((sum, r) => sum + r.wordCount, 0) / responses.length;
     const communicationStyle = averageLength > 150 ? 'detailed' :
@@ -659,7 +656,7 @@ class InterviewAnalyticsService {
   }
 
   // Additional placeholder methods for comprehensive analytics
-  private async fetchCandidateInterviews(candidateId: string): Promise<any[]> {
+  private async fetchCandidateInterviews(_candidateId: string): Promise<any[]> {
     // Mock comprehensive interview history for demonstration
     return [
       {
@@ -748,7 +745,7 @@ class InterviewAnalyticsService {
 
     const categoryAverages = Object.entries(categoryTotals).map(([category, data]) => ({
       category: category as QuestionCategory,
-      average: data.total / data.count
+      average: (data as { total: number; count: number }).total / (data as { total: number; count: number }).count
     }));
 
     const sortedCategories = categoryAverages.sort((a, b) => b.average - a.average);
@@ -767,7 +764,7 @@ class InterviewAnalyticsService {
 
     const difficultyAverages = Object.entries(difficultyPerformance).map(([difficulty, data]) => ({
       difficulty: difficulty as QuestionDifficulty,
-      average: data.totalScore / data.totalCount
+      average: (data as { totalScore: number; totalCount: number }).totalScore / (data as { totalScore: number; totalCount: number }).totalCount
     }));
 
     const preferredDifficulty = difficultyAverages.sort((a, b) => b.average - a.average)[0]?.difficulty || QuestionDifficulty.MEDIUM;
@@ -836,7 +833,7 @@ class InterviewAnalyticsService {
     return skillProgression;
   }
 
-  private generateAdaptiveRecommendations(profile: any, history: any[], skills: any): any {
+  private generateAdaptiveRecommendations(profile: any, _history: any[], skills: any): any {
     const focusAreas: string[] = [];
     const recommendedResources: any[] = [];
 
@@ -884,7 +881,7 @@ class InterviewAnalyticsService {
     }
 
     // Determine next interview strategy
-    let recommendedType = InterviewType.TECHNICAL;
+    let recommendedType: InterviewType = InterviewType.TECHNICAL;
     let suggestedDifficulty = profile.preferredDifficulty;
     const focusCategories: QuestionCategory[] = [];
 
@@ -954,7 +951,7 @@ class InterviewAnalyticsService {
     };
   }
 
-  private async fetchTemplateUsageHistory(templateId: string): Promise<any[]> {
+  private async fetchTemplateUsageHistory(_templateId: string): Promise<any[]> {
     // Mock comprehensive usage history with detailed analytics data
     return [
       {
@@ -1391,7 +1388,7 @@ class InterviewAnalyticsService {
 
   private generateTemplateOptimizations(questionEffectiveness: any[], usageStats: any): any {
     // Analyze current question order effectiveness
-    const currentOrder = questionEffectiveness.map(q => q.questionId);
+    // const _currentOrder = questionEffectiveness.map(q => q.questionId); // Not used
 
     // Suggest optimal question order based on:
     // 1. Warm-up with easier questions
@@ -1894,8 +1891,8 @@ class InterviewAnalyticsService {
 
     usageData.forEach(usage => {
       usage.questionResponses?.forEach((response: any) => {
-        const category = response.category;
-        if (category && categoryStats[category]) {
+        const category = response.category as QuestionCategory;
+        if (category && category in categoryStats && category in questionsPerCategory) {
           categoryStats[category].totalPerformance += response.quality;
           categoryStats[category].totalTime += response.responseTime;
           categoryStats[category].attempts++;
@@ -2024,7 +2021,7 @@ class InterviewAnalyticsService {
     try {
       // Fetch template effectiveness data
       const effectivenessMetrics = await this.measureInterviewEffectiveness(templateId);
-      const performanceAnalytics = await this.analyzeTemplatePerformance(templateId);
+      // const _performanceAnalytics = await this.analyzeTemplatePerformance(templateId); // Not used
 
       const recommendations: InterviewImprovementRecommendation[] = [];
 
@@ -2072,7 +2069,7 @@ class InterviewAnalyticsService {
 
       // Question-specific recommendations
       const lowPerformingQuestions = effectivenessMetrics.questionEffectiveness.filter(q =>
-        q.metrics.averageResponseQuality < 0.6 || q.metrics.completionRate < 0.8
+        q.metrics.averageResponseQuality < 0.6 || (q.metrics as any).completionRate < 0.8
       );
 
       if (lowPerformingQuestions.length > 0) {
@@ -2110,7 +2107,7 @@ class InterviewAnalyticsService {
           metrics: {
             baseline: {
               averageQuestionQuality: lowPerformingQuestions.reduce((sum, q) => sum + q.metrics.averageResponseQuality, 0) / lowPerformingQuestions.length,
-              averageCompletionRate: lowPerformingQuestions.reduce((sum, q) => sum + q.metrics.completionRate, 0) / lowPerformingQuestions.length
+              averageCompletionRate: lowPerformingQuestions.reduce((sum, q) => sum + ((q.metrics as any).completionRate || 0), 0) / lowPerformingQuestions.length
             },
             targets: {
               averageQuestionQuality: 0.75,
@@ -2348,12 +2345,12 @@ class InterviewAnalyticsService {
           ],
           metrics: {
             baseline: {
-              stressLevel: insights.stressIndicators.overallStressLevel,
+              stressLevel: typeof insights.stressIndicators.overallStressLevel === 'number' ? insights.stressIndicators.overallStressLevel : 0,
               timeOutliers: insights.stressIndicators.timeOutliers,
               qualityDips: insights.stressIndicators.qualityDips
             },
             targets: {
-              stressLevel: 'moderate',
+              stressLevel: 0, // Target moderate stress level (0 = low, 1 = moderate, 2 = high)
               timeOutliers: Math.max(0, insights.stressIndicators.timeOutliers - 2),
               qualityDips: Math.max(0, insights.stressIndicators.qualityDips - 1)
             },
@@ -2396,8 +2393,14 @@ class InterviewAnalyticsService {
             }
           ],
           metrics: {
-            baseline: { improvementTrend: 'declining', consistencyScore: completionAnalytics.performanceMetrics.consistencyScore },
-            targets: { improvementTrend: 'stable', consistencyScore: Math.min(1, completionAnalytics.performanceMetrics.consistencyScore + 0.2) },
+            baseline: { 
+              improvementTrend: 0, // 0 = declining
+              consistencyScore: typeof completionAnalytics.performanceMetrics.consistencyScore === 'number' ? completionAnalytics.performanceMetrics.consistencyScore : 0 
+            },
+            targets: { 
+              improvementTrend: 1, // 1 = stable
+              consistencyScore: Math.min(1, (typeof completionAnalytics.performanceMetrics.consistencyScore === 'number' ? completionAnalytics.performanceMetrics.consistencyScore : 0) + 0.2) 
+            },
             measurement: 'Performance trend analysis in next 5 interviews using this template'
           }
         });
@@ -2677,7 +2680,7 @@ class InterviewAnalyticsService {
 
   private getWeakestCategoryScore(candidateInsights: any): number {
     // Find the score for the weakest category
-    const weakestCategory = candidateInsights.profileSummary.weakestCategory;
+    // const _weakestCategory = candidateInsights.profileSummary.weakestCategory; // Not used
     // Mock category score extraction - in real implementation would come from detailed analytics
     return Math.max(0, candidateInsights.profileSummary.averageScore - 1.5);
   }
@@ -2685,6 +2688,31 @@ class InterviewAnalyticsService {
   private getTargetImprovement(candidateInsights: any): number {
     const weakestScore = this.getWeakestCategoryScore(candidateInsights);
     return Math.min(10, weakestScore + 2);
+  }
+
+  private getDifficultyScore(difficulty: QuestionDifficulty): number {
+    switch (difficulty) {
+      case QuestionDifficulty.EASY: return 1;
+      case QuestionDifficulty.MEDIUM: return 2;
+      case QuestionDifficulty.HARD: return 3;
+      default: return 2;
+    }
+  }
+
+  private increaseDifficulty(difficulty: QuestionDifficulty): QuestionDifficulty {
+    switch (difficulty) {
+      case QuestionDifficulty.EASY: return QuestionDifficulty.MEDIUM;
+      case QuestionDifficulty.MEDIUM: return QuestionDifficulty.HARD;
+      default: return difficulty;
+    }
+  }
+
+  private decreaseDifficulty(difficulty: QuestionDifficulty): QuestionDifficulty {
+    switch (difficulty) {
+      case QuestionDifficulty.HARD: return QuestionDifficulty.MEDIUM;
+      case QuestionDifficulty.MEDIUM: return QuestionDifficulty.EASY;
+      default: return difficulty;
+    }
   }
 }
 

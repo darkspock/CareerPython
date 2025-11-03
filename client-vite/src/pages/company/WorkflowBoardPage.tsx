@@ -12,7 +12,7 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Kanban, User, Tag, AlertCircle, RefreshCw, List, ChevronDown, Move } from 'lucide-react';
+import { Kanban, User, AlertCircle, RefreshCw, List, ChevronDown, Move } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import { phaseService } from '../../services/phaseService';
@@ -27,7 +27,7 @@ import '../../components/kanban/kanban-styles.css';
 // Candidate Card Component
 function CandidateCard({ 
   candidate, 
-  companyId, 
+  companyId: _companyId, 
   rowStages, 
   onMoveToStage 
 }: { 
@@ -317,7 +317,7 @@ export default function WorkflowBoardPage() {
     const newStageId = over.id as string;
 
     // Find if over is a stage or another candidate
-    const stage = stages.find((s) => s.id === newStageId);
+    // const _stage = stages.find((s) => s.id === newStageId);
     const candidate = candidates.find((c) => c.id === newStageId);
 
     let targetStageId = newStageId;

@@ -323,5 +323,4 @@ export const FieldOptionsI18nModal: React.FC<FieldOptionsI18nModalProps> = ({
 };
 
 export default FieldOptionsI18nModal;
-export type { FieldOption, FieldOptionLabel };
 

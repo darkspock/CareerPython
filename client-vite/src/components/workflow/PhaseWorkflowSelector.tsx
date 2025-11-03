@@ -13,7 +13,7 @@ import { Workflow, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 import { workflowService } from '../../services/workflowService';
 import type { Phase } from '../../types/phase';
-import type { WorkflowListItem } from '../../types/workflow';
+import type { CompanyWorkflow } from '../../types/workflow';
 
 interface PhaseWorkflowSelectorProps {
   companyId: string;
@@ -29,7 +29,7 @@ export function PhaseWorkflowSelector({
   label = "Recruitment Workflow Configuration"
 }: PhaseWorkflowSelectorProps) {
   const [phases, setPhases] = useState<Phase[]>([]);
-  const [workflowsByPhase, setWorkflowsByPhase] = useState<Record<string, WorkflowListItem[]>>({});
+  const [workflowsByPhase, setWorkflowsByPhase] = useState<Record<string, CompanyWorkflow[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -50,7 +50,7 @@ export function PhaseWorkflowSelector({
         setPhases(fetchedPhases);
 
         // Fetch workflows grouped by phase
-        const workflowsMap: Record<string, WorkflowListItem[]> = {};
+        const workflowsMap: Record<string, CompanyWorkflow[]> = {};
         const newPhaseWorkflows: Record<string, string> = { ...phaseWorkflows };
         let allPhasesHaveOnlyOneWorkflow = true;
 

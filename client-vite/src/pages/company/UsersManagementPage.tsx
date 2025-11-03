@@ -16,12 +16,11 @@
  * @component
  */
 // Company Users Management Page
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   UserPlus,
   Search,
   Filter,
-  MoreVertical,
   Edit,
   Trash2,
   Users,
@@ -64,9 +63,9 @@ export default function UsersManagementPage() {
 
   // Hooks
   const { users, loading, error, refresh, companyId } = useCompanyUsers(filters);
-  const { inviteUser, loading: inviteLoading, error: inviteError, invitationLink, reset: resetInvite } = useInviteUser();
+  const { inviteUser: _inviteUser, loading: _inviteLoading, error: _inviteError, invitationLink: _invitationLink, reset: resetInvite } = useInviteUser();
   const { removeUser, loading: removeLoading, error: removeError, reset: resetRemove } = useRemoveUser();
-  const { assignRole, loading: assignLoading, error: assignError, reset: resetAssign } = useAssignRole();
+  const { assignRole, loading: _assignLoading, error: _assignError, reset: resetAssign } = useAssignRole();
   const currentUserId = getUserId();
   
   // Modals

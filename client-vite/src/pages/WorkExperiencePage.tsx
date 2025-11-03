@@ -42,9 +42,9 @@ export default function WorkExperiencePage() {
 
   const loadExistingExperiences = async () => {
     try {
-      const existingExperiences = await api.getExperiences();
+      const existingExperiences = await api.getExperiences() as any[];
 
-      if (existingExperiences && existingExperiences.length > 0) {
+      if (Array.isArray(existingExperiences) && existingExperiences.length > 0) {
         // Mapear las experiencias del backend al formato del frontend
         const mappedExperiences = existingExperiences.map((exp: any) => ({
           company: exp.company || "",

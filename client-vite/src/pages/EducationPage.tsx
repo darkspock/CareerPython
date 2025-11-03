@@ -56,9 +56,9 @@ export default function EducationPage() {
 
   const loadExistingEducations = async () => {
     try {
-      const existingEducations = await api.getEducations();
+      const existingEducations = await api.getEducations() as any[];
       
-      if (existingEducations && existingEducations.length > 0) {
+      if (Array.isArray(existingEducations) && existingEducations.length > 0) {
         // Mapear las educaciones del backend al formato del frontend
         const mappedEducations = existingEducations.map((edu: any) => ({
           institution: edu.institution || "",

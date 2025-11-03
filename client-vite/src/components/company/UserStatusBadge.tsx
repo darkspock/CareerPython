@@ -1,5 +1,4 @@
 // Badge component for displaying user status
-import React from 'react';
 import type { CompanyUserStatus } from '../../types/companyUser';
 import { getCompanyUserStatusColor } from '../../types/companyUser';
 

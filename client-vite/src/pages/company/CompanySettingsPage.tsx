@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle, Building2, FileText, UserCog } from 'lucide-react';
+import { Workflow, Users, Settings, Layers, RotateCcw, Building2, FileText, UserCog } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 
 export default function CompanySettingsPage() {

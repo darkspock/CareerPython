@@ -5,23 +5,14 @@
  * 
  * @component
  */
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SectionContainer from './SectionContainer';
 import { 
-  DollarSign, 
   Settings, 
   Workflow, 
   Sparkles,
-  TrendingDown,
-  Clock
+  TrendingDown
 } from 'lucide-react';
-
-interface Benefit {
-  icon: React.ReactNode;
-  titleKey: string;
-  descriptionKey: string;
-}
 
 const benefitIcons = [
   <TrendingDown className="w-8 h-8" />,

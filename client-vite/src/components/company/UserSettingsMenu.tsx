@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { User, Settings, LogOut, Globe, ChevronDown, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { User, LogOut, Globe, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 
@@ -39,7 +39,7 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
   useEffect(() => {
     const loadUserLanguagePreference = async () => {
       try {
-        const response = await api.getUserLanguagePreference();
+        const response = await api.getUserLanguagePreference() as { preferred_language?: string; language_code?: string };
         const preferredLanguage = response.preferred_language || response.language_code;
         
         if (preferredLanguage && preferredLanguage !== i18n.language) {
@@ -79,7 +79,7 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
     }
   };
 
-  const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
+  // const _currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   return (
     <div className="relative" ref={menuRef}>

@@ -19,7 +19,6 @@ import {
   AlertTriangle,
   Clock,
   Palette,
-  Layout,
   Zap
 } from 'lucide-react';
 import { api } from '../../../lib/api';
@@ -110,22 +109,24 @@ const ResumeExportModal: React.FC<ResumeExportModalProps> = ({
       }, 200);
 
       const response = await api.exportResume(resumeId, {
-        format: exportOptions.format,
+        format_type: exportOptions.format,
         template: exportOptions.template,
-        include_metadata: exportOptions.includeMetadata,
-        customize_colors: exportOptions.customizeColors,
-        primary_color: exportOptions.primaryColor,
-        paper_size: exportOptions.paperSize,
-        include_photo: exportOptions.includePhoto,
-        font_size: exportOptions.fontSize,
-        line_spacing: exportOptions.lineSpacing
-      });
+        include_ai_enhancement: exportOptions.includeMetadata,
+        additional_metadata: {
+          customize_colors: exportOptions.customizeColors,
+          primary_color: exportOptions.primaryColor,
+          paper_size: exportOptions.paperSize,
+          include_photo: exportOptions.includePhoto,
+          font_size: exportOptions.fontSize,
+          line_spacing: exportOptions.lineSpacing
+        }
+      }) as { download_url?: string; preview_html?: string };
 
       clearInterval(progressInterval);
       setExportProgress(100);
 
       // Handle successful export
-      if (response.download_url) {
+      if (response && typeof response === 'object' && 'download_url' in response && response.download_url) {
         // Download the file
         const link = document.createElement('a');
         link.href = response.download_url;
@@ -157,12 +158,13 @@ const ResumeExportModal: React.FC<ResumeExportModalProps> = ({
       setActiveStep('preview');
       const response = await api.getResumePreviewHtml(resumeId, {
         template: exportOptions.template,
-        customize_colors: exportOptions.customizeColors,
-        primary_color: exportOptions.primaryColor
+        highlight_missing: false,
+        custom_css: exportOptions.customizeColors ? `:root { --primary-color: ${exportOptions.primaryColor}; }` : undefined
       });
 
-      if (response.preview_html) {
-        const blob = new Blob([response.preview_html], { type: 'text/html' });
+      if (response && response.ok) {
+        const html = await response.text();
+        const blob = new Blob([html], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         setPreviewUrl(url);
       }

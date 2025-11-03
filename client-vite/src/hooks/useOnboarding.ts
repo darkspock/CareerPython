@@ -97,7 +97,17 @@ export const useOnboarding = () => {
         console.error('🌐 CORS test error:', corsError);
       }
 
-      const profile = await api.getMyProfile();
+      const profile = await api.getMyProfile() as {
+        id?: string;
+        name?: string;
+        email?: string;
+        date_of_birth?: string;
+        city?: string;
+        country?: string;
+        phone?: string;
+        job_category?: string;
+        linkedin_url?: string;
+      };
 
       console.log('✅ Loaded candidate profile:', profile);
       setCandidateData({

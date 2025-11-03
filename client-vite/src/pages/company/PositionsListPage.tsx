@@ -4,7 +4,7 @@ import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, Trash2, External
 import { PositionService } from '../../services/positionService';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import type { Position } from '../../types/position';
-import { getStatusColor, getContractTypeLabel, getWorkLocationLabel } from '../../types/position';
+import { getStatusColor, getContractTypeLabel } from '../../types/position';
 
 export default function PositionsListPage() {
   const navigate = useNavigate();

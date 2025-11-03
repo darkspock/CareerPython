@@ -5,7 +5,6 @@ import type {
   Company,
   CompanyFilters,
   CompanyStats,
-  CreateCompanyRequest,
   UpdateCompanyRequest,
   CompanyListResponse,
   CompanyActionResponse

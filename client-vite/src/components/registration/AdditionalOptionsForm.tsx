@@ -9,8 +9,7 @@
  * @param {Function} props.onChange - Handler for form field changes
  * @param {Object} props.errors - Validation errors
  */
-import React from 'react';
-import { CheckCircle, Info, AlertCircle, ExternalLink } from 'lucide-react';
+import { Info, AlertCircle, ExternalLink } from 'lucide-react';
 
 interface AdditionalOptionsFormProps {
   formData: {

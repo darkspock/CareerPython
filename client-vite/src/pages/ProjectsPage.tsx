@@ -48,9 +48,9 @@ export default function ProjectsPage() {
 
   const loadExistingProjects = async () => {
     try {
-      const existingProjects = await api.getProjects();
+      const existingProjects = await api.getProjects() as any[];
       
-      if (existingProjects && existingProjects.length > 0) {
+      if (Array.isArray(existingProjects) && existingProjects.length > 0) {
         // Mapear los proyectos del backend al formato del frontend
         const mappedProjects = existingProjects.map((proj: any) => ({
           name: proj.name || "",

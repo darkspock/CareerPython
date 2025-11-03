@@ -17,13 +17,15 @@ interface SectionContainerProps {
   className?: string;
   backgroundColor?: 'white' | 'gray' | 'blue' | 'gradient';
   fullWidth?: boolean;
+  id?: string;
 }
 
 export default function SectionContainer({
   children,
   className = '',
   backgroundColor = 'white',
-  fullWidth = false
+  fullWidth = false,
+  id
 }: SectionContainerProps) {
   const bgClasses = {
     white: 'bg-white',
@@ -35,7 +37,7 @@ export default function SectionContainer({
   const containerClass = fullWidth ? 'w-full' : 'max-w-7xl mx-auto';
 
   return (
-    <section className={`${bgClasses[backgroundColor]} py-16 px-4 sm:px-6 lg:px-8 ${className}`}>
+    <section id={id} className={`${bgClasses[backgroundColor]} py-16 px-4 sm:px-6 lg:px-8 ${className}`}>
       <div className={containerClass}>
         {children}
       </div>

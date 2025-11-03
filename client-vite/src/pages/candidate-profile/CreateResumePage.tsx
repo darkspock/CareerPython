@@ -42,7 +42,8 @@ const CreateResumePage: React.FC = () => {
       });
 
       // Navigate to the preview page
-      navigate(`/candidate/profile/resumes/${resume.id}/preview`, {
+      const resumeData = resume as { id: string };
+      navigate(`/candidate/profile/resumes/${resumeData.id}/preview`, {
         state: {
           showSuccessMessage: true,
           successMessage: 'CV creado correctamente'

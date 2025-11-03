@@ -17,11 +17,8 @@ import {
   Settings,
   Eye,
   ArrowLeft,
-  ExternalLink,
-  Copy,
   Check,
   FileText,
-  Image,
   Globe
 } from 'lucide-react';
 import { api } from '../../../lib/api';
@@ -110,13 +107,13 @@ const ResumePreviewPage: React.FC<ResumePreviewPageProps> = ({
       setExportFormat(format);
 
       const response = await api.exportResume(resumeId, {
-        format,
+        format_type: format,
         template,
-        include_metadata: true
-      });
+        include_ai_enhancement: true
+      }) as { download_url?: string };
 
       // Handle the export response
-      if (response.download_url) {
+      if (response && typeof response === 'object' && 'download_url' in response && response.download_url) {
         // Open download URL in new tab
         window.open(response.download_url, '_blank');
       } else {

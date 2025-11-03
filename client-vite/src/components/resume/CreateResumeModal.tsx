@@ -41,7 +41,7 @@ const CreateResumeModal: React.FC<CreateResumeModalProps> = ({
 }) => {
   const [userProfile, setUserProfile] = useState<Candidate | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
-  const [profileError, setProfileError] = useState<string | null>(null);
+  const [_profileError, setProfileError] = useState<string | null>(null);
 
   const {
     register,

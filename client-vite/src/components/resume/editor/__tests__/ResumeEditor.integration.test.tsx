@@ -5,7 +5,7 @@
  * WYSIWYG editing, section management, and real-time preview.
  */
 
-import React from 'react';
+// import React from 'react'; // Not used
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';

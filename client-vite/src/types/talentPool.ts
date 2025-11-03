@@ -4,13 +4,14 @@
  */
 
 // Talent Pool Status Enum
-export enum TalentPoolStatus {
-  ACTIVE = 'active',
-  CONTACTED = 'contacted',
-  HIRED = 'hired',
-  NOT_INTERESTED = 'not_interested',
-  ARCHIVED = 'archived'
-}
+export const TalentPoolStatus = {
+  ACTIVE: 'active',
+  CONTACTED: 'contacted',
+  HIRED: 'hired',
+  NOT_INTERESTED: 'not_interested',
+  ARCHIVED: 'archived'
+} as const;
+export type TalentPoolStatus = typeof TalentPoolStatus[keyof typeof TalentPoolStatus];
 
 // Talent Pool Entry Interface
 export interface TalentPoolEntry {

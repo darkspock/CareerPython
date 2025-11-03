@@ -22,6 +22,9 @@ interface StageFormData {
   allow_skip?: boolean;
   estimated_duration_days?: number;
   default_role_ids?: string[];
+  default_assigned_users?: string[];
+  email_template_id?: string;
+  custom_email_text?: string;
   deadline_days?: number;
   estimated_cost?: string;
   next_phase_id?: string;
@@ -57,7 +60,7 @@ export default function EditWorkflowPage() {
 
   // Custom fields state
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
-  const [fieldConfigurations, setFieldConfigurations] = useState<FieldConfiguration[]>([]);
+  const [_fieldConfigurations, setFieldConfigurations] = useState<FieldConfiguration[]>([]);
 
   useEffect(() => {
     loadWorkflow();

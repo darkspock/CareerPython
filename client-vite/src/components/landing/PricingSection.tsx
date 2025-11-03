@@ -5,7 +5,6 @@
  * 
  * @component
  */
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SectionContainer from './SectionContainer';
 import CTAButton from './CTAButton';

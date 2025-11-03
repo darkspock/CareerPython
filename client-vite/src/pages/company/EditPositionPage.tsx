@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
-import type { Position, UpdatePositionRequest } from '../../types/position';
-import { WorkflowSelector, StageAssignmentEditor, PhaseWorkflowSelector } from '../../components/workflow';
+import type { UpdatePositionRequest } from '../../types/position';
+import { StageAssignmentEditor, PhaseWorkflowSelector } from '../../components/workflow';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import type { WorkflowStage } from '../../types/workflow';
 import { api } from '../../lib/api';
@@ -140,13 +140,13 @@ export default function EditPositionPage() {
 
       setLoadingUsers(true);
       try {
-        const response = await api.authenticatedRequest(`/company/${companyId}/users?active_only=true`);
+        const response = await api.authenticatedRequest<Array<{ user_id: string; name?: string; email?: string }>>(`/company/${companyId}/users?active_only=true`);
 
         // Map to the format expected by StageAssignmentEditor
-        const users = response.map((user: any) => ({
+        const users = response.map((user) => ({
           id: user.user_id,
-          name: user.name || user.email,
-          email: user.email
+          name: user.name || user.email || '',
+          email: user.email || ''
         }));
 
         setCompanyUsers(users);

@@ -1,10 +1,8 @@
-import { api } from '../lib/api';
-import {
-  InterviewType,
-  QuestionCategory,
-  QuestionDifficulty,
-  ConversationalQuestion
-} from '../types/interview';
+// import { api } from '../lib/api';
+// import type {
+//   ConversationalQuestion
+// } from '../types/interview';
+import { QuestionCategory, InterviewType } from '../types/interview';
 
 // Advanced AI-powered insight types
 export interface CandidateStrength {
@@ -72,7 +70,7 @@ export interface SkillGapAnalysis {
     urgency: 'immediate' | 'short_term' | 'medium_term' | 'long_term';
   };
   developmentRecommendations: Array<{
-    type: 'training' | 'practice' | 'mentoring' | 'experience' | 'certification';
+    type: 'training' | 'practice' | 'experience' | 'certification';
     resource: string;
     duration: string;
     cost: 'free' | 'low' | 'medium' | 'high';
@@ -185,7 +183,7 @@ export interface PredictiveSuccessScore {
     benchmarkGroup: string;
     percentileRanking: number;
     similarCandidates: Array<{
-      candidateId: string;
+      _candidateId: string;
       similarityScore: number;
       outcomeData: any;
     }>;
@@ -238,7 +236,7 @@ export interface ComparativeAnalysis {
 }
 
 class AIInterviewInsightsService {
-  private readonly API_BASE = '/api/interviews/insights';
+  // private readonly API_BASE = '/api/interviews/insights';
 
   // Candidate Strength and Weakness Identification
   async analyzeCandidateStrengthsAndWeaknesses(
@@ -427,7 +425,7 @@ class AIInterviewInsightsService {
 
   // Advanced AI analysis methods
 
-  private async performDeepResponseAnalysis(candidateId: string, interviewData: any[]): Promise<any> {
+  private async performDeepResponseAnalysis(_candidateId: string, _interviewData: any[]): Promise<any> {
     // Mock sophisticated response analysis combining multiple AI techniques
     const responseAnalysis = {
       linguisticPatterns: {
@@ -465,7 +463,7 @@ class AIInterviewInsightsService {
     return responseAnalysis;
   }
 
-  private async identifyStrengths(candidateId: string, responseAnalysis: any): Promise<CandidateStrength[]> {
+  private async identifyStrengths(candidateId: string, _responseAnalysis: any): Promise<CandidateStrength[]> {
     // Mock advanced strength identification
     const strengths: CandidateStrength[] = [
       {
@@ -535,7 +533,7 @@ class AIInterviewInsightsService {
     return strengths;
   }
 
-  private async identifyWeaknesses(candidateId: string, responseAnalysis: any): Promise<CandidateWeakness[]> {
+  private async identifyWeaknesses(candidateId: string, _responseAnalysis: any): Promise<CandidateWeakness[]> {
     // Mock advanced weakness identification
     const weaknesses: CandidateWeakness[] = [
       {
@@ -587,7 +585,7 @@ class AIInterviewInsightsService {
     return weaknesses;
   }
 
-  private async extractDemonstratedSkills(interviewHistory: any[]): Promise<Record<string, number>> {
+  private async extractDemonstratedSkills(_interviewHistory: any[]): Promise<Record<string, number>> {
     // Mock skill extraction from interview responses
     const demonstratedSkills: Record<string, number> = {
       'JavaScript': 8.5,
@@ -605,7 +603,7 @@ class AIInterviewInsightsService {
     return demonstratedSkills;
   }
 
-  private parseRoleRequirements(roleRequirements: any): Record<string, number> {
+  private parseRoleRequirements(_roleRequirements: any): Record<string, number> {
     // Mock role requirement parsing
     const requiredSkills: Record<string, number> = {
       'JavaScript': 8.0,
@@ -649,7 +647,7 @@ class AIInterviewInsightsService {
 
   private async generateSkillGapRecommendations(
     gap: { skill: string; currentLevel: number; requiredLevel: number; gap: number },
-    candidateId: string
+    _candidateId: string
   ): Promise<SkillGapAnalysis> {
     const gapSeverity = gap.gap > 3 ? 'critical' : gap.gap > 2 ? 'high' : gap.gap > 1 ? 'medium' : 'low';
 
@@ -736,10 +734,10 @@ class AIInterviewInsightsService {
 
     if (gapSize > 2) {
       baseRecommendations.push({
-        type: 'mentoring' as const,
+        type: 'training' as const,
         resource: `${skill} Expert Mentorship`,
         duration: '3-6 months',
-        cost: 'high' as const,
+        cost: 'medium' as const,
         effectiveness: 0.95,
         prerequisites: ['Commitment to regular sessions']
       });
@@ -748,7 +746,7 @@ class AIInterviewInsightsService {
     return baseRecommendations;
   }
 
-  private createProgressTrackingPlan(skill: string, gapSize: number): SkillGapAnalysis['progressTracking'] {
+  private createProgressTrackingPlan(skill: string, _gapSize: number): SkillGapAnalysis['progressTracking'] {
     return {
       milestones: [
         {
@@ -777,7 +775,7 @@ class AIInterviewInsightsService {
     };
   }
 
-  private async analyzePersonalizationProfile(candidateId: string, candidateProfile: any): Promise<any> {
+  private async analyzePersonalizationProfile(_candidateId: string, _candidateProfile: any): Promise<any> {
     // Mock personalization profile analysis
     return {
       learningStyle: 'mixed',
@@ -797,7 +795,7 @@ class AIInterviewInsightsService {
   private prioritizeImprovements(
     weaknesses: CandidateWeakness[],
     skillGaps: SkillGapAnalysis[],
-    strengths: CandidateStrength[]
+    _strengths: CandidateStrength[]
   ): Array<{ type: 'weakness' | 'skill_gap'; item: any; priority: number }> {
     const prioritizedList: Array<{ type: 'weakness' | 'skill_gap'; item: any; priority: number }> = [];
 
@@ -887,7 +885,7 @@ class AIInterviewInsightsService {
   }
 
   // Additional mock methods for the remaining functionality...
-  private async analyzePerformancePatterns(candidateId: string, interviewHistory: any[]): Promise<any> {
+  private async analyzePerformancePatterns(_candidateId: string, _interviewHistory: any[]): Promise<any> {
     return {
       consistencyScore: 0.8,
       improvementTrend: 'improving',
@@ -896,7 +894,7 @@ class AIInterviewInsightsService {
     };
   }
 
-  private async calculateCompetencyScores(interviewHistory: any[], roleContext: any): Promise<any> {
+  private async calculateCompetencyScores(_interviewHistory: any[], _roleContext: any): Promise<any> {
     return {
       technicalCompetency: 82,
       communicationSkills: 78,
@@ -908,9 +906,9 @@ class AIInterviewInsightsService {
   }
 
   private async generateSuccessPredictions(
-    performancePatterns: any,
-    competencyScores: any,
-    roleContext: any
+    _performancePatterns: any,
+    _competencyScores: any,
+    _roleContext: any
   ): Promise<any> {
     return {
       jobPerformance: {
@@ -934,7 +932,7 @@ class AIInterviewInsightsService {
     };
   }
 
-  private async assessCandidateRisks(candidateId: string, performancePatterns: any, competencyScores: any): Promise<any> {
+  private async assessCandidateRisks(_candidateId: string, _performancePatterns: any, _competencyScores: any): Promise<any> {
     return {
       overallRisk: 'low',
       riskFactors: [
@@ -948,7 +946,7 @@ class AIInterviewInsightsService {
     };
   }
 
-  private async performBenchmarkingAnalysis(candidateId: string, competencyScores: any, roleContext: any): Promise<any> {
+  private async performBenchmarkingAnalysis(_candidateId: string, _competencyScores: any, _roleContext: any): Promise<any> {
     return {
       benchmarkGroup: 'Senior Frontend Developers',
       percentileRanking: 78,
@@ -958,7 +956,7 @@ class AIInterviewInsightsService {
     };
   }
 
-  private calculateOverallPredictiveScore(competencyScores: any, successPredictions: any): number {
+  private calculateOverallPredictiveScore(competencyScores: any, _successPredictions: any): number {
     const weights = {
       technicalCompetency: 0.25,
       communicationSkills: 0.15,
@@ -984,7 +982,7 @@ class AIInterviewInsightsService {
     };
   }
 
-  private async fetchCandidateInterviewHistory(candidateId: string): Promise<any[]> {
+  private async fetchCandidateInterviewHistory(_candidateId: string): Promise<any[]> {
     // Mock interview history
     return [
       {
@@ -1015,7 +1013,7 @@ class AIInterviewInsightsService {
     };
   }
 
-  private async performPeerComparison(candidateId: string, comparisonContext: any): Promise<any[]> {
+  private async performPeerComparison(_candidateId: string, _comparisonContext: any): Promise<any[]> {
     return [
       {
         comparisonGroup: 'Similar Experience Level',
@@ -1033,7 +1031,7 @@ class AIInterviewInsightsService {
     ];
   }
 
-  private async analyzeHistoricalProgression(candidateHistory: any[]): Promise<any> {
+  private async analyzeHistoricalProgression(_candidateHistory: any[]): Promise<any> {
     return {
       trajectory: 'accelerating',
       progressionRate: 0.3,
@@ -1045,7 +1043,7 @@ class AIInterviewInsightsService {
     };
   }
 
-  private async performRoleBenchmarking(candidateId: string, comparisonContext: any): Promise<any[]> {
+  private async performRoleBenchmarking(_candidateId: string, _comparisonContext: any): Promise<any[]> {
     return [
       {
         comparisonGroup: 'Target Role Requirements',
@@ -1063,7 +1061,7 @@ class AIInterviewInsightsService {
     ];
   }
 
-  private async compareAgainstIndustryStandards(candidateId: string, comparisonContext: any): Promise<any[]> {
+  private async compareAgainstIndustryStandards(_candidateId: string, _comparisonContext: any): Promise<any[]> {
     return [
       {
         comparisonGroup: 'Industry Standards',
@@ -1081,7 +1079,7 @@ class AIInterviewInsightsService {
     ];
   }
 
-  private async analyzeCompetitivePositioning(candidateId: string, comparisons: any[]): Promise<any> {
+  private async analyzeCompetitivePositioning(_candidateId: string, _comparisons: any[]): Promise<any> {
     return {
       marketPosition: 'strong',
       differentiators: ['Exceptional leadership skills', 'Strong problem-solving ability'],

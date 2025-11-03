@@ -1,14 +1,14 @@
 // Phase 6: Task Management Service
 // Handles API calls for task assignment and processing
 
-import api from '@/lib/api';
-import {
+import { api } from '../lib/api';
+import type {
   Task,
   TaskFilters,
   ClaimTaskRequest,
   UnclaimTaskRequest,
   TaskActionResponse
-} from '@/types/task';
+} from '../types/task';
 
 /**
  * Service for task management operations
@@ -40,15 +40,7 @@ export class TaskService {
         params.append('limit', filters.limit.toString());
       }
 
-      const response = await api.get(`${this.BASE_PATH}/my-tasks?${params.toString()}`);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to fetch assigned tasks');
-      }
-
-      const tasks: Task[] = await response.json();
-      return tasks;
+      return await api.authenticatedRequest<Task[]>(`${this.BASE_PATH}/my-tasks?${params.toString()}`);
     } catch (error) {
       console.error('Error fetching assigned tasks:', error);
       throw error;
@@ -73,15 +65,11 @@ export class TaskService {
         user_id: userId
       };
 
-      const response = await api.post(`${this.BASE_PATH}/claim`, request);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to claim task');
-      }
-
-      const result: TaskActionResponse = await response.json();
-      return result;
+      return await api.authenticatedRequest<TaskActionResponse>(`${this.BASE_PATH}/claim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request)
+      });
     } catch (error) {
       console.error('Error claiming task:', error);
       throw error;
@@ -106,15 +94,11 @@ export class TaskService {
         user_id: userId
       };
 
-      const response = await api.post(`${this.BASE_PATH}/unclaim`, request);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to unclaim task');
-      }
-
-      const result: TaskActionResponse = await response.json();
-      return result;
+      return await api.authenticatedRequest<TaskActionResponse>(`${this.BASE_PATH}/unclaim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request)
+      });
     } catch (error) {
       console.error('Error unclaiming task:', error);
       throw error;

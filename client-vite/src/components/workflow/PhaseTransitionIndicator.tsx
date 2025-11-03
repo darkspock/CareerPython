@@ -7,7 +7,7 @@ import { ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { phaseService } from '../../services/phaseService';
 import type { Phase } from '../../types/phase';
-import type { WorkflowStage, StageType } from '../../types/workflow';
+import type { WorkflowStage } from '../../types/workflow';
 
 interface PhaseTransitionIndicatorProps {
   stage: WorkflowStage;
@@ -24,10 +24,10 @@ export function PhaseTransitionIndicator({
   const [currentPhase, setCurrentPhase] = useState<Phase | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Only show for SUCCESS or FAIL stages with next_phase_id
+  // Only show for success or fail stages with next_phase_id
   const hasTransition =
     stage.next_phase_id &&
-    (stage.stage_type === 'SUCCESS' || stage.stage_type === 'FAIL');
+    (stage.stage_type === 'success' || stage.stage_type === 'fail');
 
   useEffect(() => {
     if (!hasTransition) return;
@@ -69,7 +69,7 @@ export function PhaseTransitionIndicator({
     );
   }
 
-  const isSuccess = stage.stage_type === 'SUCCESS';
+  const isSuccess = stage.stage_type === 'success';
   const bgColor = isSuccess ? 'bg-green-50' : 'bg-red-50';
   const borderColor = isSuccess ? 'border-green-200' : 'border-red-200';
   const textColor = isSuccess ? 'text-green-800' : 'text-red-800';

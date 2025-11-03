@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, FileText, Grid, List } from 'lucide-react';
+import { Plus, Search, FileText, Grid, List } from 'lucide-react';
 import { CompanyPageCard } from '../../components/company/CompanyPageCard';
 import { companyPageService } from '../../services/companyPageService';
 import type { CompanyPage, CompanyPageFilters } from '../../types/companyPage';

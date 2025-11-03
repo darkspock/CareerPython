@@ -13,7 +13,6 @@ import {
   Search,
   Filter,
   Building2,
-  Home,
   AlertCircle
 } from 'lucide-react';
 import { publicPositionService, type PublicPositionFilters } from '../../services/publicPositionService';
@@ -281,11 +280,11 @@ export default function PublicPositionsPage() {
                         {getEmploymentTypeLabel(position.employment_type)}
                       </div>
                     )}
-                    {position.salary_range_max && (
+                    {position.salary_range?.max_amount && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <DollarSign className="w-4 h-4" />
-                        {position.salary_range_min && `$${position.salary_range_min.toLocaleString()} - `}
-                        ${position.salary_range_max.toLocaleString()}
+                        {position.salary_range.min_amount && `$${position.salary_range.min_amount.toLocaleString()} - `}
+                        ${position.salary_range.max_amount.toLocaleString()}
                       </div>
                     )}
                   </div>

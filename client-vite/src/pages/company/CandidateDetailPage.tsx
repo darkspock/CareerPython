@@ -8,8 +8,6 @@ import {
   Archive,
   Mail,
   Phone,
-  Calendar,
-  Tag,
   AlertCircle,
   CheckCircle,
   XCircle,
@@ -29,11 +27,9 @@ import { workflowStageService, type WorkflowStage } from '../../services/workflo
 import { customFieldValueService } from '../../services/customFieldValueService';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import type { CompanyCandidate } from '../../types/companyCandidate';
-import type { CompanyWorkflow } from '../../types/workflow';
 import {
   getCandidateStatusColor,
   getPriorityColor,
-  getOwnershipColor
 } from '../../types/companyCandidate';
 import { StageTimeline } from '../../components/candidate';
 import CustomFieldsCard from '../../components/candidate/CustomFieldsCard';
@@ -60,7 +56,7 @@ export default function CandidateDetailPage() {
   const [uploadingFile, setUploadingFile] = useState(false);
 
   // Stage transition state
-  const [availableStages, setAvailableStages] = useState<WorkflowStage[]>([]);
+  const [_availableStages, setAvailableStages] = useState<WorkflowStage[]>([]);
   const [nextStage, setNextStage] = useState<WorkflowStage | null>(null);
   const [failStages, setFailStages] = useState<WorkflowStage[]>([]);
   const [changingStage, setChangingStage] = useState(false);
@@ -74,7 +70,7 @@ export default function CandidateDetailPage() {
   const [allCustomFieldValues, setAllCustomFieldValues] = useState<Record<string, Record<string, any>>>({});
   const [availableWorkflows, setAvailableWorkflows] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
-  const [loadingWorkflows, setLoadingWorkflows] = useState(false);
+  const [_loadingWorkflows, setLoadingWorkflows] = useState(false);
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -113,8 +109,8 @@ export default function CandidateDetailPage() {
       }
 
       // Load workflow stages if candidate has a workflow
-      if (data.workflow_id) {
-        await loadWorkflowStages(data.workflow_id, data.current_stage_id);
+      if (data.current_workflow_id) {
+        await loadWorkflowStages(data.current_workflow_id, data.current_stage_id || undefined);
       }
       
       // Load all comments
@@ -202,8 +198,8 @@ export default function CandidateDetailPage() {
       });
       
       // Add current workflow if candidate has one
-      if (candidate?.workflow_id) {
-        workflowIds.add(candidate.workflow_id);
+      if (candidate?.current_workflow_id) {
+        workflowIds.add(candidate.current_workflow_id);
       }
       
       // Fetch workflow names for all workflows
@@ -222,8 +218,8 @@ export default function CandidateDetailPage() {
       setAvailableWorkflows(workflowsData);
       
       // Set selected workflow to current workflow if available, otherwise first one
-      if (candidate?.workflow_id && workflowIds.has(candidate.workflow_id)) {
-        setSelectedWorkflowId(candidate.workflow_id);
+      if (candidate?.current_workflow_id && workflowIds.has(candidate.current_workflow_id)) {
+        setSelectedWorkflowId(candidate.current_workflow_id);
       } else if (workflowsData.length > 0) {
         setSelectedWorkflowId(workflowsData[0].id);
       } else {
@@ -297,7 +293,7 @@ export default function CandidateDetailPage() {
         content_type: uploadedFile.content_type,
         url: uploadedFile.url,
         uploaded_at: uploadedFile.uploaded_at,
-        description: uploadedFile.description
+        description: (uploadedFile as any).description || ''
       };
       
       setAttachedFiles(prev => [...prev, newFile]);
@@ -899,7 +895,7 @@ export default function CandidateDetailPage() {
                     <CommentsCard
                       companyCandidateId={id!}
                       stageId={candidate.current_stage_id}
-                      currentWorkflowId={candidate.workflow_id || undefined}
+                      currentWorkflowId={candidate.current_workflow_id || undefined}
                       onCommentChange={async () => {
                         await loadAllComments();
                         await loadWorkflowsWithData();
@@ -911,7 +907,7 @@ export default function CandidateDetailPage() {
             </div>
           ) : (
             /* Fallback: Show current workflow custom fields if available, even if workflows not loaded yet */
-            (candidate.workflow_id || candidate.current_stage_id) && (
+            (candidate.current_workflow_id || candidate.current_stage_id) && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {candidate.custom_field_values && Object.keys(candidate.custom_field_values).length > 0 ? (
                   <CustomFieldsCard 
@@ -926,7 +922,7 @@ export default function CandidateDetailPage() {
                   <CommentsCard
                     companyCandidateId={id!}
                     stageId={candidate.current_stage_id}
-                    currentWorkflowId={candidate.workflow_id || undefined}
+                    currentWorkflowId={candidate.current_workflow_id || undefined}
                     onCommentChange={loadAllComments}
                   />
                 )}
@@ -942,7 +938,7 @@ export default function CandidateDetailPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('company.candidates.applicationStatus')}</h3>
             <div className="space-y-4">
               {/* Current Status - Only show when inactive */}
-              {candidate.status !== 'active' && (
+              {candidate.status !== 'ACTIVE' && (
                 <div>
                   <label className="text-sm text-gray-600 block mb-2">{t('company.candidates.detail.currentStatus', { defaultValue: 'Current Status' })}</label>
                   <div className="flex items-center gap-2">
@@ -997,7 +993,7 @@ export default function CandidateDetailPage() {
               )}
 
               {/* Stage Transitions */}
-              {candidate.workflow_id && (nextStage || failStages.length > 0) && (
+              {candidate.current_workflow_id && (nextStage || failStages.length > 0) && (
                 <div>
                   <label className="text-sm text-gray-600 block mb-2">{t('company.candidates.detail.actions', { defaultValue: 'Actions' })}</label>
                   <div className="flex flex-wrap gap-2">

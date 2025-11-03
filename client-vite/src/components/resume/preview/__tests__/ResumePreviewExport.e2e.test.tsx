@@ -5,7 +5,7 @@
  * previewing and exporting them with various options.
  */
 
-import React from 'react';
+// import React from 'react'; // Not used
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
@@ -101,9 +101,9 @@ describe('Resume Preview and Export E2E Tests', () => {
       export_id: 'export-123'
     });
     mockedApi.getResumeExportHistory.mockResolvedValue(mockExportHistory);
-    mockedApi.getResumePreviewHtml.mockResolvedValue({
-      preview_html: '<html><body><h1>Resume Preview</h1></body></html>'
-    });
+    mockedApi.getResumePreviewHtml.mockResolvedValue(new Response('<html><body><h1>Resume Preview</h1></body></html>', {
+      headers: { 'Content-Type': 'text/html' }
+    }));
   });
 
   describe('Resume Preview Workflow', () => {

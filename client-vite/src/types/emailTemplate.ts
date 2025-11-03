@@ -3,19 +3,20 @@
  * Phase 7: TypeScript types for email template management
  */
 
-export enum TriggerEvent {
-  APPLICATION_CREATED = 'application_created',
-  APPLICATION_UPDATED = 'application_updated',
-  STAGE_ENTERED = 'stage_entered',
-  STAGE_COMPLETED = 'stage_completed',
-  STAGE_CHANGED = 'stage_changed',
-  STATUS_ACCEPTED = 'status_accepted',
-  STATUS_REJECTED = 'status_rejected',
-  STATUS_WITHDRAWN = 'status_withdrawn',
-  DEADLINE_APPROACHING = 'deadline_approaching',
-  DEADLINE_PASSED = 'deadline_passed',
-  MANUAL = 'manual'
-}
+export const TriggerEvent = {
+  APPLICATION_CREATED: 'application_created',
+  APPLICATION_UPDATED: 'application_updated',
+  STAGE_ENTERED: 'stage_entered',
+  STAGE_COMPLETED: 'stage_completed',
+  STAGE_CHANGED: 'stage_changed',
+  STATUS_ACCEPTED: 'status_accepted',
+  STATUS_REJECTED: 'status_rejected',
+  STATUS_WITHDRAWN: 'status_withdrawn',
+  DEADLINE_APPROACHING: 'deadline_approaching',
+  DEADLINE_PASSED: 'deadline_passed',
+  MANUAL: 'manual'
+} as const;
+export type TriggerEvent = typeof TriggerEvent[keyof typeof TriggerEvent];
 
 export interface EmailTemplate {
   id: string;

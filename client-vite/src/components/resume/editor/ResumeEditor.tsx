@@ -11,13 +11,11 @@ import {
   Save,
   Eye,
   EyeOff,
-  Settings,
   ArrowLeft,
   RotateCcw,
   Clock,
   AlertCircle
 } from 'lucide-react';
-import SectionManager from './SectionManager';
 import ResumePreview from './ResumePreview';
 import { api } from '../../../lib/api';
 
@@ -72,7 +70,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const initialDataRef = useRef<string>('');
 
   // Load resume data
@@ -511,8 +509,8 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
               className="lg:sticky lg:top-24 lg:h-fit"
             >
               <ResumePreview
-                resumeData={resumeData}
-                template={resumeData.formatting_preferences?.template || 'professional'}
+                resumeData={resumeData as any}
+                template={(resumeData.formatting_preferences?.template as 'professional' | 'modern' | 'minimal' | 'creative') || 'professional'}
                 onTemplateChange={handleTemplateChange}
                 onExport={handleExport}
                 onShare={handleShare}

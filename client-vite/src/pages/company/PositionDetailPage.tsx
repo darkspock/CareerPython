@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2, MapPin, DollarSign, Users, Briefcase, Calendar, Mail } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { Position } from '../../types/position';
-import { getStatusColor, getContractTypeLabel, getWorkLocationLabel } from '../../types/position';
+import { getStatusColor, getContractTypeLabel } from '../../types/position';
 
 export default function PositionDetailPage() {
   const { id } = useParams<{ id: string }>();

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, ArrowRight, CheckCircle } from 'lucide-react';
+import { FileText, CheckCircle } from 'lucide-react';
 import { OnboardingLayout } from '../../components/onboarding';
 import { api } from '../../lib/api';
 
@@ -52,7 +52,7 @@ const OnboardingResumesPage: React.FC = () => {
 
     try {
       // Create the resume using the existing API
-      const resume = await api.createResume({
+      await api.createResume({
         name: formData.name,
         include_ai_enhancement: formData.include_ai_enhancement,
         general_data: formData.general_data

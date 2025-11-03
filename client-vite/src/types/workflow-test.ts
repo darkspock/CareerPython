@@ -14,4 +14,4 @@ export type FieldType =
   | 'EMAIL'
   | 'PHONE';
 
-export { FieldType as FieldTypeTest };
+export type { FieldType as FieldTypeTest };

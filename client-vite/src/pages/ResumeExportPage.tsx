@@ -13,7 +13,6 @@ import {
   ArrowLeft,
   FileText,
   Globe,
-  Image,
   Settings,
   Clock,
   Check,
@@ -40,7 +39,7 @@ const ResumeExportPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exportHistory, setExportHistory] = useState([]);
+  const [exportHistory, setExportHistory] = useState<any[]>([]);
   const [quickExporting, setQuickExporting] = useState(false);
 
   // Get URL parameters for quick export
@@ -78,8 +77,8 @@ const ResumeExportPage: React.FC = () => {
 
   const loadExportHistory = async () => {
     try {
-      const history = await api.getResumeExportHistory(id!, 30);
-      setExportHistory(history || []);
+      const history = await api.getResumeExportHistory(id!, 30) as any[];
+      setExportHistory(Array.isArray(history) ? history : []);
     } catch (error) {
       console.error('Failed to load export history:', error);
     }
@@ -92,10 +91,10 @@ const ResumeExportPage: React.FC = () => {
       setQuickExporting(true);
 
       const response = await api.exportResume(id!, {
-        format: quickFormat,
+        format_type: quickFormat,
         template: quickTemplate,
-        include_metadata: true
-      });
+        include_ai_enhancement: true
+      }) as { download_url?: string; preview_html?: string };
 
       if (response.download_url) {
         // Download the file

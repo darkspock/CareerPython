@@ -18,11 +18,11 @@ export default function WorkflowAdvancedConfigPage() {
   const [stages, setStages] = useState<WorkflowStage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [saving, _setSaving] = useState(false);
 
   // Custom fields state
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
-  const [fieldConfigurations, setFieldConfigurations] = useState<FieldConfiguration[]>([]);
+  const [_fieldConfigurations, setFieldConfigurations] = useState<FieldConfiguration[]>([]);
 
   useEffect(() => {
     console.log('useEffect triggered, workflowId:', workflowId);

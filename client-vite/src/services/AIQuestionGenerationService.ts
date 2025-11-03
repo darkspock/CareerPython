@@ -1,11 +1,10 @@
-import { api } from '../lib/api';
+// import { api } from '../lib/api';
 import {
-  QuestionType,
   QuestionCategory,
   QuestionDifficulty,
-  ConversationalQuestion,
   InterviewType
 } from '../types/interview';
+import type { ConversationalQuestion } from '../types/interview';
 
 export interface ResumeContent {
   workExperience: Array<{
@@ -92,6 +91,11 @@ export interface QuestionGenerationContext {
 }
 
 export interface GeneratedQuestion extends ConversationalQuestion {
+  category?: QuestionCategory;
+  difficulty?: QuestionDifficulty;
+  expected_duration?: number;
+  follow_up_questions?: GeneratedQuestion[];
+  multimedia_assets?: string[];
   generationMetadata: {
     source: 'resume_experience' | 'resume_project' | 'resume_skill' | 'job_requirement' | 'contextual_followup' | 'template_based';
     confidence: number;
@@ -132,7 +136,7 @@ export interface QuestionGenerationResponse {
 }
 
 class AIQuestionGenerationService {
-  private readonly API_BASE = '/api/interviews/ai/questions';
+  // private readonly API_BASE = '/api/interviews/ai/questions';
 
   // Resume-based question generation
   async generateFromResume(
@@ -184,7 +188,7 @@ class AIQuestionGenerationService {
 
       if (focusAreas && focusAreas.length > 0) {
         filteredQuestions = questions.filter(q =>
-          focusAreas.includes(q.category)
+          q.category && focusAreas.includes(q.category)
         );
       }
 
@@ -212,7 +216,7 @@ class AIQuestionGenerationService {
     } = {}
   ): Promise<GeneratedQuestion[]> {
     try {
-      const { count = 8, emphasizeGaps = true, includeCompanySpecific = true } = options;
+      const { count = 8, emphasizeGaps = true, includeCompanySpecific: _includeCompanySpecific = true } = options;
       const questions: GeneratedQuestion[] = [];
 
       // Generate questions based on job requirements
@@ -504,11 +508,11 @@ class AIQuestionGenerationService {
     const overallPerformance = performanceHistory.reduce((sum, item) => sum + item.score, 0) / performanceHistory.length;
     const overallConfidence = performanceHistory.reduce((sum, item) => sum + item.confidence, 0) / performanceHistory.length;
 
-    let recommendedDifficulty = QuestionDifficulty.MEDIUM;
+    let recommendedDifficulty: QuestionDifficulty = QuestionDifficulty.MEDIUM;
     if (overallPerformance > 0.8 && overallConfidence > 0.7) {
-      recommendedDifficulty = QuestionDifficulty.HARD;
+      recommendedDifficulty = QuestionDifficulty.HARD as QuestionDifficulty;
     } else if (overallPerformance < 0.6 || overallConfidence < 0.4) {
-      recommendedDifficulty = QuestionDifficulty.EASY;
+      recommendedDifficulty = QuestionDifficulty.EASY as QuestionDifficulty;
     }
 
     return {
@@ -541,7 +545,7 @@ class AIQuestionGenerationService {
 
         case 'targeted':
           // Focus on weak areas with appropriate difficulty
-          const categoryStrength = performanceAnalysis.categoryStrengths[question.category];
+          const categoryStrength = question.category ? performanceAnalysis.categoryStrengths[question.category] : undefined;
           if (categoryStrength && categoryStrength.strength < 0.6) {
             targetDifficulty = this.decreaseDifficulty(performanceAnalysis.recommendedDifficulty);
           } else if (categoryStrength && categoryStrength.strength > 0.8) {
@@ -567,7 +571,7 @@ class AIQuestionGenerationService {
           difficulty: targetDifficulty,
           question_text: this.adjustQuestionComplexity(
             question.question_text,
-            question.difficulty,
+            question.difficulty || QuestionDifficulty.MEDIUM,
             targetDifficulty
           ),
           generationMetadata: {
@@ -664,7 +668,7 @@ class AIQuestionGenerationService {
       if (adjustedDifficulty !== question.difficulty) {
         adjustedQuestion.question_text = this.adjustQuestionComplexity(
           question.question_text,
-          question.difficulty,
+          question.difficulty || QuestionDifficulty.MEDIUM,
           adjustedDifficulty
         );
       }
@@ -776,7 +780,7 @@ class AIQuestionGenerationService {
   }
 
   private async generateCompanySpecificQuestions(
-    context: QuestionGenerationContext,
+    _context: QuestionGenerationContext,
     companyInfo: any,
     count: number
   ): Promise<GeneratedQuestion[]> {
@@ -822,14 +826,15 @@ class AIQuestionGenerationService {
     };
 
     // Generate company size-specific questions
-    const sizeTemplates = companyTemplates[companyInfo.size] || companyTemplates.startup;
+    const sizeTemplates = companyTemplates[companyInfo.size as keyof typeof companyTemplates] || companyTemplates.startup;
     for (let i = 0; i < Math.min(count / 2, sizeTemplates.length); i++) {
       const questionText = sizeTemplates[i];
 
       const question: GeneratedQuestion = {
         question_id: `gen_company_${companyInfo.size}_${Date.now()}_${i}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: QuestionCategory.BEHAVIORAL,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: 180,
@@ -858,7 +863,8 @@ class AIQuestionGenerationService {
         const question: GeneratedQuestion = {
           question_id: `gen_industry_${companyInfo.industry}_${Date.now()}_${i}`,
           question_text: questionText,
-          question_type: QuestionType.TEXT,
+          section: 'GENERAL',
+          is_follow_up: false,
           category: QuestionCategory.SITUATIONAL,
           difficulty: QuestionDifficulty.MEDIUM,
           expected_duration: 160,
@@ -883,7 +889,7 @@ class AIQuestionGenerationService {
   }
 
   private async generateRoleSpecificQuestions(
-    context: QuestionGenerationContext,
+    _context: QuestionGenerationContext,
     roleSpecifics: any,
     count: number
   ): Promise<GeneratedQuestion[]> {
@@ -916,7 +922,7 @@ class AIQuestionGenerationService {
       ]
     };
 
-    const templates = levelTemplates[roleSpecifics.level] || levelTemplates.mid;
+    const templates = levelTemplates[roleSpecifics.level as keyof typeof levelTemplates] || levelTemplates.mid;
 
     for (let i = 0; i < Math.min(count, templates.length); i++) {
       const questionText = templates[i];
@@ -924,7 +930,8 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_role_${roleSpecifics.level}_${Date.now()}_${i}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: roleSpecifics.level === 'junior' ? QuestionCategory.BEHAVIORAL : QuestionCategory.SITUATIONAL,
         difficulty: this.getDifficultyForLevel(roleSpecifics.level),
         expected_duration: this.getDurationForLevel(roleSpecifics.level),
@@ -948,7 +955,7 @@ class AIQuestionGenerationService {
   }
 
   private async generateFormatAdaptedQuestions(
-    context: QuestionGenerationContext,
+    _context: QuestionGenerationContext,
     format: any,
     count: number
   ): Promise<GeneratedQuestion[]> {
@@ -959,7 +966,8 @@ class AIQuestionGenerationService {
       questions.push({
         question_id: `gen_format_pair_${Date.now()}`,
         question_text: 'Let\'s work together on implementing a solution to this problem. I\'ll be your pair programming partner.',
-        question_type: QuestionType.CODE,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: QuestionCategory.TECHNICAL,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: Math.min(format.duration * 0.4, 30 * 60), // 40% of interview or 30 min max
@@ -981,7 +989,8 @@ class AIQuestionGenerationService {
       questions.push({
         question_id: `gen_format_whiteboard_${Date.now()}`,
         question_text: 'Please design and diagram the architecture for a system that handles [specific requirements]. Walk me through your thought process.',
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: QuestionCategory.SYSTEM_DESIGN,
         difficulty: QuestionDifficulty.HARD,
         expected_duration: Math.min(format.duration * 0.3, 25 * 60), // 30% of interview or 25 min max
@@ -1003,7 +1012,8 @@ class AIQuestionGenerationService {
       questions.push({
         question_id: `gen_format_presentation_${Date.now()}`,
         question_text: 'Please present a technical concept or project you\'ve worked on to the team. You have 5-10 minutes.',
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: QuestionCategory.BEHAVIORAL,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: 10 * 60, // 10 minutes
@@ -1025,8 +1035,12 @@ class AIQuestionGenerationService {
     if (format.duration < 60) {
       // Short interview - focus on core questions
       questions.forEach(q => {
-        q.expected_duration = Math.min(q.expected_duration, 10 * 60); // Max 10 minutes per question
-        q.context += ' (shortened for brief interview format)';
+        if (q.expected_duration) {
+          q.expected_duration = Math.min(q.expected_duration, 10 * 60); // Max 10 minutes per question
+        }
+        if (q.context) {
+          q.context += ' (shortened for brief interview format)';
+        }
       });
     }
 
@@ -1034,7 +1048,7 @@ class AIQuestionGenerationService {
   }
 
   private async generateCandidateAdaptedQuestions(
-    context: QuestionGenerationContext,
+    _context: QuestionGenerationContext,
     preferences: any,
     count: number
   ): Promise<GeneratedQuestion[]> {
@@ -1045,7 +1059,8 @@ class AIQuestionGenerationService {
       questions.push({
         question_id: `gen_candidate_storytelling_${Date.now()}`,
         question_text: 'Tell me the story of your most challenging project. What was the journey like from start to finish?',
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: QuestionCategory.BEHAVIORAL,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: 240, // Longer for storytelling style
@@ -1069,7 +1084,8 @@ class AIQuestionGenerationService {
       questions.push({
         question_id: `gen_candidate_strength_${Date.now()}`,
         question_text: `I see that ${strength} is one of your key strengths. Can you walk me through how you've applied this strength to solve a complex problem?`,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: QuestionCategory.BEHAVIORAL,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: 180,
@@ -1103,16 +1119,17 @@ class AIQuestionGenerationService {
     };
 
     const selectedQuestions: GeneratedQuestion[] = [];
-    const totalWeight = Object.values(focusBalance).reduce((sum, weight) => sum + weight, 0);
+    const totalWeight: number = Object.values(focusBalance).reduce((sum: number, weight: unknown) => sum + (typeof weight === 'number' ? weight : 0), 0);
+    const finalTargetCount = targetCount;
 
     Object.entries(focusBalance).forEach(([category, weight]) => {
-      const categoryQuestions = categorizedQuestions[category as QuestionCategory] || [];
-      const targetCount = Math.round((weight / totalWeight) * targetCount);
-      const selected = this.selectBestQuestions(categoryQuestions, targetCount);
+      const categoryQuestions = categorizedQuestions[category as keyof typeof categorizedQuestions] || [];
+      const categoryTargetCount = Math.round((weight as number / totalWeight) * finalTargetCount);
+      const selected = this.selectBestQuestions(categoryQuestions, categoryTargetCount);
       selectedQuestions.push(...selected);
     });
 
-    return selectedQuestions.slice(0, targetCount);
+    return selectedQuestions.slice(0, finalTargetCount);
   }
 
   private getDifficultyForLevel(level: string): QuestionDifficulty {
@@ -1269,8 +1286,9 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_continuation_${Date.now()}_${i}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
-        category: lastInteraction.category,
+        section: 'GENERAL',
+        is_follow_up: true,
+        category: (lastInteraction as GeneratedQuestion).category,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: 150,
         context: `Topic continuation from: ${currentTopic}`,
@@ -1294,7 +1312,7 @@ class AIQuestionGenerationService {
 
   private async generateDepthExplorationQuestions(
     lastInteraction: any,
-    conversationAnalysis: any,
+    _conversationAnalysis: any,
     count: number
   ): Promise<GeneratedQuestion[]> {
     const questions: GeneratedQuestion[] = [];
@@ -1314,8 +1332,9 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_depth_${Date.now()}_${i}`,
         question_text: template,
-        question_type: QuestionType.TEXT,
-        category: lastInteraction.category,
+        section: 'GENERAL',
+        is_follow_up: true,
+        category: (lastInteraction as GeneratedQuestion).category,
         difficulty: this.increaseDifficulty(QuestionDifficulty.MEDIUM),
         expected_duration: 180,
         context: `Depth exploration following: ${lastInteraction.questionText}`,
@@ -1339,8 +1358,8 @@ class AIQuestionGenerationService {
 
   private async generateBridgeQuestions(
     lastInteraction: any,
-    conversationAnalysis: any,
-    context: QuestionGenerationContext,
+    _conversationAnalysis: any,
+    _context: QuestionGenerationContext,
     count: number
   ): Promise<GeneratedQuestion[]> {
     const questions: GeneratedQuestion[] = [];
@@ -1354,7 +1373,7 @@ class AIQuestionGenerationService {
     ];
 
     const unexploredCategories = allCategories.filter(category =>
-      !conversationAnalysis.strongAreas.includes(category)
+      !_conversationAnalysis.strongAreas.includes(category)
     );
 
     const bridgeTemplates = [
@@ -1371,7 +1390,7 @@ class AIQuestionGenerationService {
       const template = bridgeTemplates[i % bridgeTemplates.length];
 
       let questionText = template
-        .replace('{current_strength}', conversationAnalysis.strongAreas[0] || 'technical skills')
+        .replace('{current_strength}', _conversationAnalysis.strongAreas[0] || 'technical skills')
         .replace('{new_area}', this.getCategoryDescription(targetCategory));
 
       // Add specific scenarios based on target category
@@ -1388,7 +1407,8 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_bridge_${Date.now()}_${i}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: targetCategory,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: 160,
@@ -1502,7 +1522,7 @@ class AIQuestionGenerationService {
 
   private generateProjectQuestions(
     projects: ResumeContent['projects'],
-    interviewType: InterviewType,
+    _interviewType: InterviewType,
     count: number
   ): GeneratedQuestion[] {
     const questions: GeneratedQuestion[] = [];
@@ -1528,7 +1548,8 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_proj_${project.id}_${Date.now()}_${i}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: project.technologies.length > 3 ? QuestionCategory.TECHNICAL : QuestionCategory.BEHAVIORAL,
         difficulty: this.calculateProjectDifficulty(project),
         expected_duration: 180,
@@ -1557,7 +1578,7 @@ class AIQuestionGenerationService {
     count: number
   ): GeneratedQuestion[] {
     const questions: GeneratedQuestion[] = [];
-    const allSkills = [...skills.technical, ...skills.soft];
+    // const _allSkills = [...skills.technical, ...skills.soft]; // Not used
 
     const skillQuestionTemplates = {
       technical: [
@@ -1591,7 +1612,8 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_skill_${skill.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}_${i}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: isTechnical ? QuestionCategory.TECHNICAL : QuestionCategory.BEHAVIORAL,
         difficulty: this.calculateSkillDifficulty(skill, isTechnical),
         expected_duration: 120,
@@ -1639,7 +1661,8 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_req_${requirement.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}_${i}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: this.categorizeRequirement(requirement),
         difficulty: isRequired ? QuestionDifficulty.MEDIUM : QuestionDifficulty.EASY,
         expected_duration: 150,
@@ -1683,7 +1706,8 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_resp_${i}_${Date.now()}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: QuestionCategory.BEHAVIORAL,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: 180,
@@ -1740,7 +1764,8 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_gap_${gap.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}_${i}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: false,
         category: QuestionCategory.SITUATIONAL,
         difficulty: QuestionDifficulty.MEDIUM,
         expected_duration: 120,
@@ -1763,14 +1788,14 @@ class AIQuestionGenerationService {
     return questions;
   }
 
-  private analyzeResponse(response: string, question: ConversationalQuestion): any {
+  private analyzeResponse(response: string, question: ConversationalQuestion | GeneratedQuestion): any {
     // Mock response analysis - in real implementation, this would use NLP
     return {
       mentionedConcepts: this.extractConcepts(response),
       sentiment: 'positive',
       confidence: 0.8,
       completeness: response.length > 100 ? 0.8 : 0.5,
-      technicalDepth: question.category === QuestionCategory.TECHNICAL ? 0.7 : 0.3,
+      technicalDepth: (question as GeneratedQuestion).category === QuestionCategory.TECHNICAL ? 0.7 : 0.3,
       areas: this.identifyResponseAreas(response)
     };
   }
@@ -1797,9 +1822,10 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_deepen_${originalQuestion.question_id}_${index}_${Date.now()}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
-        category: originalQuestion.category,
-        difficulty: originalQuestion.difficulty,
+        section: 'GENERAL',
+        is_follow_up: true,
+        category: (originalQuestion as GeneratedQuestion).category,
+        difficulty: (originalQuestion as GeneratedQuestion).difficulty,
         expected_duration: 120,
         context: `Follow-up deepening question for: ${originalQuestion.question_text}`,
         follow_up_questions: [],
@@ -1841,9 +1867,10 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_challenge_${originalQuestion.question_id}_${i}_${Date.now()}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
+        section: 'GENERAL',
+        is_follow_up: true,
         category: QuestionCategory.SITUATIONAL,
-        difficulty: this.increaseDifficulty(originalQuestion.difficulty),
+        difficulty: this.increaseDifficulty((originalQuestion as GeneratedQuestion).difficulty || QuestionDifficulty.MEDIUM),
         expected_duration: 150,
         context: `Challenge follow-up for: ${originalQuestion.question_text}`,
         follow_up_questions: [],
@@ -1885,9 +1912,10 @@ class AIQuestionGenerationService {
       const question: GeneratedQuestion = {
         question_id: `gen_alt_${originalQuestion.question_id}_${i}_${Date.now()}`,
         question_text: questionText,
-        question_type: QuestionType.TEXT,
-        category: originalQuestion.category,
-        difficulty: originalQuestion.difficulty,
+        section: 'GENERAL',
+        is_follow_up: true,
+        category: (originalQuestion as GeneratedQuestion).category,
+        difficulty: (originalQuestion as GeneratedQuestion).difficulty,
         expected_duration: 140,
         context: `Alternative angle for: ${originalQuestion.question_text}`,
         follow_up_questions: [],
@@ -1990,8 +2018,12 @@ class AIQuestionGenerationService {
     const sources: Record<string, number> = {};
 
     selectedQuestions.forEach(q => {
-      categories[q.category] = (categories[q.category] || 0) + 1;
-      difficulties[q.difficulty] = (difficulties[q.difficulty] || 0) + 1;
+      if (q.category) {
+        categories[q.category] = (categories[q.category] || 0) + 1;
+      }
+      if (q.difficulty) {
+        difficulties[q.difficulty] = (difficulties[q.difficulty] || 0) + 1;
+      }
       sources[q.generationMetadata.source] = (sources[q.generationMetadata.source] || 0) + 1;
     });
 
@@ -2042,7 +2074,8 @@ class AIQuestionGenerationService {
     return {
       question_id: `gen_exp_${experience.id}_${Date.now()}`,
       question_text: questionText,
-      question_type: QuestionType.TEXT,
+      section: 'GENERAL',
+      is_follow_up: false,
       category: this.mapCategoryToEnum(category),
       difficulty: this.calculateExperienceDifficulty(experience),
       expected_duration: 180,
@@ -2378,7 +2411,7 @@ class AIQuestionGenerationService {
 
   private populateAlternativeTemplate(
     template: string,
-    originalQuestion: ConversationalQuestion,
+    _originalQuestion: ConversationalQuestion,
     responseAnalysis: any
   ): string {
     let roles: string[] = [];
@@ -2436,7 +2469,7 @@ class AIQuestionGenerationService {
       .replace('{approach}', 'approach');
   }
 
-  private generateAlternativeQuestions(questionText: string, project: ResumeContent['projects'][0]): Array<{
+  private generateAlternativeQuestions(_questionText: string, project: ResumeContent['projects'][0]): Array<{
     question: string;
     focus: string;
     difficulty: QuestionDifficulty;
@@ -2479,7 +2512,9 @@ class AIQuestionGenerationService {
     const recommendations: string[] = [];
 
     const categoryCount = questions.reduce((acc, q) => {
-      acc[q.category] = (acc[q.category] || 0) + 1;
+      if (q.category) {
+        acc[q.category] = (acc[q.category] || 0) + 1;
+      }
       return acc;
     }, {} as Record<QuestionCategory, number>);
 
@@ -2494,7 +2529,9 @@ class AIQuestionGenerationService {
 
     // Check difficulty distribution
     const difficultyCount = questions.reduce((acc, q) => {
-      acc[q.difficulty] = (acc[q.difficulty] || 0) + 1;
+      if (q.difficulty) {
+        acc[q.difficulty] = (acc[q.difficulty] || 0) + 1;
+      }
       return acc;
     }, {} as Record<QuestionDifficulty, number>);
 

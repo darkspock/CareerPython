@@ -8,11 +8,12 @@ export type WorkflowStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 export type StageType = 'initial' | 'standard' | 'success' | 'fail';
 
 // Kanban display configuration
-export enum KanbanDisplay {
-  COLUMN = 'column',
-  ROW = 'row', 
-  NONE = 'none'
-}
+export const KanbanDisplay = {
+  COLUMN: 'column',
+  ROW: 'row', 
+  NONE: 'none'
+} as const;
+export type KanbanDisplay = typeof KanbanDisplay[keyof typeof KanbanDisplay];
 
 export interface CompanyWorkflow {
   id: string;

@@ -34,8 +34,9 @@ const CandidateProfilePage: React.FC = () => {
 
       // Load resumes count
       try {
-        const resumes = await api.getResumes();
-        setStats(prev => ({ ...prev, resumesCount: resumes.length }));
+        const resumes = await api.getResumes() as Array<{ id: string }> | { resumes?: Array<{ id: string }> };
+        const resumesArray = Array.isArray(resumes) ? resumes : (resumes.resumes || []);
+        setStats(prev => ({ ...prev, resumesCount: resumesArray.length }));
       } catch (error) {
         console.log('Could not load resumes:', error);
       }

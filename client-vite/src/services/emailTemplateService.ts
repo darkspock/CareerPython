@@ -3,14 +3,14 @@
  * Phase 7: Service for email template API calls
  */
 
-import api from '@/lib/api';
+import { api } from '../lib/api';
 import type {
   EmailTemplate,
   CreateEmailTemplateRequest,
   UpdateEmailTemplateRequest,
   EmailTemplateFilters,
   TriggerEvent
-} from '@/types/emailTemplate';
+} from '../types/emailTemplate';
 
 export class EmailTemplateService {
   private static readonly BASE_PATH = '/api/company/email-templates';
@@ -19,16 +19,18 @@ export class EmailTemplateService {
    * Create a new email template
    */
   static async createTemplate(data: CreateEmailTemplateRequest): Promise<EmailTemplate> {
-    const response = await api.post(this.BASE_PATH, data);
-    return await response.json();
+    return await api.authenticatedRequest<EmailTemplate>(this.BASE_PATH, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
   }
 
   /**
    * Get an email template by ID
    */
   static async getTemplateById(templateId: string): Promise<EmailTemplate> {
-    const response = await api.get(`${this.BASE_PATH}/${templateId}`);
-    return await response.json();
+    return await api.authenticatedRequest<EmailTemplate>(`${this.BASE_PATH}/${templateId}`);
   }
 
   /**
@@ -38,32 +40,38 @@ export class EmailTemplateService {
     templateId: string,
     data: UpdateEmailTemplateRequest
   ): Promise<{ message: string; template_id: string }> {
-    const response = await api.put(`${this.BASE_PATH}/${templateId}`, data);
-    return await response.json();
+    return await api.authenticatedRequest<{ message: string; template_id: string }>(`${this.BASE_PATH}/${templateId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
   }
 
   /**
    * Delete an email template
    */
   static async deleteTemplate(templateId: string): Promise<{ message: string }> {
-    const response = await api.delete(`${this.BASE_PATH}/${templateId}`);
-    return await response.json();
+    return await api.authenticatedRequest<{ message: string }>(`${this.BASE_PATH}/${templateId}`, {
+      method: 'DELETE'
+    });
   }
 
   /**
    * Activate an email template
    */
   static async activateTemplate(templateId: string): Promise<{ message: string }> {
-    const response = await api.post(`${this.BASE_PATH}/${templateId}/activate`);
-    return await response.json();
+    return await api.authenticatedRequest<{ message: string }>(`${this.BASE_PATH}/${templateId}/activate`, {
+      method: 'POST'
+    });
   }
 
   /**
    * Deactivate an email template
    */
   static async deactivateTemplate(templateId: string): Promise<{ message: string }> {
-    const response = await api.post(`${this.BASE_PATH}/${templateId}/deactivate`);
-    return await response.json();
+    return await api.authenticatedRequest<{ message: string }>(`${this.BASE_PATH}/${templateId}/deactivate`, {
+      method: 'POST'
+    });
   }
 
   /**
@@ -76,8 +84,7 @@ export class EmailTemplateService {
     const params = new URLSearchParams();
     if (activeOnly) params.append('active_only', 'true');
 
-    const response = await api.get(`${this.BASE_PATH}/workflow/${workflowId}?${params.toString()}`);
-    return await response.json();
+    return await api.authenticatedRequest<EmailTemplate[]>(`${this.BASE_PATH}/workflow/${workflowId}?${params.toString()}`);
   }
 
   /**
@@ -90,8 +97,7 @@ export class EmailTemplateService {
     const params = new URLSearchParams();
     if (activeOnly) params.append('active_only', 'true');
 
-    const response = await api.get(`${this.BASE_PATH}/stage/${stageId}?${params.toString()}`);
-    return await response.json();
+    return await api.authenticatedRequest<EmailTemplate[]>(`${this.BASE_PATH}/stage/${stageId}?${params.toString()}`);
   }
 
   /**
@@ -107,10 +113,9 @@ export class EmailTemplateService {
     if (stageId) params.append('stage_id', stageId);
     if (activeOnly) params.append('active_only', 'true');
 
-    const response = await api.get(
+    return await api.authenticatedRequest<EmailTemplate[]>(
       `${this.BASE_PATH}/trigger/${workflowId}/${triggerEvent}?${params.toString()}`
     );
-    return await response.json();
   }
 
   /**

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import type { WorkflowAnalytics, StageAnalytics, StageBottleneck } from '../../../types/workflowAnalytics';
+import type { WorkflowAnalytics } from '../../../types/workflowAnalytics';
 import {
   formatConversionRate,
   formatTimeHours,
@@ -27,7 +27,7 @@ type DateRangeFilter = 'all' | '30days' | '90days' | 'custom';
 
 export const WorkflowAnalyticsPage: React.FC<WorkflowAnalyticsPageProps> = ({
   workflowId,
-  workflowName
+  workflowName: _workflowName
 }) => {
   const [analytics, setAnalytics] = useState<WorkflowAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);

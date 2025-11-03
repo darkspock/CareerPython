@@ -53,10 +53,10 @@ export default function CreateCompanyPagePage() {
   };
 
   const handleAddKeyword = () => {
-    if (keywordInput.trim() && !formData.meta_keywords.includes(keywordInput.trim())) {
+    if (keywordInput.trim() && !(formData.meta_keywords || []).includes(keywordInput.trim())) {
       setFormData(prev => ({
         ...prev,
-        meta_keywords: [...prev.meta_keywords, keywordInput.trim()]
+        meta_keywords: [...(prev.meta_keywords || []), keywordInput.trim()]
       }));
       setKeywordInput('');
     }
@@ -65,7 +65,7 @@ export default function CreateCompanyPagePage() {
   const handleRemoveKeyword = (keyword: string) => {
     setFormData(prev => ({
       ...prev,
-      meta_keywords: prev.meta_keywords.filter(k => k !== keyword)
+      meta_keywords: (prev.meta_keywords || []).filter(k => k !== keyword)
     }));
   };
 
@@ -254,9 +254,9 @@ export default function CreateCompanyPagePage() {
                     </button>
                   </div>
                   
-                  {formData.meta_keywords.length > 0 && (
+                  {(formData.meta_keywords || []).length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                      {formData.meta_keywords.map((keyword, index) => (
+                      {(formData.meta_keywords || []).map((keyword, index) => (
                         <span
                           key={index}
                           className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"

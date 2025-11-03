@@ -10,7 +10,7 @@
  * @param {Object} props.errors - Validation errors
  * @param {boolean} props.checkEmailExists - Whether to check if email exists
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { CompanyRegistrationService } from '../../services/companyRegistrationService';
 

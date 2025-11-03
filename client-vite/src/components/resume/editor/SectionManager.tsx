@@ -205,7 +205,7 @@ const SectionManager: React.FC<SectionManagerProps> = ({
                   section.isVisible ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50'
                 } ${draggedSection === section.id ? 'opacity-50' : ''}`}
                 draggable
-                onDragStart={(e) => handleDragStart(e, section.id)}
+                onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, section.id)}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, section.id)}
               >

@@ -7,12 +7,17 @@
  */
 
 import { InvitationService } from '../invitationService';
-import { api } from '../../lib/api';
+import { ApiClient } from '../../lib/api';
 import type { CompanyUserInvitation, AcceptInvitationRequest } from '../../types/companyUser';
 
-// Mock api
-jest.mock('../../lib/api');
-const mockedApi = api as jest.Mocked<typeof api>;
+// Mock ApiClient
+jest.mock('../../lib/api', () => ({
+  ApiClient: {
+    get: jest.fn(),
+    post: jest.fn()
+  }
+}));
+const mockedApiClient = ApiClient as jest.Mocked<typeof ApiClient>;
 
 describe('InvitationService', () => {
   beforeEach(() => {
@@ -25,22 +30,27 @@ describe('InvitationService', () => {
         id: 'inv-123',
         company_id: 'comp-456',
         email: 'test@example.com',
+        invited_by_user_id: 'user-123',
         token: 'token-abc',
         status: 'pending',
         expires_at: new Date(Date.now() + 86400000).toISOString(),
+        accepted_at: null,
+        rejected_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         invitation_link: 'https://example.com/invitations/accept?token=token-abc'
       };
 
-      mockedApi.get = jest.fn().mockResolvedValue(mockInvitation);
+      mockedApiClient.get = jest.fn().mockResolvedValue(mockInvitation);
 
       const result = await InvitationService.getInvitationByToken('token-abc');
 
       expect(result).toEqual(mockInvitation);
-      expect(mockedApi.get).toHaveBeenCalledWith('/invitations/token-abc');
+      expect(mockedApiClient.get).toHaveBeenCalledWith('/invitations/token-abc', undefined);
     });
 
     it('should handle error when invitation is not found', async () => {
-      mockedApi.get = jest.fn().mockRejectedValue(
+      mockedApiClient.get = jest.fn().mockRejectedValue(
         new Error('Invitation not found')
       );
 
@@ -50,7 +60,7 @@ describe('InvitationService', () => {
     });
 
     it('should handle error when invitation is expired', async () => {
-      mockedApi.get = jest.fn().mockRejectedValue(
+      mockedApiClient.get = jest.fn().mockRejectedValue(
         new Error('Invitation expired')
       );
 
@@ -70,11 +80,11 @@ describe('InvitationService', () => {
       };
 
       const mockResponse = { message: 'Invitation accepted successfully' };
-      mockedApi.post = jest.fn().mockResolvedValue(mockResponse);
+      mockedApiClient.post = jest.fn().mockResolvedValue(mockResponse);
 
       await InvitationService.acceptInvitation(request);
 
-      expect(mockedApi.post).toHaveBeenCalledWith('/invitations/accept', request);
+      expect(mockedApiClient.post).toHaveBeenCalledWith('/invitations/accept', request, undefined);
     });
 
     it('should accept invitation for existing user successfully', async () => {
@@ -84,11 +94,11 @@ describe('InvitationService', () => {
       };
 
       const mockResponse = { message: 'Invitation accepted successfully' };
-      mockedApi.post = jest.fn().mockResolvedValue(mockResponse);
+      mockedApiClient.post = jest.fn().mockResolvedValue(mockResponse);
 
       await InvitationService.acceptInvitation(request);
 
-      expect(mockedApi.post).toHaveBeenCalledWith('/invitations/accept', request);
+      expect(mockedApiClient.post).toHaveBeenCalledWith('/invitations/accept', request, undefined);
     });
 
     it('should handle error when token is invalid', async () => {
@@ -99,7 +109,7 @@ describe('InvitationService', () => {
         password: 'password123'
       };
 
-      mockedApi.post = jest.fn().mockRejectedValue(
+      mockedApiClient.post = jest.fn().mockRejectedValue(
         new Error('Invalid invitation token')
       );
 
@@ -116,7 +126,7 @@ describe('InvitationService', () => {
         password: 'password123'
       };
 
-      mockedApi.post = jest.fn().mockRejectedValue(
+      mockedApiClient.post = jest.fn().mockRejectedValue(
         new Error('Email already exists in company')
       );
 

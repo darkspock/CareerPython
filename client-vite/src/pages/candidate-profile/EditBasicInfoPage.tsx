@@ -53,7 +53,7 @@ const EditBasicInfoPage: React.FC = () => {
     }
   };
 
-  const handleSave = async (data: CandidateData) => {
+  const handleSave = async (_data: CandidateData) => {
     // Show success message and navigate back
     navigate('/candidate/profile', {
       state: {
@@ -90,7 +90,7 @@ const EditBasicInfoPage: React.FC = () => {
     >
       <div className="p-6">
         <ProfileBasicInfoForm
-          initialData={candidate}
+          initialData={candidate || undefined}
           onSave={handleSave}
           onCancel={handleCancel}
           showActions={true}

@@ -53,11 +53,6 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
     case 'MULTI_SELECT':
     case 'RADIO':
     case 'CHECKBOX':
-      // Check if options are in new format (with IDs and i18n)
-      const hasNewFormat = localConfig.options?.some((opt: any) => 
-        typeof opt === 'object' && opt.id && opt.labels
-      );
-
       // Convert options to FieldOption format for modal
       const convertToFieldOptions = (): FieldOption[] => {
         if (!localConfig.options || localConfig.options.length === 0) {
