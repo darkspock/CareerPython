@@ -1,6 +1,5 @@
 // Company authentication utilities
 import { decodeJWTPayload } from './jwt';
-import type { JWTPayload } from './jwt';
 
 export interface CompanyAuthInfo {
   userId: string;

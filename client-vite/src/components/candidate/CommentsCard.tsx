@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Plus, Clock, CheckCircle, XCircle, Edit2, Trash2 } from 'lucide-react';
+import { MessageSquare, Plus, Clock, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { candidateCommentService } from '../../services/candidateCommentService';
 import type { CandidateComment, CreateCandidateCommentRequest } from '../../types/candidateComment';

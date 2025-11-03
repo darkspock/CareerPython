@@ -219,7 +219,7 @@ export interface PositionFormData {
   contact_person: string;
   // Updated fields
   working_hours: string;
-  travel_required: boolean;
+  travel_required: number;
   visa_sponsorship: boolean;
   reports_to: string;
   number_of_openings: string;

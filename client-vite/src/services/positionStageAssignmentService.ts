@@ -19,7 +19,7 @@ export class PositionStageAssignmentService {
     request: AssignUsersToStageRequest
   ): Promise<PositionStageAssignmentResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/assign`, {
+      const response = await api.authenticatedRequest<PositionStageAssignmentResponse>(`${this.BASE_PATH}/assign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -40,7 +40,7 @@ export class PositionStageAssignmentService {
     request: AddUserToStageRequest
   ): Promise<PositionStageAssignmentResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/add-user`, {
+      const response = await api.authenticatedRequest<PositionStageAssignmentResponse>(`${this.BASE_PATH}/add-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -61,7 +61,7 @@ export class PositionStageAssignmentService {
     request: RemoveUserFromStageRequest
   ): Promise<PositionStageAssignmentResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/remove-user`, {
+      const response = await api.authenticatedRequest<PositionStageAssignmentResponse>(`${this.BASE_PATH}/remove-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -82,7 +82,7 @@ export class PositionStageAssignmentService {
     request: CopyWorkflowAssignmentsRequest
   ): Promise<PositionStageAssignmentResponse[]> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/copy-workflow`, {
+      const response = await api.authenticatedRequest<PositionStageAssignmentResponse[]>(`${this.BASE_PATH}/copy-workflow`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ export class PositionStageAssignmentService {
     positionId: string
   ): Promise<PositionStageAssignment[]> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/position/${positionId}`);
+      const response = await api.authenticatedRequest<PositionStageAssignment[]>(`${this.BASE_PATH}/position/${positionId}`);
       return response;
     } catch (error) {
       console.error(`[PositionStageAssignmentService] Error listing assignments for position ${positionId}:`, error);
@@ -119,7 +119,7 @@ export class PositionStageAssignmentService {
     stageId: string
   ): Promise<string[]> {
     try {
-      const response = await api.authenticatedRequest(
+      const response = await api.authenticatedRequest<string[]>(
         `${this.BASE_PATH}/position/${positionId}/stage/${stageId}/users`
       );
       return response;

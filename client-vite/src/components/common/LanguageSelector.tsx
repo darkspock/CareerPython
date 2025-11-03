@@ -132,7 +132,7 @@ export default LanguageSelector;
 export const convertLanguagesFromBackend = (languages: Record<string, string> | undefined): Language[] => {
   if (!languages) return [];
   return Object.entries(languages)
-    .filter(([key, value]) => value !== LanguageLevelEnum.NONE)
+    .filter(([_key, value]) => value !== LanguageLevelEnum.NONE)
     .map(([key, value]) => ({ language: key, level: value }));
 };
 

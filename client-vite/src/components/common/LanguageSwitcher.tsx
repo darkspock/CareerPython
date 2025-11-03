@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, ChevronUp } from 'lucide-react';
+import { ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../lib/api';
 
@@ -18,7 +18,7 @@ const languages: Language[] = [
 const LanguageSwitcher: React.FC = () => {
   const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoadingPreference, setIsLoadingPreference] = useState(false);
+  const [_isLoadingPreference, setIsLoadingPreference] = useState(false);
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
@@ -33,7 +33,7 @@ const LanguageSwitcher: React.FC = () => {
 
       try {
         setIsLoadingPreference(true);
-        const response = await api.getUserLanguagePreference();
+        const response = await api.getUserLanguagePreference() as { preferred_language?: string };
         const preferredLanguage = response.preferred_language;
 
         if (preferredLanguage && preferredLanguage !== i18n.language) {

@@ -18,7 +18,7 @@ export class CustomFieldService {
    */
   static async createCustomField(request: CreateCustomFieldRequest): Promise<CustomField> {
     try {
-      const response = await api.authenticatedRequest(this.BASE_PATH, {
+      const response = await api.authenticatedRequest<CustomField>(this.BASE_PATH, {
         method: 'POST',
         body: JSON.stringify(request)
       });
@@ -34,7 +34,7 @@ export class CustomFieldService {
    */
   static async getCustomFieldById(fieldId: string): Promise<CustomField> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${fieldId}`);
+      const response = await api.authenticatedRequest<CustomField>(`${this.BASE_PATH}/${fieldId}`);
       return response;
     } catch (error) {
       console.error('Error fetching custom field:', error);
@@ -47,8 +47,8 @@ export class CustomFieldService {
    */
   static async listCustomFieldsByWorkflow(workflowId: string): Promise<CustomField[]> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/workflow/${workflowId}`);
-      return response.fields || response || [];
+      const response = await api.authenticatedRequest<{ fields?: CustomField[] } | CustomField[]>(`${this.BASE_PATH}/workflow/${workflowId}`);
+      return Array.isArray(response) ? response : (response.fields || []);
     } catch (error) {
       console.error('Error fetching custom fields:', error);
       throw error;
@@ -63,7 +63,7 @@ export class CustomFieldService {
     request: UpdateCustomFieldRequest
   ): Promise<CustomField> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${fieldId}`, {
+      const response = await api.authenticatedRequest<CustomField>(`${this.BASE_PATH}/${fieldId}`, {
         method: 'PUT',
         body: JSON.stringify(request)
       });
@@ -82,7 +82,7 @@ export class CustomFieldService {
     request: ReorderCustomFieldRequest
   ): Promise<CustomField> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${fieldId}/reorder`, {
+      const response = await api.authenticatedRequest<CustomField>(`${this.BASE_PATH}/${fieldId}/reorder`, {
         method: 'PUT',
         body: JSON.stringify(request)
       });
@@ -114,7 +114,7 @@ export class CustomFieldService {
     request: ConfigureStageFieldRequest
   ): Promise<FieldConfiguration> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/configurations`, {
+      const response = await api.authenticatedRequest<FieldConfiguration>(`${this.BASE_PATH}/configurations`, {
         method: 'POST',
         body: JSON.stringify(request)
       });
@@ -133,7 +133,7 @@ export class CustomFieldService {
     request: UpdateFieldVisibilityRequest
   ): Promise<FieldConfiguration> {
     try {
-      const response = await api.authenticatedRequest(
+      const response = await api.authenticatedRequest<FieldConfiguration>(
         `${this.BASE_PATH}/configurations/${configId}/visibility`,
         {
           method: 'PUT',
@@ -152,10 +152,10 @@ export class CustomFieldService {
    */
   static async listFieldConfigurationsByStage(stageId: string): Promise<FieldConfiguration[]> {
     try {
-      const response = await api.authenticatedRequest(
+      const response = await api.authenticatedRequest<{ configurations?: FieldConfiguration[] } | FieldConfiguration[]>(
         `${this.BASE_PATH}/configurations/stage/${stageId}`
       );
-      return response.configurations || response || [];
+      return Array.isArray(response) ? response : (response.configurations || []);
     } catch (error) {
       console.error('Error fetching field configurations:', error);
       throw error;

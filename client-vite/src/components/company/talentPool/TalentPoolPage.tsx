@@ -4,10 +4,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import type { TalentPoolEntry, TalentPoolStatus } from '@/types/talentPool';
-import { TalentPoolStatus as StatusEnum, getTalentPoolStatusLabel } from '@/types/talentPool';
+import type { TalentPoolEntry, TalentPoolStatus } from '../../../types/talentPool';
+import { TalentPoolStatus as StatusEnum, getTalentPoolStatusLabel } from '../../../types/talentPool';
 import { TalentPoolCard } from './TalentPoolCard';
-import { TalentPoolService } from '@/services/talentPoolService';
+import { TalentPoolService } from '../../../services/talentPoolService';
 
 interface TalentPoolPageProps {
   companyId: string;

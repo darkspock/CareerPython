@@ -1,5 +1,6 @@
 // Position API service
 import { api } from '../lib/api';
+import { API_BASE_URL } from '../config/api';
 import type {
   Position,
   PositionFilters,
@@ -36,7 +37,7 @@ export class PositionService {
     console.log('[PositionService] Filters:', filters);
 
     try {
-      const response = await api.authenticatedRequest(endpoint);
+      const response = await api.authenticatedRequest<PositionListResponse>(endpoint);
       console.log('[PositionService] Raw API response:', response);
 
       return {
@@ -57,7 +58,7 @@ export class PositionService {
    */
   static async getPositionStats(): Promise<PositionStats> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/stats`);
+      const response = await api.authenticatedRequest<PositionStats>(`${this.BASE_PATH}/stats`);
       return {
         total_positions: response.total_positions || 0,
         active_positions: response.active_positions || 0,
@@ -77,7 +78,7 @@ export class PositionService {
    */
   static async getPositionById(positionId: string): Promise<Position> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${positionId}`);
+      const response = await api.authenticatedRequest<Position>(`${this.BASE_PATH}/${positionId}`);
       return response;
     } catch (error) {
       console.error(`Error fetching position ${positionId}:`, error);
@@ -90,7 +91,7 @@ export class PositionService {
    */
   static async createPosition(positionData: CreatePositionRequest): Promise<Position> {
     try {
-      const response = await api.authenticatedRequest(this.BASE_PATH, {
+      const response = await api.authenticatedRequest<Position>(this.BASE_PATH, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -109,7 +110,7 @@ export class PositionService {
    */
   static async updatePosition(positionId: string, positionData: UpdatePositionRequest): Promise<Position> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${positionId}`, {
+      const response = await api.authenticatedRequest<Position>(`${this.BASE_PATH}/${positionId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -128,7 +129,7 @@ export class PositionService {
    */
   static async deletePosition(positionId: string): Promise<PositionActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${positionId}`, {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}`, {
         method: 'DELETE'
       });
       return response;
@@ -143,7 +144,7 @@ export class PositionService {
    */
   static async activatePosition(positionId: string): Promise<PositionActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${positionId}/activate`, {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/activate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -161,7 +162,7 @@ export class PositionService {
    */
   static async deactivatePosition(positionId: string): Promise<PositionActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${positionId}/deactivate`, {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/deactivate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -179,7 +180,7 @@ export class PositionService {
    */
   static async bulkActivatePositions(positionIds: string[]): Promise<PositionActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/bulk/activate`, {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/bulk/activate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -195,7 +196,7 @@ export class PositionService {
 
   static async bulkDeactivatePositions(positionIds: string[]): Promise<PositionActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/bulk/deactivate`, {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/bulk/deactivate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -211,7 +212,7 @@ export class PositionService {
 
   static async bulkDeletePositions(positionIds: string[]): Promise<PositionActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/bulk/delete`, {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/bulk/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -244,10 +245,13 @@ export class PositionService {
     const endpoint = `${this.BASE_PATH}/export${queryParams.toString() ? `?${queryParams}` : ''}`;
 
     try {
-      const response = await api.authenticatedRequest(endpoint, {
-        responseType: 'blob'
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`
+        }
       });
-      return response;
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.blob();
     } catch (error) {
       console.error('Error exporting positions:', error);
       throw error;

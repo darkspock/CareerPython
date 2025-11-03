@@ -1,5 +1,4 @@
 // Badge component for displaying user roles
-import React from 'react';
 import type { CompanyUserRole } from '../../types/companyUser';
 import {
   getCompanyUserRoleColor,

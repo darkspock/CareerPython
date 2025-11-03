@@ -1,5 +1,4 @@
 // Component to display a visual list of user permissions
-import React from 'react';
 import { Check, X } from 'lucide-react';
 import type { CompanyUserPermissions } from '../../types/companyUser';
 

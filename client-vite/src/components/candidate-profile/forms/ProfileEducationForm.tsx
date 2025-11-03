@@ -51,9 +51,9 @@ const ProfileEducationForm: React.FC<ProfileEducationFormProps> = ({
       setError("");
 
       // Use the same API method as onboarding system
-      const educations = await api.getEducations();
+      const educations = await api.getEducations() as Education[];
 
-      setEducations(educations);
+      setEducations(Array.isArray(educations) ? educations : []);
     } catch (error) {
       console.error('Error loading educations:', error);
       setError(t('education.errorLoading'));

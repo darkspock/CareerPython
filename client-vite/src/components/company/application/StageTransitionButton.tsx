@@ -21,8 +21,8 @@ interface StageTransitionButtonProps {
 
 export const StageTransitionButton: React.FC<StageTransitionButtonProps> = ({
   applicationId,
-  currentStageId,
-  targetStageId,
+  currentStageId: _currentStageId,
+  targetStageId: _targetStageId,
   targetStageName,
   userId,
   companyId,

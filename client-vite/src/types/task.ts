@@ -2,6 +2,9 @@
 
 import { ApplicationStatus, TaskStatus } from './candidateApplication';
 
+// Re-export TaskStatus for convenience
+export type { TaskStatus };
+
 /**
  * Priority level for tasks
  */

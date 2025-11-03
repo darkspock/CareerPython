@@ -41,7 +41,7 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Fetch company by ID when value changes
   useEffect(() => {
@@ -76,7 +76,7 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({
       setSearchError(null);
 
       // Try searching in the list first (more likely to work)
-      const response = await api.authenticatedRequest(`/admin/companies?page_size=100`);
+      const response = await api.authenticatedRequest<{ companies?: Company[] }>(`/admin/companies?page_size=100`);
       const foundCompany = response.companies?.find((c: Company) => c.id === companyId);
       if (foundCompany) {
         setSelectedCompany(foundCompany);
@@ -105,7 +105,7 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({
       setLoading(true);
       setSearchError(null);
 
-      const response = await api.authenticatedRequest(
+      const response = await api.authenticatedRequest<{ companies?: Company[] }>(
         `/admin/companies?search_term=${encodeURIComponent(term)}&page_size=20`
       );
 
@@ -132,7 +132,7 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({
     // Debounce search
     timeoutRef.current = setTimeout(() => {
       searchCompanies(term);
-    }, 300);
+    }, 300) as ReturnType<typeof setTimeout>;
   };
 
   const handleCompanySelect = (company: Company) => {

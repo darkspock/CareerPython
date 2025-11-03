@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Clock, ArrowRight, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Clock, ArrowRight, User, CheckCircle } from 'lucide-react';
 import type { ApplicationHistoryEntry } from '../../../types/candidateApplication';
 
 interface ApplicationHistoryProps {

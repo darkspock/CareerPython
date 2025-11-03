@@ -4,8 +4,8 @@
  */
 
 import React from 'react';
-import type { EmailTemplate } from '@/types/emailTemplate';
-import { getTriggerEventLabel } from '@/types/emailTemplate';
+import type { EmailTemplate } from '../../../types/emailTemplate';
+import { getTriggerEventLabel } from '../../../types/emailTemplate';
 
 interface EmailTemplateCardProps {
   template: EmailTemplate;
@@ -94,7 +94,7 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
         <div className="mb-4">
           <p className="text-sm font-medium text-gray-700 mb-2">Variables:</p>
           <div className="flex flex-wrap gap-1">
-            {template.available_variables.slice(0, 5).map((variable) => (
+            {template.available_variables.slice(0, 5).map((variable: string) => (
               <span
                 key={variable}
                 className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700 border border-gray-200"

@@ -20,7 +20,6 @@
  * @param {string|null} props.error - Error message if removal failed
  */
 // Modal for confirming user removal
-import React from 'react';
 import { X, AlertTriangle, Trash2 } from 'lucide-react';
 import type { CompanyUser } from '../../types/companyUser';
 

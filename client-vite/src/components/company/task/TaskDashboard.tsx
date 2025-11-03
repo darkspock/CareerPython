@@ -2,9 +2,10 @@
 // Main dashboard for viewing and managing assigned tasks
 
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Filter, RefreshCw, Search, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import { Task, TaskFilters, PriorityLevel, TaskStatus } from '@/types/task';
-import TaskService from '@/services/taskService';
+import { AlertCircle, RefreshCw, Search, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import type { Task } from '../../../types/task';
+import { PriorityLevel, TaskStatus } from '../../../types/task';
+import TaskService from '../../../services/taskService';
 import { TaskCard } from './TaskCard';
 
 interface TaskDashboardProps {

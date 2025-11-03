@@ -113,7 +113,7 @@ const InterviewTemplateEditor: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const template = await api.authenticatedRequest(`/admin/interview-templates/${templateId}`);
+      const template = await api.authenticatedRequest<InterviewTemplate>(`/admin/interview-templates/${templateId}`);
       setFormData({
         name: template.name,
         intro: template.intro || '',
@@ -121,7 +121,7 @@ const InterviewTemplateEditor: React.FC = () => {
         goal: template.goal || '',
         type: template.type,
         job_category: template.job_category,
-        section: template.section,
+        section: template.section || 'GENERAL',
         tags: template.tags || [],
         allow_ai_questions: template.allow_ai_questions || false,
         legal_notice: template.legal_notice || ''
@@ -242,7 +242,7 @@ const InterviewTemplateEditor: React.FC = () => {
 
         if (templateId) {
           try {
-            const createdSection = await api.authenticatedRequest('/admin/interview-template-sections', {
+            const createdSection = await api.authenticatedRequest<InterviewTemplateSection>('/admin/interview-template-sections', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -349,7 +349,7 @@ const InterviewTemplateEditor: React.FC = () => {
           });
           // Refresh the template data to get the updated order
           if (templateId) {
-            const template = await api.authenticatedRequest(`/admin/interview-templates/${templateId}`);
+            const template = await api.authenticatedRequest<InterviewTemplate>(`/admin/interview-templates/${templateId}`);
             const sortedSections = template.sections ? [...template.sections].sort((a, b) => a.sort_order - b.sort_order) : [];
             setSections(sortedSections);
           }
@@ -381,7 +381,7 @@ const InterviewTemplateEditor: React.FC = () => {
           });
           // Refresh the template data to get the updated order
           if (templateId) {
-            const template = await api.authenticatedRequest(`/admin/interview-templates/${templateId}`);
+            const template = await api.authenticatedRequest<InterviewTemplate>(`/admin/interview-templates/${templateId}`);
             const sortedSections = template.sections ? [...template.sections].sort((a, b) => a.sort_order - b.sort_order) : [];
             setSections(sortedSections);
           }
@@ -518,7 +518,7 @@ const InterviewTemplateEditor: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Section</label>
                 <select
                   value={formData.section || ''}
-                  onChange={(e) => setFormData({ ...formData, section: (e.target.value || null) as 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL' | null })}
+                  onChange={(e) => setFormData({ ...formData, section: (e.target.value || 'GENERAL') as 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL' })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select a section (optional)</option>
@@ -992,8 +992,8 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, onClose }) => 
     try {
       setLoading(true);
       setError(null);
-      const response = await api.authenticatedRequest(`/admin/interview-template-sections/${section.id}/questions`);
-      setQuestions(response || []);
+      const response = await api.authenticatedRequest<unknown[]>(`/admin/interview-template-sections/${section.id}/questions`);
+      setQuestions(Array.isArray(response) ? response : []);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch questions');
     } finally {

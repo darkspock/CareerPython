@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import type { EmailTemplate, TriggerEvent } from '@/types/emailTemplate';
+import type { EmailTemplate } from '../../../types/emailTemplate';
 import { EmailTemplateCard } from './EmailTemplateCard';
-import { EmailTemplateService } from '@/services/emailTemplateService';
+import { EmailTemplateService } from '../../../services/emailTemplateService';
 
 interface EmailTemplatesPageProps {
   workflowId: string;

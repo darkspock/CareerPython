@@ -16,7 +16,7 @@ export class ValidationRuleService {
    */
   static async createValidationRule(request: CreateValidationRuleRequest): Promise<ValidationRule> {
     try {
-      const response = await api.authenticatedRequest(this.BASE_PATH, {
+      const response = await api.authenticatedRequest<ValidationRule>(this.BASE_PATH, {
         method: 'POST',
         body: JSON.stringify(request)
       });
@@ -32,7 +32,7 @@ export class ValidationRuleService {
    */
   static async getValidationRuleById(ruleId: string): Promise<ValidationRule> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${ruleId}`);
+      const response = await api.authenticatedRequest<ValidationRule>(`${this.BASE_PATH}/${ruleId}`);
       return response;
     } catch (error) {
       console.error('Error fetching validation rule:', error);
@@ -46,7 +46,7 @@ export class ValidationRuleService {
   static async listValidationRulesByStage(stageId: string, activeOnly = false): Promise<ValidationRule[]> {
     try {
       const url = `${this.BASE_PATH}/stage/${stageId}${activeOnly ? '?active_only=true' : ''}`;
-      const response = await api.authenticatedRequest(url);
+      const response = await api.authenticatedRequest<ValidationRule[]>(url);
       return response;
     } catch (error) {
       console.error('Error listing validation rules by stage:', error);
@@ -60,7 +60,7 @@ export class ValidationRuleService {
   static async listValidationRulesByField(customFieldId: string, activeOnly = false): Promise<ValidationRule[]> {
     try {
       const url = `${this.BASE_PATH}/field/${customFieldId}${activeOnly ? '?active_only=true' : ''}`;
-      const response = await api.authenticatedRequest(url);
+      const response = await api.authenticatedRequest<ValidationRule[]>(url);
       return response;
     } catch (error) {
       console.error('Error listing validation rules by field:', error);
@@ -73,7 +73,7 @@ export class ValidationRuleService {
    */
   static async updateValidationRule(ruleId: string, request: UpdateValidationRuleRequest): Promise<ValidationRule> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${ruleId}`, {
+      const response = await api.authenticatedRequest<ValidationRule>(`${this.BASE_PATH}/${ruleId}`, {
         method: 'PUT',
         body: JSON.stringify(request)
       });
@@ -103,7 +103,7 @@ export class ValidationRuleService {
    */
   static async activateValidationRule(ruleId: string): Promise<ValidationRule> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${ruleId}/activate`, {
+      const response = await api.authenticatedRequest<ValidationRule>(`${this.BASE_PATH}/${ruleId}/activate`, {
         method: 'POST'
       });
       return response;
@@ -118,7 +118,7 @@ export class ValidationRuleService {
    */
   static async deactivateValidationRule(ruleId: string): Promise<ValidationRule> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${ruleId}/deactivate`, {
+      const response = await api.authenticatedRequest<ValidationRule>(`${this.BASE_PATH}/${ruleId}/deactivate`, {
         method: 'POST'
       });
       return response;
@@ -133,7 +133,7 @@ export class ValidationRuleService {
    */
   static async validateStageTransition(request: ValidateStageRequest): Promise<ValidationResult> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/validate-stage`, {
+      const response = await api.authenticatedRequest<ValidationResult>(`${this.BASE_PATH}/validate-stage`, {
         method: 'POST',
         body: JSON.stringify(request)
       });

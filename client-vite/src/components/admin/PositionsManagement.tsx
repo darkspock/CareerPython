@@ -41,7 +41,7 @@ export const PositionsManagement: React.FC = () => {
 
   // Fetch dynamic enums
   const { languages, languageLevels, loading: enumsLoading } = useLanguageEnums();
-  const { desiredRoles, workLocationTypes, employmentTypes, experienceLevels } = usePositionEnums();
+  const { desiredRoles, workLocationTypes } = usePositionEnums();
 
   // Initialize hook with company filter if present
   const {
@@ -51,16 +51,13 @@ export const PositionsManagement: React.FC = () => {
     error,
     filters,
     pagination,
-    fetchPositions,
-    fetchStats,
     createPosition,
     updatePosition,
     deletePosition,
     activatePosition,
     deactivatePosition,
     setFilters,
-    clearError,
-    refresh
+    clearError
   } = usePositions({
     initialFilters: companyIdFilter ? { company_id: companyIdFilter } : {},
     autoFetch: true
@@ -90,7 +87,7 @@ export const PositionsManagement: React.FC = () => {
     contact_person: '',
     // Updated fields
     working_hours: '',
-    travel_required: false,
+    travel_required: 0,
     visa_sponsorship: false,
     reports_to: '',
     number_of_openings: '1',
@@ -153,13 +150,13 @@ export const PositionsManagement: React.FC = () => {
         requirements: formData.requirements ? formData.requirements.split('\n').filter(r => r.trim()) : [],
         benefits: formData.benefits ? formData.benefits.split('\n').filter(b => b.trim()) : [],
         skills: formData.skills ? formData.skills.split('\n').filter(s => s.trim()) : [],
-        is_remote: formData.is_remote,
+        work_location_type: formData.work_location_type,
         application_deadline: formData.application_deadline || undefined,
         application_url: formData.application_url || undefined,
         application_email: formData.application_email || undefined,
         // New fields
         working_hours: formData.working_hours || undefined,
-        travel_required: formData.travel_required ? parseInt(formData.travel_required) : undefined,
+        travel_required: typeof formData.travel_required === 'number' ? formData.travel_required : (formData.travel_required ? 1 : 0),
         visa_sponsorship: formData.visa_sponsorship,
         contact_person: formData.contact_person || undefined,
         reports_to: formData.reports_to || undefined,
@@ -200,13 +197,13 @@ export const PositionsManagement: React.FC = () => {
         requirements: formData.requirements ? formData.requirements.split('\n').filter(r => r.trim()) : [],
         benefits: formData.benefits ? formData.benefits.split('\n').filter(b => b.trim()) : [],
         skills: formData.skills ? formData.skills.split('\n').filter(s => s.trim()) : [],
-        is_remote: formData.is_remote,
+        work_location_type: formData.work_location_type,
         application_deadline: formData.application_deadline || undefined,
         application_url: formData.application_url || undefined,
         application_email: formData.application_email || undefined,
         // New fields
         working_hours: formData.working_hours || undefined,
-        travel_required: formData.travel_required ? parseInt(formData.travel_required) : undefined,
+        travel_required: typeof formData.travel_required === 'number' ? formData.travel_required : (formData.travel_required ? 1 : 0),
         visa_sponsorship: formData.visa_sponsorship,
         contact_person: formData.contact_person || undefined,
         reports_to: formData.reports_to || undefined,
@@ -285,14 +282,26 @@ export const PositionsManagement: React.FC = () => {
       return 'USD';
     };
 
-    const newFormData = {
+    const newFormData: PositionFormData = {
       company_id: position.company_id,
+      workflow_id: position.workflow_id || null,
       title: position.title,
       description: position.description || '',
       department: position.department || '',
       location: position.location || '',
+      work_location_type: position.work_location_type || 'on_site',
       employment_type: position.employment_type || position.contract_type || 'full_time',
-      experience_level: position.experience_level || (position.position_level === 'junior' ? 'entry' : position.position_level) || 'mid',
+      experience_level: (() => {
+        if (position.experience_level && ['entry', 'mid', 'senior', 'executive'].includes(position.experience_level)) {
+          return position.experience_level as 'entry' | 'mid' | 'senior' | 'executive';
+        }
+        if (position.position_level === 'junior') return 'entry';
+        if (position.position_level === 'lead') return 'senior';
+        if (position.position_level && ['entry', 'mid', 'senior', 'executive'].includes(position.position_level)) {
+          return position.position_level as 'entry' | 'mid' | 'senior' | 'executive';
+        }
+        return 'mid';
+      })(),
       salary_min: getSalaryMin(),
       salary_max: getSalaryMax(),
       salary_currency: getSalaryCurrency(),
@@ -301,13 +310,12 @@ export const PositionsManagement: React.FC = () => {
                    position.requirements.requirements.join('\n') : '',
       benefits: position.benefits?.join('\n') || '',
       skills: position.skills?.join('\n') || '',
-      is_remote: position.is_remote ?? (position.work_location_type === 'remote'),
       application_deadline: position.application_deadline || '',
       application_url: position.application_url || '',
       application_email: position.application_email || '',
       // New fields
       working_hours: position.working_hours || '',
-      travel_required: position.travel_required?.toString() || '',
+      travel_required: typeof position.travel_required === 'number' ? position.travel_required : (position.travel_required ? 1 : 0),
       visa_sponsorship: position.visa_sponsorship || false,
       contact_person: position.contact_person || '',
       reports_to: position.reports_to || '',
@@ -371,13 +379,13 @@ export const PositionsManagement: React.FC = () => {
       requirements: '',
       benefits: '',
       skills: '',
-      is_remote: false,
+      work_location_type: 'on_site',
       application_deadline: '',
       application_url: '',
       application_email: '',
       // New fields
       working_hours: '',
-      travel_required: '',
+      travel_required: 0,
       visa_sponsorship: false,
       contact_person: '',
       reports_to: '',
@@ -882,7 +890,7 @@ export const PositionsManagement: React.FC = () => {
                     </label>
                     <CompanySelector
                       value={formData.company_id}
-                      onChange={(companyId, company) => {
+                      onChange={(companyId) => {
                         setFormData({ ...formData, company_id: companyId || '' });
                       }}
                       placeholder="Search and select company..."
@@ -1208,8 +1216,8 @@ Flexible working hours`}
                         <input
                           type="checkbox"
                           id="travel_required"
-                          checked={formData.travel_required}
-                          onChange={(e) => setFormData({ ...formData, travel_required: e.target.checked })}
+                          checked={!!formData.travel_required}
+                          onChange={(e) => setFormData({ ...formData, travel_required: e.target.checked ? 1 : 0 })}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                         <label htmlFor="travel_required" className="ml-2 block text-sm text-gray-700">

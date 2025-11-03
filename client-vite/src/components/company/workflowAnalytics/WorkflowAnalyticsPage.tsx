@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import type { WorkflowAnalytics, StageAnalytics, StageBottleneck } from '@/types/workflowAnalytics';
+import type { WorkflowAnalytics, StageAnalytics, StageBottleneck } from '../../../types/workflowAnalytics';
 import {
   formatConversionRate,
   formatTimeHours,
@@ -15,8 +15,8 @@ import {
   calculateWorkflowHealthScore,
   getHealthScoreColor,
   getHealthScoreLabel
-} from '@/types/workflowAnalytics';
-import { WorkflowAnalyticsService } from '@/services/workflowAnalyticsService';
+} from '../../../types/workflowAnalytics';
+import { WorkflowAnalyticsService } from '../../../services/workflowAnalyticsService';
 
 interface WorkflowAnalyticsPageProps {
   workflowId: string;

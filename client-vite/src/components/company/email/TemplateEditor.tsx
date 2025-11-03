@@ -9,15 +9,14 @@ import type {
   CreateEmailTemplateRequest,
   UpdateEmailTemplateRequest,
   TriggerEvent
-} from '@/types/emailTemplate';
+} from '../../../types/emailTemplate';
 import {
   getTriggerEventLabel,
   getTriggerEventDescription,
   DEFAULT_AVAILABLE_VARIABLES,
-  formatVariableForDisplay,
   getVariableDescription
-} from '@/types/emailTemplate';
-import { EmailTemplateService } from '@/services/emailTemplateService';
+} from '../../../types/emailTemplate';
+import { EmailTemplateService } from '../../../services/emailTemplateService';
 
 interface TemplateEditorProps {
   workflowId: string;
@@ -239,7 +238,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
               Available Variables
             </label>
             <div className="flex flex-wrap gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              {formData.available_variables.map((variable) => (
+              {formData.available_variables.map((variable: string) => (
                 <button
                   key={variable}
                   type="button"

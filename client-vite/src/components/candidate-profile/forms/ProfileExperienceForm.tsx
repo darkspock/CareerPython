@@ -51,9 +51,9 @@ const ProfileExperienceForm: React.FC<ProfileExperienceFormProps> = ({
       setError("");
 
       // Use the correct API method
-      const experiences = await api.getExperiences();
+      const experiences = await api.getExperiences() as Experience[];
 
-      setExperiences(experiences);
+      setExperiences(Array.isArray(experiences) ? experiences : []);
     } catch (error) {
       console.error('Error loading experiences:', error);
       setError(t('experience.errorLoading'));

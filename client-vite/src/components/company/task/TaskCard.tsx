@@ -2,9 +2,11 @@
 // Displays a task with enriched information including priority, deadline, and candidate details
 
 import React, { useState } from 'react';
-import { Clock, AlertCircle, User, Briefcase, CheckCircle, PlayCircle, XCircle } from 'lucide-react';
+import { Clock, AlertCircle, User, Briefcase, PlayCircle, XCircle } from 'lucide-react';
+import type {
+  Task
+} from '../../../types/task';
 import {
-  Task,
   PriorityLevel,
   TaskStatus,
   getPriorityColor,
@@ -14,8 +16,8 @@ import {
   formatDeadline,
   formatRelativeTime,
   isDeadlinePassed
-} from '@/types/task';
-import { getApplicationStatusColor, getApplicationStatusLabel } from '@/types/candidateApplication';
+} from '../../../types/task';
+import { getApplicationStatusColor, getApplicationStatusLabel } from '../../../types/candidateApplication';
 
 interface TaskCardProps {
   task: Task;

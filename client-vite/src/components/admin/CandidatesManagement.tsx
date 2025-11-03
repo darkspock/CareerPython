@@ -61,7 +61,6 @@ const CandidatesManagement: React.FC = () => {
 
   // User details modal state
   const [showUserModal, setShowUserModal] = useState(false);
-  const [userDetailsLoading, setUserDetailsLoading] = useState(false);
 
   useEffect(() => {
     fetchCandidates();
@@ -101,14 +100,14 @@ const CandidatesManagement: React.FC = () => {
 
   const fetchCandidateDetails = async (candidateId: string) => {
     try {
-      setUserDetailsLoading(true);
+      // setUserDetailsLoading(true);
       const response = await api.authenticatedRequest(`/admin/candidates/${candidateId}`) as CandidateDetails;
       setSelectedCandidate(response);
       setShowUserModal(true);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch candidate details');
     } finally {
-      setUserDetailsLoading(false);
+      // setUserDetailsLoading(false);
     }
   };
 
@@ -129,12 +128,13 @@ const CandidatesManagement: React.FC = () => {
       });
 
       // Check if the response indicates an error (like duplicate email)
-      if (response && typeof response === 'object' && 'success' in response && !response.success) {
+      if (response && typeof response === 'object' && 'success' in response && !(response as { success: boolean }).success) {
+        const errorResponse = response as { error?: string; message?: string };
         // Handle specific error cases
-        if (response.error === 'duplicate_email') {
-          setError(`Email Conflict: ${response.message}`);
+        if (errorResponse.error === 'duplicate_email') {
+          setError(`Email Conflict: ${errorResponse.message || 'Email already exists'}`);
         } else {
-          setError(response.message || 'Failed to set password');
+          setError(errorResponse.message || 'Failed to set password');
         }
         return;
       }

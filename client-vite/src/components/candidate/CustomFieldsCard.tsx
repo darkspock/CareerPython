@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Edit2, Save, X, Calendar, DollarSign, Hash, Mail, Phone, Globe, FileText, CheckSquare, ChevronDown } from 'lucide-react';
+import { Edit2, Save, X, Calendar, Hash, Mail, Phone, Globe, FileText, CheckSquare, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface CustomFieldValue {
@@ -71,7 +71,8 @@ const formatFieldValue = (fieldValue: CustomFieldValue, t: (key: string) => stri
 const renderFieldInput = (
   fieldValue: CustomFieldValue,
   value: any,
-  onChange: (value: any) => void
+  onChange: (value: any) => void,
+  t?: (key: string) => string
 ) => {
   const { field_type, field_config } = fieldValue;
 
@@ -150,7 +151,7 @@ const renderFieldInput = (
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
           <span className="ml-2 text-sm text-gray-700">
-            {value ? t('company.candidates.customFields.yes') : t('company.candidates.customFields.no')}
+            {t ? (value ? t('company.candidates.customFields.yes') : t('company.candidates.customFields.no')) : (value ? 'Yes' : 'No')}
           </span>
         </div>
       );

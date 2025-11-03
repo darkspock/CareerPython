@@ -1,5 +1,6 @@
 // Company API service
 import { api } from '../lib/api';
+import { API_BASE_URL } from '../config/api';
 import type {
   Company,
   CompanyFilters,
@@ -30,7 +31,7 @@ export class CompanyService {
     const endpoint = `${this.BASE_PATH}${queryParams.toString() ? `?${queryParams}` : ''}`;
 
     try {
-      const response = await api.authenticatedRequest(endpoint);
+      const response = await api.authenticatedRequest<CompanyListResponse>(endpoint);
       return {
         companies: response.companies || [],
         total: response.total || 0,
@@ -49,7 +50,7 @@ export class CompanyService {
    */
   static async getCompanyStats(): Promise<CompanyStats> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/stats`);
+      const response = await api.authenticatedRequest<CompanyStats>(`${this.BASE_PATH}/stats`);
       return {
         total_companies: response.total_companies || 0,
         pending_approval: response.pending_approval || 0,
@@ -69,7 +70,7 @@ export class CompanyService {
    */
   static async getCompanyById(companyId: string): Promise<Company> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${companyId}`);
+      const response = await api.authenticatedRequest<Company>(`${this.BASE_PATH}/${companyId}`);
       return response;
     } catch (error) {
       console.error(`Error fetching company ${companyId}:`, error);
@@ -82,7 +83,7 @@ export class CompanyService {
    */
   static async createCompany(companyData: any): Promise<Company> {
     try {
-      const response = await api.authenticatedRequest(this.BASE_PATH, {
+      const response = await api.authenticatedRequest<Company>(this.BASE_PATH, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -101,7 +102,7 @@ export class CompanyService {
    */
   static async updateCompany(companyId: string, companyData: UpdateCompanyRequest): Promise<Company> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${companyId}`, {
+      const response = await api.authenticatedRequest<Company>(`${this.BASE_PATH}/${companyId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -120,7 +121,7 @@ export class CompanyService {
    */
   static async deleteCompany(companyId: string): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${companyId}`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/${companyId}`, {
         method: 'DELETE'
       });
       return response;
@@ -135,7 +136,7 @@ export class CompanyService {
    */
   static async approveCompany(companyId: string): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${companyId}/approve`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/${companyId}/approve`, {
         method: 'POST'
       });
       return response;
@@ -150,7 +151,7 @@ export class CompanyService {
    */
   static async rejectCompany(companyId: string, reason: string): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${companyId}/reject`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/${companyId}/reject`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -169,7 +170,7 @@ export class CompanyService {
    */
   static async activateCompany(companyId: string): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${companyId}/activate`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/${companyId}/activate`, {
         method: 'POST'
       });
       return response;
@@ -184,7 +185,7 @@ export class CompanyService {
    */
   static async deactivateCompany(companyId: string): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/${companyId}/deactivate`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/${companyId}/deactivate`, {
         method: 'POST'
       });
       return response;
@@ -199,7 +200,7 @@ export class CompanyService {
    */
   static async bulkApproveCompanies(companyIds: string[]): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/bulk/approve`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/bulk/approve`, {
         method: 'POST',
         body: JSON.stringify({ company_ids: companyIds })
       });
@@ -212,7 +213,7 @@ export class CompanyService {
 
   static async bulkRejectCompanies(companyIds: string[], reason: string): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/bulk/reject`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/bulk/reject`, {
         method: 'POST',
         body: JSON.stringify({ company_ids: companyIds, reason })
       });
@@ -225,7 +226,7 @@ export class CompanyService {
 
   static async bulkActivateCompanies(companyIds: string[]): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/bulk/activate`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/bulk/activate`, {
         method: 'POST',
         body: JSON.stringify({ company_ids: companyIds })
       });
@@ -238,7 +239,7 @@ export class CompanyService {
 
   static async bulkDeactivateCompanies(companyIds: string[]): Promise<CompanyActionResponse> {
     try {
-      const response = await api.authenticatedRequest(`${this.BASE_PATH}/bulk/deactivate`, {
+      const response = await api.authenticatedRequest<CompanyActionResponse>(`${this.BASE_PATH}/bulk/deactivate`, {
         method: 'POST',
         body: JSON.stringify({ company_ids: companyIds })
       });
@@ -265,10 +266,13 @@ export class CompanyService {
     const endpoint = `${this.BASE_PATH}/export${queryParams.toString() ? `?${queryParams}` : ''}`;
 
     try {
-      const response = await api.authenticatedRequest(endpoint, {
-        responseType: 'blob'
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`
+        }
       });
-      return response;
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.blob();
     } catch (error) {
       console.error('Error exporting companies:', error);
       throw error;

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import type { TalentPoolEntry } from '@/types/talentPool';
+import type { TalentPoolEntry } from '../../../types/talentPool';
 import {
   getTalentPoolStatusLabel,
   getTalentPoolStatusColor,
@@ -12,7 +12,7 @@ import {
   getRatingColor,
   formatDate,
   formatRelativeTime
-} from '@/types/talentPool';
+} from '../../../types/talentPool';
 
 interface TalentPoolCardProps {
   entry: TalentPoolEntry;
@@ -129,7 +129,7 @@ export const TalentPoolCard: React.FC<TalentPoolCardProps> = ({
         <div className="mb-3">
           <p className="text-sm font-medium text-gray-700 mb-1">Tags:</p>
           <div className="flex flex-wrap gap-1">
-            {entry.tags.slice(0, 5).map((tag, index) => (
+            {entry.tags.slice(0, 5).map((tag: string, index: number) => (
               <span
                 key={index}
                 className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 border border-blue-200 rounded"

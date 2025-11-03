@@ -913,6 +913,6 @@ export const api = {
     }),
 
   // Generic authenticated request
-  authenticatedRequest: (endpoint: string, options?: RequestInit) =>
-    ApiClient.authenticatedRequest(endpoint, options),
+  authenticatedRequest: <T = unknown>(endpoint: string, options?: RequestInit) =>
+    ApiClient.authenticatedRequest<T>(endpoint, options),
 };

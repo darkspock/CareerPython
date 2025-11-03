@@ -75,49 +75,49 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           // Configuración de herramientas personalizada
           commands={[
             // Grupo de formato básico
-            'bold',
-            'italic',
-            'strikethrough',
-            'underline',
-            'divider',
+            'bold' as any,
+            'italic' as any,
+            'strikethrough' as any,
+            'underline' as any,
+            'divider' as any,
             
             // Grupo de títulos
-            'title1',
-            'title2',
-            'title3',
-            'title4',
-            'title5',
-            'title6',
-            'divider',
+            'title1' as any,
+            'title2' as any,
+            'title3' as any,
+            'title4' as any,
+            'title5' as any,
+            'title6' as any,
+            'divider' as any,
             
             // Grupo de listas
-            'unorderedListCommand',
-            'orderedListCommand',
-            'checkedListCommand',
-            'divider',
+            'unorderedListCommand' as any,
+            'orderedListCommand' as any,
+            'checkedListCommand' as any,
+            'divider' as any,
             
             // Grupo de enlaces e imágenes
-            'link',
-            'image',
-            'divider',
+            'link' as any,
+            'image' as any,
+            'divider' as any,
             
             // Grupo de código
-            'codeBlock',
-            'code',
-            'quote',
-            'divider',
+            'codeBlock' as any,
+            'code' as any,
+            'quote' as any,
+            'divider' as any,
             
             // Grupo de tabla
-            'table',
-            'divider',
+            'table' as any,
+            'divider' as any,
             
             // Grupo de formato avanzado
-            'fullscreen',
-            'preview',
-            'divider',
+            'fullscreen' as any,
+            'preview' as any,
+            'divider' as any,
             
             // Grupo de ayuda
-            'help',
+            'help' as any,
           ]}
         />
       </div>

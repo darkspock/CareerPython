@@ -1,5 +1,4 @@
-import { api } from '../lib/api';
-import {
+import type {
   Interview,
   InterviewProgress,
   InterviewType,

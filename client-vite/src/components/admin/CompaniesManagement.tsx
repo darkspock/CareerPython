@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useCompanies } from '../../hooks/useCompanies';
 import type {
   Company,
-  CompanyFormData
+  CompanyFormData,
+  CompanyIndustry,
+  CompanySize
 } from '../../types/company';
 import {
   COMPANY_STATUS_OPTIONS,
@@ -66,14 +68,16 @@ const CompaniesManagement: React.FC = () => {
     try {
       // Map frontend data to backend schema format
       const companyData = {
-        // user_id is now optional and not sent
         name: formData.name.trim(),
-        sector: formData.industry || null, // Map industry to sector
-        size: formData.employee_count ? parseInt(formData.employee_count) : null, // Use employee_count as size
-        location: formData.location || null,
-        website: formData.website || null,
-        culture: { values: [] }, // Basic culture object
-        external_data: { source: "admin_panel" }
+        description: formData.description || '',
+        website: formData.website || '',
+        industry: (formData.industry || 'Other') as CompanyIndustry,
+        size: (formData.employee_count ? (parseInt(formData.employee_count) < 50 ? 'startup' : parseInt(formData.employee_count) < 200 ? 'scale-up' : 'enterprise') : 'startup') as CompanySize,
+        location: formData.location || '',
+        logo_url: formData.logo_url,
+        employee_count: formData.employee_count ? parseInt(formData.employee_count) : undefined,
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone
       };
 
       await createCompany(companyData);
@@ -98,12 +102,15 @@ const CompaniesManagement: React.FC = () => {
       // Map frontend data to backend schema format for update
       const companyData = {
         name: formData.name.trim(),
-        sector: formData.industry || null, // Map industry to sector
-        size: formData.employee_count ? parseInt(formData.employee_count) : null, // Use employee_count as size
-        location: formData.location || null,
-        website: formData.website || null,
-        culture: { values: [] }, // Basic culture object
-        external_data: { source: "admin_panel" }
+        description: formData.description,
+        website: formData.website || undefined,
+        industry: formData.industry ? (formData.industry as CompanyIndustry) : undefined,
+        size: formData.employee_count ? (parseInt(formData.employee_count) < 50 ? 'startup' : parseInt(formData.employee_count) < 200 ? 'scale-up' : 'enterprise') as CompanySize : undefined,
+        location: formData.location || undefined,
+        logo_url: formData.logo_url,
+        employee_count: formData.employee_count ? parseInt(formData.employee_count) : undefined,
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone
       };
 
       await updateCompany(editingCompany.id, companyData);

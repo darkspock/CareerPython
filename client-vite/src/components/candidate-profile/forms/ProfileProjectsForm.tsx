@@ -49,9 +49,9 @@ const ProfileProjectsForm: React.FC<ProfileProjectsFormProps> = ({
       setError("");
 
       // Use the same API method as onboarding system
-      const projects = await api.getProjects();
+      const projects = await api.getProjects() as Project[];
 
-      setProjects(projects);
+      setProjects(Array.isArray(projects) ? projects : []);
     } catch (error) {
       console.error('Error loading projects:', error);
       setError(t('projects.errorLoading'));

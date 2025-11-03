@@ -24,12 +24,14 @@ export const CompanyPageCard: React.FC<CompanyPageCardProps> = ({
   onSetDefault,
 }) => {
   const getStatusColor = (status: keyof typeof PageStatus) => {
-    const statusOption = PAGE_STATUS_OPTIONS.find(opt => opt.value === status);
+    const statusValue = PageStatus[status];
+    const statusOption = PAGE_STATUS_OPTIONS.find(opt => opt.value === statusValue);
     return statusOption?.color || 'gray';
   };
 
   const getPageTypeLabel = (pageType: keyof typeof PageType) => {
-    const typeOption = PAGE_TYPE_OPTIONS.find(opt => opt.value === pageType);
+    const typeValue = PageType[pageType];
+    const typeOption = PAGE_TYPE_OPTIONS.find(opt => opt.value === typeValue);
     return typeOption?.label || pageType;
   };
 
@@ -41,9 +43,9 @@ export const CompanyPageCard: React.FC<CompanyPageCardProps> = ({
     });
   };
 
-  const canPublish = page.status === 'draft';
-  const canArchive = page.status === 'published';
-  const canSetDefault = page.status === 'published' && !page.is_default;
+  const canPublish = PageStatus[page.status] === PageStatus.DRAFT;
+  const canArchive = PageStatus[page.status] === PageStatus.PUBLISHED;
+  const canSetDefault = PageStatus[page.status] === PageStatus.PUBLISHED && !page.is_default;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -76,7 +78,7 @@ export const CompanyPageCard: React.FC<CompanyPageCardProps> = ({
                 : 'bg-gray-100 text-gray-800'
             }`}
           >
-            {PAGE_STATUS_OPTIONS.find(opt => opt.value === page.status)?.label}
+            {PAGE_STATUS_OPTIONS.find(opt => opt.value === PageStatus[page.status])?.label}
           </span>
         </div>
       </div>

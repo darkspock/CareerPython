@@ -123,7 +123,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
       if (initialData.job_category) {
         // Find the key that matches the value
         const categoryEntry = Object.entries(JobCategoryMapping).find(
-          ([key, value]) => value === initialData.job_category
+          ([_key, value]) => value === initialData.job_category
         );
         if (categoryEntry) {
           jobCategoryKey = categoryEntry[0];
@@ -171,8 +171,8 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
         job_category: JobCategoryMapping[formData.jobCategory] || formData.jobCategory,
         languages: convertLanguagesToBackend(formData.languages),
         skills: formData.skills,
-        expected_annual_salary: formData.expectedAnnualSalary ? parseInt(formData.expectedAnnualSalary) : null,
-        current_annual_salary: formData.currentAnnualSalary ? parseInt(formData.currentAnnualSalary) : null,
+        expected_annual_salary: formData.expectedAnnualSalary ? parseInt(formData.expectedAnnualSalary) : undefined,
+        current_annual_salary: formData.currentAnnualSalary ? parseInt(formData.currentAnnualSalary) : undefined,
         relocation: formData.relocation,
         work_modality: formData.workModality,
         current_roles: convertRolesToBackend(formData.currentRoles),
