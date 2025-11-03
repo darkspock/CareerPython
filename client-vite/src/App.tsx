@@ -230,6 +230,7 @@ function App() {
                           <Route path="settings/workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="settings/phases" element={<PhasesPage />} />
                           <Route path="settings/roles" element={<CompanyRolesPage />} />
+                          <Route path="users" element={<UsersManagementPage />} />
                           <Route index element={<CompanyDashboardPage />} />
                         </Route>
                       </Routes>

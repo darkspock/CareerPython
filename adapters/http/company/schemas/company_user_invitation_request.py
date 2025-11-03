@@ -55,6 +55,7 @@ class AssignRoleRequest(BaseModel):
     """Request schema to assign a role to a company user"""
     role: str
     permissions: Optional[dict[str, bool]] = None
+    company_roles: Optional[list[str]] = None  # IDs of CompanyRole to assign
 
     @field_validator('role')
     @classmethod

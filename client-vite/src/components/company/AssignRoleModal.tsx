@@ -20,14 +20,16 @@
  */
 // Modal for assigning a role to a company user
 import React, { useState, useEffect } from 'react';
-import { X, UserCog, AlertTriangle } from 'lucide-react';
+import { X, UserCog, AlertTriangle, Loader2 } from 'lucide-react';
 import type {
   CompanyUser,
   CompanyUserRole,
   AssignRoleRequest
 } from '../../types/companyUser';
 import { COMPANY_USER_ROLE_OPTIONS } from '../../types/companyUser';
+import type { CompanyRole } from '../../types/company';
 import { useAssignRole } from '../../hooks/useCompanyUsers';
+import { api } from '../../lib/api';
 
 interface AssignRoleModalProps {
   companyId: string;
@@ -45,17 +47,34 @@ export default function AssignRoleModal({
   onSuccess
 }: AssignRoleModalProps) {
   const [role, setRole] = useState<CompanyUserRole>(user.role);
+  const [selectedCompanyRoles, setSelectedCompanyRoles] = useState<string[]>(user.company_roles || []);
   const [warning, setWarning] = useState<string | null>(null);
+  const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
+  const [loadingCompanyRoles, setLoadingCompanyRoles] = useState(false);
 
   const { assignRole, loading, error, reset } = useAssignRole();
 
   useEffect(() => {
     if (isOpen) {
       setRole(user.role);
+      setSelectedCompanyRoles(user.company_roles || []);
       setWarning(null);
       reset();
+      loadCompanyRoles();
     }
-  }, [isOpen, user.role, reset]);
+  }, [isOpen, user.role, user.company_roles, reset]);
+
+  const loadCompanyRoles = async () => {
+    try {
+      setLoadingCompanyRoles(true);
+      const roles = await api.listCompanyRoles(companyId, false);
+      setCompanyRoles(roles as CompanyRole[]);
+    } catch (err) {
+      console.error('Error loading company roles:', err);
+    } finally {
+      setLoadingCompanyRoles(false);
+    }
+  };
 
   useEffect(() => {
     // Show warning if changing from admin to non-admin
@@ -70,7 +89,8 @@ export default function AssignRoleModal({
     e.preventDefault();
 
     const request: AssignRoleRequest = {
-      role
+      role,
+      company_roles: selectedCompanyRoles
     };
 
     const result = await assignRole(user.user_id, request);
@@ -133,10 +153,10 @@ export default function AssignRoleModal({
               <p className="font-medium text-gray-900 capitalize">{user.role}</p>
             </div>
 
-            {/* Role Select */}
+            {/* System Role Select */}
             <div>
               <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                Nuevo Rol
+                Rol del Sistema
               </label>
               <select
                 id="role"
@@ -160,6 +180,60 @@ export default function AssignRoleModal({
                   </option>
                 ))}
               </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Define los permisos del usuario en la aplicación
+              </p>
+            </div>
+
+            {/* Company Roles (Personalizados) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Roles de la Empresa
+              </label>
+              {loadingCompanyRoles ? (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Cargando roles...</span>
+                </div>
+              ) : companyRoles.length === 0 ? (
+                <div className="text-sm text-gray-500 p-3 bg-gray-50 rounded-lg">
+                  No hay roles personalizados creados.{' '}
+                  <a href="/company/settings/roles" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    Crear roles
+                  </a>
+                </div>
+              ) : (
+                <div className="space-y-2 p-4 border border-gray-300 rounded-lg bg-gray-50 max-h-48 overflow-y-auto">
+                  {companyRoles.map((companyRole) => (
+                    <label
+                      key={companyRole.id}
+                      className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCompanyRoles.includes(companyRole.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCompanyRoles([...selectedCompanyRoles, companyRole.id]);
+                          } else {
+                            setSelectedCompanyRoles(selectedCompanyRoles.filter(id => id !== companyRole.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium text-gray-700">{companyRole.name}</span>
+                        {companyRole.description && (
+                          <p className="text-xs text-gray-500">{companyRole.description}</p>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Roles personalizados para asignar en workflows
+              </p>
             </div>
 
             {/* Submit Buttons */}

@@ -8,7 +8,9 @@ from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.infrastructure.models.company_user_model import CompanyUserModel
+from src.company.infrastructure.models.company_user_company_role_model import CompanyUserCompanyRoleModel
 from src.user.domain.value_objects.UserId import UserId
+from src.shared.domain.entities.base import generate_id
 
 
 class CompanyUserRepository(CompanyUserRepositoryInterface):
@@ -87,6 +89,33 @@ class CompanyUserRepository(CompanyUserRepositoryInterface):
                 CompanyUserModel.status == CompanyUserStatus.ACTIVE.value
             ).count()
             return count
+
+    def assign_company_roles(self, company_user_id: CompanyUserId, company_role_ids: List[str]) -> None:
+        """Assign company roles to a company user"""
+        with self.database.get_session() as session:
+            # Remove existing assignments
+            session.query(CompanyUserCompanyRoleModel).filter(
+                CompanyUserCompanyRoleModel.company_user_id == str(company_user_id)
+            ).delete()
+            
+            # Add new assignments
+            for role_id in company_role_ids:
+                assignment = CompanyUserCompanyRoleModel(
+                    id=generate_id(),
+                    company_user_id=str(company_user_id),
+                    company_role_id=role_id
+                )
+                session.add(assignment)
+            
+            session.commit()
+
+    def get_company_role_ids(self, company_user_id: CompanyUserId) -> List[str]:
+        """Get list of company role IDs assigned to a company user"""
+        with self.database.get_session() as session:
+            assignments = session.query(CompanyUserCompanyRoleModel).filter(
+                CompanyUserCompanyRoleModel.company_user_id == str(company_user_id)
+            ).all()
+            return [assignment.company_role_id for assignment in assignments]
 
     def _to_domain(self, model: CompanyUserModel) -> CompanyUser:
         """Convert model to domain entity"""

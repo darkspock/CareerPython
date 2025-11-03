@@ -12,9 +12,11 @@ class CompanyUserResponseMapper:
             id=dto.id,
             company_id=dto.company_id,
             user_id=dto.user_id,
+            email=dto.email,
             role=dto.role,
             permissions=dto.permissions,
             status=dto.status,
+            company_roles=dto.company_roles,
             created_at=dto.created_at,
             updated_at=dto.updated_at,
         )

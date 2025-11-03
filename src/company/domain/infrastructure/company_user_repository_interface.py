@@ -53,3 +53,13 @@ class CompanyUserRepositoryInterface(ABC):
     def count_admins_by_company(self, company_id: CompanyId) -> int:
         """Count the number of admin users for a company"""
         pass
+
+    @abstractmethod
+    def assign_company_roles(self, company_user_id: CompanyUserId, company_role_ids: List[str]) -> None:
+        """Assign company roles to a company user"""
+        pass
+
+    @abstractmethod
+    def get_company_role_ids(self, company_user_id: CompanyUserId) -> List[str]:
+        """Get list of company role IDs assigned to a company user"""
+        pass

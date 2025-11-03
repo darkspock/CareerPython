@@ -760,17 +760,20 @@ class Container(containers.DeclarativeContainer):
     # Company User Query Handlers
     get_company_user_by_id_query_handler = providers.Factory(
         GetCompanyUserByIdQueryHandler,
-        company_user_repository=company_user_repository
+        company_user_repository=company_user_repository,
+        user_repository=user_repository
     )
 
     get_company_user_by_company_and_user_query_handler = providers.Factory(
         GetCompanyUserByCompanyAndUserQueryHandler,
-        company_user_repository=company_user_repository
+        company_user_repository=company_user_repository,
+        user_repository=user_repository
     )
 
     list_company_users_by_company_query_handler = providers.Factory(
         ListCompanyUsersByCompanyQueryHandler,
-        company_user_repository=company_user_repository
+        company_user_repository=company_user_repository,
+        user_repository=user_repository
     )
 
     get_user_invitation_query_handler = providers.Factory(
@@ -1225,7 +1228,8 @@ class Container(containers.DeclarativeContainer):
 
     assign_role_to_user_command_handler = providers.Factory(
         AssignRoleToUserCommandHandler,
-        repository=company_user_repository
+        repository=company_user_repository,
+        company_role_repository=company_role_repository
     )
 
     # CompanyRole Command Handlers

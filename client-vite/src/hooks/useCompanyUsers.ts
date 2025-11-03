@@ -10,7 +10,7 @@
  */
 
 // Custom hooks for company user operations
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CompanyUserService } from '../services/companyUserService';
 import { getCompanyId, getUserId } from '../utils/companyAuth';
 import type {
@@ -32,6 +32,13 @@ export function useCompanyUsers(filters?: CompanyUsersFilters) {
 
   const companyId = getCompanyId();
 
+  // Memoize filters to prevent unnecessary re-renders
+  const memoizedFilters = useMemo(() => filters, [
+    filters?.active_only,
+    filters?.role,
+    filters?.search
+  ]);
+
   const fetchUsers = useCallback(async () => {
     if (!companyId) {
       setError('No se pudo obtener el ID de la empresa');
@@ -42,7 +49,7 @@ export function useCompanyUsers(filters?: CompanyUsersFilters) {
     try {
       setLoading(true);
       setError(null);
-      const data = await CompanyUserService.getCompanyUsers(companyId, filters);
+      const data = await CompanyUserService.getCompanyUsers(companyId, memoizedFilters);
       setUsers(data);
     } catch (err: any) {
       setError(err.message || 'Error al cargar usuarios');
@@ -50,7 +57,7 @@ export function useCompanyUsers(filters?: CompanyUsersFilters) {
     } finally {
       setLoading(false);
     }
-  }, [companyId, filters]);
+  }, [companyId, memoizedFilters]);
 
   useEffect(() => {
     fetchUsers();

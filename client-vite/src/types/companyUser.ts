@@ -27,9 +27,11 @@ export interface CompanyUser {
   id: string;
   company_id: string;
   user_id: string;
+  email?: string;
   role: CompanyUserRole;
   permissions: CompanyUserPermissions;
   status: CompanyUserStatus;
+  company_roles?: string[]; // IDs of assigned CompanyRole
   created_at: string;
   updated_at: string;
 }
@@ -74,6 +76,7 @@ export interface AcceptInvitationRequest {
 export interface AssignRoleRequest {
   role: CompanyUserRole;
   permissions?: Partial<CompanyUserPermissions>;
+  company_roles?: string[]; // IDs of CompanyRole to assign
 }
 
 export interface CompanyUsersFilters {

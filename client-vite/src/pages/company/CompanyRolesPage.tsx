@@ -28,14 +28,23 @@ export default function CompanyRolesPage() {
 
   const loadRoles = async () => {
     const companyId = getCompanyId();
-    if (!companyId) return;
+    if (!companyId) {
+      setError('No se pudo obtener el ID de la empresa');
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
+      setError(null);
+      console.log('Loading roles for company:', companyId);
       const response = await api.listCompanyRoles(companyId, false);
+      console.log('Roles response:', response);
       setRoles(response as CompanyRole[]);
     } catch (err: any) {
+      console.error('Error loading roles:', err);
       setError(err.message || 'Failed to load roles');
+      setRoles([]);
     } finally {
       setLoading(false);
     }
@@ -203,7 +212,7 @@ export default function CompanyRolesPage() {
 
         {/* Roles List */}
         <div className="divide-y divide-gray-200">
-          {roles.length === 0 ? (
+          {!error && roles.length === 0 ? (
             <div className="p-12 text-center">
               <p className="text-gray-500 mb-4">No roles created yet</p>
               {!isCreating && (
@@ -215,6 +224,16 @@ export default function CompanyRolesPage() {
                   Create Your First Role
                 </button>
               )}
+            </div>
+          ) : error && roles.length === 0 ? (
+            <div className="p-12 text-center">
+              <p className="text-red-600 mb-4">Error: {error}</p>
+              <button
+                onClick={loadRoles}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Retry
+              </button>
             </div>
           ) : (
             roles.map((role) => (

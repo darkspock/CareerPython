@@ -389,7 +389,8 @@ class CompanyUserController:
                 company_id=CompanyId.from_string(company_id),
                 user_id=UserId.from_string(user_id),
                 role=role,
-                permissions=request.permissions
+                permissions=request.permissions,
+                company_roles=request.company_roles or []
             )
             self.command_bus.dispatch(command)
 

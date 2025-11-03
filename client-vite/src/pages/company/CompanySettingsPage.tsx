@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle, Building2, FileText } from 'lucide-react';
+import { Workflow, Users, Settings, Layers, RotateCcw, AlertTriangle, Building2, FileText, UserCog } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 
 export default function CompanySettingsPage() {
@@ -75,6 +75,13 @@ export default function CompanySettingsPage() {
       path: '/company/settings/roles',
       color: 'green',
     },
+    {
+      title: 'Usuarios',
+      description: 'Gestiona los usuarios de la empresa',
+      icon: UserCog,
+      path: '/company/users',
+      color: 'orange',
+    },
   ];
 
   return (
@@ -119,6 +126,8 @@ export default function CompanySettingsPage() {
             blue: 'bg-blue-50 text-blue-600 group-hover:bg-blue-100',
             green: 'bg-green-50 text-green-600 group-hover:bg-green-100',
             purple: 'bg-purple-50 text-purple-600 group-hover:bg-purple-100',
+            indigo: 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100',
+            orange: 'bg-orange-50 text-orange-600 group-hover:bg-orange-100',
           };
 
           return (

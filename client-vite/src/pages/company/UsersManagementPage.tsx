@@ -16,7 +16,7 @@
  * @component
  */
 // Company Users Management Page
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   UserPlus,
   Search,
@@ -48,8 +48,8 @@ export default function UsersManagementPage() {
   const [roleFilter, setRoleFilter] = useState<CompanyUserRole | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   
-  // Filters object for hook
-  const filters: CompanyUsersFilters | undefined = (() => {
+  // Filters object for hook - memoized to prevent infinite loops
+  const filters: CompanyUsersFilters | undefined = useMemo(() => {
     const f: CompanyUsersFilters = {
       active_only: statusFilter === 'active'
     };
@@ -60,7 +60,7 @@ export default function UsersManagementPage() {
       f.search = searchTerm.trim();
     }
     return Object.keys(f).length > 0 ? f : undefined;
-  })();
+  }, [searchTerm, roleFilter, statusFilter]);
 
   // Hooks
   const { users, loading, error, refresh, companyId } = useCompanyUsers(filters);
@@ -125,8 +125,13 @@ export default function UsersManagementPage() {
 
   // Filter users client-side for additional filtering (the API already filters, but we can add more)
   const filteredUsers = users.filter((user) => {
-    if (searchTerm && !user.user_id.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const userIdMatch = user.user_id.toLowerCase().includes(searchLower);
+      const emailMatch = user.email?.toLowerCase().includes(searchLower);
+      if (!userIdMatch && !emailMatch) {
+        return false;
+      }
     }
     return true;
   });
@@ -174,7 +179,7 @@ export default function UsersManagementPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por email o ID..."
+                placeholder="Buscar por email..."
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -271,7 +276,7 @@ export default function UsersManagementPage() {
                 filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{user.user_id}</div>
+                      <div className="text-sm font-medium text-gray-900">{user.email || user.user_id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <UserRoleBadge role={user.role} />
