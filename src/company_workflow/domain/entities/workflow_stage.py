@@ -139,7 +139,8 @@ class WorkflowStage:
         deadline_days: Optional[int] = None,
         estimated_cost: Optional[Decimal] = None,
         next_phase_id: Optional[str] = None,
-        style: Optional[StageStyle] = None
+        style: Optional[StageStyle] = None,
+        kanban_display: Optional[str] = None
     ) -> "WorkflowStage":
         """Update stage information"""
         if not name:
@@ -172,7 +173,7 @@ class WorkflowStage:
             deadline_days=deadline_days if deadline_days is not None else self.deadline_days,
             estimated_cost=estimated_cost if estimated_cost is not None else self.estimated_cost,
             next_phase_id=next_phase_id if next_phase_id is not None else self.next_phase_id,
-            kanban_display=self.kanban_display,
+            kanban_display=kanban_display if kanban_display is not None else self.kanban_display,
             style=style if style is not None else self.style,
             created_at=self.created_at,
             updated_at=datetime.utcnow()

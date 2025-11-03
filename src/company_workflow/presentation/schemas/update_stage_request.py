@@ -19,6 +19,7 @@ class UpdateStageRequest(BaseModel):
     deadline_days: Optional[int] = Field(None, ge=1, description="Days to complete this stage (for task priority)")
     estimated_cost: Optional[Decimal] = Field(None, ge=0, description="Estimated cost for this stage")
     next_phase_id: Optional[str] = Field(None, description="Phase ID to transition to (Phase 12 - only for SUCCESS/FAIL stages)")
+    kanban_display: Optional[str] = Field(None, description="Kanban display mode: 'column', 'row', or 'none'")
 
     class Config:
         json_schema_extra = {

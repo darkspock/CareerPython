@@ -108,6 +108,7 @@ export interface UpdateStageRequest {
   deadline_days?: number;
   estimated_cost?: string;
   next_phase_id?: string | null; // Phase 12: Phase transition
+  kanban_display?: string; // Kanban display mode: 'column', 'row', or 'none'
 }
 
 export interface ReorderStagesRequest {

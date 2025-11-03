@@ -30,6 +30,7 @@ class UpdateStageCommand(Command):
     estimated_cost: Optional[Decimal] = None
     next_phase_id: Optional[str] = None  # Phase 12: Phase transition
     style: Optional[Dict[str, Any]] = None  # Stage style
+    kanban_display: Optional[str] = None  # Kanban display configuration
 
 
 class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
@@ -74,7 +75,8 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
             deadline_days=command.deadline_days,
             estimated_cost=command.estimated_cost,
             next_phase_id=command.next_phase_id,  # Phase 12: Phase transition
-            style=style
+            style=style,
+            kanban_display=command.kanban_display
         )
 
         self.repository.save(updated_stage)

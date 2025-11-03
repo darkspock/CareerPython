@@ -267,7 +267,6 @@ export const FieldConfigEditor: React.FC<FieldConfigEditorProps> = ({
 
     case 'TEXTAREA':
     case 'DATE':
-    case 'CHECKBOX':
     default:
       return (
         <div className="p-3 bg-gray-50 border rounded text-sm text-gray-600">

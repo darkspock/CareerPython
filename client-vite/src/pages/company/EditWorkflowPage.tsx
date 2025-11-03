@@ -25,6 +25,7 @@ interface StageFormData {
   deadline_days?: number;
   estimated_cost?: string;
   next_phase_id?: string;
+  kanban_display?: string;
   style?: {
     icon: string;
     color: string;
@@ -136,6 +137,7 @@ export default function EditWorkflowPage() {
         deadline_days: stage.deadline_days || undefined,
         estimated_cost: stage.estimated_cost || undefined,
         next_phase_id: stage.next_phase_id || undefined,
+        kanban_display: stage.kanban_display || 'column',
         style: stage.style,
       }));
       setStages(formattedStages);
@@ -338,6 +340,7 @@ export default function EditWorkflowPage() {
             deadline_days: stageData.deadline_days,
             estimated_cost: stageData.estimated_cost,
             next_phase_id: stageData.next_phase_id,
+            kanban_display: stageData.kanban_display,
           });
         }
       }
@@ -586,16 +589,30 @@ export default function EditWorkflowPage() {
                     </select>
                   </div>
 
+                  {/* Kanban Display */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Kanban Display</label>
+                    <select
+                      value={stage.kanban_display || 'column'}
+                      onChange={(e) => handleStageChange(index, 'kanban_display', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="column">Column (Vertical)</option>
+                      <option value="row">Row (Horizontal)</option>
+                      <option value="none">Hidden</option>
+                    </select>
+                  </div>
+
                   {/* Next Phase (only for success/fail stages) */}
-                  {(stage.stage_type === 'success' || stage.stage_type === 'fail') && (
-                    <div className="md:col-span-2">
+                  {(stage.stage_type === 'success' || stage.stage_type === 'fail') ? (
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Next Phase (Optional)
                       </label>
                       {loadingPhases ? (
-                        <div className="text-sm text-gray-500">Loading phases...</div>
+                        <div className="text-sm text-gray-500 px-4 py-2">Loading phases...</div>
                       ) : phases.length === 0 ? (
-                        <div className="text-sm text-gray-500">No phases available</div>
+                        <div className="text-sm text-gray-500 px-4 py-2">No phases available</div>
                       ) : (
                         <select
                           value={stage.next_phase_id || ''}
@@ -611,31 +628,35 @@ export default function EditWorkflowPage() {
                         </select>
                       )}
                       <p className="mt-1 text-xs text-gray-500">
-                        Automatically move candidate to this phase when reaching this stage
+                        Auto-move to this phase when reaching this stage
                       </p>
+                    </div>
+                  ) : (
+                    <div></div>
+                  )}
 
-                      {/* Phase Transition Visual Indicator */}
-                      {stage.next_phase_id && getCompanyId() && (
-                        <PhaseTransitionIndicator
-                          stage={{
-                            ...stage,
-                            workflow_id: workflowId || '',
-                            stage_type: stage.stage_type.toUpperCase() as StageType,
-                          } as WorkflowStage}
-                          companyId={getCompanyId()!}
-                          currentPhaseId={phaseId}
-                        />
-                      )}
+                  {/* Phase Transition Visual Indicator (full width) */}
+                  {(stage.stage_type === 'success' || stage.stage_type === 'fail') && stage.next_phase_id && getCompanyId() && (
+                    <div className="md:col-span-2">
+                      <PhaseTransitionIndicator
+                        stage={{
+                          ...stage,
+                          workflow_id: workflowId || '',
+                          stage_type: stage.stage_type.toUpperCase() as StageType,
+                        } as WorkflowStage}
+                        companyId={getCompanyId()!}
+                        currentPhaseId={phaseId}
+                      />
                     </div>
                   )}
 
                   {/* Description */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                    <input
-                      type="text"
+                    <textarea
                       value={stage.description}
                       onChange={(e) => handleStageChange(index, 'description', e.target.value)}
+                      rows={3}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Describe this stage..."
                     />

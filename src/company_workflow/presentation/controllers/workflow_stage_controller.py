@@ -121,7 +121,8 @@ class WorkflowStageController:
             custom_email_text=request.custom_email_text,
             deadline_days=request.deadline_days,
             estimated_cost=request.estimated_cost,
-            next_phase_id=request.next_phase_id  # Phase 12
+            next_phase_id=request.next_phase_id,  # Phase 12
+            kanban_display=request.kanban_display
         )
 
         self._command_bus.dispatch(command)

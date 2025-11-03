@@ -182,11 +182,12 @@ const renderFieldInput = (
   }
 };
 
-export default function CustomFieldsCard({ 
-  customFieldValues, 
-  onUpdateValue, 
-  isEditable = false 
+export default function CustomFieldsCard({
+  customFieldValues,
+  onUpdateValue,
+  isEditable = false
 }: CustomFieldsCardProps) {
+  const { t } = useTranslation();
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<any>(null);
 
