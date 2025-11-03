@@ -87,7 +87,7 @@ export const PositionsManagement: React.FC = () => {
     contact_person: '',
     // Updated fields
     working_hours: '',
-    travel_required: 0,
+    travel_required: false,
     visa_sponsorship: false,
     reports_to: '',
     number_of_openings: '1',
@@ -156,7 +156,7 @@ export const PositionsManagement: React.FC = () => {
         application_email: formData.application_email || undefined,
         // New fields
         working_hours: formData.working_hours || undefined,
-        travel_required: typeof formData.travel_required === 'number' ? formData.travel_required : (formData.travel_required ? 1 : 0),
+        travel_required: formData.travel_required || false,
         visa_sponsorship: formData.visa_sponsorship,
         contact_person: formData.contact_person || undefined,
         reports_to: formData.reports_to || undefined,
@@ -203,7 +203,7 @@ export const PositionsManagement: React.FC = () => {
         application_email: formData.application_email || undefined,
         // New fields
         working_hours: formData.working_hours || undefined,
-        travel_required: typeof formData.travel_required === 'number' ? formData.travel_required : (formData.travel_required ? 1 : 0),
+        travel_required: formData.travel_required || false,
         visa_sponsorship: formData.visa_sponsorship,
         contact_person: formData.contact_person || undefined,
         reports_to: formData.reports_to || undefined,
@@ -315,7 +315,7 @@ export const PositionsManagement: React.FC = () => {
       application_email: position.application_email || '',
       // New fields
       working_hours: position.working_hours || '',
-      travel_required: typeof position.travel_required === 'number' ? position.travel_required : (position.travel_required ? 1 : 0),
+      travel_required: position.travel_required || false,
       visa_sponsorship: position.visa_sponsorship || false,
       contact_person: position.contact_person || '',
       reports_to: position.reports_to || '',
@@ -385,7 +385,7 @@ export const PositionsManagement: React.FC = () => {
       application_email: '',
       // New fields
       working_hours: '',
-      travel_required: 0,
+      travel_required: false,
       visa_sponsorship: false,
       contact_person: '',
       reports_to: '',
@@ -1217,7 +1217,7 @@ Flexible working hours`}
                           type="checkbox"
                           id="travel_required"
                           checked={!!formData.travel_required}
-                          onChange={(e) => setFormData({ ...formData, travel_required: e.target.checked ? 1 : 0 })}
+                          onChange={(e) => setFormData({ ...formData, travel_required: e.target.checked })}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                         <label htmlFor="travel_required" className="ml-2 block text-sm text-gray-700">

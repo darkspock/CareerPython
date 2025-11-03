@@ -35,7 +35,7 @@ class JobPosition:
     application_instructions: Optional[str]
     benefits: List[str]
     working_hours: Optional[str]
-    travel_required: Optional[int]
+    travel_required: Optional[bool]
     languages_required: Dict[LanguageEnum, LanguageLevelEnum]
     visa_sponsorship: bool
     contact_person: Optional[str]
@@ -164,6 +164,22 @@ class JobPosition:
         self.status = JobPositionStatusEnum.OPEN
         self.updated_at = datetime.utcnow()
 
+    def publish(self) -> None:
+        """Publish the job position (makes it public and sets status to PUBLISHED)"""
+        # First approve if not already approved
+        if self.status not in [JobPositionStatusEnum.APPROVED, JobPositionStatusEnum.OPEN, JobPositionStatusEnum.PUBLISHED]:
+            if self.status == JobPositionStatusEnum.PENDING:
+                self.approve()
+            else:
+                raise JobPositionValidationError("Position must be pending or approved before publishing")
+        
+        # Set as public and published
+        self.is_public = True
+        self.status = JobPositionStatusEnum.PUBLISHED
+        self.updated_at = datetime.utcnow()
+        self.status = JobPositionStatusEnum.OPEN
+        self.updated_at = datetime.utcnow()
+
     def is_approved(self) -> bool:
         """Check if job position is approved"""
         return self.status == JobPositionStatusEnum.APPROVED
@@ -225,7 +241,7 @@ class JobPosition:
             application_instructions: Optional[str],
             benefits: List[str],
             working_hours: Optional[str],
-            travel_required: Optional[int],
+            travel_required: Optional[bool],
             languages_required: Dict[LanguageEnum, LanguageLevelEnum],
             visa_sponsorship: bool,
             contact_person: Optional[str],
@@ -247,8 +263,6 @@ class JobPosition:
         if number_of_openings < 1:
             raise JobPositionValidationError("Number of openings must be at least 1")
 
-        if travel_required is not None and (travel_required < 0 or travel_required > 100):
-            raise JobPositionValidationError("Travel required must be between 0 and 100")
 
         self.workflow_id = workflow_id
         self.phase_workflows = phase_workflows or {}
@@ -302,7 +316,7 @@ class JobPosition:
             application_instructions: Optional[str] = None,
             benefits: Optional[List[str]] = None,
             working_hours: Optional[str] = None,
-            travel_required: Optional[int] = None,
+            travel_required: Optional[bool] = False,
             languages_required: Optional[Dict[LanguageEnum, LanguageLevelEnum]] = None,
             visa_sponsorship: bool = False,
             contact_person: Optional[str] = None,
@@ -379,7 +393,7 @@ class JobPosition:
             application_instructions: Optional[str],
             benefits: List[str],
             working_hours: Optional[str],
-            travel_required: Optional[int],
+            travel_required: Optional[bool],
             languages_required: Dict[LanguageEnum, LanguageLevelEnum],
             visa_sponsorship: bool,
             contact_person: Optional[str],

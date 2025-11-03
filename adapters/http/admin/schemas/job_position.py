@@ -33,7 +33,7 @@ class JobPositionCreate(BaseModel):
     application_email: Optional[str] = Field(None, description="Application email")
     # Additional fields
     working_hours: Optional[str] = Field(None, description="Working hours")
-    travel_required: Optional[int] = Field(None, description="Travel required percentage (0-100)")
+    travel_required: Optional[bool] = Field(False, description="Whether travel is required")
     visa_sponsorship: Optional[bool] = Field(False, description="Visa sponsorship available")
     contact_person: Optional[str] = Field(None, description="Contact person")
     reports_to: Optional[str] = Field(None, description="Reports to")
@@ -64,7 +64,7 @@ class JobPositionUpdate(BaseModel):
     application_email: Optional[str] = Field(None, description="Application email")
     # Additional fields for completeness
     working_hours: Optional[str] = Field(None, description="Working hours")
-    travel_required: Optional[int] = Field(None, description="Travel required percentage (0-100)")
+    travel_required: Optional[bool] = Field(False, description="Whether travel is required")
     visa_sponsorship: Optional[bool] = Field(None, description="Visa sponsorship available")
     contact_person: Optional[str] = Field(None, description="Contact person")
     reports_to: Optional[str] = Field(None, description="Reports to")

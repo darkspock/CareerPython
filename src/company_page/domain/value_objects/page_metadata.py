@@ -25,9 +25,7 @@ class PageMetadata:
         if self.description and len(self.description) > 160:
             raise ValueError("Meta description should be 160 characters or less for SEO")
 
-        if not self.keywords:
-            raise ValueError("Keywords list cannot be empty")
-
+        # Keywords are optional - only validate if provided
         if len(self.keywords) > 20:
             raise ValueError("Too many keywords, maximum 20 allowed")
 

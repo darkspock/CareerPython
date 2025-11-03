@@ -32,7 +32,7 @@ class JobPositionDto:
     application_instructions: Optional[str]
     benefits: List[str]
     working_hours: Optional[str]  # e.g., "40h/week", "flexible"
-    travel_required: Optional[int]  # percentage (0-100)
+    travel_required: Optional[bool]  # Whether travel is required
     languages_required: Dict[LanguageEnum, LanguageLevelEnum]
     visa_sponsorship: bool
     contact_person: Optional[str]

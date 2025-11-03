@@ -41,7 +41,7 @@ class JobPositionModel(Base):
     application_instructions: Mapped[Optional[str]] = mapped_column(Text)
     benefits: Mapped[Optional[List[str]]] = mapped_column(JSON)  # List of strings
     working_hours: Mapped[Optional[str]] = mapped_column(String)  # e.g., "40h/week", "flexible"
-    travel_required: Mapped[Optional[int]] = mapped_column(Integer)  # percentage (0-100)
+    travel_required: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)  # Whether travel is required
     languages_required: Mapped[Optional[Dict[str, Any]]] = mapped_column(
         JSON)  # Dict of LanguageEnum -> LanguageLevelEnum
     visa_sponsorship: Mapped[bool] = mapped_column(Boolean, default=False)

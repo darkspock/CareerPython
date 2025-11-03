@@ -32,7 +32,7 @@ export default function CreatePositionPage() {
     application_url: '',
     application_email: '',
     working_hours: '',
-    travel_required: 0,
+    travel_required: false,
     visa_sponsorship: false,
     contact_person: '',
     reports_to: '',

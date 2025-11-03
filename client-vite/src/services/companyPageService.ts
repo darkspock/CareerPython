@@ -1,70 +1,5 @@
 import { api } from '../lib/api';
-
-export interface CompanyPage {
-  id: string;
-  company_id: string;
-  page_type: keyof typeof PageType;
-  title: string;
-  html_content: string;
-  plain_text: string;
-  word_count: number;
-  meta_description?: string;
-  meta_keywords: string[];
-  language: string;
-  status: keyof typeof PageStatus;
-  is_default: boolean;
-  version: number;
-  created_at: string;
-  updated_at: string;
-  published_at?: string;
-}
-
-export const PageType = {
-  PUBLIC_COMPANY_DESCRIPTION: 'public_company_description',
-  JOB_POSITION_DESCRIPTION: 'job_position_description',
-  DATA_PROTECTION: 'data_protection',
-  TERMS_OF_USE: 'terms_of_use',
-  THANK_YOU_APPLICATION: 'thank_you_application',
-} as const;
-
-export const PageStatus = {
-  DRAFT: 'draft',
-  PUBLISHED: 'published',
-  ARCHIVED: 'archived',
-} as const;
-
-export interface CreateCompanyPageRequest {
-  page_type: keyof typeof PageType;
-  title: string;
-  html_content: string;
-  meta_description?: string;
-  meta_keywords?: string[];
-  language?: string;
-  is_default?: boolean;
-}
-
-export interface UpdateCompanyPageRequest {
-  title?: string;
-  html_content?: string;
-  meta_description?: string;
-  meta_keywords?: string[];
-  language?: string;
-  is_default?: boolean;
-}
-
-export interface CompanyPageListResponse {
-  pages: CompanyPage[];
-  total: number;
-  page: number;
-  page_size: number;
-}
-
-export interface CompanyPageFilters {
-  page_type?: keyof typeof PageType;
-  status?: keyof typeof PageStatus;
-  page?: number;
-  page_size?: number;
-}
+import { PageType, PageStatus, type CompanyPage, type CompanyPageFilters, type CompanyPageListResponse, type CreateCompanyPageRequest, type UpdateCompanyPageRequest } from '../types/companyPage';
 
 class CompanyPageService {
   private getCompanyId(): string | null {
@@ -89,8 +24,16 @@ class CompanyPageService {
   async getPages(filters: CompanyPageFilters = {}): Promise<CompanyPageListResponse> {
     const params = new URLSearchParams();
     
-    if (filters.page_type) params.append('page_type', filters.page_type);
-    if (filters.status) params.append('status', filters.status);
+    if (filters.page_type) {
+      // Convert key to value (e.g., 'PUBLIC_COMPANY_DESCRIPTION' -> 'public_company_description')
+      const pageTypeValue = PageType[filters.page_type];
+      params.append('page_type', pageTypeValue);
+    }
+    if (filters.status) {
+      // Convert key to value (e.g., 'DRAFT' -> 'draft')
+      const statusValue = PageStatus[filters.status];
+      params.append('status', statusValue);
+    }
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.page_size) params.append('page_size', filters.page_size.toString());
 
@@ -105,7 +48,9 @@ class CompanyPageService {
 
   async getPageByType(pageType: keyof typeof PageType): Promise<CompanyPage | null> {
     try {
-      const response = await api.authenticatedRequest(`${this.getBaseUrl()}/by-type/${pageType}`);
+      // Convert key to value (e.g., 'PUBLIC_COMPANY_DESCRIPTION' -> 'public_company_description')
+      const pageTypeValue = PageType[pageType];
+      const response = await api.authenticatedRequest(`${this.getBaseUrl()}/by-type/${pageTypeValue}`);
       return response as CompanyPage;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -163,7 +108,9 @@ class CompanyPageService {
   // Methods for public pages (no authentication required)
   async getPublicPage(companyId: string, pageType: keyof typeof PageType): Promise<CompanyPage | null> {
     try {
-      const response = await api.authenticatedRequest(`/api/public/companies/${companyId}/pages/${pageType}`);
+      // Convert key to value (e.g., 'PUBLIC_COMPANY_DESCRIPTION' -> 'public_company_description')
+      const pageTypeValue = PageType[pageType];
+      const response = await api.authenticatedRequest(`/api/public/companies/${companyId}/pages/${pageTypeValue}`);
       return response as CompanyPage;
     } catch (error: any) {
       if (error.response?.status === 404) {

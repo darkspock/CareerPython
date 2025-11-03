@@ -32,7 +32,7 @@ export const PageStatus = {
 } as const;
 
 export interface CreateCompanyPageRequest {
-  page_type: keyof typeof PageType;
+  page_type: typeof PageType[keyof typeof PageType]; // Use the value (lowercase), not the key
   title: string;
   html_content: string;
   meta_description?: string;

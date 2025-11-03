@@ -116,7 +116,7 @@ export interface CreatePositionRequest {
   application_email?: string;
   // New fields
   working_hours?: string;
-  travel_required?: number;
+  travel_required?: boolean;
   visa_sponsorship?: boolean;
   contact_person?: string;
   reports_to?: string;
@@ -149,7 +149,7 @@ export interface UpdatePositionRequest {
   application_email?: string;
   // New fields
   working_hours?: string;
-  travel_required?: number;
+  travel_required?: boolean;
   visa_sponsorship?: boolean;
   contact_person?: string;
   reports_to?: string;
@@ -219,7 +219,7 @@ export interface PositionFormData {
   contact_person: string;
   // Updated fields
   working_hours: string;
-  travel_required: number;
+  travel_required: boolean;
   visa_sponsorship: boolean;
   reports_to: string;
   number_of_openings: string;

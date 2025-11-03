@@ -14,7 +14,7 @@ export default function CreateCompanyPagePage() {
   const [previewMode, setPreviewMode] = useState(false);
 
   const [formData, setFormData] = useState<CreateCompanyPageRequest>({
-    page_type: 'PUBLIC_COMPANY_DESCRIPTION',
+    page_type: PageType.PUBLIC_COMPANY_DESCRIPTION, // Use the value (lowercase)
     title: '',
     html_content: '',
     meta_description: '',
@@ -125,7 +125,7 @@ export default function CreateCompanyPagePage() {
                   </label>
                   <select
                     value={formData.page_type}
-                    onChange={(e) => setFormData(prev => ({ ...prev, page_type: e.target.value as keyof typeof PageType }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, page_type: e.target.value as typeof PageType[keyof typeof PageType] }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   >

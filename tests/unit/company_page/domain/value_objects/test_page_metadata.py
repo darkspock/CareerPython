@@ -77,11 +77,13 @@ class TestPageMetadata:
                 keywords=["test"]
             )
     
-    def test_create_page_metadata_with_empty_keywords_fails(self):
-        """Test que falla al crear PageMetadata con keywords vacías"""
-        # Act & Assert
-        with pytest.raises(ValueError, match="Keywords list cannot be empty"):
-            PageMetadata.create(title="Test", keywords=[])
+    def test_create_page_metadata_with_empty_keywords_list_succeeds(self):
+        """Test que permite crear PageMetadata con lista de keywords vacía (keywords son opcionales)"""
+        # Act
+        metadata = PageMetadata.create(title="Test", keywords=[])
+        
+        # Assert
+        assert metadata.keywords == []
     
     def test_create_page_metadata_with_too_many_keywords_fails(self):
         """Test que falla al crear PageMetadata con demasiadas keywords"""
@@ -101,14 +103,16 @@ class TestPageMetadata:
         with pytest.raises(ValueError, match="Keywords cannot contain duplicates"):
             PageMetadata.create(title="Test", keywords=duplicate_keywords)
     
-    def test_create_page_metadata_with_empty_keywords_fails(self):
-        """Test que falla al crear PageMetadata con keywords vacías"""
+    def test_create_page_metadata_with_empty_keyword_items_removes_them(self):
+        """Test que PageMetadata remueve automáticamente keywords individuales vacíos dentro de la lista"""
         # Arrange
         empty_keywords = ["test", "", "empresa", "   "]
         
-        # Act & Assert
-        with pytest.raises(ValueError, match="Keywords cannot be empty"):
-            PageMetadata.create(title="Test", keywords=empty_keywords)
+        # Act
+        metadata = PageMetadata.create(title="Test", keywords=empty_keywords)
+        
+        # Assert - Los keywords vacíos se eliminan automáticamente en el método create
+        assert metadata.keywords == ["test", "empresa"]
     
     def test_create_page_metadata_with_invalid_language_fails(self):
         """Test que falla al crear PageMetadata con idioma inválido"""
@@ -119,7 +123,7 @@ class TestPageMetadata:
         with pytest.raises(ValueError, match="Language must be a 2-character code"):
             PageMetadata.create(title="Test", keywords=["test"], language="e")
         
-        with pytest.raises(ValueError, match="Language must be a 2-character code"):
+        with pytest.raises(ValueError, match="Language cannot be empty"):
             PageMetadata.create(title="Test", keywords=["test"], language="")
     
     def test_create_page_metadata_removes_empty_keywords(self):

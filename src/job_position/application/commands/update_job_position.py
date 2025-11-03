@@ -33,7 +33,7 @@ class UpdateJobPositionCommand(Command):
     application_instructions: Optional[str] = None
     benefits: Optional[List[str]] = None
     working_hours: Optional[str] = None
-    travel_required: Optional[int] = None
+    travel_required: Optional[bool] = None
     languages_required: Optional[Dict[LanguageEnum, LanguageLevelEnum]] = None
     visa_sponsorship: bool = False
     contact_person: Optional[str] = None
