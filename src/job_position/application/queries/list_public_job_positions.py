@@ -34,12 +34,12 @@ class ListPublicJobPositionsQueryHandler(QueryHandler[ListPublicJobPositionsQuer
     def handle(self, query: ListPublicJobPositionsQuery) -> List[JobPositionDto]:
         """
         Handle query for public job positions
-        Only returns positions where is_public=True and status=OPEN
+        Only returns positions where is_public=True and status=ACTIVE
         """
-        # Filter for public and open positions only
+        # Filter for public positions that are ACTIVE
         job_positions = self.job_position_repository.find_by_filters(
             company_id=None,  # No company filter - show all companies
-            status=JobPositionStatusEnum.OPEN,  # Only open positions
+            status=JobPositionStatusEnum.ACTIVE,  # Only active positions
             job_category=query.job_category,
             work_location_type=query.work_location_type,
             contract_type=query.contract_type,

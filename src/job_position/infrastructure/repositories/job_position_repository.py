@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from sqlalchemy import and_, or_
 
@@ -52,7 +52,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             return self._create_entity_from_model(job_position_model)
 
     def find_by_filters(self, company_id: Optional[str] = None,
-                        status: Optional[JobPositionStatusEnum] = None,
+                        status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
                         job_category: Optional[JobCategoryEnum] = None,
                         work_location_type: Optional[WorkLocationTypeEnum] = None,
                         contract_type: Optional[ContractTypeEnum] = None,
@@ -60,7 +60,11 @@ class JobPositionRepository(JobPositionRepositoryInterface):
                         search_term: Optional[str] = None,
                         limit: int = 50, offset: int = 0,
                         is_public: Optional[bool] = None) -> List[JobPosition]:
-        """Find job positions by filters"""
+        """Find job positions by filters
+        
+        Args:
+            status: Single status or list of statuses to filter by
+        """
         with self.database.get_session() as session:
             query = session.query(JobPositionModel)
 
@@ -69,7 +73,10 @@ class JobPositionRepository(JobPositionRepositoryInterface):
                 query = query.filter(JobPositionModel.company_id == company_id)
 
             if status:
-                query = query.filter(JobPositionModel.status == status)
+                if isinstance(status, list):
+                    query = query.filter(JobPositionModel.status.in_(status))
+                else:
+                    query = query.filter(JobPositionModel.status == status)
 
             if job_category:
                 query = query.filter(JobPositionModel.job_category == job_category)
@@ -127,7 +134,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
 
     def count_active_by_company_id(self, company_id: str) -> int:
         """Count active job positions by company ID"""
-        active_statuses = [JobPositionStatusEnum.OPEN, JobPositionStatusEnum.APPROVED]
+        active_statuses = [JobPositionStatusEnum.ACTIVE]
         with self.database.get_session() as session:
             return session.query(JobPositionModel).filter(
                 and_(

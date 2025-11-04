@@ -614,19 +614,52 @@ def activate_position(
         controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> JobPositionActionResponse:
-    """Activate a job position"""
+    """Activate a job position (changes status from DRAFT to ACTIVE)"""
     return controller.activate_position(position_id)
 
 
-@router.post("/positions/{position_id}/deactivate", response_model=JobPositionActionResponse)
+@router.post("/positions/{position_id}/pause", response_model=JobPositionActionResponse)
 @inject
-def deactivate_position(
+def pause_position(
         position_id: str,
         controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> JobPositionActionResponse:
-    """Deactivate a job position"""
-    return controller.deactivate_position(position_id)
+    """Pause a job position (changes status from ACTIVE to PAUSED)"""
+    return controller.pause_position(position_id)
+
+
+@router.post("/positions/{position_id}/resume", response_model=JobPositionActionResponse)
+@inject
+def resume_position(
+        position_id: str,
+        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> JobPositionActionResponse:
+    """Resume a paused job position (changes status from PAUSED to ACTIVE)"""
+    return controller.resume_position(position_id)
+
+
+@router.post("/positions/{position_id}/close", response_model=JobPositionActionResponse)
+@inject
+def close_position(
+        position_id: str,
+        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> JobPositionActionResponse:
+    """Close a job position (changes status to CLOSED)"""
+    return controller.close_position(position_id)
+
+
+@router.post("/positions/{position_id}/archive", response_model=JobPositionActionResponse)
+@inject
+def archive_position(
+        position_id: str,
+        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> JobPositionActionResponse:
+    """Archive a job position (changes status to ARCHIVED)"""
+    return controller.archive_position(position_id)
 
 
 @router.delete("/positions/{position_id}", response_model=JobPositionActionResponse)

@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Eye, EyeOff, Archive, Trash2, Star } from 'lucide-reac
 import { WysiwygEditor } from '../../components/common';
 import { companyPageService } from '../../services/companyPageService';
 import type { CompanyPage, UpdateCompanyPageRequest } from '../../types/companyPage';
-import { LANGUAGE_OPTIONS, PageStatus } from '../../types/companyPage';
+import { LANGUAGE_OPTIONS, PageStatus, getPageTypeLabel, normalizePageStatus, getPageStatusLabel, getPageStatusColor } from '../../types/companyPage';
 
 export default function EditCompanyPagePage() {
   const navigate = useNavigate();
@@ -247,7 +247,7 @@ export default function EditCompanyPagePage() {
                     Tipo de Página
                   </label>
                   <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">
-                    {page.page_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {getPageTypeLabel(page.page_type)}
                   </div>
                 </div>
 
@@ -329,13 +329,8 @@ export default function EditCompanyPagePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Estado:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    PageStatus[page.status] === PageStatus.PUBLISHED ? 'bg-green-100 text-green-800' :
-                    PageStatus[page.status] === PageStatus.ARCHIVED ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {PageStatus[page.status] === PageStatus.PUBLISHED ? 'Publicado' :
-                     PageStatus[page.status] === PageStatus.ARCHIVED ? 'Archivado' : 'Borrador'}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPageStatusColor(page.status)}`}>
+                    {getPageStatusLabel(page.status)}
                   </span>
                 </div>
                 
@@ -448,7 +443,7 @@ export default function EditCompanyPagePage() {
                   {saving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
 
-                {PageStatus[page.status] === PageStatus.DRAFT && (
+                {normalizePageStatus(page.status) === PageStatus.DRAFT && (
                   <button
                     type="button"
                     onClick={handlePublish}
@@ -459,7 +454,7 @@ export default function EditCompanyPagePage() {
                   </button>
                 )}
 
-                {PageStatus[page.status] === PageStatus.PUBLISHED && (
+                {normalizePageStatus(page.status) === PageStatus.PUBLISHED && (
                   <button
                     type="button"
                     onClick={handleArchive}

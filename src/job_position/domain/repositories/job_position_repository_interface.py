@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from src.job_position.domain import JobPosition, JobPositionStatusEnum, WorkLocationTypeEnum, ContractTypeEnum
 from src.job_position.domain.value_objects import JobPositionId
@@ -17,7 +17,7 @@ class JobPositionRepositoryInterface(ABC):
 
     @abstractmethod
     def find_by_filters(self, company_id: Optional[str] = None,
-                        status: Optional[JobPositionStatusEnum] = None,
+                        status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
                         job_category: Optional[JobCategoryEnum] = None,
                         work_location_type: Optional[WorkLocationTypeEnum] = None,
                         contract_type: Optional[ContractTypeEnum] = None,
@@ -25,6 +25,11 @@ class JobPositionRepositoryInterface(ABC):
                         search_term: Optional[str] = None,
                         limit: int = 50, offset: int = 0,
                         is_public: Optional[bool] = None) -> List[JobPosition]:
+        """Find job positions by filters
+        
+        Args:
+            status: Single status or list of statuses to filter by
+        """
         pass
 
     @abstractmethod

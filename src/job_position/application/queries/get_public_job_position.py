@@ -27,7 +27,7 @@ class GetPublicJobPositionQueryHandler(QueryHandler[GetPublicJobPositionQuery, J
         """
         Handle query for a single public job position
         First tries to find by public_slug, then by ID
-        Only returns positions where is_public=True and status=OPEN
+        Only returns positions where is_public=True and status=ACTIVE
         """
         job_position = None
 
@@ -55,7 +55,7 @@ class GetPublicJobPositionQueryHandler(QueryHandler[GetPublicJobPositionQuery, J
                 f"Public job position not found with slug or ID: {query.slug_or_id}"
             )
 
-        if not job_position.is_public or job_position.status != JobPositionStatusEnum.OPEN:
+        if not job_position.is_public or job_position.status != JobPositionStatusEnum.ACTIVE:
             raise JobPositionNotFoundError(
                 f"Job position {query.slug_or_id} is not publicly available"
             )

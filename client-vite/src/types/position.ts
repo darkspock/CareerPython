@@ -72,7 +72,7 @@ export interface Position {
   visa_sponsorship: boolean;
   contact_person?: string;
   reports_to?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'open' | 'closed' | 'paused';
+  status: 'draft' | 'active' | 'paused' | 'closed' | 'archived';
   desired_roles?: string[]; // Desired role types for candidates
   open_at?: string;
   application_deadline?: string;
@@ -231,14 +231,24 @@ export interface PositionFormData {
 // Helper functions for status and type display
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'approved': 'bg-blue-100 text-blue-800',
-    'rejected': 'bg-red-100 text-red-800',
-    'open': 'bg-green-100 text-green-800',
-    'closed': 'bg-gray-100 text-gray-800',
+    'draft': 'bg-gray-100 text-gray-800',
+    'active': 'bg-green-100 text-green-800',
     'paused': 'bg-orange-100 text-orange-800',
+    'closed': 'bg-gray-100 text-gray-800',
+    'archived': 'bg-purple-100 text-purple-800',
   };
   return colors[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
+}
+
+export function getStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    'draft': 'Draft',
+    'active': 'Active',
+    'paused': 'Paused',
+    'closed': 'Closed',
+    'archived': 'Archived',
+  };
+  return labels[status.toLowerCase()] || status;
 }
 
 export function getContractTypeLabel(type: string): string {

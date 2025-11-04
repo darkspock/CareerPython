@@ -140,7 +140,7 @@ export class PositionService {
   }
 
   /**
-   * Activate position
+   * Activate position (changes status from DRAFT to ACTIVE)
    */
   static async activatePosition(positionId: string): Promise<PositionActionResponse> {
     try {
@@ -153,6 +153,78 @@ export class PositionService {
       return response;
     } catch (error) {
       console.error(`Error activating position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Pause position (changes status from ACTIVE to PAUSED)
+   */
+  static async pausePosition(positionId: string): Promise<PositionActionResponse> {
+    try {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/pause`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      return response;
+    } catch (error) {
+      console.error(`Error pausing position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resume position (changes status from PAUSED to ACTIVE)
+   */
+  static async resumePosition(positionId: string): Promise<PositionActionResponse> {
+    try {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/resume`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      return response;
+    } catch (error) {
+      console.error(`Error resuming position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Close position
+   */
+  static async closePosition(positionId: string): Promise<PositionActionResponse> {
+    try {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/close`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      return response;
+    } catch (error) {
+      console.error(`Error closing position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Archive position (changes status to ARCHIVED)
+   */
+  static async archivePosition(positionId: string): Promise<PositionActionResponse> {
+    try {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/archive`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      return response;
+    } catch (error) {
+      console.error(`Error archiving position ${positionId}:`, error);
       throw error;
     }
   }

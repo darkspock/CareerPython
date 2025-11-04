@@ -256,6 +256,7 @@ from src.field_validation.presentation.controllers.validation_rule_controller im
 from src.job_position.application.commands.create_job_position import CreateJobPositionCommandHandler
 from src.job_position.application.commands.update_job_position import UpdateJobPositionCommandHandler
 from src.job_position.application.commands.delete_job_position import DeleteJobPositionCommandHandler
+from src.job_position.application.commands.approve_job_position import ActivateJobPositionCommandHandler, PauseJobPositionCommandHandler, ResumeJobPositionCommandHandler, CloseJobPositionCommandHandler, ArchiveJobPositionCommandHandler
 from src.job_position.application.queries.list_job_positions import ListJobPositionsQueryHandler
 from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQueryHandler
 from src.job_position.application.queries.get_job_positions_stats import GetJobPositionsStatsQueryHandler
@@ -1511,6 +1512,31 @@ class Container(containers.DeclarativeContainer):
         job_position_repository=job_position_repository,
         candidate_application_repository= candidate_application_repository,
 
+    )
+
+    activate_job_position_command_handler = providers.Factory(
+        ActivateJobPositionCommandHandler,
+        job_position_repository=job_position_repository
+    )
+
+    pause_job_position_command_handler = providers.Factory(
+        PauseJobPositionCommandHandler,
+        job_position_repository=job_position_repository
+    )
+
+    resume_job_position_command_handler = providers.Factory(
+        ResumeJobPositionCommandHandler,
+        job_position_repository=job_position_repository
+    )
+
+    close_job_position_command_handler = providers.Factory(
+        CloseJobPositionCommandHandler,
+        job_position_repository=job_position_repository
+    )
+
+    archive_job_position_command_handler = providers.Factory(
+        ArchiveJobPositionCommandHandler,
+        job_position_repository=job_position_repository
     )
 
     # Position Stage Assignment Command Handlers

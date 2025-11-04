@@ -105,7 +105,7 @@ class CompanyWorkflowController:
                     JobPositionModel.id == CandidateApplicationModel.job_position_id
                 ).filter(
                     CompanyCandidateModel.workflow_id == dto.id,
-                    JobPositionModel.status == JobPositionStatusEnum.OPEN,
+                    JobPositionModel.status == JobPositionStatusEnum.ACTIVE,
                     JobPositionModel.company_id == company_id
                 ).scalar() or 0
 

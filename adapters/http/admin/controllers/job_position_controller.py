@@ -14,6 +14,7 @@ from src.company.domain.value_objects.company_id import CompanyId
 from src.job_position.application.commands.create_job_position import CreateJobPositionCommand
 from src.job_position.application.commands.delete_job_position import DeleteJobPositionCommand
 from src.job_position.application.commands.update_job_position import UpdateJobPositionCommand
+from src.job_position.application.commands.approve_job_position import ActivateJobPositionCommand, PauseJobPositionCommand, ResumeJobPositionCommand, CloseJobPositionCommand, ArchiveJobPositionCommand
 from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
 from src.job_position.application.queries.get_job_positions_stats import GetJobPositionsStatsQuery
 from src.job_position.application.queries.job_position_dto import JobPositionDto
@@ -407,9 +408,11 @@ class JobPositionController:
             )
 
     def activate_position(self, position_id: str) -> JobPositionActionResponse:
-        """Activate a job position"""
+        """Activate a job position (changes status from DRAFT to ACTIVE)"""
         try:
-            # This would need an ActivateJobPositionCommand if it exists
+            command = ActivateJobPositionCommand(id=JobPositionId.from_string(position_id))
+            self.command_bus.dispatch(command)
+
             return JobPositionActionResponse(
                 success=True,
                 message="Position activated successfully",
@@ -420,22 +423,86 @@ class JobPositionController:
             logger.error(f"Error activating position {position_id}: {str(e)}")
             return JobPositionActionResponse(
                 success=False,
-                message=f"Failed to activate position: {str(e)}"
+                message=f"Failed to activate position: {str(e)}",
+                position_id=position_id
             )
 
-    def deactivate_position(self, position_id: str) -> JobPositionActionResponse:
-        """Deactivate a job position"""
+    def pause_position(self, position_id: str) -> JobPositionActionResponse:
+        """Pause a job position (changes status from ACTIVE to PAUSED)"""
         try:
-            # This would need a DeactivateJobPositionCommand if it exists
+            command = PauseJobPositionCommand(id=JobPositionId.from_string(position_id))
+            self.command_bus.dispatch(command)
+
             return JobPositionActionResponse(
                 success=True,
-                message="Position deactivated successfully",
+                message="Position paused successfully",
                 position_id=position_id
             )
 
         except Exception as e:
-            logger.error(f"Error deactivating position {position_id}: {str(e)}")
+            logger.error(f"Error pausing position {position_id}: {str(e)}")
             return JobPositionActionResponse(
                 success=False,
-                message=f"Failed to deactivate position: {str(e)}"
+                message=f"Failed to pause position: {str(e)}",
+                position_id=position_id
+            )
+
+    def resume_position(self, position_id: str) -> JobPositionActionResponse:
+        """Resume a paused job position (changes status from PAUSED to ACTIVE)"""
+        try:
+            command = ResumeJobPositionCommand(id=JobPositionId.from_string(position_id))
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position resumed successfully",
+                position_id=position_id
+            )
+
+        except Exception as e:
+            logger.error(f"Error resuming position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=f"Failed to resume position: {str(e)}",
+                position_id=position_id
+            )
+
+    def close_position(self, position_id: str) -> JobPositionActionResponse:
+        """Close a job position (changes status to CLOSED)"""
+        try:
+            command = CloseJobPositionCommand(id=JobPositionId.from_string(position_id))
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position closed successfully",
+                position_id=position_id
+            )
+
+        except Exception as e:
+            logger.error(f"Error closing position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=f"Failed to close position: {str(e)}",
+                position_id=position_id
+            )
+
+    def archive_position(self, position_id: str) -> JobPositionActionResponse:
+        """Archive a job position (changes status to ARCHIVED)"""
+        try:
+            command = ArchiveJobPositionCommand(id=JobPositionId.from_string(position_id))
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position archived successfully",
+                position_id=position_id
+            )
+
+        except Exception as e:
+            logger.error(f"Error archiving position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=f"Failed to archive position: {str(e)}",
+                position_id=position_id
             )

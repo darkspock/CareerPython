@@ -339,7 +339,25 @@ export default function EditPositionPage() {
                 type="checkbox"
                 id="is_public"
                 checked={formData.is_public || false}
-                onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
+                onChange={async (e) => {
+                  const newValue = e.target.checked;
+                  setFormData({ ...formData, is_public: newValue });
+                  // When checking is_public and position is draft, activate it
+                  if (newValue && id && position?.status === 'draft') {
+                    try {
+                      await PositionService.activatePosition(id);
+                      // Reload position to get updated status
+                      if (id) {
+                        const updated = await PositionService.getPositionById(id);
+                        setPosition(updated);
+                      }
+                    } catch (err: any) {
+                      alert(`Failed to activate position: ${err.message}`);
+                      // Revert the checkbox if activation fails
+                      setFormData({ ...formData, is_public: false });
+                    }
+                  }
+                }}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <label htmlFor="is_public" className="text-sm font-medium text-gray-700">

@@ -100,7 +100,7 @@ class JobPositionResponse(BaseModel):
     contact_person: Optional[str] = None
     department: Optional[str] = None
     reports_to: Optional[str] = None
-    status: JobPositionStatusEnum = JobPositionStatusEnum.PENDING
+    status: JobPositionStatusEnum = JobPositionStatusEnum.DRAFT
     desired_roles: Optional[List[str]] = None  # Serialized PositionRoleEnum list
     open_at: Optional[datetime] = None
     application_deadline: Optional[date] = None

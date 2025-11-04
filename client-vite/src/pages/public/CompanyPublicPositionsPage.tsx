@@ -18,7 +18,11 @@ import {
 } from 'lucide-react';
 import { publicPositionService, type PublicPositionFilters } from '../../services/publicPositionService';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
+import { companyPageService } from '../../services/companyPageService';
 import type { Position } from '../../types/position';
+import type { CompanyPage } from '../../types/companyPage';
+import { PageType } from '../../types/companyPage';
+import '../../components/common/WysiwygEditor.css';
 
 export default function CompanyPublicPositionsPage() {
   const navigate = useNavigate();
@@ -28,6 +32,7 @@ export default function CompanyPublicPositionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState<string>('');
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [companyPage, setCompanyPage] = useState<CompanyPage | null>(null);
   const [filters, setFilters] = useState<PublicPositionFilters>({
     page: 1,
     page_size: 12
@@ -60,6 +65,17 @@ export default function CompanyPublicPositionsPage() {
       const company = await recruiterCompanyService.getCompanyBySlug(companySlug);
       setCompanyId(company.id);
       setCompanyName(company.name);
+      
+      // Load company page if exists
+      try {
+        const page = await companyPageService.getPublicPage(company.id, 'PUBLIC_COMPANY_DESCRIPTION');
+        if (page) {
+          setCompanyPage(page);
+        }
+      } catch (pageErr) {
+        // Company page not found, that's okay - we'll use default title
+        console.log('No company page found, using default title');
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load company');
       setLoading(false);
@@ -135,22 +151,45 @@ export default function CompanyPublicPositionsPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            {/* Company Logo/Icon */}
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
-              <Building2 className="w-10 h-10 text-blue-600" />
-            </div>
+          <div className={companyPage && companyPage.html_content ? 'text-left' : 'text-center'}>
+            {/* Company Logo/Icon - Only show when there's no company page content */}
+            {!companyPage || !companyPage.html_content ? (
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                <Building2 className="w-10 h-10 text-blue-600" />
+              </div>
+            ) : null}
 
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              {companyName ? `${companyName} - Open Positions` : 'Open Positions'}
-            </h1>
-            <p className="text-lg text-gray-600">
-              Browse our current job openings and join our team
-            </p>
+            {/* Show company page content if available, otherwise show default title */}
+            {companyPage && companyPage.html_content ? (
+              <div 
+                className="prose prose-lg prose-slate max-w-4xl mx-auto wysiwyg-content mb-6"
+                style={{
+                  maxWidth: '100%'
+                }}
+              >
+                <div 
+                  className="ProseMirror [&>*:last-child]:!mb-0"
+                  style={{
+                    marginBottom: 0,
+                    minHeight: 'auto'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: companyPage.html_content }}
+                />
+              </div>
+            ) : (
+              <>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                  {companyName ? `${companyName} - Open Positions` : 'Open Positions'}
+                </h1>
+                <p className="text-lg text-gray-600">
+                  Browse our current job openings and join our team
+                </p>
+              </>
+            )}
           </div>
 
           {/* Search Bar */}
-          <div className="mt-8 max-w-3xl mx-auto">
+          <div className={`${companyPage && companyPage.html_content ? 'mt-6' : 'mt-8'} max-w-3xl mx-auto`}>
             <div className="flex gap-3">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />

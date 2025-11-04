@@ -110,91 +110,71 @@ class JobPosition:
 
         return unique_strings
 
-    def submit_for_approval(self) -> None:
-        """Submit job position for approval"""
-        if self.status in [JobPositionStatusEnum.PENDING, JobPositionStatusEnum.APPROVED]:
-            return
-
-        # Validate required fields for submission
+    def activate(self) -> None:
+        """Activate the job position (changes status from DRAFT to ACTIVE)"""
+        if self.status != JobPositionStatusEnum.DRAFT:
+            raise JobPositionValidationError("Only draft positions can be activated")
+        
+        # Validate required fields for activation
         if not self.description:
-            raise JobPositionValidationError("Description is required for submission")
-
-        self.status = JobPositionStatusEnum.PENDING
+            raise JobPositionValidationError("Description is required for activation")
+        
+        self.status = JobPositionStatusEnum.ACTIVE
         self.updated_at = datetime.utcnow()
 
-    def approve(self) -> None:
-        """Approve the job position"""
-        if self.status == JobPositionStatusEnum.APPROVED:
-            return
-        self.status = JobPositionStatusEnum.APPROVED
+    def pause(self) -> None:
+        """Pause the job position (only from ACTIVE)"""
+        if self.status != JobPositionStatusEnum.ACTIVE:
+            raise JobPositionValidationError("Only active positions can be paused")
+        self.status = JobPositionStatusEnum.PAUSED
         self.updated_at = datetime.utcnow()
 
-    def reject(self) -> None:
-        """Reject the job position"""
-        if self.status == JobPositionStatusEnum.REJECTED:
-            return
-        self.status = JobPositionStatusEnum.REJECTED
+    def resume(self) -> None:
+        """Resume a paused job position (changes from PAUSED to ACTIVE)"""
+        if self.status != JobPositionStatusEnum.PAUSED:
+            raise JobPositionValidationError("Only paused positions can be resumed")
+        self.status = JobPositionStatusEnum.ACTIVE
         self.updated_at = datetime.utcnow()
 
-    def open_position(self) -> None:
-        """Open the job position for applications (only if approved)"""
-        if self.status != JobPositionStatusEnum.APPROVED:
-            raise JobPositionValidationError("Job position must be approved before opening")
-        self.status = JobPositionStatusEnum.OPEN
-        self.updated_at = datetime.utcnow()
-
-    def close_position(self) -> None:
-        """Close the job position"""
+    def close(self) -> None:
+        """Close the job position (can be closed from any state except ARCHIVED)"""
+        if self.status == JobPositionStatusEnum.ARCHIVED:
+            raise JobPositionValidationError("Archived positions cannot be closed")
         if self.status == JobPositionStatusEnum.CLOSED:
             return
         self.status = JobPositionStatusEnum.CLOSED
         self.updated_at = datetime.utcnow()
 
-    def pause_position(self) -> None:
-        """Pause the job position"""
-        if self.status not in [JobPositionStatusEnum.OPEN]:
-            raise JobPositionValidationError("Only open positions can be paused")
-        self.status = JobPositionStatusEnum.PAUSED
+    def archive(self) -> None:
+        """Archive the job position (can only be archived from CLOSED or PAUSED)"""
+        if self.status not in [JobPositionStatusEnum.CLOSED, JobPositionStatusEnum.PAUSED]:
+            raise JobPositionValidationError("Only closed or paused positions can be archived")
+        self.status = JobPositionStatusEnum.ARCHIVED
         self.updated_at = datetime.utcnow()
 
-    def resume_position(self) -> None:
-        """Resume a paused job position"""
-        if self.status != JobPositionStatusEnum.PAUSED:
-            raise JobPositionValidationError("Only paused positions can be resumed")
-        self.status = JobPositionStatusEnum.OPEN
-        self.updated_at = datetime.utcnow()
+    def is_draft(self) -> bool:
+        """Check if job position is in draft state"""
+        return self.status == JobPositionStatusEnum.DRAFT
 
-    def publish(self) -> None:
-        """Publish the job position (makes it public and sets status to PUBLISHED)"""
-        # First approve if not already approved
-        if self.status not in [JobPositionStatusEnum.APPROVED, JobPositionStatusEnum.OPEN, JobPositionStatusEnum.PUBLISHED]:
-            if self.status == JobPositionStatusEnum.PENDING:
-                self.approve()
-            else:
-                raise JobPositionValidationError("Position must be pending or approved before publishing")
-        
-        # Set as public and published
-        self.is_public = True
-        self.status = JobPositionStatusEnum.PUBLISHED
-        self.updated_at = datetime.utcnow()
-        self.status = JobPositionStatusEnum.OPEN
-        self.updated_at = datetime.utcnow()
-
-    def is_approved(self) -> bool:
-        """Check if job position is approved"""
-        return self.status == JobPositionStatusEnum.APPROVED
-
-    def is_open(self) -> bool:
-        """Check if job position is open for applications"""
-        return self.status == JobPositionStatusEnum.OPEN
+    def is_active(self) -> bool:
+        """Check if job position is active"""
+        return self.status == JobPositionStatusEnum.ACTIVE
 
     def can_receive_applications(self) -> bool:
         """Check if job position can receive applications"""
-        return self.status == JobPositionStatusEnum.OPEN
+        return self.status == JobPositionStatusEnum.ACTIVE
 
-    def is_pending(self) -> bool:
-        """Check if job position is in draft state"""
-        return self.status == JobPositionStatusEnum.PENDING
+    def is_paused(self) -> bool:
+        """Check if job position is paused"""
+        return self.status == JobPositionStatusEnum.PAUSED
+
+    def is_closed(self) -> bool:
+        """Check if job position is closed"""
+        return self.status == JobPositionStatusEnum.CLOSED
+
+    def is_archived(self) -> bool:
+        """Check if job position is archived"""
+        return self.status == JobPositionStatusEnum.ARCHIVED
 
     def get_workflow_for_phase(self, phase_id: str) -> Optional[str]:
         """Get the workflow ID configured for a specific phase
@@ -359,7 +339,7 @@ class JobPosition:
             contact_person=contact_person,
             department=department,
             reports_to=reports_to,
-            status=JobPositionStatusEnum.PENDING,
+            status=JobPositionStatusEnum.DRAFT,
             desired_roles=desired_roles,
             open_at=open_at,
             application_deadline=application_deadline,

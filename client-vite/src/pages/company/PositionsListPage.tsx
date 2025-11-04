@@ -4,7 +4,7 @@ import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, Trash2, External
 import { PositionService } from '../../services/positionService';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import type { Position } from '../../types/position';
-import { getStatusColor, getContractTypeLabel } from '../../types/position';
+import { getStatusColor, getStatusLabel, getContractTypeLabel } from '../../types/position';
 
 export default function PositionsListPage() {
   const navigate = useNavigate();
@@ -78,19 +78,47 @@ export default function PositionsListPage() {
     }
   };
 
-  const handleTogglePublish = async (position: Position) => {
-    const action = position.is_public ? 'unpublish' : 'publish';
-    if (!confirm(`Are you sure you want to ${action} this position?`)) return;
+  const handleActivate = async (position: Position) => {
+    if (!confirm('Are you sure you want to activate this position?')) return;
 
     try {
-      // When publishing (is_public=true), the backend will automatically approve and open the position
-      // so it appears in public listings
-      await PositionService.updatePosition(position.id, {
-        is_public: !position.is_public
-      });
+      await PositionService.activatePosition(position.id);
       loadPositions();
     } catch (err: any) {
-      alert(`Failed to ${action} position: ` + err.message);
+      alert(`Failed to activate position: ${err.message}`);
+    }
+  };
+
+  const handlePause = async (position: Position) => {
+    if (!confirm('Are you sure you want to pause this position?')) return;
+
+    try {
+      await PositionService.pausePosition(position.id);
+      loadPositions();
+    } catch (err: any) {
+      alert(`Failed to pause position: ${err.message}`);
+    }
+  };
+
+  const handleResume = async (position: Position) => {
+    if (!confirm('Are you sure you want to resume this position?')) return;
+
+    try {
+      await PositionService.resumePosition(position.id);
+      loadPositions();
+    } catch (err: any) {
+      alert(`Failed to resume position: ${err.message}`);
+    }
+  };
+
+  const handleArchive = async (position: Position) => {
+    if (!confirm('Are you sure you want to archive this position?')) return;
+
+    try {
+      await PositionService.archivePosition(position.id);
+      loadPositions();
+    } catch (err: any) {
+      alert(`Failed to archive position: ${err.message}`);
     }
   };
 
@@ -174,7 +202,7 @@ export default function PositionsListPage() {
                       {position.title}
                     </h3>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(position.status)}`}>
-                      {position.status}
+                      {getStatusLabel(position.status)}
                     </span>
                   </div>
                   {position.department && (
@@ -208,11 +236,11 @@ export default function PositionsListPage() {
                   </div>
                 </div>
 
-                {/* Public Status Badge */}
-                {position.is_public && (
+                {/* Active Status Badge */}
+                {position.status === 'active' && position.is_public && (
                   <div className="mb-3 flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-1 rounded">
                     <Globe className="w-3 h-3" />
-                    <span>Published</span>
+                    <span>Public</span>
                   </div>
                 )}
 
@@ -220,39 +248,87 @@ export default function PositionsListPage() {
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => navigate(`/company/positions/${position.id}`)}
-                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-                    title="View details"
+                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors group relative"
+                    title="Ver detalles de la posición"
                   >
                     <Eye className="w-4 h-4 mx-auto" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                      Ver detalles
+                    </span>
                   </button>
                   <button
                     onClick={() => navigate(`/company/positions/${position.id}/edit`)}
-                    className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                    title="Edit"
+                    className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors group relative"
+                    title="Editar posición"
                   >
                     <Edit className="w-4 h-4 mx-auto" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                      Editar
+                    </span>
                   </button>
-                  <button
-                    onClick={() => handleTogglePublish(position)}
-                    className={`flex-1 px-3 py-2 text-sm rounded-lg transition-colors ${
-                      position.is_public
-                        ? 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-                        : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
-                    }`}
-                    title={position.is_public ? 'Unpublish' : 'Publish'}
-                  >
-                    {position.is_public ? (
-                      <GlobeLock className="w-4 h-4 mx-auto" />
-                    ) : (
+                  
+                  {/* Status-specific actions */}
+                  {position.status === 'draft' && (
+                    <button
+                      onClick={() => handleActivate(position)}
+                      className="flex-1 px-3 py-2 text-sm bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors group relative"
+                      title="Activar posición (cambia de Draft a Active)"
+                    >
                       <Globe className="w-4 h-4 mx-auto" />
-                    )}
-                  </button>
+                      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Activar
+                      </span>
+                    </button>
+                  )}
+                  
+                  {position.status === 'active' && (
+                    <button
+                      onClick={() => handlePause(position)}
+                      className="flex-1 px-3 py-2 text-sm bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors group relative"
+                      title="Pausar posición (cambia de Active a Paused)"
+                    >
+                      <GlobeLock className="w-4 h-4 mx-auto" />
+                      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Pausar
+                      </span>
+                    </button>
+                  )}
+                  
+                  {position.status === 'paused' && (
+                    <button
+                      onClick={() => handleResume(position)}
+                      className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors group relative"
+                      title="Reanudar posición (cambia de Paused a Active)"
+                    >
+                      <Globe className="w-4 h-4 mx-auto" />
+                      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Reanudar
+                      </span>
+                    </button>
+                  )}
+                  
+                  {(position.status === 'closed' || position.status === 'paused') && (
+                    <button
+                      onClick={() => handleArchive(position)}
+                      className="flex-1 px-3 py-2 text-sm bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors group relative"
+                      title="Archivar posición (cambia a Archived)"
+                    >
+                      <GlobeLock className="w-4 h-4 mx-auto" />
+                      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        Archivar
+                      </span>
+                    </button>
+                  )}
+                  
                   <button
                     onClick={() => handleDelete(position.id)}
-                    className="flex-1 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
-                    title="Delete"
+                    className="flex-1 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors group relative"
+                    title="Eliminar posición permanentemente"
                   >
                     <Trash2 className="w-4 h-4 mx-auto" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                      Eliminar
+                    </span>
                   </button>
                 </div>
               </div>

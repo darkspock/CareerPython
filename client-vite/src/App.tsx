@@ -82,6 +82,7 @@ import EditCompanyPage from './pages/company/EditCompanyPage';
 import CompanyPagesListPage from './pages/company/CompanyPagesListPage';
 import CreateCompanyPagePage from './pages/company/CreateCompanyPagePage';
 import EditCompanyPagePage from './pages/company/EditCompanyPagePage';
+import ViewCompanyPagePage from './pages/company/ViewCompanyPagePage';
 import UsersManagementPage from './pages/company/UsersManagementPage';
 import PublicPositionsPage from './pages/public/PublicPositionsPage';
 import PublicPositionDetailPage from './pages/public/PublicPositionDetailPage';
@@ -223,6 +224,7 @@ function App() {
                           <Route path="workflows/:workflowId/advanced-config" element={<WorkflowAdvancedConfigPage />} />
                           <Route path="pages" element={<CompanyPagesListPage />} />
                           <Route path="pages/create" element={<CreateCompanyPagePage />} />
+                          <Route path="pages/:pageId/view" element={<ViewCompanyPagePage />} />
                           <Route path="pages/:pageId/edit" element={<EditCompanyPagePage />} />
                           <Route path="settings" element={<CompanySettingsPage />} />
                           <Route path="settings/edit" element={<EditCompanyPage />} />

@@ -89,13 +89,9 @@ class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
             is_public=command.is_public
         )
 
-        # When publishing (is_public=True), automatically approve and open the position
+        # When setting is_public=True, automatically activate the position if it's in draft
         # so it appears in public listings
-        if command.is_public is True and not job_position.is_open():
-            # First approve if not already approved
-            if not job_position.is_approved():
-                job_position.approve()
-            # Then open the position
-            job_position.open_position()
+        if command.is_public is True and job_position.is_draft():
+            job_position.activate()
 
         self.job_position_repository.save(job_position)

@@ -55,8 +55,10 @@ class JobPositionModel(Base):
     application_email: Mapped[Optional[str]] = mapped_column(String)  # Email to apply
     is_public: Mapped[bool] = mapped_column(Boolean, default=False, index=True)  # Whether position is publicly visible
     public_slug: Mapped[Optional[str]] = mapped_column(String(255), unique=True, index=True)  # SEO-friendly URL slug
-    status: Mapped[JobPositionStatusEnum] = mapped_column(Enum(JobPositionStatusEnum),
-                                                          default=JobPositionStatusEnum.PENDING)
+    status: Mapped[JobPositionStatusEnum] = mapped_column(
+        Enum(JobPositionStatusEnum, values_callable=lambda x: [e.value for e in x]),
+        default=JobPositionStatusEnum.DRAFT
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 

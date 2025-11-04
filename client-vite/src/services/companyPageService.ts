@@ -1,4 +1,5 @@
 import { api } from '../lib/api';
+import { API_BASE_URL } from '../config/api';
 import { PageType, PageStatus, type CompanyPage, type CompanyPageFilters, type CompanyPageListResponse, type CreateCompanyPageRequest, type UpdateCompanyPageRequest } from '../types/companyPage';
 
 class CompanyPageService {
@@ -42,7 +43,8 @@ class CompanyPageService {
   }
 
   async getPageById(pageId: string): Promise<CompanyPage> {
-    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}`);
+    // Use the endpoint without company_id: /api/company/pages/{page_id}
+    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}`);
     return response as CompanyPage;
   }
 
@@ -70,7 +72,8 @@ class CompanyPageService {
   }
 
   async updatePage(pageId: string, data: UpdateCompanyPageRequest): Promise<CompanyPage> {
-    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}`, {
+    // Use the endpoint without company_id: /api/company/pages/{page_id}
+    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -79,28 +82,32 @@ class CompanyPageService {
   }
 
   async publishPage(pageId: string): Promise<CompanyPage> {
-    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}/publish`, {
+    // Use the endpoint without company_id: /api/company/pages/{page_id}/publish
+    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}/publish`, {
       method: 'POST',
     });
     return response as CompanyPage;
   }
 
   async archivePage(pageId: string): Promise<CompanyPage> {
-    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}/archive`, {
+    // Use the endpoint without company_id: /api/company/pages/{page_id}/archive
+    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}/archive`, {
       method: 'POST',
     });
     return response as CompanyPage;
   }
 
   async setDefaultPage(pageId: string): Promise<CompanyPage> {
-    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}/set-default`, {
+    // Use the endpoint without company_id: /api/company/pages/{page_id}/set-default
+    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}/set-default`, {
       method: 'POST',
     });
     return response as CompanyPage;
   }
 
   async deletePage(pageId: string): Promise<void> {
-    await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}`, {
+    // Use the endpoint without company_id: /api/company/pages/{page_id}
+    await api.authenticatedRequest(`/api/company/pages/${pageId}`, {
       method: 'DELETE',
     });
   }
@@ -110,10 +117,19 @@ class CompanyPageService {
     try {
       // Convert key to value (e.g., 'PUBLIC_COMPANY_DESCRIPTION' -> 'public_company_description')
       const pageTypeValue = PageType[pageType];
-      const response = await api.authenticatedRequest(`/api/public/companies/${companyId}/pages/${pageTypeValue}`);
-      return response as CompanyPage;
+      // Use public endpoint without authentication
+      const response = await fetch(`${API_BASE_URL}/api/public/company/${companyId}/pages/${pageTypeValue}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error(`Failed to fetch company page: ${response.statusText}`);
+      }
+      
+      return await response.json() as CompanyPage;
     } catch (error: any) {
-      if (error.response?.status === 404) {
+      if (error.message?.includes('404') || error.message?.includes('not found')) {
         return null;
       }
       throw error;

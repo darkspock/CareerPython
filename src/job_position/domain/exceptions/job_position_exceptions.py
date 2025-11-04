@@ -16,7 +16,9 @@ class JobPositionValidationError(DomainException):
 
 
 class JobPositionNotApprovedException(DomainException):
-    """Raised when trying to perform actions on a non-approved job position"""
+    """Raised when trying to perform actions on a job position that is not in the correct status"""
+    # Note: Kept for backward compatibility, but the concept of "approved" no longer exists
+    # New statuses: draft, active, paused, closed, archived
     pass
 
 
