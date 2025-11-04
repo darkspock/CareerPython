@@ -1,8 +1,9 @@
 """Job position mapper for converting DTOs to response schemas"""
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from src.job_position.application.queries.job_position_dto import JobPositionDto
-from adapters.http.admin.schemas.job_position import JobPositionResponse
+from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
+from adapters.http.admin.schemas.job_position import JobPositionResponse, JobPositionPublicResponse
 
 
 class JobPositionMapper:
@@ -11,60 +12,84 @@ class JobPositionMapper:
     @staticmethod
     def dto_to_response(dto: JobPositionDto, company_name: Optional[str] = None) -> JobPositionResponse:
         """Convert JobPositionDto to JobPositionResponse"""
-        # Convert salary_range
-        salary_range_dict = None
-        if dto.salary_range:
-            salary_range_dict = {
-                "min_amount": dto.salary_range.min_salary,
-                "max_amount": dto.salary_range.max_salary,
-                "currency": dto.salary_range.currency
-            }
+        return JobPositionResponse.from_dto(dto, company_name=company_name)
 
-        # Convert languages_required
-        languages_dict = {}
-        if dto.languages_required:
-            languages_dict = {
-                lang.value: level.value
-                for lang, level in dto.languages_required.items()
-            }
+    @staticmethod
+    def get_visible_fields_for_candidate(
+        dto: JobPositionDto,
+        workflow_dto: Optional[JobPositionWorkflowDto] = None
+    ) -> Dict[str, Any]:
+        """
+        Get only fields visible to candidates based on workflow/stage configuration.
+        
+        Args:
+            dto: JobPositionDto
+            workflow_dto: Optional workflow DTO (if available)
+            
+        Returns:
+            Dict[str, Any]: Filtered custom fields visible to candidates
+        """
+        if not workflow_dto or not dto.stage_id:
+            # If no workflow or stage, return empty dict (or all fields if no config)
+            # For now, return empty dict as conservative default
+            return {}
+        
+        # Find the current stage
+        current_stage = None
+        for stage in workflow_dto.stages:
+            if stage.id == dto.stage_id:
+                current_stage = stage
+                break
+        
+        if not current_stage:
+            # Stage not found, return empty dict
+            return {}
+        
+        # Get default visibility from workflow config
+        default_visibility = workflow_dto.custom_fields_config.get("field_candidate_visibility_default", {}) if workflow_dto.custom_fields_config else {}
+        
+        # Get stage-specific visibility
+        stage_visibility = current_stage.field_candidate_visibility if hasattr(current_stage, 'field_candidate_visibility') else {}
+        
+        # Filter custom_fields_values
+        visible_fields = {}
+        for field_name, field_value in dto.custom_fields_values.items():
+            is_visible = False
+            
+            # First check stage-specific visibility
+            if field_name in stage_visibility:
+                is_visible = stage_visibility[field_name]
+            # Then check default visibility
+            elif field_name in default_visibility:
+                is_visible = default_visibility[field_name]
+            # Default to False if not specified
+            else:
+                is_visible = False
+            
+            if is_visible:
+                visible_fields[field_name] = field_value
+        
+        return visible_fields
 
-        # Convert desired_roles
-        desired_roles_list = None
-        if dto.desired_roles:
-            desired_roles_list = [role.value for role in dto.desired_roles]
-
-        return JobPositionResponse(
+    @staticmethod
+    def dto_to_public_response(
+        dto: JobPositionDto,
+        workflow_dto: Optional[JobPositionWorkflowDto] = None,
+        company_name: Optional[str] = None
+    ) -> JobPositionPublicResponse:
+        """Convert JobPositionDto to JobPositionPublicResponse - only visible fields for candidates"""
+        visible_fields = JobPositionMapper.get_visible_fields_for_candidate(dto, workflow_dto)
+        
+        return JobPositionPublicResponse(
             id=dto.id.value,
-            company_id=dto.company_id.value,
-            workflow_id=dto.workflow_id,
-            company_name=company_name,
             title=dto.title,
+            company_id=dto.company_id.value,
             description=dto.description,
-            location=dto.location,
-            employment_type=dto.employment_type,
-            work_location_type=dto.work_location_type,
-            salary_range=salary_range_dict,
-            contract_type=dto.contract_type,
-            requirements=dto.requirements,
-            job_category=dto.job_category,
-            position_level=dto.position_level,
-            number_of_openings=dto.number_of_openings,
-            application_instructions=dto.application_instructions,
-            benefits=dto.benefits or [],
-            working_hours=dto.working_hours,
-            travel_required=dto.travel_required,
-            languages_required=languages_dict,
-            visa_sponsorship=dto.visa_sponsorship,
-            contact_person=dto.contact_person,
-            department=dto.department,
-            reports_to=dto.reports_to,
-            status=dto.status,
-            desired_roles=desired_roles_list,
+            job_category=dto.job_category.value,
             open_at=dto.open_at,
             application_deadline=dto.application_deadline,
-            skills=dto.skills or [],
-            application_url=dto.application_url,
-            application_email=dto.application_email,
+            public_slug=dto.public_slug,
+            visible_fields=visible_fields,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )

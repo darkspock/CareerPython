@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
-import type { UpdatePositionRequest } from '../../types/position';
-import { StageAssignmentEditor, PhaseWorkflowSelector } from '../../components/workflow';
-import { companyWorkflowService } from '../../services/companyWorkflowService';
-import type { WorkflowStage } from '../../types/workflow';
-import { api } from '../../lib/api';
+import type { UpdatePositionRequest, Position, JobPositionWorkflow } from '../../types/position';
+import { DynamicCustomFields } from '../../components/jobPosition/DynamicCustomFields';
+import { WysiwygEditor } from '../../components/common';
 
 export default function EditPositionPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,91 +13,89 @@ export default function EditPositionPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [position, setPosition] = useState<Position | null>(null);
+  const [workflows, setWorkflows] = useState<JobPositionWorkflow[]>([]);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<JobPositionWorkflow | null>(null);
+
   const [formData, setFormData] = useState<UpdatePositionRequest>({
-    workflow_id: null,
-    phase_workflows: {},  // Phase 12.8: phase_id -> workflow_id mapping
+    job_position_workflow_id: null,
+    stage_id: null,
+    phase_workflows: {},
+    custom_fields_values: {},
     title: '',
     description: '',
-    location: '',
-    department: '',
-    employment_type: 'full_time',
-    experience_level: 'mid',
-    salary_min: undefined,
-    salary_max: undefined,
-    salary_currency: 'USD',
-    requirements: [],
-    benefits: [],
-    skills: [],
-    is_remote: false,
-    application_deadline: '',
-    application_url: '',
-    application_email: '',
-    working_hours: '',
-    travel_required: false,
-    visa_sponsorship: false,
-    contact_person: '',
-    reports_to: '',
-    number_of_openings: 1,
     job_category: 'other',
-    is_public: false,  // Phase 10: Public job board
+    visibility: 'hidden',
+    open_at: null,
+    application_deadline: null,
+    public_slug: null,
   });
 
   const [companyId, setCompanyId] = useState<string>('');
 
-  const [requirementInput, setRequirementInput] = useState('');
-  const [benefitInput, setBenefitInput] = useState('');
-  const [skillInput, setSkillInput] = useState('');
-
-  // Stage assignment states
-  const [workflowStages, setWorkflowStages] = useState<WorkflowStage[]>([]);
-  const [companyUsers, setCompanyUsers] = useState<Array<{ id: string; name: string; email: string }>>([]);
-  const [loadingStages, setLoadingStages] = useState(false);
-  const [loadingUsers, setLoadingUsers] = useState(false);
+  const getCompanyId = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.company_id;
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     if (id) {
       loadPosition();
+      loadWorkflows();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (formData.job_position_workflow_id && workflows.length > 0) {
+      const workflow = workflows.find(w => w.id === formData.job_position_workflow_id);
+      setSelectedWorkflow(workflow || null);
+    } else {
+      setSelectedWorkflow(null);
+    }
+  }, [formData.job_position_workflow_id, workflows]);
 
   const loadPosition = async () => {
     if (!id) return;
 
     try {
       setLoading(true);
-      const position = await PositionService.getPositionById(id);
+      const positionData = await PositionService.getPositionById(id);
 
-      // Convert Position to form data
+      // Load workflow if available
+      if (positionData.job_position_workflow_id) {
+        try {
+          const workflowData = await PositionService.getWorkflow(positionData.job_position_workflow_id);
+          console.log('[EditPositionPage] Loaded workflow:', workflowData);
+          console.log('[EditPositionPage] Workflow custom_fields_config:', workflowData.custom_fields_config);
+          setSelectedWorkflow(workflowData);
+        } catch (err) {
+          console.error('Error loading workflow:', err);
+        }
+      }
+
+      setPosition(positionData);
+      setCompanyId(positionData.company_id);
+
+      // Convert Position to form data (simplified)
       setFormData({
-        workflow_id: position.workflow_id,
-        phase_workflows: position.phase_workflows || {},  // Phase 12.8
-        title: position.title,
-        description: position.description,
-        location: position.location,
-        department: position.department,
-        employment_type: position.employment_type || position.contract_type as any,
-        experience_level: position.experience_level || position.position_level as any,
-        salary_min: position.salary_range?.min_amount,
-        salary_max: position.salary_range?.max_amount,
-        salary_currency: position.salary_range?.currency || 'USD',
-        requirements: Array.isArray(position.requirements) ? position.requirements : [],
-        benefits: position.benefits || [],
-        skills: position.skills || [],
-        is_remote: position.is_remote || position.work_location_type === 'remote',
-        application_deadline: position.application_deadline,
-        application_url: position.application_url,
-        application_email: position.application_email,
-        working_hours: position.working_hours,
-        travel_required: position.travel_required || false,
-        visa_sponsorship: position.visa_sponsorship,
-        contact_person: position.contact_person,
-        reports_to: position.reports_to,
-        number_of_openings: position.number_of_openings,
-        job_category: position.job_category,
-        is_public: position.is_public || false,  // Phase 10: Public job board
+        job_position_workflow_id: positionData.job_position_workflow_id || null,
+        stage_id: positionData.stage_id || null,
+        phase_workflows: positionData.phase_workflows || {},
+        custom_fields_values: positionData.custom_fields_values || {},
+        title: positionData.title,
+        description: positionData.description || '',
+        job_category: positionData.job_category || 'other',
+        visibility: positionData.visibility || 'hidden',
+        open_at: positionData.open_at || null,
+        application_deadline: positionData.application_deadline || null,
+        public_slug: positionData.public_slug || null,
       });
-
-      setCompanyId(position.company_id);
 
       setError(null);
     } catch (err: any) {
@@ -110,79 +106,16 @@ export default function EditPositionPage() {
     }
   };
 
-  // Load workflow stages when workflow_id changes
-  useEffect(() => {
-    const loadWorkflowStages = async () => {
-      if (!formData.workflow_id) {
-        setWorkflowStages([]);
-        return;
-      }
-
-      setLoadingStages(true);
-      try {
-        const stages = await companyWorkflowService.listStagesByWorkflow(formData.workflow_id);
-        setWorkflowStages(stages);
-      } catch (err) {
-        console.error('Error loading workflow stages:', err);
-        setWorkflowStages([]);
-      } finally {
-        setLoadingStages(false);
-      }
-    };
-
-    loadWorkflowStages();
-  }, [formData.workflow_id]);
-
-  // Load company users when component mounts
-  useEffect(() => {
-    const loadCompanyUsers = async () => {
+  const loadWorkflows = async () => {
+    try {
+      const companyId = getCompanyId();
       if (!companyId) return;
 
-      setLoadingUsers(true);
-      try {
-        const response = await api.authenticatedRequest<Array<{ user_id: string; name?: string; email?: string }>>(`/company/${companyId}/users?active_only=true`);
-
-        // Map to the format expected by StageAssignmentEditor
-        const users = response.map((user) => ({
-          id: user.user_id,
-          name: user.name || user.email || '',
-          email: user.email || ''
-        }));
-
-        setCompanyUsers(users);
-      } catch (err) {
-        console.error('Error loading company users:', err);
-        setCompanyUsers([]);
-      } finally {
-        setLoadingUsers(false);
-      }
-    };
-
-    loadCompanyUsers();
-  }, [companyId]);
-
-  const handleAddItem = (
-    inputValue: string,
-    setInput: (value: string) => void,
-    arrayKey: 'requirements' | 'benefits' | 'skills'
-  ) => {
-    if (inputValue.trim()) {
-      setFormData({
-        ...formData,
-        [arrayKey]: [...(formData[arrayKey] || []), inputValue.trim()],
-      });
-      setInput('');
+      const workflowsList = await PositionService.getWorkflows(companyId);
+      setWorkflows(workflowsList);
+    } catch (err) {
+      console.error('Error loading workflows:', err);
     }
-  };
-
-  const handleRemoveItem = (
-    index: number,
-    arrayKey: 'requirements' | 'benefits' | 'skills'
-  ) => {
-    setFormData({
-      ...formData,
-      [arrayKey]: (formData[arrayKey] || []).filter((_, i) => i !== index),
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -210,6 +143,29 @@ export default function EditPositionPage() {
       setSaving(false);
     }
   };
+
+  const handleWorkflowChange = async (workflowId: string | null) => {
+    setFormData({
+      ...formData,
+      job_position_workflow_id: workflowId,
+      stage_id: null, // Reset stage when workflow changes
+    });
+
+    if (workflowId) {
+      try {
+        const workflowData = await PositionService.getWorkflow(workflowId);
+        setSelectedWorkflow(workflowData);
+      } catch (err) {
+        console.error('Error loading workflow:', err);
+      }
+    } else {
+      setSelectedWorkflow(null);
+    }
+  };
+
+  const currentStage = selectedWorkflow?.stages.find(
+    (s) => s.id === formData.stage_id
+  ) || null;
 
   if (loading) {
     return (
@@ -241,7 +197,7 @@ export default function EditPositionPage() {
         </div>
       )}
 
-      {/* Form - Reusing the same structure as CreatePositionPage */}
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -257,324 +213,162 @@ export default function EditPositionPage() {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Senior Software Engineer"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
-              <input
-                type="text"
-                value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Employment Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Job Category</label>
               <select
-                value={formData.employment_type}
-                onChange={(e) => setFormData({ ...formData, employment_type: e.target.value as any })}
+                value={formData.job_category}
+                onChange={(e) => setFormData({ ...formData, job_category: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="full_time">Full Time</option>
-                <option value="part_time">Part Time</option>
-                <option value="contract">Contract</option>
-                <option value="internship">Internship</option>
-                <option value="freelance">Freelance</option>
+                <option value="other">Other</option>
+                <option value="engineering">Engineering</option>
+                <option value="design">Design</option>
+                <option value="product">Product</option>
+                <option value="marketing">Marketing</option>
+                <option value="sales">Sales</option>
+                <option value="operations">Operations</option>
+                <option value="hr">HR</option>
+                <option value="finance">Finance</option>
+                <option value="legal">Legal</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
               <select
-                value={formData.experience_level}
-                onChange={(e) => setFormData({ ...formData, experience_level: e.target.value as any })}
+                value={formData.visibility}
+                onChange={(e) => setFormData({ ...formData, visibility: e.target.value as any })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="entry">Entry Level</option>
-                <option value="mid">Mid Level</option>
-                <option value="senior">Senior</option>
-                <option value="executive">Executive</option>
+                <option value="hidden">Hidden</option>
+                <option value="internal">Internal</option>
+                <option value="public">Public</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Number of Openings</label>
-              <input
-                type="number"
-                min="1"
-                value={formData.number_of_openings}
-                onChange={(e) => setFormData({ ...formData, number_of_openings: parseInt(e.target.value) || 1 })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="is_remote"
-                checked={formData.is_remote}
-                onChange={(e) => setFormData({ ...formData, is_remote: e.target.checked })}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="is_remote" className="text-sm font-medium text-gray-700">
-                Remote Position
-              </label>
-            </div>
-
-            {/* Phase 10: Public Position Toggle */}
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="is_public"
-                checked={formData.is_public || false}
-                onChange={async (e) => {
-                  const newValue = e.target.checked;
-                  setFormData({ ...formData, is_public: newValue });
-                  // When checking is_public and position is draft, activate it
-                  if (newValue && id && position?.status === 'draft') {
-                    try {
-                      await PositionService.activatePosition(id);
-                      // Reload position to get updated status
-                      if (id) {
-                        const updated = await PositionService.getPositionById(id);
-                        setPosition(updated);
-                      }
-                    } catch (err: any) {
-                      alert(`Failed to activate position: ${err.message}`);
-                      // Revert the checkbox if activation fails
-                      setFormData({ ...formData, is_public: false });
-                    }
-                  }
-                }}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="is_public" className="text-sm font-medium text-gray-700">
-                Public Position (visible on job board)
-              </label>
-            </div>
-
-            {/* Phase 12.8: Phase-Workflow Configuration */}
+            {/* Workflow Selector */}
             <div className="md:col-span-2">
-              <PhaseWorkflowSelector
-                companyId={companyId}
-                phaseWorkflows={formData.phase_workflows || {}}
-                onChange={(phaseWorkflows) => setFormData({ ...formData, phase_workflows: phaseWorkflows })}
-                label="Recruitment Workflow Configuration"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Workflow</label>
+              <select
+                value={formData.job_position_workflow_id || ''}
+                onChange={(e) => handleWorkflowChange(e.target.value || null)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">No Workflow (Legacy)</option>
+                {workflows.map((workflow) => (
+                  <option key={workflow.id} value={workflow.id}>
+                    {workflow.name} ({workflow.workflow_type})
+                  </option>
+                ))}
+              </select>
               <p className="mt-1 text-sm text-gray-500">
-                Configure which workflow to use for each recruitment phase. The system will automatically
-                guide candidates through the configured phases.
+                Select a workflow to manage this position through stages
               </p>
             </div>
 
-            {/* Stage Assignments Editor */}
-            {formData.workflow_id && !loadingStages && workflowStages.length > 0 && id && (
+            {/* Stage Selector */}
+            {selectedWorkflow && selectedWorkflow.stages.length > 0 && (
               <div className="md:col-span-2">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <StageAssignmentEditor
-                    positionId={id}
-                    stages={workflowStages}
-                    companyUsers={companyUsers}
-                    disabled={saving || loadingUsers}
-                  />
-                  <p className="mt-3 text-sm text-gray-500">
-                    Assign team members to each workflow stage. They will be responsible for processing candidates at that stage.
-                  </p>
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Current Stage</label>
+                <select
+                  value={formData.stage_id || ''}
+                  onChange={(e) => setFormData({ ...formData, stage_id: e.target.value || null })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">No Stage</option>
+                  {selectedWorkflow.stages.map((stage) => (
+                    <option key={stage.id} value={stage.id}>
+                      {stage.name} ({stage.status_mapping})
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-sm text-gray-500">
+                  Current stage in the workflow
+                </p>
               </div>
             )}
 
+            {/* Description */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={5}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Description
+              </label>
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <WysiwygEditor
+                  value={formData.description || ''}
+                  onChange={(content) => setFormData({ ...formData, description: content })}
+                  placeholder="Describe the role, responsibilities, and what you're looking for..."
+                  height={400}
+                  className="w-full"
+                />
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Salary Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Salary Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Dates */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Salary</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Open At</label>
               <input
-                type="number"
-                value={formData.salary_min || ''}
-                onChange={(e) => setFormData({ ...formData, salary_min: e.target.value ? parseInt(e.target.value) : undefined })}
+                type="datetime-local"
+                value={formData.open_at ? new Date(formData.open_at).toISOString().slice(0, 16) : ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    open_at: e.target.value ? new Date(e.target.value).toISOString() : null,
+                  })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Maximum Salary</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Application Deadline</label>
               <input
-                type="number"
-                value={formData.salary_max || ''}
-                onChange={(e) => setFormData({ ...formData, salary_max: e.target.value ? parseInt(e.target.value) : undefined })}
+                type="date"
+                value={formData.application_deadline || ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    application_deadline: e.target.value || null,
+                  })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
-              <select
-                value={formData.salary_currency}
-                onChange={(e) => setFormData({ ...formData, salary_currency: e.target.value })}
+
+            {/* Public Slug */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Public Slug (SEO)</label>
+              <input
+                type="text"
+                value={formData.public_slug || ''}
+                onChange={(e) => setFormData({ ...formData, public_slug: e.target.value || null })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-                <option value="CAD">CAD</option>
-              </select>
+                placeholder="e.g., senior-software-engineer"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                URL-friendly identifier for public job board
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Requirements, Skills, Benefits - Same as CreatePositionPage */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Requirements</h2>
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={requirementInput}
-              onChange={(e) => setRequirementInput(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddItem(requirementInput, setRequirementInput, 'requirements');
-                }
-              }}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Add a requirement"
+        {/* Custom Fields */}
+        {selectedWorkflow && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Custom Fields</h2>
+            <DynamicCustomFields
+              workflow={selectedWorkflow}
+              currentStage={currentStage}
+              customFieldsValues={formData.custom_fields_values || {}}
+              onChange={(values) => setFormData({ ...formData, custom_fields_values: values })}
+              readOnly={false}
             />
-            <button
-              type="button"
-              onClick={() => handleAddItem(requirementInput, setRequirementInput, 'requirements')}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
           </div>
-          {formData.requirements && formData.requirements.length > 0 && (
-            <ul className="space-y-2">
-              {formData.requirements.map((req, idx) => (
-                <li key={idx} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded">
-                  <span className="text-sm text-gray-700">{req}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(idx, 'requirements')}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Required Skills</h2>
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={skillInput}
-              onChange={(e) => setSkillInput(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddItem(skillInput, setSkillInput, 'skills');
-                }
-              }}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Add a skill"
-            />
-            <button
-              type="button"
-              onClick={() => handleAddItem(skillInput, setSkillInput, 'skills')}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
-          </div>
-          {formData.skills && formData.skills.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {formData.skills.map((skill, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                >
-                  {skill}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(idx, 'skills')}
-                    className="hover:text-blue-900"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Benefits</h2>
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={benefitInput}
-              onChange={(e) => setBenefitInput(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddItem(benefitInput, setBenefitInput, 'benefits');
-                }
-              }}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Add a benefit"
-            />
-            <button
-              type="button"
-              onClick={() => handleAddItem(benefitInput, setBenefitInput, 'benefits')}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
-          </div>
-          {formData.benefits && formData.benefits.length > 0 && (
-            <ul className="space-y-2">
-              {formData.benefits.map((benefit, idx) => (
-                <li key={idx} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded">
-                  <span className="text-sm text-gray-700">{benefit}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(idx, 'benefits')}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3">

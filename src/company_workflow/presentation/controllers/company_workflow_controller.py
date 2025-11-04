@@ -97,6 +97,7 @@ class CompanyWorkflowController:
                 # Count distinct open positions that have candidates in this workflow
                 # through candidate_applications
                 from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
+                from src.job_position.domain.enums.job_position_visibility import JobPositionVisibilityEnum
                 active_position_count = session.query(func.count(func.distinct(CandidateApplicationModel.job_position_id))).join(
                     CompanyCandidateModel,
                     CompanyCandidateModel.candidate_id == CandidateApplicationModel.candidate_id
@@ -105,7 +106,7 @@ class CompanyWorkflowController:
                     JobPositionModel.id == CandidateApplicationModel.job_position_id
                 ).filter(
                     CompanyCandidateModel.workflow_id == dto.id,
-                    JobPositionModel.status == JobPositionStatusEnum.ACTIVE,
+                    JobPositionModel.visibility == JobPositionVisibilityEnum.PUBLIC,  # TODO: Check status from workflow stage
                     JobPositionModel.company_id == company_id
                 ).scalar() or 0
 

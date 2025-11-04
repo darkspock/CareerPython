@@ -6,7 +6,6 @@ from src.job_position.domain.value_objects.job_position_workflow_id import JobPo
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.value_objects.stage_id import StageId
 from src.job_position.domain.enums.view_type import ViewTypeEnum
-from src.job_position.domain.enums.workflow_type import WorkflowTypeEnum
 from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
 from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
 from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
@@ -48,18 +47,6 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
             models = session.query(JobPositionWorkflowModel).filter_by(company_id=str(company_id)).all()
             return [self._to_domain(model) for model in models]
 
-    def get_by_company_and_type(
-        self,
-        company_id: CompanyId,
-        workflow_type: WorkflowTypeEnum
-    ) -> List[JobPositionWorkflow]:
-        """Get workflows by company and type"""
-        with self._database.get_session() as session:
-            models = session.query(JobPositionWorkflowModel).filter_by(
-                company_id=str(company_id),
-                workflow_type=workflow_type.value
-            ).all()
-            return [self._to_domain(model) for model in models]
 
     def delete(self, workflow_id: JobPositionWorkflowId) -> None:
         """Delete a workflow"""
@@ -81,7 +68,6 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
             id=JobPositionWorkflowId.from_string(model.id),
             company_id=CompanyId.from_string(model.company_id),
             name=model.name,
-            workflow_type=WorkflowTypeEnum(model.workflow_type),
             default_view=ViewTypeEnum(model.default_view),
             stages=stages,
             custom_fields_config=model.custom_fields_config or {},
@@ -100,7 +86,6 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
             id=str(entity.id),
             company_id=str(entity.company_id),
             name=entity.name,
-            workflow_type=entity.workflow_type.value,
             default_view=entity.default_view.value,
             stages=stages_json,
             custom_fields_config=entity.custom_fields_config,
@@ -116,7 +101,6 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
             stages_json.append(self._stage_to_dict(stage))
 
         model.name = entity.name
-        model.workflow_type = entity.workflow_type.value
         model.default_view = entity.default_view.value
         model.stages = stages_json
         model.custom_fields_config = entity.custom_fields_config

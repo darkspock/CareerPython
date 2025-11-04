@@ -1,4 +1,4 @@
-// Position API service
+// Position API service - Updated for workflow-based system
 import { api } from '../lib/api';
 import { API_BASE_URL } from '../config/api';
 import type {
@@ -8,26 +8,25 @@ import type {
   CreatePositionRequest,
   UpdatePositionRequest,
   PositionListResponse,
-  PositionActionResponse
+  PositionActionResponse,
+  JobPositionWorkflow,
+  JobPositionWorkflowStage
 } from '../types/position';
 
 export class PositionService {
   private static readonly BASE_PATH = '/admin/positions';
+  private static readonly WORKFLOW_BASE_PATH = '/admin/workflows';
 
   /**
-   * Get list of positions with optional filters
+   * Get list of positions with optional filters - simplified
    */
   static async getPositions(filters?: PositionFilters): Promise<PositionListResponse> {
     const queryParams = new URLSearchParams();
 
     if (filters?.company_id) queryParams.append('company_id', filters.company_id);
     if (filters?.search_term) queryParams.append('search_term', filters.search_term);
-    if (filters?.department) queryParams.append('department', filters.department);
-    if (filters?.location) queryParams.append('location', filters.location);
-    if (filters?.employment_type) queryParams.append('employment_type', filters.employment_type);
-    if (filters?.experience_level) queryParams.append('experience_level', filters.experience_level);
-    if (filters?.is_remote !== undefined) queryParams.append('is_remote', filters.is_remote.toString());
-    if (filters?.is_active !== undefined) queryParams.append('is_active', filters.is_active.toString());
+    if (filters?.job_category) queryParams.append('job_category', filters.job_category);
+    if (filters?.visibility) queryParams.append('visibility', filters.visibility);
     if (filters?.page) queryParams.append('page', filters.page.toString());
     if (filters?.page_size) queryParams.append('page_size', filters.page_size.toString());
 
@@ -139,161 +138,164 @@ export class PositionService {
     }
   }
 
+  // ====================================
+  // WORKFLOW METHODS
+  // ====================================
+
   /**
-   * Activate position (changes status from DRAFT to ACTIVE)
+   * Get list of workflows for a company
    */
-  static async activatePosition(positionId: string): Promise<PositionActionResponse> {
+  static async getWorkflows(companyId: string, workflowType?: string): Promise<JobPositionWorkflow[]> {
     try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/activate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      return response;
+      const queryParams = new URLSearchParams();
+      queryParams.append('company_id', companyId);
+      if (workflowType) queryParams.append('workflow_type', workflowType);
+
+      const endpoint = `${this.WORKFLOW_BASE_PATH}?${queryParams.toString()}`;
+      const response = await api.authenticatedRequest<JobPositionWorkflow[]>(endpoint);
+      return response || [];
     } catch (error) {
-      console.error(`Error activating position ${positionId}:`, error);
+      console.error('Error fetching workflows:', error);
       throw error;
     }
   }
 
   /**
-   * Pause position (changes status from ACTIVE to PAUSED)
+   * Get single workflow by ID
    */
-  static async pausePosition(positionId: string): Promise<PositionActionResponse> {
+  static async getWorkflow(workflowId: string): Promise<JobPositionWorkflow> {
     try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/pause`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await api.authenticatedRequest<JobPositionWorkflow>(`${this.WORKFLOW_BASE_PATH}/${workflowId}`);
       return response;
     } catch (error) {
-      console.error(`Error pausing position ${positionId}:`, error);
+      console.error(`Error fetching workflow ${workflowId}:`, error);
       throw error;
     }
   }
 
   /**
-   * Resume position (changes status from PAUSED to ACTIVE)
+   * Create new workflow
    */
-  static async resumePosition(positionId: string): Promise<PositionActionResponse> {
+  static async createWorkflow(workflowData: {
+    company_id: string;
+    name: string;
+    workflow_type?: string;
+    default_view?: string;
+    stages?: Array<{
+      id: string;
+      name: string;
+      icon: string;
+      background_color: string;
+      text_color: string;
+      role?: string | null;
+      status_mapping: string;
+      kanban_display?: string;
+      field_visibility?: Record<string, boolean>;
+      field_validation?: Record<string, any>;
+      field_candidate_visibility?: Record<string, boolean>;
+    }>;
+    custom_fields_config?: Record<string, any>;
+  }): Promise<JobPositionWorkflow> {
     try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/resume`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      return response;
-    } catch (error) {
-      console.error(`Error resuming position ${positionId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Close position
-   */
-  static async closePosition(positionId: string): Promise<PositionActionResponse> {
-    try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/close`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      return response;
-    } catch (error) {
-      console.error(`Error closing position ${positionId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Archive position (changes status to ARCHIVED)
-   */
-  static async archivePosition(positionId: string): Promise<PositionActionResponse> {
-    try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/archive`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      return response;
-    } catch (error) {
-      console.error(`Error archiving position ${positionId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Deactivate position
-   */
-  static async deactivatePosition(positionId: string): Promise<PositionActionResponse> {
-    try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}/deactivate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      return response;
-    } catch (error) {
-      console.error(`Error deactivating position ${positionId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Bulk operations
-   */
-  static async bulkActivatePositions(positionIds: string[]): Promise<PositionActionResponse> {
-    try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/bulk/activate`, {
+      const response = await api.authenticatedRequest<JobPositionWorkflow>(this.WORKFLOW_BASE_PATH, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ position_ids: positionIds })
+        body: JSON.stringify(workflowData)
       });
       return response;
     } catch (error) {
-      console.error('Error bulk activating positions:', error);
+      console.error('Error creating workflow:', error);
       throw error;
     }
   }
 
-  static async bulkDeactivatePositions(positionIds: string[]): Promise<PositionActionResponse> {
+  /**
+   * Update existing workflow
+   */
+  static async updateWorkflow(
+    workflowId: string,
+    workflowData: {
+      name: string;
+      workflow_type?: string;
+      default_view?: string;
+      stages?: Array<{
+        id: string;
+        name: string;
+        icon: string;
+        background_color: string;
+        text_color: string;
+        role?: string | null;
+        status_mapping: string;
+        kanban_display?: string;
+        field_visibility?: Record<string, boolean>;
+        field_validation?: Record<string, any>;
+        field_candidate_visibility?: Record<string, boolean>;
+      }>;
+      custom_fields_config?: Record<string, any>;
+    }
+  ): Promise<JobPositionWorkflow> {
     try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/bulk/deactivate`, {
-        method: 'POST',
+      const response = await api.authenticatedRequest<JobPositionWorkflow>(`${this.WORKFLOW_BASE_PATH}/${workflowId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ position_ids: positionIds })
+        body: JSON.stringify(workflowData)
       });
       return response;
     } catch (error) {
-      console.error('Error bulk deactivating positions:', error);
+      console.error(`Error updating workflow ${workflowId}:`, error);
       throw error;
     }
   }
 
-  static async bulkDeletePositions(positionIds: string[]): Promise<PositionActionResponse> {
+  /**
+   * Move position to a new stage
+   */
+  static async moveToStage(positionId: string, stageId: string, comment?: string): Promise<{ success: boolean; message: string; position_id: string }> {
     try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/bulk/delete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ position_ids: positionIds })
-      });
+      const response = await api.authenticatedRequest<{ success: boolean; message: string; position_id: string }>(
+        `${this.BASE_PATH}/${positionId}/move-to-stage`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            stage_id: stageId,
+            comment: comment || null
+          })
+        }
+      );
       return response;
     } catch (error) {
-      console.error('Error bulk deleting positions:', error);
+      console.error(`Error moving position ${positionId} to stage ${stageId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update custom fields values for a position
+   */
+  static async updateCustomFields(positionId: string, customFieldsValues: Record<string, any>): Promise<{ success: boolean; message: string; position_id: string }> {
+    try {
+      const response = await api.authenticatedRequest<{ success: boolean; message: string; position_id: string }>(
+        `${this.BASE_PATH}/${positionId}/custom-fields`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            custom_fields_values: customFieldsValues
+          })
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error updating custom fields for position ${positionId}:`, error);
       throw error;
     }
   }
@@ -306,12 +308,8 @@ export class PositionService {
 
     if (filters?.company_id) queryParams.append('company_id', filters.company_id);
     if (filters?.search_term) queryParams.append('search_term', filters.search_term);
-    if (filters?.department) queryParams.append('department', filters.department);
-    if (filters?.location) queryParams.append('location', filters.location);
-    if (filters?.employment_type) queryParams.append('employment_type', filters.employment_type);
-    if (filters?.experience_level) queryParams.append('experience_level', filters.experience_level);
-    if (filters?.is_remote !== undefined) queryParams.append('is_remote', filters.is_remote.toString());
-    if (filters?.is_active !== undefined) queryParams.append('is_active', filters.is_active.toString());
+    if (filters?.job_category) queryParams.append('job_category', filters.job_category);
+    if (filters?.visibility) queryParams.append('visibility', filters.visibility);
     queryParams.append('format', format);
 
     const endpoint = `${this.BASE_PATH}/export${queryParams.toString() ? `?${queryParams}` : ''}`;

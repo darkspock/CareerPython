@@ -251,41 +251,266 @@
 
 ---
 
+### FASE 3B: Simplificación de JobPosition y Campos Personalizables
+
+**Objetivo**: Simplificar la entidad `JobPosition` moviendo la mayoría de campos a `custom_fields_values` y agregar sistema de visibilidad para candidatos.
+
+#### Tarea 3B.1: Crear Enum de Visibilidad
+- [x] Crear `JobPositionVisibilityEnum` en `src/job_position/domain/enums/job_position_visibility.py`
+  - `HIDDEN = "hidden"` - Solo visible internamente
+  - `INTERNAL = "internal"` - Visible para usuarios de la empresa
+  - `PUBLIC = "public"` - Visible para candidatos (público)
+
+#### Tarea 3B.2: Modificar JobPosition Entity - Simplificar Campos
+- [x] **ELIMINAR** los siguientes campos de `JobPosition`:
+  - `location: Optional[str]`
+  - `employment_type: Optional[EmploymentType]`
+  - `work_location_type: WorkLocationTypeEnum`
+  - `salary_range: Optional[SalaryRange]`
+  - `contract_type: ContractTypeEnum`
+  - `requirements: Dict[str, Any]`
+  - `position_level: Optional[JobPositionLevelEnum]`
+  - `number_of_openings: int`
+  - `application_instructions: Optional[str]`
+  - `benefits: List[str]`
+  - `working_hours: Optional[str]`
+  - `travel_required: Optional[bool]`
+  - `languages_required: Dict[LanguageEnum, LanguageLevelEnum]`
+  - `visa_sponsorship: bool`
+  - `contact_person: Optional[str]`
+  - `department: Optional[str]`
+  - `reports_to: Optional[str]`
+  - `desired_roles: Optional[List[PositionRoleEnum]]`
+  - `skills: List[str]`
+  - `application_url: Optional[str]`
+  - `application_email: Optional[str]`
+  - `is_public: bool` (reemplazado por `visibility`)
+- [x] **MANTENER** solo estos campos:
+  - `id: JobPositionId`
+  - `title: str`
+  - `company_id: CompanyId`
+  - `workflow_id: Optional[str]` (legacy, deprecated)
+  - `job_position_workflow_id: Optional[JobPositionWorkflowId]`
+  - `phase_workflows: Optional[Dict[str, str]]`
+  - `stage_id: Optional[StageId]`
+  - `custom_fields_values: Dict[str, Any]` (aquí irán todos los campos eliminados)
+  - `description: Optional[str]`
+  - `job_category: JobCategoryEnum`
+  - `open_at: Optional[datetime]`
+  - `application_deadline: Optional[date]`
+  - `visibility: JobPositionVisibilityEnum` (nuevo campo, reemplaza `is_public`)
+  - `public_slug: Optional[str]`
+  - `created_at: datetime`
+  - `updated_at: datetime`
+- [x] **AGREGAR** método `get_visible_custom_fields_for_candidate() -> Dict[str, Any]`:
+  - Filtra `custom_fields_values` según configuración de visibilidad del workflow/stage
+  - Retorna solo campos marcados como "visible por candidato"
+
+#### Tarea 3B.3: Actualizar WorkflowStage - Agregar Visibilidad de Campos
+- [x] Modificar `WorkflowStage` value object:
+  - **AGREGAR** campo `field_candidate_visibility: Dict[str, bool]`:
+    - Clave: nombre del campo personalizable (ej: "location", "salary_range", etc.)
+    - Valor: `True` si es visible para candidatos, `False` si no
+  - Ejemplo: `{"location": True, "salary_range": True, "internal_notes": False}`
+
+#### Tarea 3B.4: Actualizar JobPositionWorkflow - Configuración de Campos
+- [x] Modificar `JobPositionWorkflow` entity:
+  - **AGREGAR** en `custom_fields_config`:
+    - `field_candidate_visibility_default: Dict[str, bool]` - Visibilidad por defecto para todos los stages
+    - `field_types: Dict[str, str]` - Tipos de campos (text, number, date, select, etc.)
+    - `field_labels: Dict[str, str]` - Etiquetas para mostrar en UI
+    - `field_required: Dict[str, bool]` - Campos requeridos
+    - `field_validation: Dict[str, Dict[str, Any]]` - Reglas de validación por campo
+
+#### Tarea 3B.5: Actualizar JobPositionModel - Simplificar Columnas
+- [x] **ELIMINAR** columnas de la tabla `job_positions`:
+  - `location`, `employment_type`, `work_location_type`, `salary_range`, `contract_type`
+  - `requirements`, `position_level`, `number_of_openings`, `application_instructions`
+  - `benefits`, `working_hours`, `travel_required`, `languages_required`, `visa_sponsorship`
+  - `contact_person`, `department`, `reports_to`, `desired_roles`, `skills`
+  - `application_url`, `application_email`, `is_public`
+- [x] **AGREGAR** columna:
+  - `visibility: Mapped[JobPositionVisibilityEnum]` (default: `HIDDEN`)
+- [x] **MANTENER** columnas:
+  - `id`, `title`, `company_id`, `workflow_id`, `job_position_workflow_id`, `phase_workflows`
+  - `stage_id`, `custom_fields_values`, `description`, `job_category`
+  - `open_at`, `application_deadline`, `visibility`, `public_slug`, `created_at`, `updated_at`
+
+#### Tarea 3B.6: Actualizar JobPositionRepository - Mapeo Simplificado
+- [x] Modificar `_create_entity_from_model()`:
+  - Eliminar mapeo de campos removidos
+  - Agregar mapeo de `visibility` (convertir de string a enum)
+  - Mapear todos los campos eliminados desde `custom_fields_values` si existen
+- [x] Modificar `_create_model_from_entity()`:
+  - Eliminar asignación de campos removidos
+  - Agregar asignación de `visibility`
+  - Los campos eliminados se guardan automáticamente en `custom_fields_values`
+- [x] Modificar `_update_model_from_entity()`:
+  - Similar a `_create_model_from_entity()`
+
+#### Tarea 3B.7: Actualizar Commands - Simplificar
+- [x] Modificar `CreateJobPositionCommand`:
+  - Eliminar todos los campos removidos de la entidad
+  - Agregar `visibility: JobPositionVisibilityEnum = JobPositionVisibilityEnum.HIDDEN`
+  - Los campos eliminados se pueden pasar en `custom_fields_values: Dict[str, Any]`
+- [x] Modificar `UpdateJobPositionCommand`:
+  - Eliminar todos los campos removidos
+  - Agregar `visibility: Optional[JobPositionVisibilityEnum]`
+  - Los campos eliminados se actualizan en `custom_fields_values`
+- [x] Modificar `CreateJobPositionCommandHandler`:
+  - Actualizar llamada a `JobPosition.create()` con nuevos campos
+- [x] Modificar `UpdateJobPositionCommandHandler`:
+  - Actualizar llamada a `job_position.update_details()` con nuevos campos
+
+#### Tarea 3B.8: Actualizar Queries - Simplificar DTOs
+- [x] Modificar `JobPositionDto`:
+  - Eliminar todos los campos removidos
+  - Agregar `visibility: str` (valor del enum)
+  - `custom_fields_values` ahora contiene todos los campos eliminados
+- [x] Modificar `JobPositionDto.from_entity()`:
+  - Eliminar mapeo de campos removidos
+  - Agregar mapeo de `visibility`
+  - Los campos eliminados se obtienen de `entity.custom_fields_values`
+- [x] Crear método helper `get_visible_fields_for_candidate(dto: JobPositionDto, workflow: JobPositionWorkflowDto) -> Dict[str, Any]`:
+  - Retorna solo campos visibles para candidatos según configuración del workflow/stage
+
+#### Tarea 3B.9: Actualizar Schemas - Simplificar Request/Response
+- [x] Modificar `JobPositionCreate`:
+  - Eliminar todos los campos removidos
+  - Agregar `visibility: str` (default: "hidden")
+  - Agregar `custom_fields_values: Optional[Dict[str, Any]]` para pasar campos personalizables
+- [x] Modificar `JobPositionUpdate`:
+  - Eliminar todos los campos removidos
+  - Agregar `visibility: Optional[str]`
+  - Los campos eliminados se actualizan en `custom_fields_values`
+- [x] Modificar `JobPositionResponse`:
+  - Eliminar todos los campos removidos
+  - Agregar `visibility: str`
+  - `custom_fields_values` contiene todos los campos eliminados
+- [x] Crear `JobPositionPublicResponse` (para endpoints públicos):
+  - Solo incluye campos visibles para candidatos
+  - Usa `get_visible_fields_for_candidate()` para filtrar
+
+#### Tarea 3B.10: Actualizar Controllers - Simplificar
+- [x] Modificar `JobPositionController.create_position()`:
+  - Eliminar mapeo de campos removidos
+  - Agregar mapeo de `visibility`
+  - Mapear campos del request a `custom_fields_values` si están presentes
+- [x] Modificar `JobPositionController.update_position()`:
+  - Similar a `create_position()`
+- [x] Modificar `PublicPositionController` (si existe):
+  - Usar `JobPositionPublicResponse` en lugar de `JobPositionResponse`
+  - Filtrar campos usando `get_visible_fields_for_candidate()`
+
+#### Tarea 3B.11: Actualizar Queries Públicas - Filtrar por Visibilidad
+- [x] Modificar `ListPublicJobPositionsQuery`:
+  - Filtrar por `visibility == JobPositionVisibilityEnum.PUBLIC`
+  - Usar `get_visible_fields_for_candidate()` al construir DTOs
+- [x] Modificar `GetPublicJobPositionQuery`:
+  - Verificar `visibility == JobPositionVisibilityEnum.PUBLIC`
+  - Retornar solo campos visibles para candidatos
+
+#### Tarea 3B.12: Crear Migración - Simplificar Tabla
+- [x] Crear migración Alembic:
+  - Eliminar columnas de campos removidos
+  - Agregar columna `visibility` (enum, default: 'hidden')
+  - Migrar datos existentes (si hay):
+    - Mover campos eliminados a `custom_fields_values` JSON
+    - Convertir `is_public=True` a `visibility='public'`
+    - Convertir `is_public=False` a `visibility='internal'` o `'hidden'` según contexto
+
+#### Tarea 3B.13: Actualizar Custom Fields Config
+- [x] Modificar `custom_fields_config` en `JobPositionWorkflow`:
+  - Agregar estructura para definir campos personalizables:
+    ```python
+    {
+      "fields": {
+        "location": {
+          "type": "text",
+          "label": "Location",
+          "required": False,
+          "candidate_visible": True,
+          "default_visibility": True  # visible por defecto en todos los stages
+        },
+        "salary_range": {
+          "type": "object",
+          "label": "Salary Range",
+          "required": False,
+          "candidate_visible": True,
+          "default_visibility": True
+        },
+        "internal_notes": {
+          "type": "text",
+          "label": "Internal Notes",
+          "required": False,
+          "candidate_visible": False,
+          "default_visibility": False
+        }
+      }
+      }
+    ```
+
+#### Tarea 3B.14: Actualizar WorkflowStage - Field Candidate Visibility
+- [x] Modificar `WorkflowStage.create()`:
+  - Agregar parámetro `field_candidate_visibility: Optional[Dict[str, bool]] = None`
+  - Si no se proporciona, usar valores por defecto de `custom_fields_config`
+- [x] Modificar `WorkflowStage` value object:
+  - Agregar campo `field_candidate_visibility: Dict[str, bool]`
+  - Método `is_field_visible_to_candidate(field_name: str) -> bool`:
+    - Primero verifica `field_candidate_visibility[field_name]`
+    - Si no existe, verifica `custom_fields_config.field_candidate_visibility_default[field_name]`
+    - Si tampoco existe, retorna `False` por defecto
+
+#### Tarea 3B.15: Actualizar Container - Eliminar Referencias
+- [x] Revisar y eliminar referencias a campos removidos en:
+  - Command handlers
+  - Query handlers
+  - Controllers
+- [x] Actualizar registros si es necesario
+
+**FIN DE FASE 3B** ✅ - **TODAS LAS TAREAS COMPLETADAS**
+
+---
+
 ### FASE 4: Frontend
 
 #### Tarea 4.1: Actualizar Types
-- [ ] Modificar `client-vite/src/types/position.ts`:
+- [x] Modificar `client-vite/src/types/position.ts`:
   - Eliminar `status` de interface `Position`
-  - Agregar `workflow_id`, `stage_id`, `stage`, `custom_fields_values`
-  - Eliminar funciones `getStatusLabel()`, `getStatusColor()`
-  - Crear tipos para `JobPositionWorkflow`, `WorkflowStage`, etc.
+  - Agregar `job_position_workflow_id`, `stage_id`, `stage`, `custom_fields_values`, `visibility`
+  - Eliminar campos movidos a `custom_fields_values` (location, department, etc.)
+  - Eliminar funciones `getStatusLabel()`, `getStatusColor()` (marcadas como deprecated)
+  - Crear tipos para `JobPositionWorkflow`, `JobPositionWorkflowStage`
+  - Agregar helpers para `visibility` y helpers para obtener status desde `stage`
 
 #### Tarea 4.2: Actualizar Services
-- [ ] Modificar `client-vite/src/services/positionService.ts`:
-  - Eliminar métodos de status
-  - Agregar `moveToStage()`, `getWorkflows()`, `getWorkflow()`, etc.
+- [x] Modificar `client-vite/src/services/positionService.ts`:
+  - Eliminar métodos de status (activatePosition, pausePosition, resumePosition, closePosition, archivePosition, deactivatePosition, bulkActivatePositions, bulkDeactivatePositions)
+  - Actualizar `getPositions()` para usar filtros simplificados (eliminar department, location, employment_type, etc.)
+  - Agregar `getWorkflows()`, `getWorkflow()`, `createWorkflow()`, `updateWorkflow()`
+  - Agregar `moveToStage()`, `updateCustomFields()`
 
 #### Tarea 4.3: Refactorizar PositionsListPage
-- [ ] Eliminar handlers de status
-- [ ] Eliminar botones de acción basados en status
-- [ ] Crear componente Kanban board (reutilizar de Candidate Workflow)
-- [ ] Crear componente List view
-- [ ] Implementar switch Kanban/List
-- [ ] Implementar drag & drop para mover entre stages
-- [ ] Implementar filtros por workflow_type y stage
+- [x] Eliminar handlers de status
+- [x] Eliminar botones de acción basados en status
+- [x] Crear componente Kanban board (reutilizar de Candidate Workflow)
+- [x] Crear componente List view
+- [x] Implementar switch Kanban/List
+- [x] Implementar drag & drop para mover entre stages
+- [ ] Implementar filtros por workflow_type y stage (pendiente - se puede agregar después)
 
 #### Tarea 4.4: Refactorizar EditPositionPage
-- [ ] Eliminar lógica de auto-activación
-- [ ] Agregar selector de workflow (si aplica)
-- [ ] Agregar selector de stage inicial
-- [ ] Agregar formulario dinámico de custom fields basado en workflow
+- [x] Eliminar lógica de auto-activación
+- [x] Agregar selector de workflow (si aplica)
+- [x] Agregar selector de stage inicial
+- [x] Agregar formulario dinámico de custom fields basado en workflow
 
 #### Tarea 4.5: Crear Página de Configuración
-- [ ] Crear `JobPositionWorkflowConfigPage` en `/company/settings`
-- [ ] Implementar CRUD de workflows
-- [ ] Implementar editor de stages
-- [ ] Implementar editor de custom fields config
-- [ ] Implementar editor de field visibility y validation
+- [x] Crear `JobPositionWorkflowConfigPage` en `/company/settings`
+- [x] Implementar CRUD de workflows (listado, crear, editar)
+- [x] Implementar editor de stages (crear, editar, eliminar, reordenar)
+- [ ] Implementar editor de custom fields config (pendiente - se puede agregar después)
+- [ ] Implementar editor de field visibility y validation (pendiente - se puede agregar después)
 
 ---
 

@@ -30,7 +30,10 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   const editorValue = value || content || '';
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        // Exclude Link from StarterKit since we're configuring it separately
+        link: false,
+      }),
       Image.configure({
         inline: true,
         allowBase64: true, // Critical for base64 images
@@ -146,8 +149,17 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   useEffect(() => {
     if (!editor) return;
 
+    let editorElement: HTMLElement | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
     const handleDrop = (event: DragEvent) => {
       event.preventDefault();
+      
+      // Verify editor is still available when drop event fires
+      if (!editor || !editor.view || !editor.view.dom) {
+        return;
+      }
       
       const files = Array.from(event.dataTransfer?.files || []);
       
@@ -158,7 +170,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
           reader.onload = (e) => {
             const base64 = e.target?.result;
             
-            if (typeof base64 === 'string') {
+            if (typeof base64 === 'string' && editor && editor.view) {
               // Get drop position
               const coordinates = { left: event.clientX, top: event.clientY };
               const pos = editor.view.posAtCoords(coordinates);
@@ -180,11 +192,44 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       });
     };
 
-    const editorElement = editor.view.dom;
-    editorElement.addEventListener('drop', handleDrop);
+    // Wait for editor to be fully mounted before accessing view.dom
+    const setupDropHandler = () => {
+      try {
+        if (!editor || !editor.view) {
+          // Retry after a short delay if editor is not ready
+          retryTimeoutId = setTimeout(setupDropHandler, 50);
+          return;
+        }
+
+        // Check if view.dom exists
+        if (editor.view.dom) {
+          editorElement = editor.view.dom;
+          editorElement.addEventListener('drop', handleDrop);
+        } else {
+          // Retry if dom is not ready yet
+          retryTimeoutId = setTimeout(setupDropHandler, 50);
+        }
+      } catch (error) {
+        // If there's an error accessing view.dom, retry
+        console.warn('Editor view.dom not available yet:', error);
+        retryTimeoutId = setTimeout(setupDropHandler, 50);
+      }
+    };
+
+    // Initial setup with a small delay to ensure editor is mounted
+    timeoutId = setTimeout(setupDropHandler, 100);
 
     return () => {
-      editorElement.removeEventListener('drop', handleDrop);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId);
+      }
+      // Use the stored reference instead of accessing editor.view.dom again
+      if (editorElement) {
+        editorElement.removeEventListener('drop', handleDrop);
+      }
     };
   }, [editor]);
 

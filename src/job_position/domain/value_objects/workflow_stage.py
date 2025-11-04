@@ -25,6 +25,7 @@ class WorkflowStage:
     kanban_display: KanbanDisplayEnum
     field_visibility: Dict[str, bool]  # Field name -> visible boolean
     field_validation: Dict[str, Any]  # Field name -> validation rule config (can reference ValidationRule IDs)
+    field_candidate_visibility: Dict[str, bool]  # Field name -> visible to candidate boolean
 
     def __post_init__(self) -> None:
         """Validate the value object"""
@@ -49,6 +50,7 @@ class WorkflowStage:
         role: Optional[CompanyRoleId] = None,
         field_visibility: Optional[Dict[str, bool]] = None,
         field_validation: Optional[Dict[str, Any]] = None,
+        field_candidate_visibility: Optional[Dict[str, bool]] = None,
     ) -> "WorkflowStage":
         """
         Factory method to create a new WorkflowStage
@@ -79,6 +81,7 @@ class WorkflowStage:
             kanban_display=kanban_display,
             field_visibility=field_visibility or {},
             field_validation=field_validation or {},
+            field_candidate_visibility=field_candidate_visibility or {},
         )
 
     def update(
@@ -92,6 +95,7 @@ class WorkflowStage:
         kanban_display: Optional[KanbanDisplayEnum] = None,
         field_visibility: Optional[Dict[str, bool]] = None,
         field_validation: Optional[Dict[str, Any]] = None,
+        field_candidate_visibility: Optional[Dict[str, bool]] = None,
     ) -> "WorkflowStage":
         """
         Create a new instance with updated values
@@ -110,5 +114,28 @@ class WorkflowStage:
             kanban_display=kanban_display if kanban_display is not None else self.kanban_display,
             field_visibility=field_visibility if field_visibility is not None else self.field_visibility,
             field_validation=field_validation if field_validation is not None else self.field_validation,
+            field_candidate_visibility=field_candidate_visibility if field_candidate_visibility is not None else self.field_candidate_visibility,
         )
+
+    def is_field_visible_to_candidate(self, field_name: str, default_visibility: Optional[Dict[str, bool]] = None) -> bool:
+        """
+        Check if a field is visible to candidates
+        
+        Args:
+            field_name: Name of the field to check
+            default_visibility: Default visibility from custom_fields_config (optional)
+            
+        Returns:
+            bool: True if field is visible to candidates, False otherwise
+        """
+        # First check stage-specific visibility
+        if field_name in self.field_candidate_visibility:
+            return self.field_candidate_visibility[field_name]
+        
+        # Then check default visibility from workflow config
+        if default_visibility and field_name in default_visibility:
+            return default_visibility[field_name]
+        
+        # Default to False if not specified
+        return False
 

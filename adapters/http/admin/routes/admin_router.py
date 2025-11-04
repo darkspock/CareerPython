@@ -17,6 +17,7 @@ from adapters.http.admin.controllers.enum_controller import EnumController, Enum
 from adapters.http.admin.controllers.interview_controller import InterviewController
 from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
 from adapters.http.admin.controllers.job_position_controller import JobPositionController
+from adapters.http.admin.controllers.job_position_workflow_controller import JobPositionWorkflowController
 # Company schemas
 from adapters.http.admin.schemas.company import (
     CompanyResponse, CompanyCreate, CompanyUpdate, CompanyListResponse,
@@ -38,6 +39,10 @@ from adapters.http.admin.schemas.interview_template import (
 from adapters.http.admin.schemas.job_position import (
     JobPositionResponse, JobPositionCreate, JobPositionUpdate, JobPositionListResponse,
     JobPositionStatsResponse, JobPositionActionResponse
+)
+from adapters.http.admin.schemas.job_position_workflow import (
+    JobPositionWorkflowCreate, JobPositionWorkflowUpdate, JobPositionWorkflowResponse,
+    MoveJobPositionToStageRequest, UpdateJobPositionCustomFieldsRequest
 )
 from adapters.http.shared.schemas.token import Token
 from adapters.http.shared.schemas.user import UserResponse
@@ -607,59 +612,8 @@ def update_position(
     return controller.update_position(position_id, position_data)
 
 
-@router.post("/positions/{position_id}/activate", response_model=JobPositionActionResponse)
-@inject
-def activate_position(
-        position_id: str,
-        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionActionResponse:
-    """Activate a job position (changes status from DRAFT to ACTIVE)"""
-    return controller.activate_position(position_id)
-
-
-@router.post("/positions/{position_id}/pause", response_model=JobPositionActionResponse)
-@inject
-def pause_position(
-        position_id: str,
-        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionActionResponse:
-    """Pause a job position (changes status from ACTIVE to PAUSED)"""
-    return controller.pause_position(position_id)
-
-
-@router.post("/positions/{position_id}/resume", response_model=JobPositionActionResponse)
-@inject
-def resume_position(
-        position_id: str,
-        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionActionResponse:
-    """Resume a paused job position (changes status from PAUSED to ACTIVE)"""
-    return controller.resume_position(position_id)
-
-
-@router.post("/positions/{position_id}/close", response_model=JobPositionActionResponse)
-@inject
-def close_position(
-        position_id: str,
-        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionActionResponse:
-    """Close a job position (changes status to CLOSED)"""
-    return controller.close_position(position_id)
-
-
-@router.post("/positions/{position_id}/archive", response_model=JobPositionActionResponse)
-@inject
-def archive_position(
-        position_id: str,
-        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionActionResponse:
-    """Archive a job position (changes status to ARCHIVED)"""
-    return controller.archive_position(position_id)
+# Status management endpoints (activate, pause, resume, close, archive) have been removed.
+# Use workflow endpoints instead: /workflows/{workflow_id}/positions/{position_id}/move-to-stage
 
 
 @router.delete("/positions/{position_id}", response_model=JobPositionActionResponse)
@@ -671,6 +625,78 @@ def delete_position(
 ) -> JobPositionActionResponse:
     """Delete a job position"""
     return controller.delete_position(position_id)
+
+
+# ====================================
+# JOB POSITION WORKFLOW ENDPOINTS
+# ====================================
+
+@router.post("/workflows", response_model=JobPositionWorkflowResponse)
+@inject
+def create_workflow(
+        workflow_data: JobPositionWorkflowCreate,
+        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> JobPositionWorkflowResponse:
+    """Create a new job position workflow"""
+    return controller.create_workflow(workflow_data)
+
+
+@router.get("/workflows/{workflow_id}", response_model=JobPositionWorkflowResponse)
+@inject
+def get_workflow(
+        workflow_id: str,
+        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+) -> JobPositionWorkflowResponse:
+    """Get a job position workflow by ID"""
+    return controller.get_workflow(workflow_id)
+
+
+@router.put("/workflows/{workflow_id}", response_model=JobPositionWorkflowResponse)
+@inject
+def update_workflow(
+        workflow_id: str,
+        workflow_data: JobPositionWorkflowUpdate,
+        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> JobPositionWorkflowResponse:
+    """Update a job position workflow"""
+    return controller.update_workflow(workflow_id, workflow_data)
+
+
+@router.get("/workflows", response_model=List[JobPositionWorkflowResponse])
+@inject
+def list_workflows(
+        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        company_id: str = Query(..., description="Company ID"),
+        workflow_type: Optional[str] = Query(None, description="Filter by workflow type"),
+) -> List[JobPositionWorkflowResponse]:
+    """List job position workflows for a company"""
+    return controller.list_workflows(company_id, workflow_type)
+
+
+@router.post("/positions/{position_id}/move-to-stage", response_model=dict)
+@inject
+def move_position_to_stage(
+        position_id: str,
+        request: MoveJobPositionToStageRequest,
+        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> dict:
+    """Move a job position to a new stage"""
+    return controller.move_position_to_stage(position_id, request)
+
+
+@router.put("/positions/{position_id}/custom-fields", response_model=dict)
+@inject
+def update_position_custom_fields(
+        position_id: str,
+        request: UpdateJobPositionCustomFieldsRequest,
+        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> dict:
+    """Update custom fields values for a job position"""
+    return controller.update_custom_fields(position_id, request)
 
 
 # Enum metadata endpoint

@@ -169,72 +169,38 @@ export const usePositions = (options: UsePositionsOptions = {}): UsePositionsRet
     }
   }, [fetchPositions, fetchStats]);
 
+  // DEPRECATED: These methods are deprecated - positions now use workflow stages
+  // Use PositionService.moveToStage() instead
   const activatePosition = useCallback(async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await PositionService.activatePosition(id);
-      await fetchPositions();
-      await fetchStats();
-    } catch (err: any) {
-      setError(err.message || 'Failed to activate position');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchPositions, fetchStats]);
+    console.warn('activatePosition is deprecated. Use moveToStage with an active stage instead.');
+    // TODO: Implement using moveToStage
+    throw new Error('activatePosition is deprecated. Use workflow stages instead.');
+  }, []);
 
   const deactivatePosition = useCallback(async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await PositionService.deactivatePosition(id);
-      await fetchPositions();
-      await fetchStats();
-    } catch (err: any) {
-      setError(err.message || 'Failed to deactivate position');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchPositions, fetchStats]);
+    console.warn('deactivatePosition is deprecated. Use moveToStage with a paused/closed stage instead.');
+    // TODO: Implement using moveToStage
+    throw new Error('deactivatePosition is deprecated. Use workflow stages instead.');
+  }, []);
 
-  // Bulk actions
+  // Bulk actions - DEPRECATED
   const bulkActivate = useCallback(async (ids: string[]) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await PositionService.bulkActivatePositions(ids);
-      await fetchPositions();
-      await fetchStats();
-    } catch (err: any) {
-      setError(err.message || 'Failed to bulk activate positions');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchPositions, fetchStats]);
+    console.warn('bulkActivate is deprecated. Use workflow stages instead.');
+    throw new Error('bulkActivate is deprecated. Use workflow stages instead.');
+  }, []);
 
   const bulkDeactivate = useCallback(async (ids: string[]) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await PositionService.bulkDeactivatePositions(ids);
-      await fetchPositions();
-      await fetchStats();
-    } catch (err: any) {
-      setError(err.message || 'Failed to bulk deactivate positions');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchPositions, fetchStats]);
+    console.warn('bulkDeactivate is deprecated. Use workflow stages instead.');
+    throw new Error('bulkDeactivate is deprecated. Use workflow stages instead.');
+  }, []);
 
   const bulkDelete = useCallback(async (ids: string[]) => {
     try {
       setLoading(true);
       setError(null);
-      await PositionService.bulkDeletePositions(ids);
+      // TODO: Implement bulk delete if needed
+      // For now, delete one by one
+      await Promise.all(ids.map(id => PositionService.deletePosition(id)));
       await fetchPositions();
       await fetchStats();
     } catch (err: any) {

@@ -13,13 +13,16 @@ from src.job_position.application.queries.job_position_dto import JobPositionDto
 from src.job_position.application.queries.list_public_job_positions import (
     ListPublicJobPositionsQuery
 )
+from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQuery
 from src.job_position.domain.exceptions import JobPositionNotFoundError
+from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.presentation.schemas.public_position_schemas import (
     PublicPositionResponse,
     PublicPositionListResponse,
     SubmitApplicationRequest,
     SubmitApplicationResponse
 )
+from adapters.http.admin.mappers.job_position_mapper import JobPositionMapper
 from src.shared.application.query_bus import QueryBus
 
 
@@ -32,24 +35,14 @@ class PublicPositionController:
     def list_public_positions(
             self,
             search: Optional[str] = None,
-            location: Optional[str] = None,
-            department: Optional[str] = None,
-            employment_type: Optional[str] = None,
-            experience_level: Optional[str] = None,
-            is_remote: Optional[bool] = None,
             page: int = 1,
             page_size: int = 12
     ) -> PublicPositionListResponse:
         """
-        List public job positions with filters
+        List public job positions with filters - simplified
 
         Args:
             search: Search term for title/description
-            location: Filter by location
-            department: Filter by department
-            employment_type: Filter by employment type
-            experience_level: Filter by experience level
-            is_remote: Filter remote positions
             page: Page number (1-indexed)
             page_size: Number of items per page
 
@@ -62,9 +55,6 @@ class PublicPositionController:
         # Create query
         query = ListPublicJobPositionsQuery(
             search_term=search,
-            location=location,
-            # department=department,  # Add if supported
-            # contract_type=employment_type,  # Add enum conversion if needed
             limit=page_size,
             offset=offset
         )
@@ -72,8 +62,24 @@ class PublicPositionController:
         # Execute query
         position_dtos: List[JobPositionDto] = self.query_bus.query(query)
 
-        # Convert to response
-        positions = [PublicPositionResponse.from_dto(dto) for dto in position_dtos]
+        # Convert to response - get workflow for each position to filter visible fields
+        positions = []
+        for dto in position_dtos:
+            # Try to get workflow if available
+            workflow_dto = None
+            if dto.job_position_workflow_id:
+                try:
+                    workflow_query = GetJobPositionWorkflowQuery(
+                        workflow_id=JobPositionWorkflowId.from_string(dto.job_position_workflow_id)
+                    )
+                    workflow_dto = self.query_bus.query(workflow_query)
+                except Exception:
+                    # If workflow not found, continue without it
+                    pass
+            
+            # Use mapper to get only visible fields for candidates
+            public_response = JobPositionMapper.dto_to_public_response(dto, workflow_dto)
+            positions.append(PublicPositionResponse.from_public_response(public_response))
 
         # Calculate total pages (simplified - in production, do a count query)
         total = len(positions)  # This is a simplification
@@ -89,13 +95,13 @@ class PublicPositionController:
 
     def get_public_position(self, slug_or_id: str) -> PublicPositionResponse:
         """
-        Get a single public job position by slug or ID
+        Get a single public job position by slug or ID - only visible fields for candidates
 
         Args:
             slug_or_id: Public slug or position ID
 
         Returns:
-            PublicPositionResponse
+            PublicPositionResponse with only visible fields
 
         Raises:
             JobPositionNotFoundError: If position not found or not public
@@ -107,7 +113,21 @@ class PublicPositionController:
         if not position_dto:
             raise JobPositionNotFoundError(f"Public position not found: {slug_or_id}")
 
-        return PublicPositionResponse.from_dto(position_dto)
+        # Get workflow if available to filter visible fields
+        workflow_dto = None
+        if position_dto.job_position_workflow_id:
+            try:
+                workflow_query = GetJobPositionWorkflowQuery(
+                    workflow_id=JobPositionWorkflowId.from_string(position_dto.job_position_workflow_id)
+                )
+                workflow_dto = self.query_bus.query(workflow_query)
+            except Exception:
+                # If workflow not found, continue without it
+                pass
+
+        # Use mapper to get only visible fields for candidates
+        public_response = JobPositionMapper.dto_to_public_response(position_dto, workflow_dto)
+        return PublicPositionResponse.from_public_response(public_response)
 
     def submit_application(
             self,

@@ -1,112 +1,110 @@
-"""Job position admin schemas"""
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+"""Job position admin schemas - simplified version"""
+from typing import Optional, List, Dict, Any, Union
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, date
 
-from src.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum
-from src.job_position.domain.enums import JobPositionStatusEnum, ContractTypeEnum, WorkLocationTypeEnum
-from src.job_position.domain.enums.employment_type import EmploymentType
-from src.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
 from src.shared.domain.enums.job_category import JobCategoryEnum
 from src.job_position.application.queries.job_position_dto import JobPositionDto
+from src.job_position.domain.enums import JobPositionVisibilityEnum
 
 
 class JobPositionCreate(BaseModel):
-    """Schema for creating a job position"""
+    """Schema for creating a job position - simplified"""
     company_id: str = Field(..., description="Company ID")
-    workflow_id: Optional[str] = Field(None, description="Workflow ID")
+    job_position_workflow_id: Optional[str] = Field(None, description="Workflow ID")
+    stage_id: Optional[str] = Field(None, description="Initial stage ID")
+    phase_workflows: Optional[Dict[str, str]] = Field(None, description="Phase workflows mapping")
+    custom_fields_values: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Custom field values (all removed fields go here)")
     title: str = Field(..., description="Position title")
     description: Optional[str] = Field(None, description="Position description")
-    location: Optional[str] = Field(None, description="Position location")
-    department: Optional[str] = Field(None, description="Department")
-    employment_type: str = Field("full_time", description="Employment type")
-    experience_level: str = Field("mid", description="Experience level")
-    salary_min: Optional[int] = Field(None, description="Minimum salary")
-    salary_max: Optional[int] = Field(None, description="Maximum salary")
-    salary_currency: Optional[str] = Field("USD", description="Salary currency")
-    requirements: Optional[List[str]] = Field(default_factory=list, description="Requirements")
-    benefits: Optional[List[str]] = Field(default_factory=list, description="Benefits")
-    skills: Optional[List[str]] = Field(default_factory=list, description="Required skills")
-    is_remote: bool = Field(False, description="Remote work available")
-    application_deadline: Optional[str] = Field(None, description="Application deadline")
-    application_url: Optional[str] = Field(None, description="Application URL")
-    application_email: Optional[str] = Field(None, description="Application email")
-    # Additional fields
-    working_hours: Optional[str] = Field(None, description="Working hours")
-    travel_required: Optional[bool] = Field(False, description="Whether travel is required")
-    visa_sponsorship: Optional[bool] = Field(False, description="Visa sponsorship available")
-    contact_person: Optional[str] = Field(None, description="Contact person")
-    reports_to: Optional[str] = Field(None, description="Reports to")
-    number_of_openings: Optional[int] = Field(1, description="Number of openings")
     job_category: Optional[str] = Field("other", description="Job category")
-    languages_required: Optional[Dict[str, str]] = Field(None, description="Languages required")
-    desired_roles: Optional[List[str]] = Field(None, description="Desired roles")
+    open_at: Optional[datetime] = Field(None, description="When position opens")
+    application_deadline: Optional[date] = Field(None, description="Application deadline")
+    visibility: str = Field("hidden", description="Visibility level: hidden, internal, or public")
+    public_slug: Optional[str] = Field(None, description="Public URL slug")
+
+    @field_validator('application_deadline', mode='before')
+    @classmethod
+    def validate_application_deadline(cls, v: Union[str, date, None]) -> Optional[date]:
+        """Convert empty strings to None for optional date field"""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            if not v.strip():
+                return None
+        return v
+
+    @field_validator('visibility', mode='before')
+    @classmethod
+    def validate_visibility(cls, v: Union[str, None]) -> str:
+        """Normalize visibility to lowercase"""
+        if v is None:
+            return "hidden"
+        if isinstance(v, str):
+            # Convert to lowercase to match enum values
+            return v.lower()
+        return v
+
+    class Config:
+        use_enum_values = True
 
 
 class JobPositionUpdate(BaseModel):
-    """Schema for updating a job position"""
-    workflow_id: Optional[str] = Field(None, description="Workflow ID")
+    """Schema for updating a job position - simplified"""
+    job_position_workflow_id: Optional[str] = Field(None, description="Workflow ID")
+    stage_id: Optional[str] = Field(None, description="Stage ID")
+    phase_workflows: Optional[Dict[str, str]] = Field(None, description="Phase workflows mapping")
+    custom_fields_values: Optional[Dict[str, Any]] = Field(None, description="Custom field values (all removed fields go here)")
     title: Optional[str] = Field(None, description="Position title")
     description: Optional[str] = Field(None, description="Position description")
-    location: Optional[str] = Field(None, description="Position location")
-    department: Optional[str] = Field(None, description="Department")
-    employment_type: Optional[str] = Field(None, description="Employment type")
-    experience_level: Optional[str] = Field(None, description="Experience level")
-    salary_min: Optional[int] = Field(None, description="Minimum salary")
-    salary_max: Optional[int] = Field(None, description="Maximum salary")
-    salary_currency: Optional[str] = Field(None, description="Salary currency")
-    requirements: Optional[List[str]] = Field(None, description="Requirements")
-    benefits: Optional[List[str]] = Field(None, description="Benefits")
-    skills: Optional[List[str]] = Field(None, description="Required skills")
-    is_remote: Optional[bool] = Field(None, description="Remote work available")
-    application_deadline: Optional[str] = Field(None, description="Application deadline")
-    application_url: Optional[str] = Field(None, description="Application URL")
-    application_email: Optional[str] = Field(None, description="Application email")
-    # Additional fields for completeness
-    working_hours: Optional[str] = Field(None, description="Working hours")
-    travel_required: Optional[bool] = Field(False, description="Whether travel is required")
-    visa_sponsorship: Optional[bool] = Field(None, description="Visa sponsorship available")
-    contact_person: Optional[str] = Field(None, description="Contact person")
-    reports_to: Optional[str] = Field(None, description="Reports to")
-    number_of_openings: Optional[int] = Field(None, description="Number of openings")
     job_category: Optional[str] = Field(None, description="Job category")
-    languages_required: Optional[Dict[str, str]] = Field(None, description="Languages required")
-    desired_roles: Optional[List[str]] = Field(None, description="Desired roles")
+    open_at: Optional[datetime] = Field(None, description="When position opens")
+    application_deadline: Optional[date] = Field(None, description="Application deadline")
+    visibility: Optional[str] = Field(None, description="Visibility level: hidden, internal, or public")
+    public_slug: Optional[str] = Field(None, description="Public URL slug")
+    
+    @field_validator('visibility', mode='before')
+    @classmethod
+    def validate_visibility(cls, v: Union[str, None]) -> Optional[str]:
+        """Normalize visibility to lowercase"""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            # Convert to lowercase to match enum values
+            return v.lower()
+        return v
+
+    @field_validator('application_deadline', mode='before')
+    @classmethod
+    def validate_application_deadline(cls, v: Union[str, date, None]) -> Optional[date]:
+        """Convert empty strings to None for optional date field"""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            if not v.strip():
+                return None
+        return v
+
+    class Config:
+        use_enum_values = True
 
 
 class JobPositionResponse(BaseModel):
-    """Schema for job position response"""
+    """Schema for job position response - simplified"""
     id: str
     title: str
     company_id: str
-    workflow_id: Optional[str] = None
+    job_position_workflow_id: Optional[str] = None  # Workflow system
+    stage_id: Optional[str] = None  # Current stage
+    phase_workflows: Optional[Dict[str, str]] = None  # Phase workflows mapping
+    custom_fields_values: Dict[str, Any] = Field(default_factory=dict)  # Custom field values (contains all removed fields)
     company_name: Optional[str] = None  # For display purposes
     description: Optional[str] = None
-    location: Optional[str] = None
-    employment_type: Optional[EmploymentType] = None
-    work_location_type: WorkLocationTypeEnum = WorkLocationTypeEnum.ON_SITE
-    salary_range: Optional[Dict[str, Any]] = None  # Serialized SalaryRange
-    contract_type: ContractTypeEnum = ContractTypeEnum.FULL_TIME
-    requirements: Optional[Dict[str, Any]] = Field(default_factory=dict)
-    job_category: JobCategoryEnum = JobCategoryEnum.OTHER
-    position_level: Optional[JobPositionLevelEnum] = None
-    number_of_openings: int = 1
-    application_instructions: Optional[str] = None
-    benefits: List[str] = Field(default_factory=list)
-    working_hours: Optional[str] = None
-    travel_required: Optional[int] = None  # percentage (0-100)
-    languages_required: Dict[str, str] = Field(default_factory=dict)  # Serialized enum dict
-    visa_sponsorship: bool = False
-    contact_person: Optional[str] = None
-    department: Optional[str] = None
-    reports_to: Optional[str] = None
-    status: JobPositionStatusEnum = JobPositionStatusEnum.DRAFT
-    desired_roles: Optional[List[str]] = None  # Serialized PositionRoleEnum list
+    job_category: str = "other"
     open_at: Optional[datetime] = None
     application_deadline: Optional[date] = None
-    application_url: Optional[str] = None
-    application_email: Optional[str] = None
-    skills: List[str] = Field(default_factory=list)
+    visibility: str  # JobPositionVisibilityEnum value
+    public_slug: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -116,63 +114,43 @@ class JobPositionResponse(BaseModel):
     @classmethod
     def from_dto(cls, dto: JobPositionDto, company_name: Optional[str] = None) -> 'JobPositionResponse':
         """Convert JobPositionDto to JobPositionResponse"""
-        # Serialize salary_range
-        salary_range_dict = None
-        if dto.salary_range:
-            salary_range_dict = {
-                "min_amount": dto.salary_range.min_salary,
-                "max_amount": dto.salary_range.max_salary,
-                "currency": dto.salary_range.currency
-            }
-
-        # Serialize languages_required
-        languages_dict = {}
-        if dto.languages_required:
-            languages_dict = {
-                lang.value: level.value
-                for lang, level in dto.languages_required.items()
-            }
-
-        # Serialize desired_roles
-        desired_roles_list = None
-        if dto.desired_roles:
-            desired_roles_list = [role.value for role in dto.desired_roles]
-
         return cls(
             id=dto.id.value,
             title=dto.title,
             company_id=dto.company_id.value,
-            workflow_id=dto.workflow_id,
+            job_position_workflow_id=dto.job_position_workflow_id,
+            stage_id=dto.stage_id,
+            phase_workflows=dto.phase_workflows,
+            custom_fields_values=dto.custom_fields_values,
             company_name=company_name,
             description=dto.description,
-            location=dto.location,
-            employment_type=dto.employment_type,
-            work_location_type=dto.work_location_type,
-            salary_range=salary_range_dict,
-            contract_type=dto.contract_type,
-            requirements=dto.requirements,
-            job_category=dto.job_category,
-            position_level=dto.position_level,
-            number_of_openings=dto.number_of_openings,
-            application_instructions=dto.application_instructions,
-            benefits=dto.benefits or [],
-            working_hours=dto.working_hours,
-            travel_required=dto.travel_required,
-            languages_required=languages_dict,
-            visa_sponsorship=dto.visa_sponsorship,
-            contact_person=dto.contact_person,
-            department=dto.department,
-            reports_to=dto.reports_to,
-            status=dto.status,
-            desired_roles=desired_roles_list,
+            job_category=dto.job_category.value,
             open_at=dto.open_at,
             application_deadline=dto.application_deadline,
-            application_url=dto.application_url,
-            application_email=dto.application_email,
-            skills=dto.skills or [],
+            visibility=dto.visibility,
+            public_slug=dto.public_slug,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
+
+
+class JobPositionPublicResponse(BaseModel):
+    """Schema for public job position response - only visible fields for candidates"""
+    id: str
+    title: str
+    company_id: str
+    description: Optional[str] = None
+    job_category: str
+    open_at: Optional[datetime] = None
+    application_deadline: Optional[date] = None
+    public_slug: Optional[str] = None
+    # Only visible custom fields (filtered by workflow/stage configuration)
+    visible_fields: Dict[str, Any] = Field(default_factory=dict)
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        use_enum_values = True
 
 
 class JobPositionListResponse(BaseModel):

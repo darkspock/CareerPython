@@ -4,15 +4,13 @@ from typing import Optional, List, Union
 from sqlalchemy import and_, or_
 
 from core.database import DatabaseInterface
-from src.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum
 from src.company.domain.value_objects.company_id import CompanyId
 from src.job_position.domain.entities.job_position import JobPosition
-from src.job_position.domain.enums import JobPositionStatusEnum, WorkLocationTypeEnum, ContractTypeEnum
+from src.job_position.domain.enums import JobPositionStatusEnum, JobPositionVisibilityEnum
 from src.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
 from src.job_position.domain.value_objects import JobPositionId
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.domain.value_objects.stage_id import StageId
-from src.job_position.domain.value_objects.salary_range import SalaryRange
 from src.job_position.infrastructure.models.job_position_model import JobPositionModel
 from src.shared.domain.enums.job_category import JobCategoryEnum
 
@@ -56,12 +54,9 @@ class JobPositionRepository(JobPositionRepositoryInterface):
     def find_by_filters(self, company_id: Optional[str] = None,
                         status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
                         job_category: Optional[JobCategoryEnum] = None,
-                        work_location_type: Optional[WorkLocationTypeEnum] = None,
-                        contract_type: Optional[ContractTypeEnum] = None,
-                        location: Optional[str] = None,
                         search_term: Optional[str] = None,
                         limit: int = 50, offset: int = 0,
-                        is_public: Optional[bool] = None) -> List[JobPosition]:
+                        visibility: Optional[JobPositionVisibilityEnum] = None) -> List[JobPosition]:
         """Find job positions by filters
         
         Args:
@@ -84,27 +79,17 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             if job_category:
                 query = query.filter(JobPositionModel.job_category == job_category)
 
-            if work_location_type:
-                query = query.filter(JobPositionModel.work_location_type == work_location_type)
-
-            if contract_type:
-                query = query.filter(JobPositionModel.contract_type == contract_type)
-
-            if location:
-                query = query.filter(JobPositionModel.location.ilike(f"%{location}%"))
-
             if search_term:
                 query = query.filter(
                     or_(
                         JobPositionModel.title.ilike(f"%{search_term}%"),
-                        JobPositionModel.description.ilike(f"%{search_term}%"),
-                        JobPositionModel.location.ilike(f"%{search_term}%")
+                        JobPositionModel.description.ilike(f"%{search_term}%")
                     )
                 )
 
-            # Phase 10: Filter by is_public
-            if is_public is not None:
-                query = query.filter(JobPositionModel.is_public == is_public)
+            # Filter by visibility
+            if visibility is not None:
+                query = query.filter(JobPositionModel.visibility == visibility)
 
             # Order by created_at desc (before pagination)
             query = query.order_by(JobPositionModel.created_at.desc())
@@ -184,40 +169,6 @@ class JobPositionRepository(JobPositionRepositoryInterface):
 
     def _create_entity_from_model(self, model: JobPositionModel) -> JobPosition:
         """Convert JobPositionModel to JobPosition entity"""
-        # Convert salary_range JSON to SalaryRange object
-        salary_range = None
-        if model.salary_range:
-            salary_range = SalaryRange(
-                min_salary=model.salary_range.get('min_salary'),
-                max_salary=model.salary_range.get('max_salary'),
-                currency=model.salary_range.get('currency', 'USD')
-            )
-
-        # Convert languages_required JSON to proper dict
-        languages_required = {}
-        if model.languages_required:
-            # Convert string keys to LanguageEnum and string values to LanguageLevelEnum
-            for lang_str, level_str in model.languages_required.items():
-                try:
-                    lang_enum = LanguageEnum(lang_str)
-                    level_enum = LanguageLevelEnum(level_str)
-                    languages_required[lang_enum] = level_enum
-                except ValueError:
-                    # Skip invalid enum values
-                    continue
-
-        # Convert desired_roles JSON to proper list
-        desired_roles = None
-        if model.desired_roles:
-            desired_roles = []
-            for role_str in model.desired_roles:
-                try:
-                    role_enum = PositionRoleEnum(role_str)
-                    desired_roles.append(role_enum)
-                except ValueError:
-                    # Skip invalid enum values
-                    continue
-
         # Convert job_position_workflow_id and stage_id to Value Objects
         job_position_workflow_id = None
         if model.job_position_workflow_id:
@@ -227,41 +178,33 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         if model.stage_id:
             stage_id = StageId.from_string(model.stage_id)
 
+        # Convert visibility - handle migration from is_public if needed
+        # Visibility is stored as string value, convert to enum
+        if hasattr(model, 'visibility') and model.visibility:
+            if isinstance(model.visibility, str):
+                visibility = JobPositionVisibilityEnum(model.visibility.lower())
+            elif isinstance(model.visibility, JobPositionVisibilityEnum):
+                visibility = model.visibility
+            else:
+                visibility = JobPositionVisibilityEnum.HIDDEN
+        else:
+            visibility = JobPositionVisibilityEnum.HIDDEN
+        # TODO: Migration logic - if visibility doesn't exist but is_public does, convert it
+        # This will be handled in the migration
+
         return JobPosition._from_repository(
             id=JobPositionId.from_string(model.id),
             title=model.title,
             company_id=CompanyId.from_string(model.company_id),
-            workflow_id=model.workflow_id,
             job_position_workflow_id=job_position_workflow_id,
             stage_id=stage_id,
-            phase_workflows=model.phase_workflows,
-            custom_fields_values=model.custom_fields_values,
+            phase_workflows=model.phase_workflows or {},
+            custom_fields_values=model.custom_fields_values or {},
             description=model.description,
-            location=model.location,
-            employment_type=model.employment_type,
-            work_location_type=model.work_location_type,
-            salary_range=salary_range,
-            contract_type=model.contract_type,
-            requirements=model.requirements or {},
             job_category=model.job_category,
-            position_level=model.position_level,
-            number_of_openings=model.number_of_openings,
-            application_instructions=model.application_instructions,
-            benefits=model.benefits or [],
-            working_hours=model.working_hours,
-            travel_required=model.travel_required,
-            languages_required=languages_required,
-            visa_sponsorship=model.visa_sponsorship,
-            contact_person=model.contact_person,
-            department=model.department,
-            reports_to=model.reports_to,
-            desired_roles=desired_roles,
             open_at=model.open_at,
             application_deadline=model.application_deadline,
-            skills=model.skills or [],
-            application_url=model.application_url,
-            application_email=model.application_email,
-            is_public=model.is_public,
+            visibility=visibility,
             public_slug=model.public_slug,
             created_at=model.created_at,
             updated_at=model.updated_at
@@ -269,119 +212,40 @@ class JobPositionRepository(JobPositionRepositoryInterface):
 
     def _create_model_from_entity(self, job_position: JobPosition) -> JobPositionModel:
         """Create JobPositionModel from JobPosition entity"""
-        # Convert SalaryRange to JSON
-        salary_range_json = None
-        if job_position.salary_range:
-            salary_range_json = {
-                'min_salary': job_position.salary_range.min_salary,
-                'max_salary': job_position.salary_range.max_salary,
-                'currency': job_position.salary_range.currency
-            }
-
-        # Convert languages_required to JSON-serializable dict
-        languages_required_json = None
-        if job_position.languages_required:
-            languages_required_json = {
-                lang.value: level.value
-                for lang, level in job_position.languages_required.items()
-            }
-
-        # Convert desired_roles to JSON-serializable list
-        desired_roles_json = None
-        if job_position.desired_roles:
-            desired_roles_json = [role.value for role in job_position.desired_roles]
-
+        # Ensure visibility is converted to string value (lowercase)
+        visibility_value = job_position.visibility.value if isinstance(job_position.visibility, JobPositionVisibilityEnum) else str(job_position.visibility).lower()
+        
         return JobPositionModel(
             id=job_position.id.value,
             company_id=job_position.company_id.value,
-            workflow_id=job_position.workflow_id,
             job_position_workflow_id=str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None,
             stage_id=str(job_position.stage_id) if job_position.stage_id else None,
-            phase_workflows=job_position.phase_workflows,
-            custom_fields_values=job_position.custom_fields_values,
+            phase_workflows=job_position.phase_workflows or {},
+            custom_fields_values=job_position.custom_fields_values or {},
             title=job_position.title,
             description=job_position.description,
-            location=job_position.location,
-            employment_type=job_position.employment_type,
-            work_location_type=job_position.work_location_type,
-            salary_range=salary_range_json,
-            contract_type=job_position.contract_type,
-            requirements=job_position.requirements,
             job_category=job_position.job_category,
-            position_level=job_position.position_level,
-            number_of_openings=job_position.number_of_openings,
-            application_instructions=job_position.application_instructions,
-            benefits=job_position.benefits,
-            working_hours=job_position.working_hours,
-            travel_required=job_position.travel_required,
-            languages_required=languages_required_json,
-            visa_sponsorship=job_position.visa_sponsorship,
-            contact_person=job_position.contact_person,
-            department=job_position.department,
-            reports_to=job_position.reports_to,
-            desired_roles=desired_roles_json,
             open_at=job_position.open_at,
             application_deadline=job_position.application_deadline,
-            skills=job_position.skills,
-            application_url=job_position.application_url,
-            application_email=job_position.application_email,
+            visibility=visibility_value,
+            public_slug=job_position.public_slug,
             created_at=job_position.created_at or datetime.utcnow(),
             updated_at=job_position.updated_at or datetime.utcnow()
         )
 
     def _update_model_from_entity(self, model: JobPositionModel, job_position: JobPosition) -> None:
         """Update JobPositionModel with JobPosition entity data"""
-        # Convert SalaryRange to JSON
-        salary_range_json = None
-        if job_position.salary_range:
-            salary_range_json = {
-                'min_salary': job_position.salary_range.min_salary,
-                'max_salary': job_position.salary_range.max_salary,
-                'currency': job_position.salary_range.currency
-            }
-
-        # Convert languages_required to JSON-serializable dict
-        languages_required_json = None
-        if job_position.languages_required:
-            languages_required_json = {
-                lang.value: level.value
-                for lang, level in job_position.languages_required.items()
-            }
-
-        # Convert desired_roles to JSON-serializable list
-        desired_roles_json = None
-        if job_position.desired_roles:
-            desired_roles_json = [role.value for role in job_position.desired_roles]
-
-        model.workflow_id = job_position.workflow_id
         model.job_position_workflow_id = str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None
         model.stage_id = str(job_position.stage_id) if job_position.stage_id else None
-        model.phase_workflows = job_position.phase_workflows
-        model.custom_fields_values = job_position.custom_fields_values
+        model.phase_workflows = job_position.phase_workflows or {}
+        model.custom_fields_values = job_position.custom_fields_values or {}
         model.title = job_position.title
         model.description = job_position.description
-        model.location = job_position.location
-        model.employment_type = job_position.employment_type
-        model.work_location_type = job_position.work_location_type
-        model.salary_range = salary_range_json
-        model.contract_type = job_position.contract_type
-        model.requirements = job_position.requirements
         model.job_category = job_position.job_category
-        model.position_level = job_position.position_level
-        model.number_of_openings = job_position.number_of_openings
-        model.application_instructions = job_position.application_instructions
-        model.benefits = job_position.benefits
-        model.working_hours = job_position.working_hours
-        model.travel_required = job_position.travel_required
-        model.languages_required = languages_required_json
-        model.visa_sponsorship = job_position.visa_sponsorship
-        model.contact_person = job_position.contact_person
-        model.department = job_position.department
-        model.reports_to = job_position.reports_to
-        model.desired_roles = desired_roles_json
         model.open_at = job_position.open_at
         model.application_deadline = job_position.application_deadline
-        model.skills = job_position.skills
-        model.application_url = job_position.application_url
-        model.application_email = job_position.application_email
+        # Ensure visibility is converted to string value (lowercase)
+        visibility_value = job_position.visibility.value if isinstance(job_position.visibility, JobPositionVisibilityEnum) else str(job_position.visibility).lower()
+        model.visibility = visibility_value
+        model.public_slug = job_position.public_slug
         model.updated_at = job_position.updated_at or datetime.utcnow()

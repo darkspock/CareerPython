@@ -7,6 +7,7 @@ from core.event_bus import EventBus
 from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
 from adapters.http.admin.controllers.company_controller import CompanyController
 from adapters.http.admin.controllers import JobPositionController
+from adapters.http.admin.controllers.job_position_workflow_controller import JobPositionWorkflowController
 from adapters.http.admin.controllers.interview_controller import InterviewController
 from adapters.http.shared.controllers.user import UserController
 
@@ -256,16 +257,23 @@ from src.field_validation.presentation.controllers.validation_rule_controller im
 from src.job_position.application.commands.create_job_position import CreateJobPositionCommandHandler
 from src.job_position.application.commands.update_job_position import UpdateJobPositionCommandHandler
 from src.job_position.application.commands.delete_job_position import DeleteJobPositionCommandHandler
-from src.job_position.application.commands.approve_job_position import ActivateJobPositionCommandHandler, PauseJobPositionCommandHandler, ResumeJobPositionCommandHandler, CloseJobPositionCommandHandler, ArchiveJobPositionCommandHandler
+# Status management command handlers have been removed - use MoveJobPositionToStageCommandHandler instead
+from src.job_position.application.commands.create_job_position_workflow import CreateJobPositionWorkflowCommandHandler
+from src.job_position.application.commands.update_job_position_workflow import UpdateJobPositionWorkflowCommandHandler
+from src.job_position.application.commands.move_job_position_to_stage import MoveJobPositionToStageCommandHandler
+from src.job_position.application.commands.update_job_position_custom_fields import UpdateJobPositionCustomFieldsCommandHandler
 from src.job_position.application.queries.list_job_positions import ListJobPositionsQueryHandler
 from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQueryHandler
 from src.job_position.application.queries.get_job_positions_stats import GetJobPositionsStatsQueryHandler
 # Phase 10: Public position queries
 from src.job_position.application.queries.list_public_job_positions import ListPublicJobPositionsQueryHandler
 from src.job_position.application.queries.get_public_job_position import GetPublicJobPositionQueryHandler
+from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQueryHandler
+from src.job_position.application.queries.list_job_position_workflows import ListJobPositionWorkflowsQueryHandler
 
 # Job Position Infrastructure
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepository
+from src.job_position.infrastructure.repositories.job_position_workflow_repository import JobPositionWorkflowRepository
 
 # Phase 10: Public Position Controller
 from src.job_position.presentation.controllers.public_position_controller import PublicPositionController
@@ -554,6 +562,12 @@ class Container(containers.DeclarativeContainer):
     # Job Position Repository
     job_position_repository = providers.Factory(
         JobPositionRepository,
+        database=database
+    )
+
+    # Job Position Workflow Repository
+    job_position_workflow_repository = providers.Factory(
+        JobPositionWorkflowRepository,
         database=database
     )
 
@@ -979,6 +993,17 @@ class Container(containers.DeclarativeContainer):
     get_public_job_position_query_handler = providers.Factory(
         GetPublicJobPositionQueryHandler,
         job_position_repository=job_position_repository
+    )
+
+    # Job Position Workflow Query Handlers
+    get_job_position_workflow_query_handler = providers.Factory(
+        GetJobPositionWorkflowQueryHandler,
+        workflow_repository=job_position_workflow_repository
+    )
+
+    list_job_position_workflows_query_handler = providers.Factory(
+        ListJobPositionWorkflowsQueryHandler,
+        workflow_repository=job_position_workflow_repository
     )
 
     # Phase 12: Phase Query Handlers
@@ -1514,28 +1539,27 @@ class Container(containers.DeclarativeContainer):
 
     )
 
-    activate_job_position_command_handler = providers.Factory(
-        ActivateJobPositionCommandHandler,
+    # Status management command handlers have been removed
+    # Use MoveJobPositionToStageCommandHandler instead
+
+    # Job Position Workflow Command Handlers
+    create_job_position_workflow_command_handler = providers.Factory(
+        CreateJobPositionWorkflowCommandHandler,
+        workflow_repository=job_position_workflow_repository
+    )
+
+    update_job_position_workflow_command_handler = providers.Factory(
+        UpdateJobPositionWorkflowCommandHandler,
+        workflow_repository=job_position_workflow_repository
+    )
+
+    move_job_position_to_stage_command_handler = providers.Factory(
+        MoveJobPositionToStageCommandHandler,
         job_position_repository=job_position_repository
     )
 
-    pause_job_position_command_handler = providers.Factory(
-        PauseJobPositionCommandHandler,
-        job_position_repository=job_position_repository
-    )
-
-    resume_job_position_command_handler = providers.Factory(
-        ResumeJobPositionCommandHandler,
-        job_position_repository=job_position_repository
-    )
-
-    close_job_position_command_handler = providers.Factory(
-        CloseJobPositionCommandHandler,
-        job_position_repository=job_position_repository
-    )
-
-    archive_job_position_command_handler = providers.Factory(
-        ArchiveJobPositionCommandHandler,
+    update_job_position_custom_fields_command_handler = providers.Factory(
+        UpdateJobPositionCustomFieldsCommandHandler,
         job_position_repository=job_position_repository
     )
 
@@ -2055,6 +2079,12 @@ class Container(containers.DeclarativeContainer):
         JobPositionController,
         query_bus=query_bus,
         command_bus=command_bus
+    )
+
+    job_position_workflow_controller = providers.Factory(
+        JobPositionWorkflowController,
+        command_bus=command_bus,
+        query_bus=query_bus
     )
 
     # Phase 10: Public Position Controller

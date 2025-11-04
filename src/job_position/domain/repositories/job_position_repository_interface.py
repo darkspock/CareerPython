@@ -1,7 +1,8 @@
 from abc import abstractmethod, ABC
 from typing import Optional, List, Union
 
-from src.job_position.domain import JobPosition, JobPositionStatusEnum, WorkLocationTypeEnum, ContractTypeEnum
+from src.job_position.domain import JobPosition, JobPositionStatusEnum
+from src.job_position.domain.enums.job_position_visibility import JobPositionVisibilityEnum
 from src.job_position.domain.value_objects import JobPositionId
 from src.shared.domain.enums.job_category import JobCategoryEnum
 
@@ -19,16 +20,14 @@ class JobPositionRepositoryInterface(ABC):
     def find_by_filters(self, company_id: Optional[str] = None,
                         status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
                         job_category: Optional[JobCategoryEnum] = None,
-                        work_location_type: Optional[WorkLocationTypeEnum] = None,
-                        contract_type: Optional[ContractTypeEnum] = None,
-                        location: Optional[str] = None,
                         search_term: Optional[str] = None,
                         limit: int = 50, offset: int = 0,
-                        is_public: Optional[bool] = None) -> List[JobPosition]:
+                        visibility: Optional[JobPositionVisibilityEnum] = None) -> List[JobPosition]:
         """Find job positions by filters
         
         Args:
-            status: Single status or list of statuses to filter by
+            status: Single status or list of statuses to filter by (deprecated, use stage filtering)
+            visibility: Visibility filter (hidden, internal, public)
         """
         pass
 

@@ -3,6 +3,36 @@ import { useSearchParams } from 'react-router-dom';
 import { usePositions } from '../../hooks/usePositions';
 import { useLanguageEnums, usePositionEnums } from '../../hooks/useEnums';
 import type { Position, PositionFormData } from '../../types/position';
+import {
+  getDepartment,
+  getLocation,
+  getWorkLocationType,
+  getEmploymentType,
+  getContractType,
+  getExperienceLevel,
+  getPositionLevel,
+  getSalaryMin,
+  getSalaryMax,
+  getSalaryCurrency,
+  getSalaryRange,
+  getRequirements,
+  getBenefits,
+  getSkills,
+  getApplicationUrl,
+  getApplicationEmail,
+  getWorkingHours,
+  getTravelRequired,
+  getVisaSponsorship,
+  getContactPerson,
+  getReportsTo,
+  getNumberOfOpenings,
+  getLanguagesRequired,
+  getDesiredRoles,
+  getIsRemote,
+  getStatusLabelFromStage,
+  getStatusColorFromStage,
+  getStatusFromStage,
+} from '../../types/position';
 import CompanySelector from '../common/CompanySelector';
 
 // StatsCard component for displaying statistics
@@ -253,112 +283,126 @@ export const PositionsManagement: React.FC = () => {
   };
 
   const handleEditPosition = (position: Position) => {
-    // Debug: Let's see what data we're getting
-    console.log('Editing position data:', {
-      languages_required: position.languages_required,
-      desired_roles: position.desired_roles,
-      languages_type: typeof position.languages_required,
-      roles_type: typeof position.desired_roles
-    });
-
     setEditingPosition(position);
 
-    // Helper function to safely handle legacy and new fields
-    const getSalaryMin = () => {
-      if (position.salary_range?.min_amount) return position.salary_range.min_amount.toString();
-      if (position.salary_min) return position.salary_min.toString();
+    // Helper function to safely handle salary fields
+    const getSalaryMinValue = () => {
+      const salaryRange = getSalaryRange(position);
+      if (salaryRange?.min_amount) return salaryRange.min_amount.toString();
+      const min = getSalaryMin(position);
+      if (min) return min.toString();
       return '';
     };
 
-    const getSalaryMax = () => {
-      if (position.salary_range?.max_amount) return position.salary_range.max_amount.toString();
-      if (position.salary_max) return position.salary_max.toString();
+    const getSalaryMaxValue = () => {
+      const salaryRange = getSalaryRange(position);
+      if (salaryRange?.max_amount) return salaryRange.max_amount.toString();
+      const max = getSalaryMax(position);
+      if (max) return max.toString();
       return '';
     };
 
-    const getSalaryCurrency = () => {
-      if (position.salary_range?.currency) return position.salary_range.currency;
-      if (position.salary_currency) return position.salary_currency;
+    const getSalaryCurrencyValue = () => {
+      const salaryRange = getSalaryRange(position);
+      if (salaryRange?.currency) return salaryRange.currency;
+      const currency = getSalaryCurrency(position);
+      if (currency) return currency;
       return 'USD';
+    };
+
+    // Helper to get experience level
+    const getExperienceLevelValue = (): string => {
+      const expLevel = getExperienceLevel(position);
+      if (expLevel && ['entry', 'mid', 'senior', 'executive'].includes(expLevel)) {
+        return expLevel;
+      }
+      const posLevel = getPositionLevel(position);
+      if (posLevel === 'junior') return 'entry';
+      if (posLevel === 'lead') return 'senior';
+      if (posLevel && ['entry', 'mid', 'senior', 'executive'].includes(posLevel)) {
+        return posLevel;
+      }
+      return 'mid';
+    };
+
+    // Helper to get languages required
+    const getLanguagesRequiredValue = (): Array<{ language: string; level: string }> => {
+      const langs = getLanguagesRequired(position);
+      if (!langs) return [];
+      
+      if (Array.isArray(langs)) {
+        return langs.map((item: any) =>
+          typeof item === 'object' && item.language && item.level
+            ? item
+            : { language: '', level: '' }
+        );
+      }
+
+      if (typeof langs === 'object') {
+        return Object.entries(langs).map(([language, level]) => ({
+          language,
+          level: typeof level === 'string' ? level : ''
+        }));
+      }
+
+      return [];
+    };
+
+    // Helper to get desired roles
+    const getDesiredRolesValue = (): string[] => {
+      const roles = getDesiredRoles(position);
+      if (!roles) return [];
+      if (Array.isArray(roles)) {
+        return roles.filter((role: any) => typeof role === 'string' && role.length > 0);
+      }
+      return [];
     };
 
     const newFormData: PositionFormData = {
       company_id: position.company_id,
-      workflow_id: position.workflow_id || null,
+      workflow_id: position.job_position_workflow_id || position.workflow_id || null,
       title: position.title,
       description: position.description || '',
-      department: position.department || '',
-      location: position.location || '',
-      work_location_type: position.work_location_type || 'on_site',
-      employment_type: position.employment_type || position.contract_type || 'full_time',
-      experience_level: (() => {
-        if (position.experience_level && ['entry', 'mid', 'senior', 'executive'].includes(position.experience_level)) {
-          return position.experience_level as 'entry' | 'mid' | 'senior' | 'executive';
-        }
-        if (position.position_level === 'junior') return 'entry';
-        if (position.position_level === 'lead') return 'senior';
-        if (position.position_level && ['entry', 'mid', 'senior', 'executive'].includes(position.position_level)) {
-          return position.position_level as 'entry' | 'mid' | 'senior' | 'executive';
-        }
-        return 'mid';
+      department: getDepartment(position) || '',
+      location: getLocation(position) || '',
+      work_location_type: getWorkLocationType(position) || 'on_site',
+      employment_type: getEmploymentType(position) || getContractType(position) || 'full_time',
+      experience_level: getExperienceLevelValue(),
+      salary_min: getSalaryMinValue(),
+      salary_max: getSalaryMaxValue(),
+      salary_currency: getSalaryCurrencyValue(),
+      requirements: (() => {
+        const reqs = getRequirements(position);
+        if (Array.isArray(reqs)) return reqs.join('\n');
+        return '';
       })(),
-      salary_min: getSalaryMin(),
-      salary_max: getSalaryMax(),
-      salary_currency: getSalaryCurrency(),
-      requirements: Array.isArray(position.requirements) ? position.requirements.join('\n') :
-                   (typeof position.requirements === 'object' && position.requirements?.requirements) ?
-                   position.requirements.requirements.join('\n') : '',
-      benefits: position.benefits?.join('\n') || '',
-      skills: position.skills?.join('\n') || '',
+      benefits: (() => {
+        const benefits = getBenefits(position);
+        if (Array.isArray(benefits)) return benefits.join('\n');
+        return '';
+      })(),
+      skills: (() => {
+        const skills = getSkills(position);
+        if (Array.isArray(skills)) return skills.join('\n');
+        return '';
+      })(),
       application_deadline: position.application_deadline || '',
-      application_url: position.application_url || '',
-      application_email: position.application_email || '',
+      application_url: getApplicationUrl(position) || '',
+      application_email: getApplicationEmail(position) || '',
       // New fields
-      working_hours: position.working_hours || '',
-      travel_required: position.travel_required || false,
-      visa_sponsorship: position.visa_sponsorship || false,
-      contact_person: position.contact_person || '',
-      reports_to: position.reports_to || '',
-      number_of_openings: position.number_of_openings?.toString() || '1',
-      job_category: position.job_category || 'other',
-      languages_required: (() => {
-        if (!position.languages_required) return [];
-
-        // If it's already an array of objects with language/level, use it
-        if (Array.isArray(position.languages_required)) {
-          return position.languages_required.map(item =>
-            typeof item === 'object' && item.language && item.level
-              ? item
-              : { language: '', level: '' }
-          );
-        }
-
-        // If it's an object like {"english": "fluent", "spanish": "basic"}
-        if (typeof position.languages_required === 'object') {
-          return Object.entries(position.languages_required).map(([language, level]) => ({
-            language,
-            level: typeof level === 'string' ? level : ''
-          }));
-        }
-
-        return [];
+      working_hours: getWorkingHours(position) || '',
+      travel_required: getTravelRequired(position) || false,
+      visa_sponsorship: getVisaSponsorship(position) || false,
+      contact_person: getContactPerson(position) || '',
+      reports_to: getReportsTo(position) || '',
+      number_of_openings: (() => {
+        const num = getNumberOfOpenings(position);
+        return num ? num.toString() : '1';
       })(),
-      desired_roles: (() => {
-        if (!position.desired_roles) return [];
-
-        // If it's already an array, use it
-        if (Array.isArray(position.desired_roles)) {
-          return position.desired_roles.filter(role => typeof role === 'string' && role.length > 0);
-        }
-
-        return [];
-      })()
+      job_category: position.job_category || 'other',
+      languages_required: getLanguagesRequiredValue(),
+      desired_roles: getDesiredRolesValue()
     };
-
-    console.log('Converted form data:', {
-      languages_required: newFormData.languages_required,
-      desired_roles: newFormData.desired_roles
-    });
 
     setFormData(newFormData);
     setShowCreateModal(true);
@@ -400,19 +444,20 @@ export const PositionsManagement: React.FC = () => {
 
   const formatSalary = (position: Position) => {
     // Handle new salary_range format
-    if (position.salary_range) {
-      const { min_amount, max_amount, currency } = position.salary_range;
+    const salaryRange = getSalaryRange(position);
+    if (salaryRange) {
+      const { min_amount, max_amount, currency } = salaryRange;
       if (min_amount && max_amount) {
-        return `${currency} ${min_amount.toLocaleString()} - ${max_amount.toLocaleString()}`;
+        return `${currency || 'USD'} ${min_amount.toLocaleString()} - ${max_amount.toLocaleString()}`;
       }
-      if (min_amount) return `${currency} ${min_amount.toLocaleString()}+`;
-      if (max_amount) return `Up to ${currency} ${max_amount.toLocaleString()}`;
+      if (min_amount) return `${currency || 'USD'} ${min_amount.toLocaleString()}+`;
+      if (max_amount) return `Up to ${currency || 'USD'} ${max_amount.toLocaleString()}`;
     }
 
     // Handle legacy format
-    const min = position.salary_min;
-    const max = position.salary_max;
-    const currency = position.salary_currency || 'USD';
+    const min = getSalaryMin(position);
+    const max = getSalaryMax(position);
+    const currency = getSalaryCurrency(position) || 'USD';
 
     if (!min && !max) return 'Not specified';
     if (min && max) return `${currency} ${min.toLocaleString()} - ${max.toLocaleString()}`;
@@ -424,13 +469,19 @@ export const PositionsManagement: React.FC = () => {
   const getActionButtons = (position: Position) => {
     const buttons = [];
 
-    // Activate/Deactivate button
-    if (position.is_active) {
+    // Note: activate/deactivate buttons are deprecated - positions now use workflow stages
+    // These handlers may not work with the new system
+    // For now, we'll hide them or they can be updated to use moveToStage
+    const status = getStatusFromStage(position.stage);
+    const isActive = status === 'active' || position.visibility === 'public';
+    
+    if (isActive) {
       buttons.push(
         <div key="deactivate" className="relative group">
           <button
             onClick={() => handleDeactivatePosition(position.id)}
             className="text-orange-600 hover:text-orange-900 hover:bg-orange-50 p-1 rounded cursor-pointer"
+            title="Deactivate (deprecated - use workflow stages)"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -447,6 +498,7 @@ export const PositionsManagement: React.FC = () => {
           <button
             onClick={() => handleActivatePosition(position.id)}
             className="text-green-600 hover:text-green-900 hover:bg-green-50 p-1 rounded cursor-pointer"
+            title="Activate (deprecated - use workflow stages)"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -730,7 +782,7 @@ export const PositionsManagement: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{position.title}</div>
-                        <div className="text-sm text-gray-500">{position.department}</div>
+                        <div className="text-sm text-gray-500">{getDepartment(position) || ''}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -739,29 +791,38 @@ export const PositionsManagement: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{position.location || 'Not specified'}</div>
-                      {(position.is_remote || position.work_location_type === 'remote') && (
+                      <div className="text-sm text-gray-900">{getLocation(position) || 'Not specified'}</div>
+                      {(getIsRemote(position) || getWorkLocationType(position) === 'remote') && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           Remote
                         </span>
                       )}
-                      {position.work_location_type === 'hybrid' && (
+                      {getWorkLocationType(position) === 'hybrid' && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           Hybrid
                         </span>
                       )}
-                      {position.work_location_type && position.work_location_type !== 'on_site' && position.work_location_type !== 'remote' && position.work_location_type !== 'hybrid' && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {position.work_location_type.replace('_', ' ').toUpperCase()}
-                        </span>
-                      )}
+                      {(() => {
+                        const wlt = getWorkLocationType(position);
+                        return wlt && wlt !== 'on_site' && wlt !== 'remote' && wlt !== 'hybrid' && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {wlt.replace('_', ' ').toUpperCase()}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {position.employment_type ? position.employment_type.replace('_', ' ').toUpperCase() : 'Not specified'}
+                        {(() => {
+                          const empType = getEmploymentType(position) || getContractType(position);
+                          return empType ? empType.replace('_', ' ').toUpperCase() : 'Not specified';
+                        })()}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {position.experience_level ? position.experience_level.charAt(0).toUpperCase() + position.experience_level.slice(1) : 'Not specified'}
+                        {(() => {
+                          const expLevel = getExperienceLevel(position);
+                          return expLevel ? expLevel.charAt(0).toUpperCase() + expLevel.slice(1) : 'Not specified';
+                        })()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -771,28 +832,9 @@ export const PositionsManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        position.status === 'open' || (position.is_active === true && !position.status)
-                          ? 'bg-green-100 text-green-800'
-                          : position.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : position.status === 'approved'
-                          ? 'bg-blue-100 text-blue-800'
-                          : position.status === 'rejected'
-                          ? 'bg-red-100 text-red-800'
-                          : position.status === 'paused'
-                          ? 'bg-orange-100 text-orange-800'
-                          : position.status === 'closed'
-                          ? 'bg-gray-100 text-gray-800'
-                          : position.is_active === false
-                          ? 'bg-gray-100 text-gray-800'
-                          : 'bg-gray-100 text-gray-800'
+                        getStatusColorFromStage(position.stage)
                       }`}>
-                        {position.status
-                          ? position.status.charAt(0).toUpperCase() + position.status.slice(1)
-                          : position.is_active
-                          ? 'Active'
-                          : 'Inactive'
-                        }
+                        {getStatusLabelFromStage(position.stage)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

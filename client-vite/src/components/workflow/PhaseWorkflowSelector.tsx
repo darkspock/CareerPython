@@ -128,16 +128,9 @@ export function PhaseWorkflowSelector({
     );
   }
 
-  // If all phases have only one workflow, hide the configuration UI
+  // If all phases have only one workflow, hide the configuration UI completely
   if (shouldHideUI) {
-    return (
-      <div className="border border-green-100 bg-green-50 rounded-lg p-4">
-        <div className="flex items-center gap-2 text-green-700">
-          <Workflow className="w-5 h-5" />
-          <span>Workflow configuration automatically set (one workflow per phase)</span>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from src.candidate_application.domain.repositories.candidate_application_repository_interface import \
     CandidateApplicationRepositoryInterface
+from src.job_position.domain.enums.job_position_visibility import JobPositionVisibilityEnum
 from src.job_position.domain.exceptions import JobPositionNotFoundException
 from src.job_position.domain.value_objects import JobPositionId
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
@@ -29,7 +30,10 @@ class DeleteJobPositionCommandHandler:
         candidates = self.candidate_application_repository.get_applications_by_position(command.id)
 
         if candidates:
-            job_position.close_position()
+            # TODO: Move to a closed stage instead of closing directly
+            # For now, we just mark as hidden (not public)
+            from src.job_position.domain.entities.job_position import JobPosition
+            job_position.visibility = JobPositionVisibilityEnum.HIDDEN
             self.job_position_repository.save(job_position)
         else:
             self.job_position_repository.delete(command.id)

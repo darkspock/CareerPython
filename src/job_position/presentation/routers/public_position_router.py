@@ -23,32 +23,23 @@ router = APIRouter(prefix="/public/positions", tags=["public-positions"])
     "",
     response_model=PublicPositionListResponse,
     summary="List public job positions",
-    description="Browse all public job positions. No authentication required."
+    description="Browse all public job positions. No authentication required. Only returns positions with visibility=PUBLIC."
 )
 @inject
 def list_public_positions(
     search: Optional[str] = Query(None, description="Search term for title/description"),
-    location: Optional[str] = Query(None, description="Filter by location"),
-    department: Optional[str] = Query(None, description="Filter by department"),
-    employment_type: Optional[str] = Query(None, description="Filter by employment type"),
-    experience_level: Optional[str] = Query(None, description="Filter by experience level"),
-    is_remote: Optional[bool] = Query(None, description="Filter remote positions only"),
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(12, ge=1, le=100, description="Items per page"),
     controller: PublicPositionController = Depends(Provide[Container.public_position_controller])
 ) -> PublicPositionListResponse:
     """
-    List public job positions with optional filters
+    List public job positions with optional filters - simplified
 
-    No authentication required. Only returns positions marked as public and active.
+    No authentication required. Only returns positions with visibility=PUBLIC.
+    Custom fields are filtered to show only those visible to candidates based on workflow/stage configuration.
 
     Args:
         search: Search keyword in title/description
-        location: Filter by location
-        department: Filter by department
-        employment_type: Filter by employment type
-        experience_level: Filter by experience level
-        is_remote: Show only remote positions
         page: Page number
         page_size: Number of items per page
 
@@ -58,11 +49,6 @@ def list_public_positions(
     try:
         return controller.list_public_positions(
             search=search,
-            location=location,
-            department=department,
-            employment_type=employment_type,
-            experience_level=experience_level,
-            is_remote=is_remote,
             page=page,
             page_size=page_size
         )
@@ -87,13 +73,14 @@ def get_public_position(
     """
     Get a single public job position by slug or ID
 
-    No authentication required. Only returns positions marked as public and active.
+    No authentication required. Only returns positions with visibility=PUBLIC.
+    Custom fields are filtered to show only those visible to candidates based on workflow/stage configuration.
 
     Args:
         slug_or_id: Position public slug or ID
 
     Returns:
-        PublicPositionResponse with full position details
+        PublicPositionResponse with only visible fields for candidates
 
     Raises:
         404: If position not found or not public

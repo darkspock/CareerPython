@@ -1,14 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime, date
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 
-from src.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum
-from src.job_position.domain.enums import WorkLocationTypeEnum, ContractTypeEnum
-from src.job_position.domain.enums.employment_type import EmploymentType
-from src.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
+from src.job_position.domain.enums import JobPositionVisibilityEnum
 from src.job_position.domain.exceptions import JobPositionNotFoundException
 from src.job_position.domain.value_objects import JobPositionId
-from src.job_position.domain.value_objects.salary_range import SalaryRange
+from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.job_position.domain.value_objects.stage_id import StageId
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
 from src.shared.application.command_bus import Command, CommandHandler
 from src.shared.domain.enums.job_category import JobCategoryEnum
@@ -17,35 +15,17 @@ from src.shared.domain.enums.job_category import JobCategoryEnum
 @dataclass
 class UpdateJobPositionCommand(Command):
     id: JobPositionId
-    workflow_id: Optional[str] = None
+    job_position_workflow_id: Optional[JobPositionWorkflowId] = None  # Workflow system
+    stage_id: Optional[StageId] = None  # Current stage
     phase_workflows: Optional[Dict[str, str]] = None
+    custom_fields_values: Optional[Dict[str, Any]] = None  # Custom field values (contains all removed fields)
     title: str = ""
     description: Optional[str] = None
-    location: Optional[str] = None
-    employment_type: Optional[EmploymentType] = None
-    work_location_type: WorkLocationTypeEnum = WorkLocationTypeEnum.ON_SITE
-    salary_range: Optional[SalaryRange] = None
-    contract_type: ContractTypeEnum = ContractTypeEnum.FULL_TIME
-    requirements: Optional[Dict[str, Any]] = None
-    job_category: JobCategoryEnum = JobCategoryEnum.OTHER
-    position_level: Optional[JobPositionLevelEnum] = None
-    number_of_openings: int = 1
-    application_instructions: Optional[str] = None
-    benefits: Optional[List[str]] = None
-    working_hours: Optional[str] = None
-    travel_required: Optional[bool] = None
-    languages_required: Optional[Dict[LanguageEnum, LanguageLevelEnum]] = None
-    visa_sponsorship: bool = False
-    contact_person: Optional[str] = None
-    department: Optional[str] = None
-    reports_to: Optional[str] = None
-    desired_roles: Optional[List[PositionRoleEnum]] = None
+    job_category: Optional[JobCategoryEnum] = None
     open_at: Optional[datetime] = None
     application_deadline: Optional[date] = None
-    skills: Optional[List[str]] = None
-    application_url: Optional[str] = None
-    application_email: Optional[str] = None
-    is_public: Optional[bool] = None
+    visibility: Optional[JobPositionVisibilityEnum] = None
+    public_slug: Optional[str] = None
 
 
 class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
@@ -58,40 +38,17 @@ class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
             raise JobPositionNotFoundException(f"Job position with id {command.id.value} not found")
 
         job_position.update_details(
-            workflow_id=command.workflow_id,
-            phase_workflows=command.phase_workflows,
             title=command.title,
             description=command.description,
-            location=command.location,
-            employment_type=command.employment_type,
-            work_location_type=command.work_location_type,
-            salary_range=command.salary_range,
-            contract_type=command.contract_type,
-            requirements=command.requirements or {},
-            job_category=command.job_category,
-            position_level=command.position_level,
-            number_of_openings=command.number_of_openings,
-            application_instructions=command.application_instructions,
-            benefits=command.benefits or [],
-            working_hours=command.working_hours,
-            travel_required=command.travel_required,
-            languages_required=command.languages_required or {},
-            visa_sponsorship=command.visa_sponsorship,
-            contact_person=command.contact_person,
-            department=command.department,
-            reports_to=command.reports_to,
-            desired_roles=command.desired_roles,
+            job_category=command.job_category or job_position.job_category,
             open_at=command.open_at,
             application_deadline=command.application_deadline,
-            skills=command.skills or [],
-            application_url=command.application_url,
-            application_email=command.application_email,
-            is_public=command.is_public
+            job_position_workflow_id=command.job_position_workflow_id,
+            stage_id=command.stage_id,
+            phase_workflows=command.phase_workflows,
+            custom_fields_values=command.custom_fields_values,
+            visibility=command.visibility,
+            public_slug=command.public_slug
         )
-
-        # When setting is_public=True, automatically activate the position if it's in draft
-        # so it appears in public listings
-        if command.is_public is True and job_position.is_draft():
-            job_position.activate()
 
         self.job_position_repository.save(job_position)

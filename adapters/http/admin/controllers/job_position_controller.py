@@ -8,23 +8,22 @@ from adapters.http.admin.schemas.job_position import (
     JobPositionCreate, JobPositionUpdate, JobPositionResponse, JobPositionListResponse,
     JobPositionStatsResponse, JobPositionActionResponse
 )
-from src.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum
 from src.company.domain.value_objects.company_id import CompanyId
 # Job position commands
 from src.job_position.application.commands.create_job_position import CreateJobPositionCommand
 from src.job_position.application.commands.delete_job_position import DeleteJobPositionCommand
 from src.job_position.application.commands.update_job_position import UpdateJobPositionCommand
-from src.job_position.application.commands.approve_job_position import ActivateJobPositionCommand, PauseJobPositionCommand, ResumeJobPositionCommand, CloseJobPositionCommand, ArchiveJobPositionCommand
+# Status management commands have been removed - use MoveJobPositionToStageCommand instead
 from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
 from src.job_position.application.queries.get_job_positions_stats import GetJobPositionsStatsQuery
 from src.job_position.application.queries.job_position_dto import JobPositionDto
 # Job position queries
 from src.job_position.application.queries.list_job_positions import ListJobPositionsQuery
 # Domain enums
-from src.job_position.domain.enums import WorkLocationTypeEnum, ContractTypeEnum
-from src.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
+from src.job_position.domain.enums import JobPositionVisibilityEnum
 from src.job_position.domain.value_objects import JobPositionId
-from src.job_position.domain.value_objects.salary_range import SalaryRange
+from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.job_position.domain.value_objects.stage_id import StageId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.shared.domain.enums.job_category import JobCategoryEnum
@@ -37,84 +36,9 @@ logger = logging.getLogger(__name__)
 class JobPositionController:
     """Controller for job position admin operations"""
 
-    # Mapping dictionaries for enum conversions
-    EMPLOYMENT_TYPE_MAPPING = {
-        "full_time": ContractTypeEnum.FULL_TIME,
-        "part_time": ContractTypeEnum.PART_TIME,
-        "contract": ContractTypeEnum.CONTRACT,
-        "internship": ContractTypeEnum.INTERNSHIP
-    }
-
-    EXPERIENCE_LEVEL_MAPPING = {
-        "junior": JobPositionLevelEnum.JUNIOR,
-        "mid": JobPositionLevelEnum.MID,
-        "senior": JobPositionLevelEnum.SENIOR,
-        "lead": JobPositionLevelEnum.LEAD
-    }
-
     def __init__(self, command_bus: CommandBus, query_bus: QueryBus):
         self.command_bus = command_bus
         self.query_bus = query_bus
-
-    def _create_salary_range(self, salary_min: Optional[int], salary_max: Optional[int],
-                             salary_currency: Optional[str]) -> Optional[SalaryRange]:
-        """Helper method to create salary range from individual fields"""
-        if salary_min is not None and salary_max is not None:
-            return SalaryRange(
-                min_salary=float(salary_min),
-                max_salary=float(salary_max),
-                currency=salary_currency or "USD"
-            )
-        return None
-
-    def _map_experience_level_to_position_level(self, experience_level: Optional[str]) -> Optional[
-        'JobPositionLevelEnum']:
-        """Helper method to map experience level to position level"""
-        if experience_level:
-            return self.EXPERIENCE_LEVEL_MAPPING.get(experience_level)
-        return None
-
-    def _parse_application_deadline(self, deadline_str: Optional[str]) -> Optional[date]:
-        """Helper method to parse application deadline string"""
-        if deadline_str:
-            from datetime import datetime
-            try:
-                return datetime.strptime(deadline_str, "%Y-%m-%d").date()
-            except ValueError:
-                return None
-        return None
-
-    def _convert_languages_to_enums(self, languages_dict: Optional[Dict[str, str]]) -> Optional[
-        Dict[LanguageEnum, LanguageLevelEnum]]:
-        """Convert string dictionary to enum dictionary for languages"""
-        if not languages_dict:
-            return None
-
-        try:
-            enum_dict = {}
-            for lang_str, level_str in languages_dict.items():
-                lang_enum = LanguageEnum(lang_str.lower())
-                level_enum = LanguageLevelEnum(level_str.lower())
-                enum_dict[lang_enum] = level_enum
-            return enum_dict
-        except ValueError as e:
-            logger.warning(f"Invalid language or level enum: {e}")
-            return None
-
-    def _convert_roles_to_enums(self, roles_list: Optional[List[str]]) -> Optional[List[PositionRoleEnum]]:
-        """Convert string list to enum list for desired roles"""
-        if not roles_list:
-            return None
-
-        try:
-            enum_list = []
-            for role_str in roles_list:
-                role_enum = PositionRoleEnum(role_str.lower())
-                enum_list.append(role_enum)
-            return enum_list
-        except ValueError as e:
-            logger.warning(f"Invalid role enum: {e}")
-            return None
 
     def list_positions(
             self,
@@ -138,7 +62,6 @@ class JobPositionController:
             query = ListJobPositionsQuery(
                 company_id=company_id,
                 search_term=search_term,
-                location=location,
                 limit=page_size,
                 offset=offset
             )
@@ -203,61 +126,42 @@ class JobPositionController:
             raise
 
     def create_position(self, position_data: JobPositionCreate) -> JobPositionActionResponse:
-        """Create a new job position"""
+        """Create a new job position - simplified"""
         try:
-            # Map employment type to contract type
-            contract_type = self.EMPLOYMENT_TYPE_MAPPING.get(position_data.employment_type, ContractTypeEnum.FULL_TIME)
-
-            # Map remote to work location type
-            work_location_type = WorkLocationTypeEnum.REMOTE if position_data.is_remote else WorkLocationTypeEnum.ON_SITE
-
-            # Create salary range
-            salary_range = self._create_salary_range(
-                position_data.salary_min,
-                position_data.salary_max,
-                position_data.salary_currency
-            )
-
-            # Map experience level to position level
-            position_level = self._map_experience_level_to_position_level(position_data.experience_level)
-
-            # Parse application deadline
-            application_deadline = self._parse_application_deadline(position_data.application_deadline)
-
-            # Convert languages and roles to enums
-            languages_required_enums = self._convert_languages_to_enums(position_data.languages_required)
-            desired_roles_enums = self._convert_roles_to_enums(position_data.desired_roles)
+            # Convert visibility string to enum (already normalized to lowercase by validator)
+            try:
+                visibility = JobPositionVisibilityEnum(position_data.visibility.lower()) if position_data.visibility else JobPositionVisibilityEnum.HIDDEN
+            except (ValueError, AttributeError):
+                # Fallback to default if invalid value
+                visibility = JobPositionVisibilityEnum.HIDDEN
+            
+            # Convert job_category string to enum
+            job_category = JobCategoryEnum(position_data.job_category) if position_data.job_category else JobCategoryEnum.OTHER
+            
+            # Convert workflow and stage IDs to Value Objects
+            job_position_workflow_id = None
+            if position_data.job_position_workflow_id:
+                job_position_workflow_id = JobPositionWorkflowId.from_string(position_data.job_position_workflow_id)
+            
+            stage_id = None
+            if position_data.stage_id:
+                stage_id = StageId.from_string(position_data.stage_id)
 
             id = JobPositionId.generate()
             command = CreateJobPositionCommand(
                 id=id,
                 company_id=CompanyId.from_string(position_data.company_id),
-                workflow_id=position_data.workflow_id,
+                job_position_workflow_id=job_position_workflow_id,
+                stage_id=stage_id,
+                phase_workflows=position_data.phase_workflows,
+                custom_fields_values=position_data.custom_fields_values or {},
                 title=position_data.title,
                 description=position_data.description,
-                location=position_data.location,
-                work_location_type=work_location_type,
-                salary_range=salary_range,
-                contract_type=contract_type,
-                requirements={"requirements": position_data.requirements or []},
-                job_category=JobCategoryEnum.OTHER,
-                position_level=position_level,
-                number_of_openings=position_data.number_of_openings or 1,
-                application_instructions=None,  # Not in create schema
-                benefits=position_data.benefits or [],
-                working_hours=position_data.working_hours,
-                travel_required=position_data.travel_required,
-                languages_required=languages_required_enums,
-                visa_sponsorship=position_data.visa_sponsorship or False,
-                contact_person=position_data.contact_person,
-                department=position_data.department,
-                reports_to=position_data.reports_to,
-                desired_roles=desired_roles_enums,
-                open_at=None,  # Not set during creation
-                application_deadline=application_deadline,
-                skills=position_data.skills or [],
-                application_url=position_data.application_url,
-                application_email=position_data.application_email
+                job_category=job_category,
+                open_at=position_data.open_at,
+                application_deadline=position_data.application_deadline,
+                visibility=visibility,
+                public_slug=position_data.public_slug
             )
 
             self.command_bus.dispatch(command)
@@ -268,17 +172,19 @@ class JobPositionController:
                 position_id=id.value
             )
 
+        except ValueError as e:
+            logger.error(f"Validation error creating position: {str(e)}")
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
         except Exception as e:
             logger.error(f"Error creating position: {str(e)}")
-            return JobPositionActionResponse(
-                success=False,
-                message=f"Failed to create position: {str(e)}"
-            )
+            from fastapi import HTTPException
+            raise HTTPException(status_code=500, detail=f"Failed to create position: {str(e)}")
 
     def update_position(self, position_id: str, position_data: JobPositionUpdate) -> JobPositionActionResponse:
-        """Update an existing job position"""
+        """Update an existing job position - simplified"""
         try:
-            # First, get the current position to fill in required fields that aren't provided
+            # Get current position to preserve values not provided
             current_position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
             current_dto: Optional[JobPositionDto] = self.query_bus.query(current_position_query)
 
@@ -289,88 +195,58 @@ class JobPositionController:
                     position_id=position_id
                 )
 
-            # Map employment type to contract type, use current if not provided
-            contract_type = current_dto.contract_type
-            if position_data.employment_type:
-                contract_type = self.EMPLOYMENT_TYPE_MAPPING.get(position_data.employment_type,
-                                                                 current_dto.contract_type)
+            # Convert visibility string to enum if provided (already normalized to lowercase by validator)
+            visibility = None
+            if position_data.visibility:
+                try:
+                    visibility = JobPositionVisibilityEnum(position_data.visibility.lower())
+                except (ValueError, AttributeError):
+                    pass  # Keep current value if invalid
 
-            # Map remote to work location type, use current if not provided
-            work_location_type = current_dto.work_location_type
-            if position_data.is_remote is not None:
-                work_location_type = WorkLocationTypeEnum.REMOTE if position_data.is_remote else WorkLocationTypeEnum.ON_SITE
-
-            # Create salary range if provided, otherwise use current
-            salary_range = current_dto.salary_range
-            if position_data.salary_min is not None and position_data.salary_max is not None:
-                salary_range = self._create_salary_range(
-                    position_data.salary_min,
-                    position_data.salary_max,
-                    position_data.salary_currency or (
-                        current_dto.salary_range.currency if current_dto.salary_range else "USD")
-                )
-
-            # Map experience level to position level, use current if not provided
-            position_level = current_dto.position_level
-            if position_data.experience_level:
-                position_level = self._map_experience_level_to_position_level(
-                    position_data.experience_level) or current_dto.position_level
-
-            # Parse application deadline if provided
-            application_deadline = self._parse_application_deadline(
-                position_data.application_deadline) or current_dto.application_deadline
-
-            # Map job category if provided
-            job_category = current_dto.job_category
+            # Convert job_category string to enum if provided
+            job_category = None
             if position_data.job_category:
                 try:
                     job_category = JobCategoryEnum(position_data.job_category)
                 except ValueError:
                     pass  # Keep current value if invalid
 
-            # Parse languages if provided
-            languages_required = current_dto.languages_required or {}
-            if position_data.languages_required:
-                # Convert string dict to enum dict
-                languages_required = self._convert_languages_to_enums(
-                    position_data.languages_required) or current_dto.languages_required or {}
+            # Convert workflow and stage IDs to Value Objects if provided
+            job_position_workflow_id = None
+            if position_data.job_position_workflow_id:
+                job_position_workflow_id = JobPositionWorkflowId.from_string(position_data.job_position_workflow_id)
+            elif current_dto.job_position_workflow_id:
+                job_position_workflow_id = JobPositionWorkflowId.from_string(current_dto.job_position_workflow_id)
 
-            # Parse desired roles if provided
-            desired_roles = current_dto.desired_roles
-            if position_data.desired_roles:
-                # Convert string list to enum list
-                desired_roles = self._convert_roles_to_enums(position_data.desired_roles) or current_dto.desired_roles
+            stage_id = None
+            if position_data.stage_id:
+                stage_id = StageId.from_string(position_data.stage_id)
+            elif current_dto.stage_id:
+                stage_id = StageId.from_string(current_dto.stage_id)
+
+            # Merge custom_fields_values if provided
+            custom_fields_values = position_data.custom_fields_values
+            if custom_fields_values and current_dto.custom_fields_values:
+                # Merge new values into existing
+                merged = current_dto.custom_fields_values.copy()
+                merged.update(custom_fields_values)
+                custom_fields_values = merged
+            elif not custom_fields_values:
+                custom_fields_values = current_dto.custom_fields_values
 
             command = UpdateJobPositionCommand(
                 id=JobPositionId.from_string(position_id),
-                workflow_id=position_data.workflow_id if position_data.workflow_id is not None else current_dto.workflow_id,
-                title=position_data.title or current_dto.title,
+                job_position_workflow_id=job_position_workflow_id,
+                stage_id=stage_id,
+                phase_workflows=position_data.phase_workflows if position_data.phase_workflows is not None else current_dto.phase_workflows,
+                custom_fields_values=custom_fields_values,
+                title=position_data.title if position_data.title else current_dto.title,
                 description=position_data.description if position_data.description is not None else current_dto.description,
-                location=position_data.location if position_data.location is not None else current_dto.location,
-                work_location_type=work_location_type,
-                salary_range=salary_range,
-                contract_type=contract_type,
-                requirements={
-                    "requirements": position_data.requirements} if position_data.requirements is not None else current_dto.requirements or {},
                 job_category=job_category,
-                position_level=position_level,
-                number_of_openings=position_data.number_of_openings
-                if position_data.number_of_openings is not None else current_dto.number_of_openings,
-                application_instructions=current_dto.application_instructions,
-                benefits=position_data.benefits if position_data.benefits is not None else current_dto.benefits or [],
-                working_hours=position_data.working_hours if position_data.working_hours is not None else current_dto.working_hours,
-                travel_required=position_data.travel_required if position_data.travel_required is not None else current_dto.travel_required,
-                languages_required=languages_required,
-                visa_sponsorship=position_data.visa_sponsorship if position_data.visa_sponsorship is not None else current_dto.visa_sponsorship,
-                contact_person=position_data.contact_person if position_data.contact_person is not None else current_dto.contact_person,
-                department=position_data.department if position_data.department is not None else current_dto.department,
-                reports_to=position_data.reports_to if position_data.reports_to is not None else current_dto.reports_to,
-                desired_roles=desired_roles,
-                open_at=current_dto.open_at,
-                application_deadline=application_deadline,
-                skills=position_data.skills if position_data.skills is not None else current_dto.skills or [],
-                application_url=position_data.application_url if position_data.application_url is not None else current_dto.application_url,
-                application_email=position_data.application_email if position_data.application_email is not None else current_dto.application_email
+                open_at=position_data.open_at if position_data.open_at is not None else current_dto.open_at,
+                application_deadline=position_data.application_deadline if position_data.application_deadline is not None else current_dto.application_deadline,
+                visibility=visibility,
+                public_slug=position_data.public_slug if position_data.public_slug is not None else current_dto.public_slug
             )
 
             self.command_bus.dispatch(command)
@@ -407,102 +283,5 @@ class JobPositionController:
                 message=f"Failed to delete position: {str(e)}"
             )
 
-    def activate_position(self, position_id: str) -> JobPositionActionResponse:
-        """Activate a job position (changes status from DRAFT to ACTIVE)"""
-        try:
-            command = ActivateJobPositionCommand(id=JobPositionId.from_string(position_id))
-            self.command_bus.dispatch(command)
-
-            return JobPositionActionResponse(
-                success=True,
-                message="Position activated successfully",
-                position_id=position_id
-            )
-
-        except Exception as e:
-            logger.error(f"Error activating position {position_id}: {str(e)}")
-            return JobPositionActionResponse(
-                success=False,
-                message=f"Failed to activate position: {str(e)}",
-                position_id=position_id
-            )
-
-    def pause_position(self, position_id: str) -> JobPositionActionResponse:
-        """Pause a job position (changes status from ACTIVE to PAUSED)"""
-        try:
-            command = PauseJobPositionCommand(id=JobPositionId.from_string(position_id))
-            self.command_bus.dispatch(command)
-
-            return JobPositionActionResponse(
-                success=True,
-                message="Position paused successfully",
-                position_id=position_id
-            )
-
-        except Exception as e:
-            logger.error(f"Error pausing position {position_id}: {str(e)}")
-            return JobPositionActionResponse(
-                success=False,
-                message=f"Failed to pause position: {str(e)}",
-                position_id=position_id
-            )
-
-    def resume_position(self, position_id: str) -> JobPositionActionResponse:
-        """Resume a paused job position (changes status from PAUSED to ACTIVE)"""
-        try:
-            command = ResumeJobPositionCommand(id=JobPositionId.from_string(position_id))
-            self.command_bus.dispatch(command)
-
-            return JobPositionActionResponse(
-                success=True,
-                message="Position resumed successfully",
-                position_id=position_id
-            )
-
-        except Exception as e:
-            logger.error(f"Error resuming position {position_id}: {str(e)}")
-            return JobPositionActionResponse(
-                success=False,
-                message=f"Failed to resume position: {str(e)}",
-                position_id=position_id
-            )
-
-    def close_position(self, position_id: str) -> JobPositionActionResponse:
-        """Close a job position (changes status to CLOSED)"""
-        try:
-            command = CloseJobPositionCommand(id=JobPositionId.from_string(position_id))
-            self.command_bus.dispatch(command)
-
-            return JobPositionActionResponse(
-                success=True,
-                message="Position closed successfully",
-                position_id=position_id
-            )
-
-        except Exception as e:
-            logger.error(f"Error closing position {position_id}: {str(e)}")
-            return JobPositionActionResponse(
-                success=False,
-                message=f"Failed to close position: {str(e)}",
-                position_id=position_id
-            )
-
-    def archive_position(self, position_id: str) -> JobPositionActionResponse:
-        """Archive a job position (changes status to ARCHIVED)"""
-        try:
-            command = ArchiveJobPositionCommand(id=JobPositionId.from_string(position_id))
-            self.command_bus.dispatch(command)
-
-            return JobPositionActionResponse(
-                success=True,
-                message="Position archived successfully",
-                position_id=position_id
-            )
-
-        except Exception as e:
-            logger.error(f"Error archiving position {position_id}: {str(e)}")
-            return JobPositionActionResponse(
-                success=False,
-                message=f"Failed to archive position: {str(e)}",
-                position_id=position_id
-            )
+# Status management methods (activate, pause, resume, close, archive) have been removed.
+# Use JobPositionWorkflowController.move_position_to_stage() instead.

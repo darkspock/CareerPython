@@ -1,62 +1,45 @@
 """
 Public Position Schemas
-Phase 10: Response schemas for public job positions
+Phase 10: Response schemas for public job positions - simplified
 """
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date
 
-from src.job_position.application.queries.job_position_dto import JobPositionDto
+from adapters.http.admin.schemas.job_position import JobPositionPublicResponse
 
 
 class PublicPositionResponse(BaseModel):
-    """Response schema for public job position"""
+    """Response schema for public job position - only visible fields for candidates"""
     id: str
     title: str
     description: Optional[str] = None
-    requirements: Optional[str] = None
-    responsibilities: Optional[str] = None
-    location: Optional[str] = None
-    is_remote: bool = False
-    salary_range_min: Optional[float] = None
-    salary_range_max: Optional[float] = None
-    employment_type: Optional[str] = None
-    experience_level: Optional[str] = None
-    department: Optional[str] = None
+    job_category: str
+    open_at: Optional[datetime] = None
+    application_deadline: Optional[date] = None  # Changed to date to match JobPositionPublicResponse
     public_slug: Optional[str] = None
+    # Only visible custom fields (filtered by workflow/stage configuration)
+    visible_fields: Dict[str, Any] = {}
     created_at: datetime
-
-    # Company info (if needed in future)
     company_id: str
 
     class Config:
         from_attributes = True
 
     @classmethod
-    def from_dto(cls, dto: JobPositionDto) -> "PublicPositionResponse":
-        """Convert DTO to response schema"""
-        # Convert requirements dict to string if present
-        requirements_str = None
-        if dto.requirements:
-            # Join requirements into a readable string
-            requirements_str = "\n".join([f"{k}: {v}" for k, v in dto.requirements.items()])
-
+    def from_public_response(cls, public_response: JobPositionPublicResponse) -> "PublicPositionResponse":
+        """Convert JobPositionPublicResponse to PublicPositionResponse"""
         return cls(
-            id=dto.id.value,
-            title=dto.title,
-            description=dto.description,
-            requirements=requirements_str,
-            responsibilities=None,  # Not available in current DTO
-            location=dto.location,
-            is_remote=(dto.work_location_type.value == "REMOTE") if dto.work_location_type else False,
-            salary_range_min=dto.salary_range.min_salary if dto.salary_range else None,
-            salary_range_max=dto.salary_range.max_salary if dto.salary_range else None,
-            employment_type=dto.employment_type.value if dto.employment_type else None,
-            experience_level=dto.position_level.value if dto.position_level else None,
-            department=dto.department,
-            public_slug=dto.public_slug,
-            created_at=dto.created_at if dto.created_at else datetime.now(),
-            company_id=dto.company_id.value
+            id=public_response.id,
+            title=public_response.title,
+            description=public_response.description,
+            job_category=public_response.job_category,
+            open_at=public_response.open_at,
+            application_deadline=public_response.application_deadline,
+            public_slug=public_response.public_slug,
+            visible_fields=public_response.visible_fields,
+            created_at=public_response.created_at if public_response.created_at else datetime.now(),
+            company_id=public_response.company_id
         )
 
 

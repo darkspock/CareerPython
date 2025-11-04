@@ -71,6 +71,9 @@ import WorkflowAdvancedConfigPage from './pages/company/WorkflowAdvancedConfigPa
 import CompanySettingsPage from './pages/company/CompanySettingsPage';
 import CompanyRolesPage from './pages/company/CompanyRolesPage';
 import PositionsListPage from './pages/company/PositionsListPage';
+import JobPositionWorkflowsSettingsPage from './pages/company/JobPositionWorkflowsSettingsPage';
+import CreateJobPositionWorkflowPage from './pages/company/CreateJobPositionWorkflowPage';
+import EditJobPositionWorkflowPage from './pages/company/EditJobPositionWorkflowPage';
 import WorkflowBoardPage from './pages/company/WorkflowBoardPage';
 import CreatePositionPage from './pages/company/CreatePositionPage';
 import CreateWorkflowPage from './pages/company/CreateWorkflowPage';
@@ -230,6 +233,9 @@ function App() {
                           <Route path="settings/edit" element={<EditCompanyPage />} />
                           <Route path="settings/workflows" element={<WorkflowsSettingsPage />} />
                           <Route path="settings/workflows/create" element={<CreateWorkflowPage />} />
+                          <Route path="settings/job-position-workflows" element={<JobPositionWorkflowsSettingsPage />} />
+                          <Route path="settings/job-position-workflows/create" element={<CreateJobPositionWorkflowPage />} />
+                          <Route path="settings/job-position-workflows/:workflowId/edit" element={<EditJobPositionWorkflowPage />} />
                           <Route path="settings/phases" element={<PhasesPage />} />
                           <Route path="settings/roles" element={<CompanyRolesPage />} />
                           <Route path="users" element={<UsersManagementPage />} />

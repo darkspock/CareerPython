@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Workflow, Users, Settings, Layers, RotateCcw, Building2, FileText, UserCog } from 'lucide-react';
+import { Workflow, Users, Settings, Layers, RotateCcw, Building2, FileText, UserCog, Briefcase } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 
 export default function CompanySettingsPage() {
@@ -81,6 +81,13 @@ export default function CompanySettingsPage() {
       icon: UserCog,
       path: '/company/users',
       color: 'orange',
+    },
+    {
+      title: 'Job Position Workflows',
+      description: 'Gestiona workflows para posiciones de trabajo',
+      icon: Briefcase,
+      path: '/company/settings/job-position-workflows',
+      color: 'indigo',
     },
   ];
 

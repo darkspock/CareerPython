@@ -5,7 +5,7 @@ Phase 10: Get a single public position by slug or ID
 from dataclasses import dataclass
 
 from src.job_position.application.queries.job_position_dto import JobPositionDto
-from src.job_position.domain.enums import JobPositionStatusEnum
+from src.job_position.domain.enums import JobPositionVisibilityEnum
 from src.job_position.domain.exceptions import JobPositionNotFoundError
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
 from src.shared.application.query_bus import Query, QueryHandler
@@ -27,7 +27,7 @@ class GetPublicJobPositionQueryHandler(QueryHandler[GetPublicJobPositionQuery, J
         """
         Handle query for a single public job position
         First tries to find by public_slug, then by ID
-        Only returns positions where is_public=True and status=ACTIVE
+        Only returns positions where visibility=PUBLIC
         """
         job_position = None
 
@@ -49,13 +49,14 @@ class GetPublicJobPositionQueryHandler(QueryHandler[GetPublicJobPositionQuery, J
                     f"Public job position not found with slug or ID: {query.slug_or_id}"
                 )
 
-        # Verify position is not None and is public and open
+        # Verify position is not None and is public
         if job_position is None:
             raise JobPositionNotFoundError(
                 f"Public job position not found with slug or ID: {query.slug_or_id}"
             )
 
-        if not job_position.is_public or job_position.status != JobPositionStatusEnum.ACTIVE:
+        # Check visibility
+        if job_position.visibility != JobPositionVisibilityEnum.PUBLIC:
             raise JobPositionNotFoundError(
                 f"Job position {query.slug_or_id} is not publicly available"
             )

@@ -17,7 +17,6 @@ class JobPositionWorkflowModel(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     company_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    workflow_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     default_view: Mapped[str] = mapped_column(String(20), nullable=False, default="kanban")
     stages: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)  # List of WorkflowStage as JSON
     custom_fields_config: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
@@ -25,5 +24,5 @@ class JobPositionWorkflowModel(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def __repr__(self) -> str:
-        return f"<JobPositionWorkflowModel(id={self.id}, name={self.name}, workflow_type={self.workflow_type})>"
+        return f"<JobPositionWorkflowModel(id={self.id}, name={self.name})>"
 
