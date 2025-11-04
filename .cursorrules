@@ -11,11 +11,21 @@ Al implementar un nuevo módulo o feature en el sistema, seguir estrictamente es
 1. **Enums**: Crear todos los enums necesarios en `domain/enums/`
    - Usar `str, Enum` como base
    - Documentar cada valor
+   - ⚠️ **REGLA CRÍTICA**: Los enums DEBEN terminar con `Enum`:
+     * ✅ `class ViewTypeEnum(str, Enum):`
+     * ✅ `class WorkflowTypeEnum(str, Enum):`
+     * ✅ `class CommentReviewStatusEnum(str, Enum):`
+     * ❌ `class ViewType(str, Enum):` (sin sufijo Enum - INCORRECTO)
 
 2. **Value Objects**: Crear value objects en `domain/value_objects/`
    - Inmutables
    - Con validaciones propias
    - Métodos de comparación
+   - ⚠️ **REGLA CRÍTICA**: Los Value Objects de IDs DEBEN heredar de `BaseId`:
+     * ✅ `class CompanyId(BaseId): value: str`
+     * ✅ `class JobPositionWorkflowId(BaseId): value: str`
+     * ❌ `class CompanyId:` (sin heredar BaseId - INCORRECTO)
+     * `BaseId` proporciona `generate()`, `from_string()`, `__str__()`, `__eq__()`, `__hash__()`
 
 3. **Entidades**: Crear entidades en `domain/entities/`
    - Constructor con todos los parámetros requeridos (sin valores por defecto)
@@ -205,6 +215,8 @@ Entity → Repository → DTO → Mapper → Response
 - Responses: `CompanyResponse`, `CompanyListResponse`
 - Controllers: `CompanyController`
 - Routers: `company_router`
+- **Enums**: DEBEN terminar con `Enum`: `ViewTypeEnum`, `WorkflowTypeEnum`, `CommentReviewStatusEnum`
+- **Value Object IDs**: DEBEN heredar de `BaseId`: `CompanyId(BaseId)`, `JobPositionWorkflowId(BaseId)`
 
 ### Testing
 Cada fase debe tener tests:

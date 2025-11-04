@@ -31,7 +31,7 @@ Ubicación: `src/{module}/domain/enums/`
 ```python
 from enum import Enum
 
-class CompanyStatus(str, Enum):
+class CompanyStatusEnum(str, Enum):
     """Estados de una empresa"""
     ACTIVE = "active"
     SUSPENDED = "suspended"
@@ -40,6 +40,10 @@ class CompanyStatus(str, Enum):
 
 **Características**:
 - Heredar de `str, Enum`
+- **⚠️ REGLA CRÍTICA**: Los enums DEBEN terminar con `Enum`:
+  * ✅ `class ViewTypeEnum(str, Enum):`
+  * ✅ `class WorkflowTypeEnum(str, Enum):`
+  * ❌ `class ViewType(str, Enum):` (sin sufijo Enum - INCORRECTO)
 - Documentar cada enum
 - Valores en minúsculas con underscores
 
@@ -49,25 +53,28 @@ Ubicación: `src/{module}/domain/value_objects/`
 
 ```python
 from dataclasses import dataclass
+from src.shared.domain.value_objects.base_id import BaseId
 
 @dataclass(frozen=True)
-class CompanyId:
+class CompanyId(BaseId):
     """Identificador único de empresa"""
     value: str
-
-    def __post_init__(self):
-        if not self.value:
-            raise ValueError("CompanyId no puede estar vacío")
-
-    def __str__(self) -> str:
-        return self.value
 ```
 
 **Características**:
 - Inmutables (`frozen=True`)
+- **⚠️ REGLA CRÍTICA**: Los Value Objects de IDs DEBEN heredar de `BaseId`:
+  * ✅ `class CompanyId(BaseId): value: str`
+  * ✅ `class JobPositionWorkflowId(BaseId): value: str`
+  * ❌ `class CompanyId:` (sin heredar BaseId - INCORRECTO)
+  * `BaseId` proporciona automáticamente:
+    - `generate()` - Genera nuevo ID con ULID
+    - `from_string()` - Crea desde string
+    - `from_string_or_null()` - Crea desde string o None
+    - `__str__()`, `__eq__()`, `__hash__()` - Operadores estándar
 - Encapsulan validaciones
 - Representan conceptos del dominio
-- Métodos de comparación y conversión
+- Métodos de comparación y conversión provistos por `BaseId`
 
 #### 1.3. Entidades
 

@@ -7,4 +7,3 @@ class JobPositionStatusEnum(enum.Enum):
     ACTIVE = "active"
     PAUSED = "paused"
     CLOSED = "closed"
-    ARCHIVED = "archived"

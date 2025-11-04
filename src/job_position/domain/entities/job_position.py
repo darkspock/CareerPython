@@ -11,6 +11,8 @@ from src.job_position.domain.enums.position_level_enum import JobPositionLevelEn
 from src.job_position.domain.exceptions.job_position_exceptions import JobPositionValidationError
 from src.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.job_position.domain.value_objects.salary_range import SalaryRange
+from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.job_position.domain.value_objects.stage_id import StageId
 from src.shared.domain.enums.job_category import JobCategoryEnum
 
 
@@ -20,8 +22,11 @@ class JobPosition:
     id: JobPositionId
     title: str
     company_id: CompanyId
-    workflow_id: Optional[str]  # Legacy/default workflow
+    workflow_id: Optional[str]  # Legacy/default workflow (deprecated, use job_position_workflow_id)
+    job_position_workflow_id: Optional[JobPositionWorkflowId]  # New workflow system
+    stage_id: Optional[StageId]  # Current stage in workflow
     phase_workflows: Optional[Dict[str, str]]  # Phase 12.8: phase_id -> workflow_id mapping
+    custom_fields_values: Dict[str, Any]  # Custom field values (JSON)
     description: Optional[str]
     location: Optional[str]
     employment_type: Optional[EmploymentType]
@@ -41,7 +46,6 @@ class JobPosition:
     contact_person: Optional[str]
     department: Optional[str]
     reports_to: Optional[str]
-    status: JobPositionStatusEnum
     desired_roles: Optional[List[PositionRoleEnum]]
     open_at: Optional[datetime]
     application_deadline: Optional[date]
@@ -110,71 +114,48 @@ class JobPosition:
 
         return unique_strings
 
-    def activate(self) -> None:
-        """Activate the job position (changes status from DRAFT to ACTIVE)"""
-        if self.status != JobPositionStatusEnum.DRAFT:
-            raise JobPositionValidationError("Only draft positions can be activated")
+    def get_status(self) -> JobPositionStatusEnum:
+        """
+        Get the status from the current stage.
         
-        # Validate required fields for activation
-        if not self.description:
-            raise JobPositionValidationError("Description is required for activation")
+        The status is derived from the stage's status_mapping.
+        If no workflow or stage is assigned, returns DRAFT as default.
         
-        self.status = JobPositionStatusEnum.ACTIVE
+        Returns:
+            JobPositionStatusEnum: The status derived from the current stage
+        """
+        # TODO: This will be implemented when we have access to the workflow repository
+        # to get the stage and its status_mapping. For now, return DRAFT as default.
+        # This method should be called from the application layer where we have access
+        # to the workflow repository.
+        return JobPositionStatusEnum.DRAFT
+
+    def move_to_stage(self, stage_id: StageId) -> None:
+        """
+        Move the job position to a new stage.
+        
+        Args:
+            stage_id: The new stage ID
+            
+        Raises:
+            JobPositionValidationError: If no workflow is assigned
+        """
+        if not self.job_position_workflow_id:
+            raise JobPositionValidationError("Cannot move to stage without an assigned workflow")
+        
+        self.stage_id = stage_id
         self.updated_at = datetime.utcnow()
-
-    def pause(self) -> None:
-        """Pause the job position (only from ACTIVE)"""
-        if self.status != JobPositionStatusEnum.ACTIVE:
-            raise JobPositionValidationError("Only active positions can be paused")
-        self.status = JobPositionStatusEnum.PAUSED
-        self.updated_at = datetime.utcnow()
-
-    def resume(self) -> None:
-        """Resume a paused job position (changes from PAUSED to ACTIVE)"""
-        if self.status != JobPositionStatusEnum.PAUSED:
-            raise JobPositionValidationError("Only paused positions can be resumed")
-        self.status = JobPositionStatusEnum.ACTIVE
-        self.updated_at = datetime.utcnow()
-
-    def close(self) -> None:
-        """Close the job position (can be closed from any state except ARCHIVED)"""
-        if self.status == JobPositionStatusEnum.ARCHIVED:
-            raise JobPositionValidationError("Archived positions cannot be closed")
-        if self.status == JobPositionStatusEnum.CLOSED:
-            return
-        self.status = JobPositionStatusEnum.CLOSED
-        self.updated_at = datetime.utcnow()
-
-    def archive(self) -> None:
-        """Archive the job position (can only be archived from CLOSED or PAUSED)"""
-        if self.status not in [JobPositionStatusEnum.CLOSED, JobPositionStatusEnum.PAUSED]:
-            raise JobPositionValidationError("Only closed or paused positions can be archived")
-        self.status = JobPositionStatusEnum.ARCHIVED
-        self.updated_at = datetime.utcnow()
-
-    def is_draft(self) -> bool:
-        """Check if job position is in draft state"""
-        return self.status == JobPositionStatusEnum.DRAFT
-
-    def is_active(self) -> bool:
-        """Check if job position is active"""
-        return self.status == JobPositionStatusEnum.ACTIVE
 
     def can_receive_applications(self) -> bool:
-        """Check if job position can receive applications"""
-        return self.status == JobPositionStatusEnum.ACTIVE
-
-    def is_paused(self) -> bool:
-        """Check if job position is paused"""
-        return self.status == JobPositionStatusEnum.PAUSED
-
-    def is_closed(self) -> bool:
-        """Check if job position is closed"""
-        return self.status == JobPositionStatusEnum.CLOSED
-
-    def is_archived(self) -> bool:
-        """Check if job position is archived"""
-        return self.status == JobPositionStatusEnum.ARCHIVED
+        """
+        Check if job position can receive applications.
+        
+        This is determined by the stage's status_mapping being ACTIVE.
+        TODO: This will need access to the workflow repository to check the stage.
+        """
+        # TODO: Implement when we have access to workflow repository
+        # Check if current stage's status_mapping is ACTIVE
+        return False
 
     def get_workflow_for_phase(self, phase_id: str) -> Optional[str]:
         """Get the workflow ID configured for a specific phase
@@ -282,7 +263,10 @@ class JobPosition:
             title: str,
             company_id: CompanyId,
             workflow_id: Optional[str] = None,
+            job_position_workflow_id: Optional[JobPositionWorkflowId] = None,
+            stage_id: Optional[StageId] = None,
             phase_workflows: Optional[Dict[str, str]] = None,
+            custom_fields_values: Optional[Dict[str, Any]] = None,
             description: Optional[str] = None,
             location: Optional[str] = None,
             employment_type: Optional[EmploymentType] = None,
@@ -319,7 +303,10 @@ class JobPosition:
             title=title,
             company_id=company_id,
             workflow_id=workflow_id,
+            job_position_workflow_id=job_position_workflow_id,
+            stage_id=stage_id,
             phase_workflows=phase_workflows or {},
+            custom_fields_values=custom_fields_values or {},
             description=description,
             location=location,
             employment_type=employment_type,
@@ -339,7 +326,6 @@ class JobPosition:
             contact_person=contact_person,
             department=department,
             reports_to=reports_to,
-            status=JobPositionStatusEnum.DRAFT,
             desired_roles=desired_roles,
             open_at=open_at,
             application_deadline=application_deadline,
@@ -359,7 +345,10 @@ class JobPosition:
             title: str,
             company_id: CompanyId,
             workflow_id: Optional[str],
+            job_position_workflow_id: Optional[JobPositionWorkflowId],
+            stage_id: Optional[StageId],
             phase_workflows: Optional[Dict[str, str]],
+            custom_fields_values: Optional[Dict[str, Any]],
             description: Optional[str],
             location: Optional[str],
             employment_type: Optional[EmploymentType],
@@ -379,7 +368,6 @@ class JobPosition:
             contact_person: Optional[str],
             department: Optional[str],
             reports_to: Optional[str],
-            status: JobPositionStatusEnum,
             desired_roles: Optional[List[PositionRoleEnum]],
             open_at: Optional[datetime],
             application_deadline: Optional[date],
@@ -397,7 +385,10 @@ class JobPosition:
             title=title,
             company_id=company_id,
             workflow_id=workflow_id,
-            phase_workflows=phase_workflows,
+            job_position_workflow_id=job_position_workflow_id,
+            stage_id=stage_id,
+            phase_workflows=phase_workflows or {},
+            custom_fields_values=custom_fields_values or {},
             description=description,
             location=location,
             employment_type=employment_type,
@@ -417,7 +408,6 @@ class JobPosition:
             contact_person=contact_person,
             department=department,
             reports_to=reports_to,
-            status=status,
             desired_roles=desired_roles,
             open_at=open_at,
             application_deadline=application_deadline,

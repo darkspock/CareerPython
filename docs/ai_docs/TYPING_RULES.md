@@ -101,15 +101,24 @@ Al crear un nuevo Command o Query:
 ## 🔍 Ejemplos de Value Objects comunes
 
 ```python
-# IDs
+# IDs - DEBEN heredar de BaseId
 from src.company.domain.value_objects import CompanyId, CompanyUserId
 from src.user.domain.value_objects.UserId import UserId
+from src.job_position.domain.value_objects import JobPositionWorkflowId, StageId
+
+# Ejemplo de definición correcta:
+from src.shared.domain.value_objects.base_id import BaseId
+
+@dataclass(frozen=True)
+class CompanyId(BaseId):
+    value: str
 
 # Tokens
 from src.company.domain.value_objects.invitation_token import InvitationToken
 
-# Enums (NO son value objects, pero se importan del dominio)
-from src.company.domain.enums import CompanyUserRole
+# Enums - DEBEN terminar con Enum
+from src.company.domain.enums import CompanyUserRole  # Enum existente
+from src.job_position.domain.enums import ViewTypeEnum, WorkflowTypeEnum  # Nuevos enums
 ```
 
 ## 💡 Razones

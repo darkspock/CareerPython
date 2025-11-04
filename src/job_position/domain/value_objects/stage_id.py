@@ -4,5 +4,7 @@ from src.shared.domain.value_objects.base_id import BaseId
 
 
 @dataclass(frozen=True)
-class JobPositionId(BaseId):
+class StageId(BaseId):
+    """Value object for job position stage ID"""
     value: str
+
