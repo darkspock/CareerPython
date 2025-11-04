@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -32,6 +32,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     extensions: [
       StarterKit,
       Image.configure({
+        inline: true,
+        allowBase64: true, // Critical for base64 images
         HTMLAttributes: {
           class: 'wysiwyg-image',
         },
@@ -49,9 +51,142 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     content: editorValue,
     editable: !disabled,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+      // Log to verify base64 images are being saved
+      if (html.includes('data:image')) {
+        console.log('HTML contains base64 image, saving...');
+      }
+      onChange(html);
+    },
+    editorProps: {
+      handlePaste: (view, event, slice) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        
+        // Check if any item is an image
+        const hasImage = items.some(item => item.type.indexOf('image') === 0);
+        
+        if (hasImage) {
+          event.preventDefault();
+          
+          items.forEach(item => {
+            if (item.type.indexOf('image') === 0) {
+              const file = item.getAsFile();
+              
+              if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = (readerEvent) => {
+                  const base64 = readerEvent.target?.result;
+                  
+                  if (typeof base64 === 'string') {
+                    // Get current selection position
+                    const { from } = view.state.selection;
+                    
+                    // Insert image at cursor position using the editor
+                    if (editor) {
+                      editor.chain()
+                        .focus()
+                        .setImage({ src: base64 })
+                        .run();
+                    }
+                  }
+                };
+                
+                reader.onerror = (error) => {
+                  console.error('Error reading image:', error);
+                };
+                
+                // Convert to base64
+                reader.readAsDataURL(file);
+              }
+            }
+          });
+          
+          return true; // Prevent default paste behavior
+        }
+        
+        return false; // Let Tiptap handle non-image paste events
+      },
     },
   });
+
+  // Update editor content when value/content changes externally (e.g., when loading from database)
+  useEffect(() => {
+    if (!editor || !editorValue) return;
+    
+    const currentContent = editor.getHTML();
+    const newContent = editorValue;
+    
+    // Only update if content actually changed (avoid infinite loops)
+    // Use a more lenient comparison for base64 images which might have whitespace differences
+    const normalizedCurrent = currentContent.replace(/\s+/g, ' ').trim();
+    const normalizedNew = newContent.replace(/\s+/g, ' ').trim();
+    
+    if (normalizedCurrent !== normalizedNew) {
+      // Log to verify base64 images are being loaded
+      if (newContent.includes('data:image')) {
+        console.log('Loading HTML with base64 image...');
+      }
+      // Use setContent with parseOptions to preserve all HTML including base64 images
+      editor.commands.setContent(newContent, false);
+      
+      // Verify the image was loaded
+      setTimeout(() => {
+        const loadedHtml = editor.getHTML();
+        if (newContent.includes('data:image') && !loadedHtml.includes('data:image')) {
+          console.error('Base64 image was lost during load!');
+          console.log('Original:', newContent.substring(0, 200));
+          console.log('Loaded:', loadedHtml.substring(0, 200));
+        }
+      }, 100);
+    }
+  }, [editor, editorValue]);
+
+  // Add drag and drop support for images
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleDrop = (event: DragEvent) => {
+      event.preventDefault();
+      
+      const files = Array.from(event.dataTransfer?.files || []);
+      
+      files.forEach(file => {
+        if (file.type.indexOf('image') === 0) {
+          const reader = new FileReader();
+          
+          reader.onload = (e) => {
+            const base64 = e.target?.result;
+            
+            if (typeof base64 === 'string') {
+              // Get drop position
+              const coordinates = { left: event.clientX, top: event.clientY };
+              const pos = editor.view.posAtCoords(coordinates);
+              
+              if (pos) {
+                editor.chain()
+                  .focus()
+                  .insertContentAt(pos.pos, {
+                    type: 'image',
+                    attrs: { src: base64 },
+                  })
+                  .run();
+              }
+            }
+          };
+          
+          reader.readAsDataURL(file);
+        }
+      });
+    };
+
+    const editorElement = editor.view.dom;
+    editorElement.addEventListener('drop', handleDrop);
+
+    return () => {
+      editorElement.removeEventListener('drop', handleDrop);
+    };
+  }, [editor]);
 
   const setLink = useCallback(() => {
     const previousUrl = editor?.getAttributes('link').href;

@@ -2,6 +2,7 @@ import React from 'react';
 import { Edit3, Eye, Archive, Trash2, Star, FileText, Globe, GlobeLock } from 'lucide-react';
 import type { CompanyPage } from '../../types/companyPage';
 import { PageStatus, PageType, getPageTypeLabel, getPageStatusLabel, getPageStatusColor, normalizePageStatus } from '../../types/companyPage';
+import '../../components/common/WysiwygEditor.css';
 
 interface CompanyPageCardProps {
   page: CompanyPage;
@@ -67,9 +68,34 @@ export const CompanyPageCard: React.FC<CompanyPageCardProps> = ({
 
       {/* Content Preview */}
       <div className="mb-4">
-        <p className="text-sm text-gray-700 line-clamp-3">
-          {page.plain_text || 'Sin contenido...'}
-        </p>
+        {page.html_content ? (
+          <div 
+            className="prose prose-sm max-w-none wysiwyg-content"
+            style={{
+              maxHeight: '180px',
+              overflow: 'hidden',
+              position: 'relative'
+            }}
+          >
+            <div 
+              className="ProseMirror"
+              style={{
+                marginBottom: 0,
+                minHeight: 'auto',
+                fontSize: '0.875rem',
+                lineHeight: '1.5'
+              }}
+              dangerouslySetInnerHTML={{ __html: page.html_content }}
+            />
+            <div 
+              className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none"
+            />
+          </div>
+        ) : (
+          <p className="text-sm text-gray-700 line-clamp-3">
+            {page.plain_text || 'Sin contenido...'}
+          </p>
+        )}
         {page.meta_description && (
           <p className="text-xs text-gray-500 mt-2 italic">
             SEO: {page.meta_description}
