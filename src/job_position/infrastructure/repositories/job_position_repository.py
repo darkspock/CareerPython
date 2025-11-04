@@ -10,6 +10,8 @@ from src.job_position.domain.entities.job_position import JobPosition
 from src.job_position.domain.enums import JobPositionStatusEnum, WorkLocationTypeEnum, ContractTypeEnum
 from src.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
 from src.job_position.domain.value_objects import JobPositionId
+from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.job_position.domain.value_objects.stage_id import StageId
 from src.job_position.domain.value_objects.salary_range import SalaryRange
 from src.job_position.infrastructure.models.job_position_model import JobPositionModel
 from src.shared.domain.enums.job_category import JobCategoryEnum
@@ -72,11 +74,12 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             if company_id:
                 query = query.filter(JobPositionModel.company_id == company_id)
 
-            if status:
-                if isinstance(status, list):
-                    query = query.filter(JobPositionModel.status.in_(status))
-                else:
-                    query = query.filter(JobPositionModel.status == status)
+            # TODO: Filtering by status now requires access to workflow repository
+            # to get the stage's status_mapping. This will be implemented in Phase 3.
+            # if status:
+            #     # Filter by status would require joining with workflow_stages table
+            #     # or filtering by stage_id and checking stage.status_mapping
+            #     pass
 
             if job_category:
                 query = query.filter(JobPositionModel.job_category == job_category)
@@ -113,11 +116,15 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             return [self._create_entity_from_model(model) for model in job_position_models]
 
     def count_by_status(self, status: JobPositionStatusEnum) -> int:
-        """Count job positions by status"""
-        with self.database.get_session() as session:
-            return session.query(JobPositionModel).filter(
-                JobPositionModel.status == status
-            ).count()
+        """
+        Count job positions by status.
+        
+        TODO: This now requires access to workflow repository to check stage.status_mapping.
+        This will be implemented in Phase 3 when we have workflow repository access.
+        """
+        # For now, return 0 as status is no longer a direct field
+        # This will be properly implemented in Phase 3
+        return 0
 
     def count_total(self) -> int:
         """Count total job positions"""
@@ -133,13 +140,19 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             ).count()
 
     def count_active_by_company_id(self, company_id: str) -> int:
-        """Count active job positions by company ID"""
-        active_statuses = [JobPositionStatusEnum.ACTIVE]
+        """
+        Count active job positions by company ID.
+        
+        TODO: This now requires access to workflow repository to check if stage.status_mapping is ACTIVE.
+        This will be properly implemented in Phase 3.
+        For now, we count positions that have a workflow and stage assigned.
+        """
         with self.database.get_session() as session:
             return session.query(JobPositionModel).filter(
                 and_(
                     JobPositionModel.company_id == company_id,
-                    JobPositionModel.status.in_(active_statuses)
+                    JobPositionModel.job_position_workflow_id.isnot(None),
+                    JobPositionModel.stage_id.isnot(None)
                 )
             ).count()
 
@@ -205,12 +218,24 @@ class JobPositionRepository(JobPositionRepositoryInterface):
                     # Skip invalid enum values
                     continue
 
+        # Convert job_position_workflow_id and stage_id to Value Objects
+        job_position_workflow_id = None
+        if model.job_position_workflow_id:
+            job_position_workflow_id = JobPositionWorkflowId.from_string(model.job_position_workflow_id)
+        
+        stage_id = None
+        if model.stage_id:
+            stage_id = StageId.from_string(model.stage_id)
+
         return JobPosition._from_repository(
             id=JobPositionId.from_string(model.id),
             title=model.title,
             company_id=CompanyId.from_string(model.company_id),
             workflow_id=model.workflow_id,
+            job_position_workflow_id=job_position_workflow_id,
+            stage_id=stage_id,
             phase_workflows=model.phase_workflows,
+            custom_fields_values=model.custom_fields_values,
             description=model.description,
             location=model.location,
             employment_type=model.employment_type,
@@ -230,7 +255,6 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             contact_person=model.contact_person,
             department=model.department,
             reports_to=model.reports_to,
-            status=model.status,
             desired_roles=desired_roles,
             open_at=model.open_at,
             application_deadline=model.application_deadline,
@@ -271,7 +295,10 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             id=job_position.id.value,
             company_id=job_position.company_id.value,
             workflow_id=job_position.workflow_id,
+            job_position_workflow_id=str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None,
+            stage_id=str(job_position.stage_id) if job_position.stage_id else None,
             phase_workflows=job_position.phase_workflows,
+            custom_fields_values=job_position.custom_fields_values,
             title=job_position.title,
             description=job_position.description,
             location=job_position.location,
@@ -298,7 +325,6 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             skills=job_position.skills,
             application_url=job_position.application_url,
             application_email=job_position.application_email,
-            status=job_position.status,
             created_at=job_position.created_at or datetime.utcnow(),
             updated_at=job_position.updated_at or datetime.utcnow()
         )
@@ -328,7 +354,10 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             desired_roles_json = [role.value for role in job_position.desired_roles]
 
         model.workflow_id = job_position.workflow_id
+        model.job_position_workflow_id = str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None
+        model.stage_id = str(job_position.stage_id) if job_position.stage_id else None
         model.phase_workflows = job_position.phase_workflows
+        model.custom_fields_values = job_position.custom_fields_values
         model.title = job_position.title
         model.description = job_position.description
         model.location = job_position.location
@@ -355,5 +384,4 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         model.skills = job_position.skills
         model.application_url = job_position.application_url
         model.application_email = job_position.application_email
-        model.status = job_position.status
         model.updated_at = job_position.updated_at or datetime.utcnow()

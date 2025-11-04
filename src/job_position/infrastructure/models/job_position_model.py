@@ -21,8 +21,11 @@ class JobPositionModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     company_id: Mapped[str] = mapped_column(String, index=True)  # Removed ForeignKey
-    workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True)  # Legacy/default workflow
+    workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True)  # Legacy/default workflow (deprecated)
+    job_position_workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)  # New workflow system
+    stage_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)  # Current stage in workflow
     phase_workflows: Mapped[Optional[Dict[str, str]]] = mapped_column(JSON)  # Phase 12.8: phase_id -> workflow_id mapping
+    custom_fields_values: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)  # Custom field values
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text)  # Job description
     location: Mapped[Optional[str]] = mapped_column(String)  # Work location
@@ -55,10 +58,6 @@ class JobPositionModel(Base):
     application_email: Mapped[Optional[str]] = mapped_column(String)  # Email to apply
     is_public: Mapped[bool] = mapped_column(Boolean, default=False, index=True)  # Whether position is publicly visible
     public_slug: Mapped[Optional[str]] = mapped_column(String(255), unique=True, index=True)  # SEO-friendly URL slug
-    status: Mapped[JobPositionStatusEnum] = mapped_column(
-        Enum(JobPositionStatusEnum, values_callable=lambda x: [e.value for e in x]),
-        default=JobPositionStatusEnum.DRAFT
-    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
@@ -68,4 +67,4 @@ class JobPositionModel(Base):
         back_populates="job_position")
 
     def __repr__(self) -> str:
-        return f"<JobPositionModel(id={self.id}, title={self.title}, status={self.status})>"
+        return f"<JobPositionModel(id={self.id}, title={self.title}, workflow_id={self.job_position_workflow_id}, stage_id={self.stage_id})>"
