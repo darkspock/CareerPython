@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
-import type { JobPositionWorkflowStage } from '../../types/position';
 
 interface StageFormData {
   id: string;

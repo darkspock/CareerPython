@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User, LogOut, Globe, ChevronDown } from 'lucide-react';
+import { User, LogOut, Globe, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 
@@ -82,70 +82,64 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
   // const _currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div ref={menuRef}>
       {/* User Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className={`
+          flex items-center justify-between w-full gap-3 px-4 py-3 rounded-lg transition-colors
+          ${
+            isOpen
+              ? 'bg-blue-50 text-blue-700 font-medium'
+              : 'text-gray-700 hover:bg-gray-100'
+          }
+        `}
         aria-label="User settings menu"
       >
-        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium text-sm">
-          <User className="w-4 h-4" />
+        <div className="flex items-center gap-3">
+          <User className="w-5 h-5" />
+          <span>{t('company.userSettings.myAccount')}</span>
         </div>
-        <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        {isOpen ? (
+          <ChevronDown className="w-4 h-4" />
+        ) : (
+          <ChevronRight className="w-4 h-4" />
+        )}
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Submenu */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-[100]">
-          {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200">
-            <p className="text-sm font-medium text-gray-900">{t('company.userSettings.title')}</p>
-          </div>
-
+        <div className="ml-4 mt-1 space-y-1">
           {/* Language Selection */}
-          <div className="px-4 py-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Globe className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">{t('company.userSettings.language')}</span>
-            </div>
-            <div className="space-y-1">
-              {languages.map((language) => (
-                <button
-                  key={language.code}
-                  onClick={() => handleLanguageChange(language.code)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
-                    currentLanguage === language.code
-                      ? 'bg-blue-50 text-blue-600 font-medium'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="text-lg">{language.flag}</span>
-                  <span>{language.name}</span>
-                  {currentLanguage === language.code && (
-                    <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full"></div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-gray-200"></div>
+          {languages.map((language) => (
+            <button
+              key={language.code}
+              onClick={() => handleLanguageChange(language.code)}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm w-full
+                ${
+                  currentLanguage === language.code
+                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }
+              `}
+            >
+              <Globe className="w-4 h-4" />
+              <span>{language.name}</span>
+            </button>
+          ))}
 
           {/* Logout */}
-          <div className="px-4 py-2">
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                onLogout();
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>{t('company.userSettings.logout')}</span>
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onLogout();
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm w-full text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>{t('company.userSettings.logout')}</span>
+          </button>
         </div>
       )}
     </div>

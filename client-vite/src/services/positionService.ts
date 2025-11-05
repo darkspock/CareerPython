@@ -9,8 +9,7 @@ import type {
   UpdatePositionRequest,
   PositionListResponse,
   PositionActionResponse,
-  JobPositionWorkflow,
-  JobPositionWorkflowStage
+  JobPositionWorkflow
 } from '../types/position';
 
 export class PositionService {
@@ -244,6 +243,28 @@ export class PositionService {
       return response;
     } catch (error) {
       console.error(`Error updating workflow ${workflowId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Initialize default job position workflows
+   * Creates default workflows for managing job positions through stages
+   */
+  static async initializeDefaultWorkflows(companyId: string): Promise<JobPositionWorkflow[]> {
+    try {
+      const response = await api.authenticatedRequest<JobPositionWorkflow[]>(
+        `${this.WORKFLOW_BASE_PATH}/initialize?company_id=${companyId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error('Error initializing default workflows:', error);
       throw error;
     }
   }

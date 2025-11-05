@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { CreatePositionRequest, JobPositionWorkflow } from '../../types/position';
 import { PhaseWorkflowSelector } from '../../components/workflow';
@@ -134,7 +134,7 @@ export default function CreatePositionPage() {
         setLoadingWorkflow(true);
         const workflows = await PositionService.getWorkflows(companyId);
         if (workflows.length > 0) {
-          const defaultWorkflow = workflows.find(w => w.workflow_type === 'standard') || workflows[0];
+          const defaultWorkflow = workflows[0]; // Use the first workflow as default
           const fullWorkflow = await PositionService.getWorkflow(defaultWorkflow.id);
           setCurrentWorkflow(fullWorkflow);
           setFormData(prev => ({
@@ -353,7 +353,7 @@ export default function CreatePositionPage() {
               </label>
               <div className="border border-gray-300 rounded-lg overflow-hidden">
                 <WysiwygEditor
-                  value={formData.description}
+                  value={formData.description || ''}
                   onChange={(content) => setFormData(prev => ({ ...prev, description: content }))}
                   placeholder="Describe the role, responsibilities, and what you're looking for. You can use rich text formatting, add images, and create structured content..."
                   height={400}

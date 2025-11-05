@@ -171,25 +171,25 @@ export const usePositions = (options: UsePositionsOptions = {}): UsePositionsRet
 
   // DEPRECATED: These methods are deprecated - positions now use workflow stages
   // Use PositionService.moveToStage() instead
-  const activatePosition = useCallback(async (id: string) => {
+  const activatePosition = useCallback(async (_id: string) => {
     console.warn('activatePosition is deprecated. Use moveToStage with an active stage instead.');
     // TODO: Implement using moveToStage
     throw new Error('activatePosition is deprecated. Use workflow stages instead.');
   }, []);
 
-  const deactivatePosition = useCallback(async (id: string) => {
+  const deactivatePosition = useCallback(async (_id: string) => {
     console.warn('deactivatePosition is deprecated. Use moveToStage with a paused/closed stage instead.');
     // TODO: Implement using moveToStage
     throw new Error('deactivatePosition is deprecated. Use workflow stages instead.');
   }, []);
 
   // Bulk actions - DEPRECATED
-  const bulkActivate = useCallback(async (ids: string[]) => {
+  const bulkActivate = useCallback(async (_ids: string[]) => {
     console.warn('bulkActivate is deprecated. Use workflow stages instead.');
     throw new Error('bulkActivate is deprecated. Use workflow stages instead.');
   }, []);
 
-  const bulkDeactivate = useCallback(async (ids: string[]) => {
+  const bulkDeactivate = useCallback(async (_ids: string[]) => {
     console.warn('bulkDeactivate is deprecated. Use workflow stages instead.');
     throw new Error('bulkDeactivate is deprecated. Use workflow stages instead.');
   }, []);

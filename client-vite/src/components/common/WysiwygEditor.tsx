@@ -62,7 +62,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       onChange(html);
     },
     editorProps: {
-      handlePaste: (view, event, slice) => {
+      handlePaste: (_view, event) => {
         const items = Array.from(event.clipboardData?.items || []);
         
         // Check if any item is an image
@@ -82,9 +82,6 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
                   const base64 = readerEvent.target?.result;
                   
                   if (typeof base64 === 'string') {
-                    // Get current selection position
-                    const { from } = view.state.selection;
-                    
                     // Insert image at cursor position using the editor
                     if (editor) {
                       editor.chain()
@@ -130,8 +127,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       if (newContent.includes('data:image')) {
         console.log('Loading HTML with base64 image...');
       }
-      // Use setContent with parseOptions to preserve all HTML including base64 images
-      editor.commands.setContent(newContent, false);
+      // Use setContent to load HTML including base64 images
+      editor.commands.setContent(newContent);
       
       // Verify the image was loaded
       setTimeout(() => {

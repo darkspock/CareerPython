@@ -22,7 +22,7 @@ class JobPositionCreate(BaseModel):
     application_deadline: Optional[date] = Field(None, description="Application deadline")
     visibility: str = Field("hidden", description="Visibility level: hidden, internal, or public")
     public_slug: Optional[str] = Field(None, description="Public URL slug")
-
+    
     @field_validator('application_deadline', mode='before')
     @classmethod
     def validate_application_deadline(cls, v: Union[str, date, None]) -> Optional[date]:
@@ -32,6 +32,9 @@ class JobPositionCreate(BaseModel):
         if isinstance(v, str):
             if not v.strip():
                 return None
+            # Let Pydantic parse the string to date
+            return v  # type: ignore[return-value]
+        # If it's already a date object, return it
         return v
 
     @field_validator('visibility', mode='before')
@@ -40,10 +43,8 @@ class JobPositionCreate(BaseModel):
         """Normalize visibility to lowercase"""
         if v is None:
             return "hidden"
-        if isinstance(v, str):
-            # Convert to lowercase to match enum values
-            return v.lower()
-        return v
+        # Convert to lowercase to match enum values
+        return v.lower()
 
     class Config:
         use_enum_values = True
@@ -69,10 +70,8 @@ class JobPositionUpdate(BaseModel):
         """Normalize visibility to lowercase"""
         if v is None:
             return None
-        if isinstance(v, str):
-            # Convert to lowercase to match enum values
-            return v.lower()
-        return v
+        # Convert to lowercase to match enum values
+        return v.lower()
 
     @field_validator('application_deadline', mode='before')
     @classmethod
@@ -83,6 +82,9 @@ class JobPositionUpdate(BaseModel):
         if isinstance(v, str):
             if not v.strip():
                 return None
+            # Let Pydantic parse the string to date
+            return v  # type: ignore[return-value]
+        # If it's already a date object, return it
         return v
 
     class Config:

@@ -181,12 +181,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         # Convert visibility - handle migration from is_public if needed
         # Visibility is stored as string value, convert to enum
         if hasattr(model, 'visibility') and model.visibility:
-            if isinstance(model.visibility, str):
-                visibility = JobPositionVisibilityEnum(model.visibility.lower())
-            elif isinstance(model.visibility, JobPositionVisibilityEnum):
-                visibility = model.visibility
-            else:
-                visibility = JobPositionVisibilityEnum.HIDDEN
+            visibility = JobPositionVisibilityEnum(model.visibility.lower()) if isinstance(model.visibility, str) else model.visibility
         else:
             visibility = JobPositionVisibilityEnum.HIDDEN
         # TODO: Migration logic - if visibility doesn't exist but is_public does, convert it

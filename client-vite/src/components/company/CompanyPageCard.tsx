@@ -1,7 +1,7 @@
 import React from 'react';
-import { Edit3, Eye, Archive, Trash2, Star, FileText, Globe, GlobeLock } from 'lucide-react';
+import { Edit3, Eye, Archive, Trash2, Star, FileText, Globe } from 'lucide-react';
 import type { CompanyPage } from '../../types/companyPage';
-import { PageStatus, PageType, getPageTypeLabel, getPageStatusLabel, getPageStatusColor, normalizePageStatus } from '../../types/companyPage';
+import { PageStatus, getPageTypeLabel, getPageStatusLabel, getPageStatusColor, normalizePageStatus } from '../../types/companyPage';
 import '../../components/common/WysiwygEditor.css';
 
 interface CompanyPageCardProps {
@@ -37,8 +37,6 @@ export const CompanyPageCard: React.FC<CompanyPageCardProps> = ({
   const canPublish = normalizedStatus === PageStatus.DRAFT;
   const canArchive = normalizedStatus === PageStatus.PUBLISHED;
   const canSetDefault = normalizedStatus === PageStatus.PUBLISHED && !page.is_default;
-  const isArchived = normalizedStatus === PageStatus.ARCHIVED;
-  const isPublished = normalizedStatus === PageStatus.PUBLISHED;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">

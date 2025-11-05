@@ -45,12 +45,12 @@ export default function JobPositionWorkflowsSettingsPage() {
     }
   };
 
-  const handleDelete = async (workflowId: string) => {
+  const handleDelete = async (_workflowId: string) => {
     if (!confirm('Are you sure you want to delete this workflow?')) return;
 
     try {
       // TODO: Implement delete endpoint in PositionService
-      // await PositionService.deleteWorkflow(workflowId);
+      // await PositionService.deleteWorkflow(_workflowId);
       alert('Delete functionality will be implemented');
       loadWorkflows();
     } catch (err: any) {
@@ -64,6 +64,10 @@ export default function JobPositionWorkflowsSettingsPage() {
 
   const handleEditWorkflow = (workflowId: string) => {
     navigate(`/company/settings/job-position-workflows/${workflowId}/edit`);
+  };
+
+  const handleConfigureWorkflow = (workflowId: string) => {
+    navigate(`/company/settings/job-position-workflows/${workflowId}/configure`);
   };
 
   if (loading) {
@@ -155,6 +159,15 @@ export default function JobPositionWorkflowsSettingsPage() {
                     title="Edit workflow"
                   >
                     <Edit className="w-4 h-4 mx-auto" />
+                  </button>
+
+                  {/* Configure button */}
+                  <button
+                    onClick={() => handleConfigureWorkflow(workflow.id)}
+                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                    title="Configure custom fields"
+                  >
+                    <Settings className="w-4 h-4 mx-auto" />
                   </button>
 
                   {/* Delete button */}

@@ -1,19 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, MapPin, DollarSign, Users, Briefcase, Calendar, Mail, Workflow, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Workflow, Eye, EyeOff } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { Position, JobPositionWorkflow } from '../../types/position';
 import { 
-  getContractTypeLabel, 
-  getContractType,
   getStatusColorFromStage,
   getStatusLabelFromStage,
   getDepartment,
-  getLocation,
-  getNumberOfOpenings,
-  getSalaryRange,
-  getApplicationEmail,
-  getApplicationUrl,
   getRequirements,
   getBenefits,
   getSkills

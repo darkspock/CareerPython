@@ -466,7 +466,7 @@ export default function EditCompanyPagePage() {
                   </button>
                 )}
 
-                {PageStatus[page.status] === PageStatus.PUBLISHED && !page.is_default && (
+                {page.status === PageStatus.PUBLISHED && !page.is_default && (
                   <button
                     type="button"
                     onClick={handleSetDefault}

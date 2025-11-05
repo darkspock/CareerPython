@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { publicPositionService } from '../../services/publicPositionService';
 import type { Position } from '../../types/position';
+import { getLocation, getIsRemote, getEmploymentType, getSalaryRange, getExperienceLevel, getDepartment, getRequirements } from '../../types/position';
 
 export default function PublicPositionDetailPage() {
   const { slugOrId } = useParams<{ slugOrId: string }>();
@@ -56,27 +57,6 @@ export default function PublicPositionDetailPage() {
     }
   };
 
-  const getEmploymentTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      FULL_TIME: 'Full-time',
-      PART_TIME: 'Part-time',
-      CONTRACT: 'Contract',
-      TEMPORARY: 'Temporary',
-      INTERNSHIP: 'Internship'
-    };
-    return labels[type] || type;
-  };
-
-  const getExperienceLevelLabel = (level: string) => {
-    const labels: Record<string, string> = {
-      ENTRY: 'Entry Level',
-      INTERMEDIATE: 'Intermediate',
-      SENIOR: 'Senior',
-      LEAD: 'Lead',
-      EXECUTIVE: 'Executive'
-    };
-    return labels[level] || level;
-  };
 
   if (loading) {
     return (
@@ -141,41 +121,38 @@ export default function PublicPositionDetailPage() {
 
               {/* Quick Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {position.location && (
+                {getLocation(position) && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <MapPin className="w-5 h-5 text-gray-400" />
-                    <span>{position.location}</span>
-                    {position.is_remote && <span className="text-blue-600">(Remote)</span>}
+                    <span>{getLocation(position)}</span>
+                    {getIsRemote(position) && <span className="text-blue-600">(Remote)</span>}
                   </div>
                 )}
-                {position.employment_type && (
+                {getEmploymentType(position) && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <Clock className="w-5 h-5 text-gray-400" />
-                    <span>{getEmploymentTypeLabel(position.employment_type)}</span>
+                    <span>{getEmploymentType(position)}</span>
                   </div>
                 )}
-                {position.experience_level && (
+                {getExperienceLevel(position) && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <Briefcase className="w-5 h-5 text-gray-400" />
-                    <span>{getExperienceLevelLabel(position.experience_level)}</span>
+                    <span>{getExperienceLevel(position)}</span>
                   </div>
                 )}
-                {position.salary_range?.max_amount && (
+                {getSalaryRange(position) && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <DollarSign className="w-5 h-5 text-gray-400" />
-                    <span>
-                      {position.salary_range.min_amount && `$${position.salary_range.min_amount.toLocaleString()} - `}
-                      ${position.salary_range.max_amount.toLocaleString()}
-                    </span>
+                    <span>{String(getSalaryRange(position))}</span>
                   </div>
                 )}
               </div>
 
               {/* Tags */}
-              {position.department && (
+              {getDepartment(position) && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full">
-                    {position.department}
+                    {getDepartment(position)}
                   </span>
                 </div>
               )}
@@ -192,11 +169,11 @@ export default function PublicPositionDetailPage() {
             )}
 
             {/* Requirements */}
-            {position.requirements && (
+            {getRequirements(position) && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Requirements</h2>
                 <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                  {typeof position.requirements === 'string' ? position.requirements : JSON.stringify(position.requirements || {})}
+                  {getRequirements(position)}
                 </div>
               </div>
             )}

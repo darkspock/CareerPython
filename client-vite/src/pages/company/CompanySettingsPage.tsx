@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Workflow, Users, Settings, Layers, RotateCcw, Building2, FileText, UserCog, Briefcase } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
+import { PositionService } from '../../services/positionService';
 
 export default function CompanySettingsPage() {
   const { t } = useTranslation();
@@ -30,10 +31,16 @@ export default function CompanySettingsPage() {
 
     try {
       setResetting(true);
-      const result = await phaseService.initializeDefaultPhases(companyId);
+      
+      // Initialize phases
+      const phasesResult = await phaseService.initializeDefaultPhases(companyId);
+      
+      // Initialize job position workflows
+      const workflowsResult = await PositionService.initializeDefaultWorkflows(companyId);
+      
       setShowResetModal(false);
 
-      if (result && result.length > 0) {
+      if ((phasesResult && phasesResult.length > 0) || (workflowsResult && workflowsResult.length > 0)) {
         alert(t('company.settings.configInitializedSuccess'));
         navigate('/company/settings/phases');
       } else {

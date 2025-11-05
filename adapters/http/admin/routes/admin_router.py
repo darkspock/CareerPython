@@ -674,6 +674,17 @@ def list_workflows(
     return controller.list_workflows(company_id)
 
 
+@router.post("/workflows/initialize", response_model=List[JobPositionWorkflowResponse])
+@inject
+def initialize_default_workflows(
+        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        company_id: str = Query(..., description="Company ID"),
+) -> List[JobPositionWorkflowResponse]:
+    """Initialize default job position workflows for a company"""
+    return controller.initialize_default_workflows(company_id)
+
+
 @router.post("/positions/{position_id}/move-to-stage", response_model=dict)
 @inject
 def move_position_to_stage(

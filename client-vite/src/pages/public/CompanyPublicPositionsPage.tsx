@@ -20,8 +20,8 @@ import { publicPositionService, type PublicPositionFilters } from '../../service
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import { companyPageService } from '../../services/companyPageService';
 import type { Position } from '../../types/position';
+import { getLocation, getIsRemote, getEmploymentType, getSalaryRange, getExperienceLevel, getDepartment } from '../../types/position';
 import type { CompanyPage } from '../../types/companyPage';
-import { PageType } from '../../types/companyPage';
 import '../../components/common/WysiwygEditor.css';
 
 export default function CompanyPublicPositionsPage() {
@@ -116,27 +116,6 @@ export default function CompanyPublicPositionsPage() {
     loadPositions();
   };
 
-  const getEmploymentTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      FULL_TIME: 'Full-time',
-      PART_TIME: 'Part-time',
-      CONTRACT: 'Contract',
-      TEMPORARY: 'Temporary',
-      INTERNSHIP: 'Internship'
-    };
-    return labels[type] || type;
-  };
-
-  const getExperienceLevelLabel = (level: string) => {
-    const labels: Record<string, string> = {
-      ENTRY: 'Entry Level',
-      INTERMEDIATE: 'Intermediate',
-      SENIOR: 'Senior',
-      LEAD: 'Lead',
-      EXECUTIVE: 'Executive'
-    };
-    return labels[level] || level;
-  };
 
   if (loading && positions.length === 0) {
     return (
@@ -337,24 +316,23 @@ export default function CompanyPublicPositionsPage() {
 
                   {/* Position Details */}
                   <div className="space-y-2 mb-4">
-                    {position.location && (
+                    {getLocation(position) && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <MapPin className="w-4 h-4" />
-                        {position.location}
-                        {position.is_remote && <span className="text-blue-600">(Remote)</span>}
+                        {getLocation(position)}
+                        {getIsRemote(position) && <span className="text-blue-600">(Remote)</span>}
                       </div>
                     )}
-                    {position.employment_type && (
+                    {getEmploymentType(position) && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Clock className="w-4 h-4" />
-                        {getEmploymentTypeLabel(position.employment_type)}
+                        {getEmploymentType(position)}
                       </div>
                     )}
-                    {position.salary_range?.max_amount && (
+                    {getSalaryRange(position) && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <DollarSign className="w-4 h-4" />
-                        {position.salary_range.min_amount && `$${position.salary_range.min_amount.toLocaleString()} - `}
-                        ${position.salary_range.max_amount.toLocaleString()}
+                        {String(getSalaryRange(position))}
                       </div>
                     )}
                   </div>
@@ -368,14 +346,14 @@ export default function CompanyPublicPositionsPage() {
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-2">
-                    {position.experience_level && (
+                    {getExperienceLevel(position) && (
                       <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                        {getExperienceLevelLabel(position.experience_level)}
+                        {getExperienceLevel(position)}
                       </span>
                     )}
-                    {position.department && (
+                    {getDepartment(position) && (
                       <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
-                        {position.department}
+                        {getDepartment(position)}
                       </span>
                     )}
                   </div>

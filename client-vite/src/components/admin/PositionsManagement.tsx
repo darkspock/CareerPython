@@ -360,7 +360,6 @@ export const PositionsManagement: React.FC = () => {
 
     const newFormData: PositionFormData = {
       company_id: position.company_id,
-      workflow_id: position.job_position_workflow_id || position.workflow_id || null,
       title: position.title,
       description: position.description || '',
       department: getDepartment(position) || '',

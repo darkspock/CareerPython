@@ -13,7 +13,7 @@ export default function EditPositionPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [position, setPosition] = useState<Position | null>(null);
+  const [, setPosition] = useState<Position | null>(null);
   const [workflows, setWorkflows] = useState<JobPositionWorkflow[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] = useState<JobPositionWorkflow | null>(null);
 
@@ -30,8 +30,6 @@ export default function EditPositionPage() {
     application_deadline: null,
     public_slug: null,
   });
-
-  const [companyId, setCompanyId] = useState<string>('');
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -80,7 +78,6 @@ export default function EditPositionPage() {
       }
 
       setPosition(positionData);
-      setCompanyId(positionData.company_id);
 
       // Convert Position to form data (simplified)
       setFormData({

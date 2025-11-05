@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -38,4 +44,26 @@ body {
 /* Ensure scrollbar is always visible when content overflows */
 .overflow-x-auto {
   scrollbar-gutter: stable;
+}
+
+/* Radix UI Tooltip styles - Force black background and white text */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+[role="tooltip"],
+[data-radix-tooltip-content] {
+  background-color: #111827 !important;
+  color: #ffffff !important;
+  border-radius: 0.375rem !important;
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+}
+
+/* Tooltip arrow */
+[data-radix-tooltip-arrow],
+svg[data-radix-tooltip-arrow] {
+  fill: #111827 !important;
 }

@@ -49,6 +49,7 @@ import SimpleWysiwygTest from './pages/SimpleWysiwygTest';
 import EditorDiagnosticPage from './pages/EditorDiagnosticPage';
 import SaveTestPage from './pages/SaveTestPage';
 import AITestPage from './pages/AITestPage';
+import TooltipTestPage from './pages/TooltipTestPage';
 // Temporarily disabled interview pages
 // import InterviewSchedulingPage from './pages/InterviewSchedulingPage';
 // import InterviewConductPage from './pages/InterviewConductPage';
@@ -74,6 +75,7 @@ import PositionsListPage from './pages/company/PositionsListPage';
 import JobPositionWorkflowsSettingsPage from './pages/company/JobPositionWorkflowsSettingsPage';
 import CreateJobPositionWorkflowPage from './pages/company/CreateJobPositionWorkflowPage';
 import EditJobPositionWorkflowPage from './pages/company/EditJobPositionWorkflowPage';
+import EditJobPositionWorkflowCustomFieldsPage from './pages/company/EditJobPositionWorkflowCustomFieldsPage';
 import WorkflowBoardPage from './pages/company/WorkflowBoardPage';
 import CreatePositionPage from './pages/company/CreatePositionPage';
 import CreateWorkflowPage from './pages/company/CreateWorkflowPage';
@@ -181,6 +183,7 @@ function App() {
                         <Route path="/test/hybrid-editor" element={<HybridEditorTestPage />} />
                         <Route path="/test/save" element={<SaveTestPage />} />
                         <Route path="/test/ai" element={<AITestPage />} />
+                        <Route path="/test/tooltip" element={<TooltipTestPage />} />
                         <Route path="/diagnostic-editor/:id" element={<EditorDiagnosticPage />} />
                         {/* Temporarily disabled interview routes */}
                         <Route path="/interviews/schedule" element={<div>Interview Scheduling - Temporarily Disabled</div>} />
@@ -236,6 +239,7 @@ function App() {
                           <Route path="settings/job-position-workflows" element={<JobPositionWorkflowsSettingsPage />} />
                           <Route path="settings/job-position-workflows/create" element={<CreateJobPositionWorkflowPage />} />
                           <Route path="settings/job-position-workflows/:workflowId/edit" element={<EditJobPositionWorkflowPage />} />
+                          <Route path="settings/job-position-workflows/:workflowId/configure" element={<EditJobPositionWorkflowCustomFieldsPage />} />
                           <Route path="settings/phases" element={<PhasesPage />} />
                           <Route path="settings/roles" element={<CompanyRolesPage />} />
                           <Route path="users" element={<UsersManagementPage />} />

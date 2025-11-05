@@ -12,23 +12,44 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, Trash2, ExternalLink, Globe, GlobeLock, Kanban, List } from 'lucide-react';
+import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, ExternalLink, Kanban, List } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import type { Position, JobPositionWorkflow, JobPositionWorkflowStage } from '../../types/position';
 import { getVisibilityLabel, getVisibilityColor, getStatusLabelFromStage, getStatusColorFromStage } from '../../types/position';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Position Card Component for Kanban
 function PositionCard({
   position,
   onView,
   onEdit,
-  onDelete,
+  onViewPublic,
+  horizontalStages,
+  onMoveToStage,
 }: {
   position: Position;
   onView: (positionId: string) => void;
   onEdit: (positionId: string) => void;
-  onDelete: (positionId: string) => void;
+  onViewPublic: (position: Position) => void;
+  horizontalStages: JobPositionWorkflowStage[];
+  onMoveToStage: (positionId: string, stageId: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: position.id,
@@ -47,23 +68,24 @@ function PositionCard({
   const numberOfOpenings = position.custom_fields_values?.number_of_openings || 0;
 
   return (
-    <div
+    <Card
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-move"
+      className="cursor-move hover:shadow-md transition-shadow"
     >
-      <div className="mb-3">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
-          {position.title}
-        </h3>
-        {position.stage && (
-          <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColorFromStage(position.stage)}`}>
-            {getStatusLabelFromStage(position.stage)}
-          </span>
-        )}
-      </div>
+      <CardContent className="p-4">
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
+            {position.title}
+          </h3>
+          {position.stage && (
+            <Badge variant="secondary" className={getStatusColorFromStage(position.stage)}>
+              {getStatusLabelFromStage(position.stage)}
+            </Badge>
+          )}
+        </div>
 
       <div className="space-y-1 mb-3 text-xs text-gray-600">
         {location && (
@@ -94,39 +116,103 @@ function PositionCard({
         )}
       </div>
 
-      <div className="flex items-center gap-2 pt-3 border-t border-gray-200">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onView(position.id);
-          }}
-          className="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
-          title="View details"
-        >
-          <Eye className="w-3 h-3 mx-auto" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(position.id);
-          }}
-          className="flex-1 px-2 py-1 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors"
-          title="Edit"
-        >
-          <Edit className="w-3 h-3 mx-auto" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(position.id);
-          }}
-          className="flex-1 px-2 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors"
-          title="Delete"
-        >
-          <Trash2 className="w-3 h-3 mx-auto" />
-        </button>
-      </div>
-    </div>
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-200">
+          {/* Main actions - left side */}
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onView(position.id);
+                  }}
+                  className="h-7 px-2 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                >
+                  <Eye className="w-3 h-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View details</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(position.id);
+                  }}
+                  className="h-7 px-2 bg-green-50 text-green-700 hover:bg-green-100"
+                >
+                  <Edit className="w-3 h-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit position</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {position.visibility === 'public' && position.public_slug && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewPublic(position);
+                    }}
+                    className="h-7 px-2 bg-purple-50 text-purple-700 hover:bg-purple-100"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View public page</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+
+          {/* Move to horizontal stages buttons - right side */}
+          {horizontalStages.length > 0 && (
+            <div className="flex items-center gap-1">
+              {horizontalStages
+                .filter((stage) => stage.id !== position.stage_id)
+                .map((stage) => (
+                  <Tooltip key={stage.id}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onMoveToStage(position.id, stage.id);
+                        }}
+                        className="h-7 px-2 hover:opacity-80"
+                        style={{
+                          backgroundColor: stage.background_color,
+                          color: stage.text_color,
+                        }}
+                      >
+                        <span className="text-xs">{stage.icon}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Move to {stage.name}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -136,14 +222,18 @@ function StageColumn({
   positions,
   onView,
   onEdit,
-  onDelete,
+  onViewPublic,
+  horizontalStages,
+  onMoveToStage,
   isHorizontal = false,
 }: {
   stage: JobPositionWorkflowStage;
   positions: Position[];
   onView: (positionId: string) => void;
   onEdit: (positionId: string) => void;
-  onDelete: (positionId: string) => void;
+  onViewPublic: (position: Position) => void;
+  horizontalStages: JobPositionWorkflowStage[];
+  onMoveToStage: (positionId: string, stageId: string) => void;
   isHorizontal?: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -200,7 +290,9 @@ function StageColumn({
                   position={position}
                   onView={onView}
                   onEdit={onEdit}
-                  onDelete={onDelete}
+                  onViewPublic={onViewPublic}
+                  horizontalStages={horizontalStages}
+                  onMoveToStage={onMoveToStage}
                 />
               ))}
             </div>
@@ -212,6 +304,15 @@ function StageColumn({
 }
 
 export default function PositionsListPage() {
+  // Wrap entire page with TooltipProvider
+  return (
+    <TooltipProvider delayDuration={200} skipDelayDuration={100}>
+      <PositionsListPageContent />
+    </TooltipProvider>
+  );
+}
+
+function PositionsListPageContent() {
   const navigate = useNavigate();
   const [positions, setPositions] = useState<Position[]>([]);
   const [workflows, setWorkflows] = useState<JobPositionWorkflow[]>([]);
@@ -288,7 +389,7 @@ export default function PositionsListPage() {
 
       // Load full workflow details if positions need them
       if (workflowsList.length > 0) {
-        const defaultWorkflow = workflowsList.find(w => w.workflow_type === 'standard') || workflowsList[0];
+        const defaultWorkflow = workflowsList[0]; // Use the first workflow as default
         if (defaultWorkflow) {
           const fullWorkflow = await PositionService.getWorkflow(defaultWorkflow.id);
           setCurrentWorkflow(fullWorkflow);
@@ -305,14 +406,19 @@ export default function PositionsListPage() {
     await loadPositionsWithWorkflow(currentWorkflow);
   };
 
-  const handleDelete = async (positionId: string) => {
-    if (!confirm('Are you sure you want to delete this position?')) return;
+  const handleViewPublic = (position: Position) => {
+    if (!position.public_slug || !companySlug) return;
+    
+    const url = `/companies/${companySlug}/positions/${position.public_slug}`;
+    window.open(url, '_blank');
+  };
 
+  const handleMoveToStage = async (positionId: string, stageId: string) => {
     try {
-      await PositionService.deletePosition(positionId);
+      await PositionService.moveToStage(positionId, stageId);
       loadPositions();
     } catch (err: any) {
-      alert('Failed to delete position: ' + err.message);
+      alert('Failed to move position: ' + err.message);
     }
   };
 
@@ -370,9 +476,6 @@ export default function PositionsListPage() {
     }
   };
 
-  const getPositionsByStage = (stageId: string) => {
-    return positions.filter((p) => p.stage_id === stageId);
-  };
 
   const handleWorkflowChange = async (workflowId: string) => {
     setSelectedWorkflowId(workflowId);
@@ -495,17 +598,22 @@ export default function PositionsListPage() {
           </div>
           <div className="flex items-center gap-3">
             {publicUrl && (
-              <a
-                href={publicUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+              <Button
+                variant="outline"
+                asChild
               >
-                <ExternalLink className="w-5 h-5" />
-                View Public Page
-              </a>
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="gap-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                  View Public Page
+                </a>
+              </Button>
             )}
-            <button
+            <Button
               onClick={() => {
                 const workflowId = selectedWorkflowId || workflows[0]?.id;
                 if (workflowId) {
@@ -514,11 +622,10 @@ export default function PositionsListPage() {
                   navigate('/company/positions/create');
                 }
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-5 h-5 mr-2" />
               Create Position
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -528,61 +635,44 @@ export default function PositionsListPage() {
             {workflows.length > 0 && (
               workflows.length < 4 ? (
                 // Show as tabs if less than 4 workflows
-                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-                  {workflows.map((workflow) => (
-                    <button
-                      key={workflow.id}
-                      onClick={() => handleWorkflowChange(workflow.id)}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                        selectedWorkflowId === workflow.id
-                          ? 'bg-white text-blue-600 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                      }`}
-                    >
-                      {workflow.name}
-                    </button>
-                  ))}
-                </div>
+                <Tabs value={selectedWorkflowId || ''} onValueChange={handleWorkflowChange}>
+                  <TabsList>
+                    {workflows.map((workflow) => (
+                      <TabsTrigger key={workflow.id} value={workflow.id}>
+                        {workflow.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
               ) : (
                 // Show as dropdown if 4 or more workflows
-                <select
-                  value={selectedWorkflowId || ''}
-                  onChange={(e) => handleWorkflowChange(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm"
-                >
-                  {workflows.map((workflow) => (
-                    <option key={workflow.id} value={workflow.id}>
-                      {workflow.name}
-                    </option>
-                  ))}
-                </select>
+                <Select value={selectedWorkflowId || ''} onValueChange={handleWorkflowChange}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select workflow" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workflows.map((workflow) => (
+                      <SelectItem key={workflow.id} value={workflow.id}>
+                        {workflow.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )
             )}
           </div>
-          <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors ${
-                viewMode === 'kanban'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Kanban className="w-4 h-4" />
-              Kanban
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <List className="w-4 h-4" />
-              List
-            </button>
-          </div>
+          <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'kanban' | 'list')}>
+            <TabsList>
+              <TabsTrigger value="kanban">
+                <Kanban className="w-4 h-4 mr-2" />
+                Kanban
+              </TabsTrigger>
+              <TabsTrigger value="list">
+                <List className="w-4 h-4 mr-2" />
+                List
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
@@ -601,7 +691,7 @@ export default function PositionsListPage() {
           <p className="text-gray-600 mb-6">
             Create your first job position to start attracting candidates
           </p>
-          <button
+          <Button
             onClick={() => {
               const workflowId = selectedWorkflowId || workflows[0]?.id;
               if (workflowId) {
@@ -610,11 +700,10 @@ export default function PositionsListPage() {
                 navigate('/company/positions/create');
               }
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5 mr-2" />
             Create Position
-          </button>
+          </Button>
         </div>
       ) : viewMode === 'kanban' && currentWorkflow && currentWorkflow.stages && currentWorkflow.stages.length > 0 ? (
         <DndContext
@@ -638,7 +727,9 @@ export default function PositionsListPage() {
                       positions={stagePositions}
                       onView={(id) => navigate(`/company/positions/${id}`)}
                       onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
-                      onDelete={handleDelete}
+                      onViewPublic={handleViewPublic}
+                      horizontalStages={horizontalStages}
+                      onMoveToStage={handleMoveToStage}
                     />
                   );
                 })}
@@ -662,7 +753,9 @@ export default function PositionsListPage() {
                           positions={stagePositions}
                           onView={(id) => navigate(`/company/positions/${id}`)}
                           onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
-                          onDelete={handleDelete}
+                          onViewPublic={handleViewPublic}
+                          horizontalStages={horizontalStages}
+                          onMoveToStage={handleMoveToStage}
                           isHorizontal={true}
                         />
                       </div>
@@ -686,7 +779,9 @@ export default function PositionsListPage() {
                       positions={stagePositions}
                       onView={(id) => navigate(`/company/positions/${id}`)}
                       onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
-                      onDelete={handleDelete}
+                      onViewPublic={handleViewPublic}
+                      horizontalStages={horizontalStages}
+                      onMoveToStage={handleMoveToStage}
                     />
                   );
                 })}
@@ -718,11 +813,8 @@ export default function PositionsListPage() {
             const numberOfOpenings = position.custom_fields_values?.number_of_openings || 0;
 
             return (
-              <div
-                key={position.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
-              >
-                <div className="p-6">
+              <Card key={position.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
                   {/* Header */}
                   <div className="mb-4">
                     <div className="flex items-start justify-between mb-2">
@@ -730,15 +822,15 @@ export default function PositionsListPage() {
                         {position.title}
                       </h3>
                       {position.stage && (
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColorFromStage(position.stage)}`}>
+                        <Badge variant="secondary" className={getStatusColorFromStage(position.stage)}>
                           {getStatusLabelFromStage(position.stage)}
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getVisibilityColor(position.visibility)}`}>
+                      <Badge variant="outline" className={getVisibilityColor(position.visibility)}>
                         {getVisibilityLabel(position.visibility)}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
 
@@ -773,31 +865,91 @@ export default function PositionsListPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => navigate(`/company/positions/${position.id}`)}
-                      className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors group relative"
-                      title="View details"
-                    >
-                      <Eye className="w-4 h-4 mx-auto" />
-                    </button>
-                    <button
-                      onClick={() => navigate(`/company/positions/${position.id}/edit`)}
-                      className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors group relative"
-                      title="Edit"
-                    >
-                      <Edit className="w-4 h-4 mx-auto" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(position.id)}
-                      className="flex-1 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors group relative"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4 mx-auto" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+                    <div className="flex items-center justify-between gap-2 pt-4 border-t border-gray-200">
+                      {/* Main actions - left side */}
+                      <div className="flex items-center gap-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/company/positions/${position.id}`)}
+                              className="bg-blue-50 text-blue-700 hover:bg-blue-100"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View details</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/company/positions/${position.id}/edit`)}
+                              className="bg-green-50 text-green-700 hover:bg-green-100"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit position</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        {position.visibility === 'public' && position.public_slug && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewPublic(position)}
+                                className="bg-purple-50 text-purple-700 hover:bg-purple-100"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View public page</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+
+                      {/* Move to horizontal stages buttons - right side */}
+                      {horizontalStages.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          {horizontalStages
+                            .filter((stage) => stage.id !== position.stage_id)
+                            .map((stage) => (
+                              <Tooltip key={stage.id}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleMoveToStage(position.id, stage.id)}
+                                    className="hover:opacity-80"
+                                    style={{
+                                      backgroundColor: stage.background_color,
+                                      color: stage.text_color,
+                                    }}
+                                  >
+                                    <span className="text-sm">{stage.icon}</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Move to {stage.name}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>

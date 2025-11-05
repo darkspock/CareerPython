@@ -12,11 +12,17 @@ import {
   Flag,
   Building2,
   User,
-  MessageSquare
+  MessageSquare,
+  Kanban
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import type { CompanyCandidate } from '../../types/companyCandidate';
-import { Tooltip } from '../../components/ui/Tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Helper functions for icons (unused but kept for potential future use)
 /*
@@ -211,20 +217,36 @@ export default function CandidatesListPage() {
   }
 
   return (
-    <div>
+    <TooltipProvider delayDuration={200} skipDelayDuration={100}>
+      <div>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('company.candidates.title')}</h1>
-          <p className="text-gray-600 mt-1">{t('company.candidates.managePipeline', { defaultValue: 'Manage your candidate pipeline' })}</p>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{t('company.candidates.title')}</h1>
+            <p className="text-gray-600 mt-1">{t('company.candidates.managePipeline', { defaultValue: 'Manage your candidate pipeline' })}</p>
+          </div>
+          <Link
+            to="/company/candidates/add"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            {t('company.candidates.addCandidate')}
+          </Link>
         </div>
-        <Link
-          to="/company/candidates/add"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          {t('company.candidates.addCandidate')}
-        </Link>
+
+        {/* Back to Kanban View Button */}
+        {phaseId && (
+          <div className="flex items-center gap-4">
+            <Link
+              to={`/company/workflow-board?phase=${phaseId}`}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Kanban className="w-4 h-4" />
+              {t('company.workflowBoard.kanbanView', { defaultValue: 'Kanban View' })}
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -330,23 +352,38 @@ export default function CandidatesListPage() {
                     <td className="px-2 py-4 whitespace-nowrap w-[50px] max-w-[50px] min-w-[50px]">
                       <div className="flex items-center gap-1 justify-center">
                         {getPriorityIcon(candidate.priority) && (
-                          <Tooltip text={candidate.priority.charAt(0).toUpperCase() + candidate.priority.slice(1)}>
-                            {getPriorityIcon(candidate.priority)}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">{getPriorityIcon(candidate.priority)}</span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{candidate.priority.charAt(0).toUpperCase() + candidate.priority.slice(1)}</p>
+                            </TooltipContent>
                           </Tooltip>
                         )}
                         {candidate.ownership_status === 'COMPANY_OWNED' && (
-                          <Tooltip text="Company Owned">
-                            {getOwnershipIcon(candidate.ownership_status)}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">{getOwnershipIcon(candidate.ownership_status)}</span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Company Owned</p>
+                            </TooltipContent>
                           </Tooltip>
                         )}
                         {(candidate.pending_comments_count ?? 0) > 0 && (
-                          <Tooltip text={`${candidate.pending_comments_count} pending comment${candidate.pending_comments_count! > 1 ? 's' : ''}`}>
-                            <div className="relative">
-                              <MessageSquare className="w-4 h-4 text-yellow-600" />
-                              <span className="absolute -top-1 -right-1 bg-yellow-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                                {candidate.pending_comments_count! > 9 ? '9+' : candidate.pending_comments_count}
-                              </span>
-                            </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="relative">
+                                <MessageSquare className="w-4 h-4 text-yellow-600" />
+                                <span className="absolute -top-1 -right-1 bg-yellow-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                  {candidate.pending_comments_count! > 9 ? '9+' : candidate.pending_comments_count}
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{candidate.pending_comments_count} pending comment{candidate.pending_comments_count! > 1 ? 's' : ''}</p>
+                            </TooltipContent>
                           </Tooltip>
                         )}
                       </div>
@@ -424,29 +461,44 @@ export default function CandidatesListPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
-                        <Tooltip text="View candidate details">
-                          <button
-                            onClick={() => navigate(`/company/candidates/${candidate.id}`)}
-                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => navigate(`/company/candidates/${candidate.id}`)}
+                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View candidate details</p>
+                          </TooltipContent>
                         </Tooltip>
-                        <Tooltip text="Edit candidate">
-                          <button
-                            onClick={() => navigate(`/company/candidates/${candidate.id}/edit`)}
-                            className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => navigate(`/company/candidates/${candidate.id}/edit`)}
+                              className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                            >
+                              <Edit className="w-5 h-5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit candidate</p>
+                          </TooltipContent>
                         </Tooltip>
-                        <Tooltip text="Archive candidate">
-                          <button
-                            onClick={() => handleArchive(candidate.id)}
-                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                          >
-                            <Archive className="w-5 h-5" />
-                          </button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => handleArchive(candidate.id)}
+                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                            >
+                              <Archive className="w-5 h-5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Archive candidate</p>
+                          </TooltipContent>
                         </Tooltip>
                       </div>
                     </td>
@@ -541,6 +593,7 @@ export default function CandidatesListPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

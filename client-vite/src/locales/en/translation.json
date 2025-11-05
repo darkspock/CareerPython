@@ -224,6 +224,7 @@
     },
     "userSettings": {
       "title": "User Settings",
+      "myAccount": "My Account",
       "language": "Language",
       "logout": "Logout"
     },
@@ -448,7 +449,9 @@
       "stages": "Stages",
       "moreStages": "+{{count}} more",
       "aboutTitle": "About Workflows",
-      "aboutDescription": "Workflows help you organize your recruitment process into stages. Each workflow can have multiple stages, and you can assign candidates to workflows to track their progress through your hiring pipeline. Set one workflow as default to automatically assign new candidates to it."
+      "aboutDescription": "Workflows help you organize your recruitment process into stages. Each workflow can have multiple stages, and you can assign candidates to workflows to track their progress through your hiring pipeline. Set one workflow as default to automatically assign new candidates to it.",
+      "customFieldsLinkText": "You can configure custom fields for each stage",
+      "customFieldsLinkButton": "here"
     }
   },
   "landing": {

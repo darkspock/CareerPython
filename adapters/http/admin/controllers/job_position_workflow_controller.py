@@ -165,6 +165,138 @@ class JobPositionWorkflowController:
 
         return [self._dto_to_response(dto) for dto in workflow_dtos]
 
+    def initialize_default_workflows(self, company_id: str) -> List[JobPositionWorkflowResponse]:
+        """Initialize default job position workflows for a company"""
+        company_id_vo = CompanyId.from_string(company_id)
+
+        # Check if workflows already exist
+        query = ListJobPositionWorkflowsQuery(company_id=company_id_vo)
+        existing_workflows: List[JobPositionWorkflowDto] = self.query_bus.query(query)
+        
+        if existing_workflows:
+            logger.info(f"Workflows already exist for company {company_id}")
+            return []
+
+        # Create default workflows
+        created_workflows = []
+
+        # 1. Standard Hiring Workflow - Comprehensive hiring process
+        workflow1_id = JobPositionWorkflowId.generate()
+        stages1 = [
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Borrador",
+                icon="📝",
+                background_color="#E5E7EB",
+                text_color="#374151",
+                status_mapping=JobPositionStatusEnum.DRAFT,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Publicada",
+                icon="🌐",
+                background_color="#10B981",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.ACTIVE,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="En Revisión",
+                icon="🔍",
+                background_color="#3B82F6",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.ACTIVE,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Pausada",
+                icon="⏸️",
+                background_color="#F59E0B",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.PAUSED,
+                kanban_display=KanbanDisplayEnum.HORIZONTAL_BOTTOM,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Cerrada",
+                icon="🔒",
+                background_color="#6B7280",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.CLOSED,
+                kanban_display=KanbanDisplayEnum.HORIZONTAL_BOTTOM,
+            ),
+        ]
+
+        command1 = CreateJobPositionWorkflowCommand(
+            id=workflow1_id,
+            company_id=company_id_vo,
+            name="Proceso de Contratación Estándar",
+            default_view=ViewTypeEnum.KANBAN,
+            stages=stages1,
+            custom_fields_config={},
+        )
+        self.command_bus.dispatch(command1)
+
+        # Get and add to results
+        query1 = GetJobPositionWorkflowQuery(workflow_id=workflow1_id)
+        workflow_dto1: Optional[JobPositionWorkflowDto] = self.query_bus.query(query1)
+        if workflow_dto1:
+            created_workflows.append(self._dto_to_response(workflow_dto1))
+
+        # 2. Simple Workflow - For quick job postings
+        workflow2_id = JobPositionWorkflowId.generate()
+        stages2 = [
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Borrador",
+                icon="📝",
+                background_color="#E5E7EB",
+                text_color="#374151",
+                status_mapping=JobPositionStatusEnum.DRAFT,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Activa",
+                icon="✅",
+                background_color="#10B981",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.ACTIVE,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Cerrada",
+                icon="🔒",
+                background_color="#6B7280",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.CLOSED,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+        ]
+
+        command2 = CreateJobPositionWorkflowCommand(
+            id=workflow2_id,
+            company_id=company_id_vo,
+            name="Flujo Simplificado",
+            default_view=ViewTypeEnum.LIST,
+            stages=stages2,
+            custom_fields_config={},
+        )
+        self.command_bus.dispatch(command2)
+
+        # Get and add to results
+        query2 = GetJobPositionWorkflowQuery(workflow_id=workflow2_id)
+        workflow_dto2: Optional[JobPositionWorkflowDto] = self.query_bus.query(query2)
+        if workflow_dto2:
+            created_workflows.append(self._dto_to_response(workflow_dto2))
+
+        logger.info(f"Created {len(created_workflows)} default workflows for company {company_id}")
+        return created_workflows
+
     def move_position_to_stage(self, position_id: str, request: MoveJobPositionToStageRequest) -> dict:
         """Move a job position to a new stage"""
         position_id_vo = JobPositionId.from_string(position_id)

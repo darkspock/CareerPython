@@ -114,6 +114,8 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
 
     def _create_sourcing_workflow(self, workflow_id: CompanyWorkflowId, company_id: CompanyId, phase_id: str) -> None:
         """Create Sourcing workflow with 5 stages per WORKFLOW3.md"""
+        from src.company_workflow.domain.value_objects.stage_style import StageStyle
+        
         workflow = CompanyWorkflow.create(
             id=workflow_id, company_id=company_id, name="Sourcing Workflow",
             description="Screening and filtering candidates", phase_id=phase_id, is_default=True
@@ -122,22 +124,29 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         self.workflow_repository.save(workflow)
 
         stages = [
-            ("Pending", "Application pending review", StageType.INITIAL, 0),
-            ("Screening", "Initial screening in progress", StageType.STANDARD, 1),
-            ("Qualified", "Candidate is qualified", StageType.SUCCESS, 2),
-            ("Not Suitable", "Candidate not suitable for position", StageType.FAIL, 3),
-            ("On Hold", "Application on hold", StageType.STANDARD, 4),
+            ("Pending", "Application pending review", StageType.INITIAL, 0, 
+             StageStyle.create(icon="📋", color="#92400e", background_color="#fef3c7")),  # amber
+            ("Screening", "Initial screening in progress", StageType.STANDARD, 1,
+             StageStyle.create(icon="🔍", color="#1e40af", background_color="#dbeafe")),  # blue
+            ("Qualified", "Candidate is qualified", StageType.SUCCESS, 2,
+             StageStyle.create(icon="✅", color="#065f46", background_color="#d1fae5")),  # green
+            ("Not Suitable", "Candidate not suitable for position", StageType.FAIL, 3,
+             StageStyle.create(icon="❌", color="#991b1b", background_color="#fee2e2")),  # red
+            ("On Hold", "Application on hold", StageType.STANDARD, 4,
+             StageStyle.create(icon="⏸️", color="#92400e", background_color="#fef3c7")),  # amber
         ]
-        for name, desc, stage_type, order in stages:
+        for name, desc, stage_type, order, style in stages:
             stage = WorkflowStage.create(
                 id=WorkflowStageId.generate(), workflow_id=workflow_id, name=name,
                 description=desc, stage_type=stage_type, order=order,
-                allow_skip=False, is_active=True
+                allow_skip=False, is_active=True, style=style
             )
             self.stage_repository.save(stage)
 
     def _create_evaluation_workflow(self, workflow_id: CompanyWorkflowId, company_id: CompanyId, phase_id: str) -> None:
         """Create Evaluation workflow with 6 stages per WORKFLOW3.md"""
+        from src.company_workflow.domain.value_objects.stage_style import StageStyle
+        
         workflow = CompanyWorkflow.create(
             id=workflow_id, company_id=company_id, name="Evaluation Workflow",
             description="Interview and assessment process", phase_id=phase_id, is_default=True
@@ -146,23 +155,31 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         self.workflow_repository.save(workflow)
 
         stages = [
-            ("HR Interview", "Human Resources interview", StageType.INITIAL, 0),
-            ("Manager Interview", "Manager interview", StageType.STANDARD, 1),
-            ("Assessment Test", "Technical or skills assessment", StageType.STANDARD, 2),
-            ("Executive Interview", "Executive level interview", StageType.STANDARD, 3),
-            ("Selected", "Candidate selected for offer", StageType.SUCCESS, 4),
-            ("Rejected", "Candidate rejected", StageType.FAIL, 5),
+            ("HR Interview", "Human Resources interview", StageType.INITIAL, 0,
+             StageStyle.create(icon="👥", color="#92400e", background_color="#fef3c7")),  # amber
+            ("Manager Interview", "Manager interview", StageType.STANDARD, 1,
+             StageStyle.create(icon="💼", color="#1e40af", background_color="#dbeafe")),  # blue
+            ("Assessment Test", "Technical or skills assessment", StageType.STANDARD, 2,
+             StageStyle.create(icon="📝", color="#1e40af", background_color="#dbeafe")),  # blue
+            ("Executive Interview", "Executive level interview", StageType.STANDARD, 3,
+             StageStyle.create(icon="🎯", color="#1e40af", background_color="#dbeafe")),  # blue
+            ("Selected", "Candidate selected for offer", StageType.SUCCESS, 4,
+             StageStyle.create(icon="✅", color="#065f46", background_color="#d1fae5")),  # green
+            ("Rejected", "Candidate rejected", StageType.FAIL, 5,
+             StageStyle.create(icon="❌", color="#991b1b", background_color="#fee2e2")),  # red
         ]
-        for name, desc, stage_type, order in stages:
+        for name, desc, stage_type, order, style in stages:
             stage = WorkflowStage.create(
                 id=WorkflowStageId.generate(), workflow_id=workflow_id, name=name,
                 description=desc, stage_type=stage_type, order=order,
-                allow_skip=False, is_active=True
+                allow_skip=False, is_active=True, style=style
             )
             self.stage_repository.save(stage)
 
     def _create_offer_workflow(self, workflow_id: CompanyWorkflowId, company_id: CompanyId, phase_id: str) -> None:
         """Create Offer and Pre-Onboarding workflow with 5 stages per WORKFLOW3.md"""
+        from src.company_workflow.domain.value_objects.stage_style import StageStyle
+        
         workflow = CompanyWorkflow.create(
             id=workflow_id, company_id=company_id, name="Offer and Pre-Onboarding Workflow",
             description="Offer negotiation and document verification", phase_id=phase_id, is_default=True
@@ -171,17 +188,22 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         self.workflow_repository.save(workflow)
 
         stages = [
-            ("Offer Proposal", "Offer proposed to candidate", StageType.INITIAL, 0),
-            ("Negotiation", "Negotiating offer terms", StageType.STANDARD, 1),
-            ("Document Submission", "Candidate submitting documents", StageType.STANDARD, 2),
-            ("Document Verification", "Verifying submitted documents", StageType.SUCCESS, 3),
-            ("Lost", "Candidate declined or withdrew", StageType.FAIL, 4),
+            ("Offer Proposal", "Offer proposed to candidate", StageType.INITIAL, 0,
+             StageStyle.create(icon="💌", color="#92400e", background_color="#fef3c7")),  # amber
+            ("Negotiation", "Negotiating offer terms", StageType.STANDARD, 1,
+             StageStyle.create(icon="🤝", color="#1e40af", background_color="#dbeafe")),  # blue
+            ("Document Submission", "Candidate submitting documents", StageType.STANDARD, 2,
+             StageStyle.create(icon="📄", color="#1e40af", background_color="#dbeafe")),  # blue
+            ("Document Verification", "Verifying submitted documents", StageType.SUCCESS, 3,
+             StageStyle.create(icon="✅", color="#065f46", background_color="#d1fae5")),  # green
+            ("Lost", "Candidate declined or withdrew", StageType.FAIL, 4,
+             StageStyle.create(icon="❌", color="#991b1b", background_color="#fee2e2")),  # red
         ]
-        for name, desc, stage_type, order in stages:
+        for name, desc, stage_type, order, style in stages:
             stage = WorkflowStage.create(
                 id=WorkflowStageId.generate(), workflow_id=workflow_id, name=name,
                 description=desc, stage_type=stage_type, order=order,
-                allow_skip=False, is_active=True
+                allow_skip=False, is_active=True, style=style
             )
             self.stage_repository.save(stage)
 

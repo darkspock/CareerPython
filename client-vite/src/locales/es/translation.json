@@ -224,6 +224,7 @@
     },
     "userSettings": {
       "title": "Configuración de Usuario",
+      "myAccount": "Mi Cuenta",
       "language": "Idioma",
       "logout": "Cerrar Sesión"
     },
@@ -448,7 +449,9 @@
       "stages": "Etapas",
       "moreStages": "+{{count}} más",
       "aboutTitle": "Acerca de los Flujos de Trabajo",
-      "aboutDescription": "Los flujos de trabajo te ayudan a organizar tu proceso de reclutamiento en etapas. Cada flujo de trabajo puede tener múltiples etapas, y puedes asignar candidatos a flujos de trabajo para rastrear su progreso a través de tu pipeline de contratación. Establece un flujo de trabajo como predeterminado para asignar automáticamente nuevos candidatos a él."
+      "aboutDescription": "Los flujos de trabajo te ayudan a organizar tu proceso de reclutamiento en etapas. Cada flujo de trabajo puede tener múltiples etapas, y puedes asignar candidatos a flujos de trabajo para rastrear su progreso a través de tu pipeline de contratación. Establece un flujo de trabajo como predeterminado para asignar automáticamente nuevos candidatos a él.",
+      "customFieldsLinkText": "Puede establecer campos personalizados en cada etapa",
+      "customFieldsLinkButton": "aquí"
     }
   },
   "landing": {

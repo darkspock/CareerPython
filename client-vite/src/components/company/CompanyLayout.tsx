@@ -255,12 +255,13 @@ export default function CompanyLayout() {
                 </Link>
               );
             })}
-          </nav>
 
-          {/* User Settings Menu - Mobile */}
-          <div className="p-4 border-t border-gray-200">
+            {/* Separator */}
+            <div className="my-2 border-t border-gray-200"></div>
+
+            {/* User Settings Menu - Mobile */}
             <UserSettingsMenu onLogout={handleLogout} />
-          </div>
+          </nav>
         </div>
       </aside>
 
@@ -399,12 +400,13 @@ export default function CompanyLayout() {
                 </Link>
               );
             })}
-          </nav>
 
-          {/* User Settings Menu - Desktop */}
-          <div className="p-4 border-t border-gray-200">
+            {/* Separator */}
+            <div className="my-2 border-t border-gray-200"></div>
+
+            {/* User Settings Menu - Desktop */}
             <UserSettingsMenu onLogout={handleLogout} />
-          </div>
+          </nav>
         </div>
       </aside>
 
