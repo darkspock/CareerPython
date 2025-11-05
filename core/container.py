@@ -1592,7 +1592,8 @@ class Container(containers.DeclarativeContainer):
 
     move_job_position_to_stage_command_handler = providers.Factory(
         MoveJobPositionToStageCommandHandler,
-        job_position_repository=job_position_repository
+        job_position_repository=job_position_repository,
+        workflow_repository=job_position_workflow_repository
     )
 
     update_job_position_custom_fields_command_handler = providers.Factory(

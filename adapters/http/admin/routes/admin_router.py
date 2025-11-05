@@ -718,8 +718,21 @@ def move_position_to_stage(
         controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> dict:
-    """Move a job position to a new stage"""
-    return controller.move_position_to_stage(position_id, request)
+    """Move a job position to a new stage with validation"""
+    from src.job_position.application.commands.move_job_position_to_stage import JobPositionValidationError
+    from fastapi import HTTPException
+    
+    try:
+        return controller.move_position_to_stage(position_id, request)
+    except JobPositionValidationError as e:
+        # Return 400 with validation errors
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": str(e),
+                "validation_errors": e.validation_errors
+            }
+        )
 
 
 @router.put("/positions/{position_id}/custom-fields", response_model=dict)

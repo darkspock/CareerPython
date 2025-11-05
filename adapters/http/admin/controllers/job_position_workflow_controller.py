@@ -8,7 +8,10 @@ from adapters.http.admin.schemas.job_position_workflow import (
 )
 from src.job_position.application.commands.create_job_position_workflow import CreateJobPositionWorkflowCommand
 from src.job_position.application.commands.update_job_position_workflow import UpdateJobPositionWorkflowCommand
-from src.job_position.application.commands.move_job_position_to_stage import MoveJobPositionToStageCommand
+from src.job_position.application.commands.move_job_position_to_stage import (
+    MoveJobPositionToStageCommand,
+    JobPositionValidationError
+)
 from src.job_position.application.commands.update_job_position_custom_fields import UpdateJobPositionCustomFieldsCommand
 from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQuery
 from src.job_position.application.queries.list_job_position_workflows import ListJobPositionWorkflowsQuery
@@ -294,11 +297,73 @@ class JobPositionWorkflowController:
         if workflow_dto2:
             created_workflows.append(self._dto_to_response(workflow_dto2))
 
+        # 3. General Workflow - For approval process
+        workflow3_id = JobPositionWorkflowId.generate()
+        stages3 = [
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Borrador",
+                icon="📝",
+                background_color="#E5E7EB",
+                text_color="#374151",
+                status_mapping=JobPositionStatusEnum.DRAFT,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Pendiente de Aprobación",
+                icon="⏳",
+                background_color="#F59E0B",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.DRAFT,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Publicado",
+                icon="🚀",
+                background_color="#3B82F6",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.ACTIVE,
+                kanban_display=KanbanDisplayEnum.VERTICAL,
+            ),
+            WorkflowStage.create(
+                id=StageId.generate(),
+                name="Descartado",
+                icon="🗑️",
+                background_color="#EF4444",
+                text_color="#FFFFFF",
+                status_mapping=JobPositionStatusEnum.CLOSED,
+                kanban_display=KanbanDisplayEnum.HORIZONTAL_BOTTOM,
+            ),
+        ]
+
+        command3 = CreateJobPositionWorkflowCommand(
+            id=workflow3_id,
+            company_id=company_id_vo,
+            name="General",
+            default_view=ViewTypeEnum.KANBAN,
+            stages=stages3,
+            custom_fields_config={},
+        )
+        self.command_bus.dispatch(command3)
+
+        # Get and add to results
+        query3 = GetJobPositionWorkflowQuery(workflow_id=workflow3_id)
+        workflow_dto3: Optional[JobPositionWorkflowDto] = self.query_bus.query(query3)
+        if workflow_dto3:
+            created_workflows.append(self._dto_to_response(workflow_dto3))
+
         logger.info(f"Created {len(created_workflows)} default workflows for company {company_id}")
         return created_workflows
 
     def move_position_to_stage(self, position_id: str, request: MoveJobPositionToStageRequest) -> dict:
-        """Move a job position to a new stage"""
+        """
+        Move a job position to a new stage.
+        
+        Raises:
+            JobPositionValidationError: If custom fields validation fails
+        """
         position_id_vo = JobPositionId.from_string(position_id)
         stage_id_vo = StageId.from_string(request.stage_id)
 
@@ -308,6 +373,7 @@ class JobPositionWorkflowController:
             comment=request.comment,
         )
 
+        # This will raise JobPositionValidationError if validation fails
         self.command_bus.dispatch(command)
 
         return {"success": True, "message": "Job position moved to new stage", "position_id": position_id}

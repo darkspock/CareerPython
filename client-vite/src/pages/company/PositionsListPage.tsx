@@ -426,7 +426,26 @@ function PositionsListPageContent() {
       await PositionService.moveToStage(positionId, stageId);
       loadPositions();
     } catch (err: any) {
-      alert('Failed to move position: ' + err.message);
+      // Check if it's a validation error (400)
+      if (err.response?.status === 400 && err.response?.data?.detail?.validation_errors) {
+        const errors = err.response.data.detail.validation_errors;
+        const errorMessages = Object.entries(errors)
+          .map(([field, messages]: [string, any]) => {
+            const messageList = Array.isArray(messages) ? messages : [messages];
+            return `• ${field}: ${messageList.join(', ')}`;
+          })
+          .join('\n');
+        
+        const shouldEdit = confirm(
+          `Cannot move to this stage. The following fields need attention:\n\n${errorMessages}\n\nWould you like to edit this position now?`
+        );
+        
+        if (shouldEdit) {
+          navigate(`/company/positions/${positionId}/edit`);
+        }
+      } else {
+        alert('Failed to move position: ' + (err.message || 'Unknown error'));
+      }
     }
   };
 
@@ -478,7 +497,26 @@ function PositionsListPageContent() {
       await PositionService.moveToStage(positionId, targetStageId);
       loadPositions();
     } catch (err: any) {
-      alert('Failed to move position: ' + err.message);
+      // Check if it's a validation error (400)
+      if (err.response?.status === 400 && err.response?.data?.detail?.validation_errors) {
+        const errors = err.response.data.detail.validation_errors;
+        const errorMessages = Object.entries(errors)
+          .map(([field, messages]: [string, any]) => {
+            const messageList = Array.isArray(messages) ? messages : [messages];
+            return `• ${field}: ${messageList.join(', ')}`;
+          })
+          .join('\n');
+        
+        const shouldEdit = confirm(
+          `Cannot move to this stage. The following fields need attention:\n\n${errorMessages}\n\nWould you like to edit this position now?`
+        );
+        
+        if (shouldEdit) {
+          navigate(`/company/positions/${positionId}/edit`);
+        }
+      } else {
+        alert('Failed to move position: ' + (err.message || 'Unknown error'));
+      }
     } finally {
       setActiveId(null);
     }
