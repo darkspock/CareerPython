@@ -172,43 +172,6 @@ export class PositionService {
   }
 
   /**
-   * Create new workflow
-   */
-  static async createWorkflow(workflowData: {
-    company_id: string;
-    name: string;
-    default_view?: string;
-    stages?: Array<{
-      id: string;
-      name: string;
-      icon: string;
-      background_color: string;
-      text_color: string;
-      role?: string | null;
-      status_mapping: string;
-      kanban_display?: string;
-      field_visibility?: Record<string, boolean>;
-      field_validation?: Record<string, any>;
-      field_candidate_visibility?: Record<string, boolean>;
-    }>;
-    custom_fields_config?: Record<string, any>;
-  }): Promise<JobPositionWorkflow> {
-    try {
-      const response = await api.authenticatedRequest<JobPositionWorkflow>(this.WORKFLOW_BASE_PATH, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(workflowData)
-      });
-      return response;
-    } catch (error) {
-      console.error('Error creating workflow:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Update existing workflow
    */
   static async updateWorkflow(
@@ -248,13 +211,94 @@ export class PositionService {
   }
 
   /**
+   * Publish/Activate workflow (set status to 'published')
+   */
+  static async publishWorkflow(workflowId: string, workflowData: { name: string; default_view: string }): Promise<JobPositionWorkflow> {
+    try {
+      const response = await api.authenticatedRequest<JobPositionWorkflow>(`${this.WORKFLOW_BASE_PATH}/${workflowId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...workflowData,
+          status: 'published'
+        })
+      });
+      return response;
+    } catch (error) {
+      console.error(`Error publishing workflow ${workflowId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Archive workflow (set status to 'deprecated')
+   */
+  static async archiveWorkflow(workflowId: string, workflowData: { name: string; default_view: string }): Promise<JobPositionWorkflow> {
+    try {
+      const response = await api.authenticatedRequest<JobPositionWorkflow>(`${this.WORKFLOW_BASE_PATH}/${workflowId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...workflowData,
+          status: 'deprecated'
+        })
+      });
+      return response;
+    } catch (error) {
+      console.error(`Error archiving workflow ${workflowId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create new workflow
+   */
+  static async createWorkflow(workflowData: {
+    company_id: string;
+    name: string;
+    default_view?: string;
+    stages?: Array<{
+      id: string;
+      name: string;
+      icon: string;
+      background_color: string;
+      text_color: string;
+      role?: string | null;
+      status_mapping: string;
+      kanban_display?: string;
+      field_visibility?: Record<string, boolean>;
+      field_validation?: Record<string, any>;
+      field_candidate_visibility?: Record<string, boolean>;
+    }>;
+    custom_fields_config?: Record<string, any>;
+  }): Promise<JobPositionWorkflow> {
+    try {
+      const response = await api.authenticatedRequest<JobPositionWorkflow>(this.WORKFLOW_BASE_PATH, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(workflowData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Error creating workflow:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Initialize default job position workflows
    * Creates default workflows for managing job positions through stages
    */
   static async initializeDefaultWorkflows(companyId: string): Promise<JobPositionWorkflow[]> {
     try {
       const response = await api.authenticatedRequest<JobPositionWorkflow[]>(
-        `${this.WORKFLOW_BASE_PATH}/initialize?company_id=${companyId}`,
+        `/admin/workflows/initialize?company_id=${companyId}`,
         {
           method: 'POST',
           headers: {

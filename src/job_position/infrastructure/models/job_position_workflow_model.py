@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from core.base import Base
 from src.shared.domain.entities.base import generate_id
+from src.job_position.domain.enums import JobPositionWorkflowStatusEnum
 
 
 @dataclass
@@ -18,6 +19,12 @@ class JobPositionWorkflowModel(Base):
     company_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     default_view: Mapped[str] = mapped_column(String(20), nullable=False, default="kanban")
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default=JobPositionWorkflowStatusEnum.PUBLISHED.value,
+        index=True
+    )  # Status stored as string value (draft, published, deprecated)
     stages: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)  # List of WorkflowStage as JSON
     custom_fields_config: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())

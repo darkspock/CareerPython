@@ -1,5 +1,6 @@
 from .contract_type import ContractTypeEnum
 from .job_position_status import JobPositionStatusEnum
+from .job_position_workflow_status import JobPositionWorkflowStatusEnum
 from .work_location_type import WorkLocationTypeEnum
 from .view_type import ViewTypeEnum
 from .kanban_display import KanbanDisplayEnum
@@ -11,6 +12,7 @@ from .activity_type_enum import ActivityTypeEnum
 
 __all__ = [
     "JobPositionStatusEnum",
+    "JobPositionWorkflowStatusEnum",
     "ContractTypeEnum",
     "WorkLocationTypeEnum",
     "ViewTypeEnum",

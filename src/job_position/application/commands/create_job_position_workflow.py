@@ -6,6 +6,7 @@ from src.job_position.domain.entities.job_position_workflow import JobPositionWo
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.enums.view_type import ViewTypeEnum
+from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
 from src.company.domain.value_objects.company_id import CompanyId
 from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
 
@@ -17,6 +18,7 @@ class CreateJobPositionWorkflowCommand(Command):
     company_id: CompanyId
     name: str
     default_view: ViewTypeEnum = ViewTypeEnum.KANBAN
+    status: Optional[JobPositionWorkflowStatusEnum] = None  # If None, uses default from entity (DRAFT)
     stages: Optional[List[WorkflowStage]] = None
     custom_fields_config: Optional[Dict[str, Any]] = None
 
@@ -29,14 +31,26 @@ class CreateJobPositionWorkflowCommandHandler(CommandHandler[CreateJobPositionWo
 
     def execute(self, command: CreateJobPositionWorkflowCommand) -> None:
         """Execute the command - creates a new workflow"""
-        workflow = JobPositionWorkflow.create(
-            id=command.id,
-            company_id=command.company_id,
-            name=command.name,
-            default_view=command.default_view,
-            stages=command.stages,
-            custom_fields_config=command.custom_fields_config,
-        )
+        # If status is explicitly provided, use it; otherwise use default from entity (DRAFT)
+        if command.status is not None:
+            workflow = JobPositionWorkflow.create(
+                id=command.id,
+                company_id=command.company_id,
+                name=command.name,
+                default_view=command.default_view,
+                status=command.status,
+                stages=command.stages,
+                custom_fields_config=command.custom_fields_config,
+            )
+        else:
+            workflow = JobPositionWorkflow.create(
+                id=command.id,
+                company_id=command.company_id,
+                name=command.name,
+                default_view=command.default_view,
+                stages=command.stages,
+                custom_fields_config=command.custom_fields_config,
+            )
 
         self.workflow_repository.save(workflow)
 

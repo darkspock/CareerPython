@@ -24,6 +24,8 @@ export default function CompanySettingsPage() {
 
   const handleResetConfiguration = async () => {
     const companyId = getCompanyId();
+    console.log('[CompanySettings] Company ID:', companyId);
+    
     if (!companyId) {
       alert(t('company.settings.companyIdNotFound'));
       return;
@@ -31,22 +33,31 @@ export default function CompanySettingsPage() {
 
     try {
       setResetting(true);
+      console.log('[CompanySettings] Starting initialization...');
       
       // Initialize phases
+      console.log('[CompanySettings] Initializing candidate phases...');
       const phasesResult = await phaseService.initializeDefaultPhases(companyId);
+      console.log('[CompanySettings] Phases result:', phasesResult);
       
       // Initialize job position workflows
+      console.log('[CompanySettings] Initializing job position workflows...');
       const workflowsResult = await PositionService.initializeDefaultWorkflows(companyId);
+      console.log('[CompanySettings] Workflows result:', workflowsResult);
       
       setShowResetModal(false);
 
       if ((phasesResult && phasesResult.length > 0) || (workflowsResult && workflowsResult.length > 0)) {
-        alert(t('company.settings.configInitializedSuccess'));
+        const message = `✅ Configuration initialized!\n\n` +
+          `- Candidate phases: ${phasesResult?.length || 0}\n` +
+          `- Job position workflows: ${workflowsResult?.length || 0}`;
+        alert(message);
         navigate('/company/settings/phases');
       } else {
         alert(t('company.settings.phasesAlreadyExist'));
       }
     } catch (error: any) {
+      console.error('[CompanySettings] Error:', error);
       const errorMessage = error.message || 'Unknown error occurred';
       alert(t('company.settings.configInitializationFailed', { error: errorMessage }));
     } finally {

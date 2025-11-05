@@ -5,6 +5,7 @@ from typing import List, Optional, Dict, Any
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.enums.view_type import ViewTypeEnum
+from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
 from src.company.domain.value_objects.company_id import CompanyId
 
 
@@ -20,6 +21,7 @@ class JobPositionWorkflow:
     company_id: CompanyId
     name: str
     default_view: ViewTypeEnum
+    status: JobPositionWorkflowStatusEnum
     stages: List[WorkflowStage]
     custom_fields_config: Dict[str, Any]  # JSON configuration for custom fields
     created_at: datetime
@@ -32,6 +34,7 @@ class JobPositionWorkflow:
         company_id: CompanyId,
         name: str,
         default_view: ViewTypeEnum = ViewTypeEnum.KANBAN,
+        status: JobPositionWorkflowStatusEnum = JobPositionWorkflowStatusEnum.DRAFT,
         stages: Optional[List[WorkflowStage]] = None,
         custom_fields_config: Optional[Dict[str, Any]] = None,
     ) -> "JobPositionWorkflow":
@@ -43,6 +46,7 @@ class JobPositionWorkflow:
             company_id: Company ID
             name: Workflow name
             default_view: Default view type
+            status: Workflow status (default: draft - must be published to use)
             stages: List of stages (optional, can be added later)
             custom_fields_config: Custom fields configuration (optional)
                 If None or empty, will be initialized with empty structure
@@ -65,6 +69,7 @@ class JobPositionWorkflow:
             company_id=company_id,
             name=name.strip(),
             default_view=default_view,
+            status=status,
             stages=stages or [],
             custom_fields_config=normalized_config,
             created_at=now,
@@ -75,6 +80,7 @@ class JobPositionWorkflow:
         self,
         name: str,
         default_view: Optional[ViewTypeEnum] = None,
+        status: Optional[JobPositionWorkflowStatusEnum] = None,
         custom_fields_config: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
@@ -83,6 +89,7 @@ class JobPositionWorkflow:
         Args:
             name: New workflow name
             default_view: New default view (optional)
+            status: New workflow status (optional)
             custom_fields_config: New custom fields config (optional)
             
         Raises:
@@ -123,6 +130,8 @@ class JobPositionWorkflow:
         self.name = name.strip()
         if default_view is not None:
             self.default_view = default_view
+        if status is not None:
+            self.status = status
         if custom_fields_config is not None:
             # Normalize custom_fields_config before setting
             self.custom_fields_config = self._normalize_custom_fields_config(custom_fields_config)

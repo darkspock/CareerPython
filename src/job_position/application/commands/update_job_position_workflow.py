@@ -6,6 +6,7 @@ from src.job_position.domain.exceptions import JobPositionNotFoundException
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.enums.view_type import ViewTypeEnum
+from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
 from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
 
 
@@ -15,6 +16,7 @@ class UpdateJobPositionWorkflowCommand(Command):
     id: JobPositionWorkflowId
     name: str
     default_view: Optional[ViewTypeEnum] = None
+    status: Optional[JobPositionWorkflowStatusEnum] = None
     stages: Optional[List[WorkflowStage]] = None
     custom_fields_config: Optional[Dict[str, Any]] = None
 
@@ -34,6 +36,7 @@ class UpdateJobPositionWorkflowCommandHandler(CommandHandler[UpdateJobPositionWo
         workflow.update(
             name=command.name,
             default_view=command.default_view,
+            status=command.status,
             custom_fields_config=command.custom_fields_config,
         )
 

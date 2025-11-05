@@ -50,6 +50,7 @@ class JobPositionWorkflowDto:
     company_id: str
     name: str
     default_view: str
+    status: str
     stages: List[WorkflowStageDto]
     custom_fields_config: Dict[str, Any]
     created_at: datetime
@@ -63,6 +64,7 @@ class JobPositionWorkflowDto:
             company_id=entity.company_id.value,
             name=entity.name,
             default_view=entity.default_view.value,
+            status=entity.status.value,
             stages=[WorkflowStageDto.from_value_object(stage) for stage in entity.stages],
             custom_fields_config=entity.custom_fields_config,
             created_at=entity.created_at,

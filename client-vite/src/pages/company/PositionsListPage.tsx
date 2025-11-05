@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   DndContext,
   DragOverlay,
@@ -322,6 +322,7 @@ export default function PositionsListPage() {
 
 function PositionsListPageContent() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [positions, setPositions] = useState<Position[]>([]);
   const [workflows, setWorkflows] = useState<JobPositionWorkflow[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
@@ -358,11 +359,28 @@ function PositionsListPageContent() {
 
   useEffect(() => {
     if (workflows.length > 0 && !selectedWorkflowId) {
-      // Select first workflow by default
-      const defaultWorkflow = workflows[0];
-      if (defaultWorkflow) {
-        setSelectedWorkflowId(defaultWorkflow.id);
-        setCurrentWorkflow(defaultWorkflow);
+      // Try to get workflow_id from URL first
+      const workflowIdFromUrl = searchParams.get('workflow_id');
+      
+      let workflowToSelect: JobPositionWorkflow | null = null;
+      
+      if (workflowIdFromUrl) {
+        // Find workflow from URL
+        workflowToSelect = workflows.find(w => w.id === workflowIdFromUrl) || null;
+      }
+      
+      // If not found in URL or URL doesn't have it, use first workflow
+      if (!workflowToSelect) {
+        workflowToSelect = workflows[0];
+      }
+      
+      if (workflowToSelect) {
+        setSelectedWorkflowId(workflowToSelect.id);
+        setCurrentWorkflow(workflowToSelect);
+        // Update URL if it wasn't there or was invalid
+        if (!workflowIdFromUrl || workflowIdFromUrl !== workflowToSelect.id) {
+          setSearchParams({ workflow_id: workflowToSelect.id });
+        }
       }
     }
   }, [workflows]);
@@ -525,6 +543,7 @@ function PositionsListPageContent() {
 
   const handleWorkflowChange = async (workflowId: string) => {
     setSelectedWorkflowId(workflowId);
+    setSearchParams({ workflow_id: workflowId }); // Update URL
     setLoading(true); // Show loading state immediately
     try {
       const workflow = await PositionService.getWorkflow(workflowId);
@@ -751,6 +770,153 @@ function PositionsListPageContent() {
             Create Position
           </Button>
         </div>
+      ) : viewMode === 'list' ? (
+        // List View - Table format
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Stage
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Visibility
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contract
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Salary Range
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Comments
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {positions.map((position) => {
+                  const location = position.custom_fields_values?.location;
+                  const salaryRange = position.custom_fields_values?.salary_range;
+                  const contractType = position.custom_fields_values?.contract_type;
+
+                  return (
+                    <tr key={position.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{position.title}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {position.stage && (
+                          <Badge variant="secondary" className={getStatusColorFromStage(position.stage)}>
+                            {getStatusLabelFromStage(position.stage)}
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Badge variant="outline" className={getVisibilityColor(position.visibility)}>
+                          {getVisibilityLabel(position.visibility)}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600">
+                          {location || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600">
+                          {contractType || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600">
+                          {salaryRange ? (
+                            `${salaryRange.currency} ${salaryRange.min_amount?.toLocaleString()} - ${salaryRange.max_amount?.toLocaleString()}`
+                          ) : (
+                            '-'
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {position.pending_comments_count !== undefined && position.pending_comments_count > 0 ? (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                            <MessageCircle className="w-3 h-3 mr-1" />
+                            {position.pending_comments_count}
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <TooltipProvider delayDuration={300}>
+                          <div className="flex items-center justify-end gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/company/positions/${position.id}`)}
+                                  className="bg-blue-50 text-blue-700 hover:bg-blue-100"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>View details</p>
+                              </TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/company/positions/${position.id}/edit`)}
+                                  className="bg-green-50 text-green-700 hover:bg-green-100"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit position</p>
+                              </TooltipContent>
+                            </Tooltip>
+
+                            {position.visibility === 'public' && position.public_slug && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleViewPublic(position)}
+                                    className="bg-purple-50 text-purple-700 hover:bg-purple-100"
+                                  >
+                                    <ExternalLink className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>View public page</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </TooltipProvider>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : viewMode === 'kanban' && currentWorkflow && currentWorkflow.stages && currentWorkflow.stages.length > 0 ? (
         <DndContext
           sensors={sensors}
@@ -855,157 +1021,7 @@ function PositionsListPageContent() {
             )}
           </DragOverlay>
         </DndContext>
-      ) : (
-        // List View
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {positions.map((position) => {
-            const location = position.custom_fields_values?.location;
-            const salaryRange = position.custom_fields_values?.salary_range;
-            const contractType = position.custom_fields_values?.contract_type;
-            const numberOfOpenings = position.custom_fields_values?.number_of_openings || 0;
-
-            return (
-              <Card key={position.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  {/* Header */}
-                  <div className="mb-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 flex-1">
-                        {position.title}
-                      </h3>
-                      {position.stage && (
-                        <Badge variant="secondary" className={getStatusColorFromStage(position.stage)}>
-                          {getStatusLabelFromStage(position.stage)}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={getVisibilityColor(position.visibility)}>
-                        {getVisibilityLabel(position.visibility)}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="space-y-2 mb-4 text-sm text-gray-600">
-                    {location && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>{location}</span>
-                      </div>
-                    )}
-                    {contractType && (
-                      <div className="flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-gray-400" />
-                        <span>{contractType}</span>
-                      </div>
-                    )}
-                    {salaryRange && (
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-gray-400" />
-                        <span>
-                          {salaryRange.currency} {salaryRange.min_amount?.toLocaleString()} - {salaryRange.max_amount?.toLocaleString()}
-                        </span>
-                      </div>
-                    )}
-                    {numberOfOpenings > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-gray-400" />
-                        <span>{numberOfOpenings} opening{numberOfOpenings !== 1 ? 's' : ''}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                    <div className="flex items-center justify-between gap-2 pt-4 border-t border-gray-200">
-                      {/* Main actions - left side */}
-                      <div className="flex items-center gap-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/company/positions/${position.id}`)}
-                              className="bg-blue-50 text-blue-700 hover:bg-blue-100"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>View details</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/company/positions/${position.id}/edit`)}
-                              className="bg-green-50 text-green-700 hover:bg-green-100"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit position</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        {position.visibility === 'public' && position.public_slug && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewPublic(position)}
-                                className="bg-purple-50 text-purple-700 hover:bg-purple-100"
-                              >
-                                <ExternalLink className="w-4 h-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>View public page</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-
-                      {/* Move to horizontal stages buttons - right side */}
-                      {horizontalStages.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          {horizontalStages
-                            .filter((stage) => stage.id !== position.stage_id)
-                            .map((stage) => (
-                              <Tooltip key={stage.id}>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleMoveToStage(position.id, stage.id)}
-                                    className="hover:opacity-80"
-                                    style={{
-                                      backgroundColor: stage.background_color,
-                                      color: stage.text_color,
-                                    }}
-                                  >
-                                    <span className="text-sm">{stage.icon}</span>
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Move to {stage.name}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+      ) : null}
 
       {/* Info Box */}
       <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-6">

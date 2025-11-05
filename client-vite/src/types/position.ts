@@ -20,6 +20,7 @@ export interface JobPositionWorkflow {
   company_id: string;
   name: string;
   default_view: string; // 'kanban' | 'list'
+  status: string; // 'draft' | 'published' | 'deprecated'
   stages: JobPositionWorkflowStage[];
   custom_fields_config: Record<string, any>;
   created_at: string;

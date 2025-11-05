@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Settings, Trash2, Edit, Briefcase } from 'lucide-react';
+import { Plus, Settings, Edit, Briefcase, CheckCircle, Archive } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { JobPositionWorkflow } from '../../types/position';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
 
 export default function JobPositionWorkflowsSettingsPage() {
   const navigate = useNavigate();
@@ -35,7 +36,26 @@ export default function JobPositionWorkflowsSettingsPage() {
       }
 
       const data = await PositionService.getWorkflows(companyId);
-      setWorkflows(data);
+      
+      // Sort workflows: published first, then draft, then deprecated (archived) last
+      const sortedWorkflows = data.sort((a, b) => {
+        const statusOrder: Record<string, number> = {
+          'published': 1,
+          'draft': 2,
+          'deprecated': 3
+        };
+        const orderA = statusOrder[a.status] || 999;
+        const orderB = statusOrder[b.status] || 999;
+        
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        
+        // If same status, sort by name
+        return a.name.localeCompare(b.name);
+      });
+      
+      setWorkflows(sortedWorkflows);
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load workflows');
@@ -45,16 +65,31 @@ export default function JobPositionWorkflowsSettingsPage() {
     }
   };
 
-  const handleDelete = async (_workflowId: string) => {
-    if (!confirm('Are you sure you want to delete this workflow?')) return;
+  const handlePublish = async (workflow: JobPositionWorkflow) => {
+    if (!confirm(`Publish workflow "${workflow.name}"? It will become available for use.`)) return;
 
     try {
-      // TODO: Implement delete endpoint in PositionService
-      // await PositionService.deleteWorkflow(_workflowId);
-      alert('Delete functionality will be implemented');
+      await PositionService.publishWorkflow(workflow.id, {
+        name: workflow.name,
+        default_view: workflow.default_view
+      });
       loadWorkflows();
     } catch (err: any) {
-      alert(`Failed to delete workflow: ${err.message}`);
+      alert(`Failed to publish workflow: ${err.message}`);
+    }
+  };
+
+  const handleArchive = async (workflow: JobPositionWorkflow) => {
+    if (!confirm(`Archive workflow "${workflow.name}"? It will no longer be available for new positions.`)) return;
+
+    try {
+      await PositionService.archiveWorkflow(workflow.id, {
+        name: workflow.name,
+        default_view: workflow.default_view
+      });
+      loadWorkflows();
+    } catch (err: any) {
+      alert(`Failed to archive workflow: ${err.message}`);
     }
   };
 
@@ -68,6 +103,35 @@ export default function JobPositionWorkflowsSettingsPage() {
 
   const handleConfigureWorkflow = (workflowId: string) => {
     navigate(`/company/settings/job-position-workflows/${workflowId}/configure`);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'published':
+        return (
+          <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+            Active
+          </span>
+        );
+      case 'draft':
+        return (
+          <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+            Draft
+          </span>
+        );
+      case 'deprecated':
+        return (
+          <span className="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+            Archived
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+            {status}
+          </span>
+        );
+    }
   };
 
   if (loading) {
@@ -133,6 +197,7 @@ export default function JobPositionWorkflowsSettingsPage() {
                       {workflow.name}
                     </h3>
                     <div className="flex items-center gap-2">
+                      {getStatusBadge(workflow.status)}
                       <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
                         {workflow.default_view}
                       </span>
@@ -151,34 +216,73 @@ export default function JobPositionWorkflowsSettingsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap gap-2">
-                  {/* Edit button */}
-                  <button
-                    onClick={() => handleEditWorkflow(workflow.id)}
-                    className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                    title="Edit workflow"
-                  >
-                    <Edit className="w-4 h-4 mx-auto" />
-                  </button>
+                <TooltipProvider delayDuration={300}>
+                  <div className="flex flex-wrap gap-2">
+                    {/* Edit button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => handleEditWorkflow(workflow.id)}
+                          className="flex-1 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
+                        >
+                          <Edit className="w-4 h-4 mx-auto" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit workflow name and stages</p>
+                      </TooltipContent>
+                    </Tooltip>
 
-                  {/* Configure button */}
-                  <button
-                    onClick={() => handleConfigureWorkflow(workflow.id)}
-                    className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-                    title="Configure custom fields"
-                  >
-                    <Settings className="w-4 h-4 mx-auto" />
-                  </button>
+                    {/* Configure button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => handleConfigureWorkflow(workflow.id)}
+                          className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                          <Settings className="w-4 h-4 mx-auto" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Configure custom fields</p>
+                      </TooltipContent>
+                    </Tooltip>
 
-                  {/* Delete button */}
-                  <button
-                    onClick={() => handleDelete(workflow.id)}
-                    className="flex-1 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
-                    title="Delete workflow"
-                  >
-                    <Trash2 className="w-4 h-4 mx-auto" />
-                  </button>
-                </div>
+                    {/* Publish button (only if not published) */}
+                    {workflow.status !== 'published' && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => handlePublish(workflow)}
+                            className="flex-1 px-3 py-2 text-sm bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
+                          >
+                            <CheckCircle className="w-4 h-4 mx-auto" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Publish workflow</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+
+                    {/* Archive button (only if published) */}
+                    {workflow.status === 'published' && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => handleArchive(workflow)}
+                            className="flex-1 px-3 py-2 text-sm bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
+                          >
+                            <Archive className="w-4 h-4 mx-auto" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Archive workflow (no longer available for new positions)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                </TooltipProvider>
               </div>
 
               {/* Stages Preview */}

@@ -7,6 +7,7 @@ from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.value_objects.stage_id import StageId
 from src.job_position.domain.enums.view_type import ViewTypeEnum
 from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
+from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
 from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
 from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
 from src.job_position.infrastructure.models.job_position_workflow_model import JobPositionWorkflowModel
@@ -69,6 +70,7 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
             company_id=CompanyId.from_string(model.company_id),
             name=model.name,
             default_view=ViewTypeEnum(model.default_view),
+            status=JobPositionWorkflowStatusEnum(model.status),
             stages=stages,
             custom_fields_config=model.custom_fields_config or {},
             created_at=model.created_at,
@@ -87,6 +89,7 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
             company_id=str(entity.company_id),
             name=entity.name,
             default_view=entity.default_view.value,
+            status=entity.status.value,
             stages=stages_json,
             custom_fields_config=entity.custom_fields_config,
             created_at=entity.created_at,
@@ -102,6 +105,7 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
 
         model.name = entity.name
         model.default_view = entity.default_view.value
+        model.status = entity.status.value
         model.stages = stages_json
         model.custom_fields_config = entity.custom_fields_config
         model.updated_at = entity.updated_at

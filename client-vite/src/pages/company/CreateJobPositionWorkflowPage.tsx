@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
+import { api } from '../../lib/api';
+import type { CompanyRole } from '../../types/company';
 
 interface StageFormData {
   id: string;
@@ -24,6 +26,7 @@ export default function CreateJobPositionWorkflowPage() {
 
   const [workflowName, setWorkflowName] = useState('');
   const [defaultView, setDefaultView] = useState('kanban');
+  const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
   const [stages, setStages] = useState<StageFormData[]>([
     {
       id: `stage-${Date.now()}`,
@@ -59,6 +62,22 @@ export default function CreateJobPositionWorkflowPage() {
       return payload.company_id;
     } catch {
       return null;
+    }
+  };
+
+  useEffect(() => {
+    loadCompanyRoles();
+  }, []);
+
+  const loadCompanyRoles = async () => {
+    const companyId = getCompanyId();
+    if (!companyId) return;
+
+    try {
+      const response = await api.listCompanyRoles(companyId, false);
+      setCompanyRoles(response as CompanyRole[]);
+    } catch (err: any) {
+      console.error('Error loading company roles:', err);
     }
   };
 
@@ -348,6 +367,22 @@ export default function CreateJobPositionWorkflowPage() {
                         <option value="vertical">Vertical (Column)</option>
                         <option value="horizontal_bottom">Horizontal (Row)</option>
                         <option value="hidden">Hidden</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Responsible Role</label>
+                      <select
+                        value={stage.role || ''}
+                        onChange={(e) => handleStageChange(index, 'role', e.target.value || null)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Not assigned</option>
+                        {companyRoles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

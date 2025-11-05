@@ -22,6 +22,7 @@ from src.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.job_position.domain.enums.view_type import ViewTypeEnum
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
+from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
 from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
 from src.company.domain.value_objects.company_id import CompanyId
 from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
@@ -62,6 +63,7 @@ class JobPositionWorkflowController:
                 role=role,
                 field_visibility=stage_data.field_visibility,
                 field_validation=stage_data.field_validation,
+                field_candidate_visibility=stage_data.field_candidate_visibility,
             )
             stages.append(stage)
 
@@ -91,6 +93,7 @@ class JobPositionWorkflowController:
         workflow_id_vo = JobPositionWorkflowId.from_string(workflow_id)
 
         default_view = ViewTypeEnum(request.default_view) if request.default_view else None
+        status = JobPositionWorkflowStatusEnum(request.status) if request.status else None
 
         # Convert stages from request to WorkflowStage value objects
         stages = None
@@ -132,6 +135,7 @@ class JobPositionWorkflowController:
             id=workflow_id_vo,
             name=request.name,
             default_view=default_view,
+            status=status,
             stages=stages,
             custom_fields_config=request.custom_fields_config,
         )
@@ -169,16 +173,31 @@ class JobPositionWorkflowController:
         return [self._dto_to_response(dto) for dto in workflow_dtos]
 
     def initialize_default_workflows(self, company_id: str) -> List[JobPositionWorkflowResponse]:
-        """Initialize default job position workflows for a company"""
+        """
+        Initialize default job position workflows for a company.
+        
+        This will ARCHIVE all existing workflows and create new defaults.
+        """
         company_id_vo = CompanyId.from_string(company_id)
 
-        # Check if workflows already exist
+        # Archive all existing workflows for this company
         query = ListJobPositionWorkflowsQuery(company_id=company_id_vo)
         existing_workflows: List[JobPositionWorkflowDto] = self.query_bus.query(query)
         
         if existing_workflows:
-            logger.info(f"Workflows already exist for company {company_id}")
-            return []
+            logger.info(f"Archiving {len(existing_workflows)} existing workflows for company {company_id}")
+            for workflow_dto in existing_workflows:
+                # Only archive if not already deprecated
+                if workflow_dto.status != JobPositionWorkflowStatusEnum.DEPRECATED.value:
+                    update_command = UpdateJobPositionWorkflowCommand(
+                        id=JobPositionWorkflowId.from_string(workflow_dto.id),
+                        name=workflow_dto.name,
+                        default_view=ViewTypeEnum(workflow_dto.default_view),
+                        status=JobPositionWorkflowStatusEnum.DEPRECATED,
+                        stages=None,  # Keep existing stages
+                        custom_fields_config=None  # Keep existing config
+                    )
+                    self.command_bus.dispatch(update_command)
 
         # Create default workflows
         created_workflows = []
@@ -238,6 +257,7 @@ class JobPositionWorkflowController:
             company_id=company_id_vo,
             name="Proceso de Contratación Estándar",
             default_view=ViewTypeEnum.KANBAN,
+            status=JobPositionWorkflowStatusEnum.PUBLISHED,  # Default workflows are published
             stages=stages1,
             custom_fields_config={},
         )
@@ -286,6 +306,7 @@ class JobPositionWorkflowController:
             company_id=company_id_vo,
             name="Flujo Simplificado",
             default_view=ViewTypeEnum.LIST,
+            status=JobPositionWorkflowStatusEnum.PUBLISHED,  # Default workflows are published
             stages=stages2,
             custom_fields_config={},
         )
@@ -343,6 +364,7 @@ class JobPositionWorkflowController:
             company_id=company_id_vo,
             name="General",
             default_view=ViewTypeEnum.KANBAN,
+            status=JobPositionWorkflowStatusEnum.PUBLISHED,  # Default workflows are published
             stages=stages3,
             custom_fields_config={},
         )
@@ -407,6 +429,7 @@ class JobPositionWorkflowController:
                 kanban_display=stage.kanban_display,
                 field_visibility=stage.field_visibility,
                 field_validation=stage.field_validation,
+                field_candidate_visibility=stage.field_candidate_visibility,
             )
             for stage in dto.stages
         ]
@@ -416,6 +439,7 @@ class JobPositionWorkflowController:
             company_id=dto.company_id,
             name=dto.name,
             default_view=dto.default_view,
+            status=dto.status,
             stages=stages,
             custom_fields_config=dto.custom_fields_config,
             created_at=dto.created_at,

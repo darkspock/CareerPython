@@ -261,6 +261,7 @@ from src.job_position.application.commands.delete_job_position import DeleteJobP
 # Status management command handlers have been removed - use MoveJobPositionToStageCommandHandler instead
 from src.job_position.application.commands.create_job_position_workflow import CreateJobPositionWorkflowCommandHandler
 from src.job_position.application.commands.update_job_position_workflow import UpdateJobPositionWorkflowCommandHandler
+from src.job_position.application.commands.delete_job_position_workflow_command import DeleteJobPositionWorkflowCommandHandler
 from src.job_position.application.commands.move_job_position_to_stage import MoveJobPositionToStageCommandHandler
 from src.job_position.application.commands.update_job_position_custom_fields import UpdateJobPositionCustomFieldsCommandHandler
 from src.job_position.application.commands.create_job_position_comment_command import CreateJobPositionCommentCommandHandler
@@ -1588,6 +1589,11 @@ class Container(containers.DeclarativeContainer):
     update_job_position_workflow_command_handler = providers.Factory(
         UpdateJobPositionWorkflowCommandHandler,
         workflow_repository=job_position_workflow_repository
+    )
+
+    delete_job_position_workflow_command_handler = providers.Factory(
+        DeleteJobPositionWorkflowCommandHandler,
+        repository=job_position_workflow_repository
     )
 
     move_job_position_to_stage_command_handler = providers.Factory(

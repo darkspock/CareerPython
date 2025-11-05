@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { PositionService } from '../../services/positionService';
 import { StageStyleEditor } from '../../components/workflow/StageStyleEditor';
 import type { UpdateStageStyleRequest } from '../../types/stageStyle';
+import { api } from '../../lib/api';
+import type { CompanyRole } from '../../types/company';
 
 interface StageFormData {
   id: string;
@@ -34,12 +36,37 @@ export default function EditJobPositionWorkflowPage() {
   const [stages, setStages] = useState<StageFormData[]>([]);
   const [styleEditorOpen, setStyleEditorOpen] = useState(false);
   const [editingStageIndex, setEditingStageIndex] = useState<number | null>(null);
+  const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
 
   useEffect(() => {
     if (workflowId) {
       loadWorkflow();
+      loadCompanyRoles();
     }
   }, [workflowId]);
+
+  const getCompanyId = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.company_id;
+    } catch {
+      return null;
+    }
+  };
+
+  const loadCompanyRoles = async () => {
+    const companyId = getCompanyId();
+    if (!companyId) return;
+
+    try {
+      const response = await api.listCompanyRoles(companyId, false);
+      setCompanyRoles(response as CompanyRole[]);
+    } catch (err: any) {
+      console.error('Error loading company roles:', err);
+    }
+  };
 
   const loadWorkflow = async () => {
     if (!workflowId) return;
@@ -383,6 +410,22 @@ export default function EditJobPositionWorkflowPage() {
                         <option value="vertical">Vertical (Columna)</option>
                         <option value="horizontal_bottom">Horizontal (Fila)</option>
                         <option value="hidden">Oculto</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Rol Responsable</label>
+                      <select
+                        value={stage.role || ''}
+                        onChange={(e) => handleStageChange(index, 'role', e.target.value || null)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Sin asignar</option>
+                        {companyRoles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
