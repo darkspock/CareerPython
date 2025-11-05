@@ -26,7 +26,6 @@ export default function EditJobPositionWorkflowPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [workflowName, setWorkflowName] = useState('');
-  const [workflowType, setWorkflowType] = useState('standard');
   const [defaultView, setDefaultView] = useState('kanban');
   const [stages, setStages] = useState<StageFormData[]>([]);
   const [customFieldsConfig, setCustomFieldsConfig] = useState<{
@@ -58,7 +57,6 @@ export default function EditJobPositionWorkflowPage() {
       const workflow = await PositionService.getWorkflow(workflowId);
 
       setWorkflowName(workflow.name);
-      setWorkflowType(workflow.workflow_type);
       setDefaultView(workflow.default_view);
 
       const formattedStages: StageFormData[] = workflow.stages.map((stage) => ({
@@ -163,7 +161,6 @@ export default function EditJobPositionWorkflowPage() {
       setSaving(true);
       await PositionService.updateWorkflow(workflowId, {
         name: workflowName,
-        workflow_type: workflowType,
         default_view: defaultView,
         stages: stages.map(stage => ({
           id: stage.id,
@@ -237,18 +234,6 @@ export default function EditJobPositionWorkflowPage() {
                 onChange={(e) => setWorkflowName(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Workflow Type</label>
-              <select
-                value={workflowType}
-                onChange={(e) => setWorkflowType(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="standard">Standard</option>
-                <option value="custom">Custom</option>
-              </select>
             </div>
 
             <div>

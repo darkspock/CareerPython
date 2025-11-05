@@ -250,7 +250,7 @@ export default function PositionsListPage() {
   useEffect(() => {
     if (workflows.length > 0 && !selectedWorkflowId) {
       // Select first workflow by default
-      const defaultWorkflow = workflows.find(w => w.workflow_type === 'standard') || workflows[0];
+      const defaultWorkflow = workflows[0];
       if (defaultWorkflow) {
         setSelectedWorkflowId(defaultWorkflow.id);
         setCurrentWorkflow(defaultWorkflow);

@@ -145,11 +145,10 @@ export class PositionService {
   /**
    * Get list of workflows for a company
    */
-  static async getWorkflows(companyId: string, workflowType?: string): Promise<JobPositionWorkflow[]> {
+  static async getWorkflows(companyId: string): Promise<JobPositionWorkflow[]> {
     try {
       const queryParams = new URLSearchParams();
       queryParams.append('company_id', companyId);
-      if (workflowType) queryParams.append('workflow_type', workflowType);
 
       const endpoint = `${this.WORKFLOW_BASE_PATH}?${queryParams.toString()}`;
       const response = await api.authenticatedRequest<JobPositionWorkflow[]>(endpoint);
@@ -179,7 +178,6 @@ export class PositionService {
   static async createWorkflow(workflowData: {
     company_id: string;
     name: string;
-    workflow_type?: string;
     default_view?: string;
     stages?: Array<{
       id: string;
@@ -218,7 +216,6 @@ export class PositionService {
     workflowId: string,
     workflowData: {
       name: string;
-      workflow_type?: string;
       default_view?: string;
       stages?: Array<{
         id: string;

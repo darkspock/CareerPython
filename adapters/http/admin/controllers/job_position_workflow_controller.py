@@ -17,7 +17,6 @@ from src.job_position.domain.value_objects.job_position_workflow_id import JobPo
 from src.job_position.domain.value_objects.stage_id import StageId
 from src.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.job_position.domain.enums.view_type import ViewTypeEnum
-from src.job_position.domain.enums.workflow_type import WorkflowTypeEnum
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
 from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
@@ -63,14 +62,12 @@ class JobPositionWorkflowController:
             )
             stages.append(stage)
 
-        workflow_type = WorkflowTypeEnum(request.workflow_type)
         default_view = ViewTypeEnum(request.default_view)
 
         command = CreateJobPositionWorkflowCommand(
             id=workflow_id,
             company_id=company_id,
             name=request.name,
-            workflow_type=workflow_type,
             default_view=default_view,
             stages=stages,
             custom_fields_config=request.custom_fields_config,
@@ -90,7 +87,6 @@ class JobPositionWorkflowController:
         """Update a job position workflow"""
         workflow_id_vo = JobPositionWorkflowId.from_string(workflow_id)
 
-        workflow_type = WorkflowTypeEnum(request.workflow_type) if request.workflow_type else None
         default_view = ViewTypeEnum(request.default_view) if request.default_view else None
 
         # Convert stages from request to WorkflowStage value objects
@@ -132,7 +128,6 @@ class JobPositionWorkflowController:
         command = UpdateJobPositionWorkflowCommand(
             id=workflow_id_vo,
             name=request.name,
-            workflow_type=workflow_type,
             default_view=default_view,
             stages=stages,
             custom_fields_config=request.custom_fields_config,
@@ -159,14 +154,12 @@ class JobPositionWorkflowController:
 
         return self._dto_to_response(workflow_dto)
 
-    def list_workflows(self, company_id: str, workflow_type: Optional[str] = None) -> List[JobPositionWorkflowResponse]:
+    def list_workflows(self, company_id: str) -> List[JobPositionWorkflowResponse]:
         """List job position workflows for a company"""
         company_id_vo = CompanyId.from_string(company_id)
-        workflow_type_enum = WorkflowTypeEnum(workflow_type) if workflow_type else None
 
         query = ListJobPositionWorkflowsQuery(
             company_id=company_id_vo,
-            workflow_type=workflow_type_enum,
         )
         workflow_dtos: List[JobPositionWorkflowDto] = self.query_bus.query(query)
 
@@ -224,7 +217,6 @@ class JobPositionWorkflowController:
             id=dto.id,
             company_id=dto.company_id,
             name=dto.name,
-            workflow_type=dto.workflow_type,
             default_view=dto.default_view,
             stages=stages,
             custom_fields_config=dto.custom_fields_config,

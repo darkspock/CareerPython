@@ -261,7 +261,7 @@ export default function EditPositionPage() {
                 <option value="">No Workflow (Legacy)</option>
                 {workflows.map((workflow) => (
                   <option key={workflow.id} value={workflow.id}>
-                    {workflow.name} ({workflow.workflow_type})
+                    {workflow.name}
                   </option>
                 ))}
               </select>

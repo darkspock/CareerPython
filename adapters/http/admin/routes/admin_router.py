@@ -669,10 +669,9 @@ def update_workflow(
 def list_workflows(
         controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
         company_id: str = Query(..., description="Company ID"),
-        workflow_type: Optional[str] = Query(None, description="Filter by workflow type"),
 ) -> List[JobPositionWorkflowResponse]:
     """List job position workflows for a company"""
-    return controller.list_workflows(company_id, workflow_type)
+    return controller.list_workflows(company_id)
 
 
 @router.post("/positions/{position_id}/move-to-stage", response_model=dict)

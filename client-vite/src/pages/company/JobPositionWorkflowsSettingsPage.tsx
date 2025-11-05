@@ -129,9 +129,6 @@ export default function JobPositionWorkflowsSettingsPage() {
                       {workflow.name}
                     </h3>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                        {workflow.workflow_type}
-                      </span>
                       <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
                         {workflow.default_view}
                       </span>

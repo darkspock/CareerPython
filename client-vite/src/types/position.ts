@@ -19,7 +19,6 @@ export interface JobPositionWorkflow {
   id: string;
   company_id: string;
   name: string;
-  workflow_type: string; // 'standard' | 'custom'
   default_view: string; // 'kanban' | 'list'
   stages: JobPositionWorkflowStage[];
   custom_fields_config: Record<string, any>;

@@ -56,7 +56,7 @@ export default function CreatePositionPage() {
           setLoadingWorkflow(true);
           const workflows = await PositionService.getWorkflows(companyId);
           if (workflows.length > 0) {
-            const defaultWorkflow = workflows.find(w => w.workflow_type === 'standard') || workflows[0];
+            const defaultWorkflow = workflows[0];
             const fullWorkflow = await PositionService.getWorkflow(defaultWorkflow.id);
             setCurrentWorkflow(fullWorkflow);
             setFormData(prev => ({
