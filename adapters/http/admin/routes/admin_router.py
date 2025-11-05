@@ -554,6 +554,8 @@ def delete_company(
 @inject
 def list_positions(
         controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
         company_id: Optional[str] = Query(None, description="Filter by company ID"),
         search_term: Optional[str] = Query(None, description="Search in position titles"),
         department: Optional[str] = Query(None, description="Filter by department"),
@@ -566,6 +568,18 @@ def list_positions(
         page_size: Optional[int] = Query(10, ge=1, le=100, description="Items per page")
 ) -> JobPositionListResponse:
     """List job positions with filtering options"""
+    # Get company_user_id for the current user (if company_id provided)
+    company_user_id = None
+    if company_id:
+        from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+        company_user_query = GetCompanyUserByCompanyAndUserQuery(
+            company_id=company_id,
+            user_id=current_admin.id
+        )
+        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        if company_user_dto:
+            company_user_id = company_user_dto.id
+    
     return controller.list_positions(
         company_id=company_id,
         search_term=search_term,
@@ -576,7 +590,8 @@ def list_positions(
         is_remote=is_remote,
         is_active=is_active,
         page=page,
-        page_size=page_size
+        page_size=page_size,
+        current_user_id=company_user_id
     )
 
 
@@ -757,17 +772,69 @@ def create_job_position_comment(
     controller.create_comment(position_id, request, company_user_dto.id)
 
 
+@router.get("/positions/{position_id}/comments/all", response_model=list[JobPositionCommentResponse])
+@inject
+def list_all_job_position_comments(
+        position_id: str,
+        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
+        job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
+) -> list[JobPositionCommentResponse]:
+    """List ALL comments for a job position (no filtering, visibility applied)"""
+    # Get company_user_id for the current user
+    from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
+    from src.job_position.domain.value_objects import JobPositionId
+    from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    
+    position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
+    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
+    
+    company_user_id = None
+    if position_dto:
+        company_user_query = GetCompanyUserByCompanyAndUserQuery(
+            company_id=position_dto.company_id.value,
+            user_id=current_admin.id
+        )
+        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        if company_user_dto:
+            company_user_id = company_user_dto.id
+    
+    response = controller.list_all_comments(position_id, current_user_id=company_user_id)
+    return response.comments
+
+
 @router.get("/positions/{position_id}/comments", response_model=JobPositionCommentListResponse)
 @inject
 def list_job_position_comments(
         position_id: str,
         controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
+        job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
         stage_id: Optional[str] = Query(None, description="Filter by stage (null = global comments only)"),
         include_global: bool = Query(True, description="Include global comments"),
 ) -> JobPositionCommentListResponse:
-    """List comments for a job position"""
-    return controller.list_comments(position_id, stage_id, include_global)
+    """List comments for a job position (with visibility filtering)"""
+    # Get company_user_id for the current user
+    from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
+    from src.job_position.domain.value_objects import JobPositionId
+    from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    
+    position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
+    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
+    
+    company_user_id = None
+    if position_dto:
+        company_user_query = GetCompanyUserByCompanyAndUserQuery(
+            company_id=position_dto.company_id.value,
+            user_id=current_admin.id
+        )
+        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        if company_user_dto:
+            company_user_id = company_user_dto.id
+    
+    return controller.list_comments(position_id, stage_id, include_global, current_user_id=company_user_id)
 
 
 @router.put("/positions/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -109,6 +109,7 @@ class JobPositionResponse(BaseModel):
     public_slug: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    pending_comments_count: int = 0  # Number of pending comments
 
     class Config:
         use_enum_values = True
@@ -132,7 +133,8 @@ class JobPositionResponse(BaseModel):
             visibility=dto.visibility,
             public_slug=dto.public_slug,
             created_at=dto.created_at,
-            updated_at=dto.updated_at
+            updated_at=dto.updated_at,
+            pending_comments_count=dto.pending_comments_count
         )
 
 

@@ -12,7 +12,7 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, ExternalLink, Kanban, List } from 'lucide-react';
+import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, ExternalLink, Kanban, List, MessageCircle } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import type { Position, JobPositionWorkflow, JobPositionWorkflowStage } from '../../types/position';
@@ -80,11 +80,19 @@ function PositionCard({
           <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
             {position.title}
           </h3>
-          {position.stage && (
-            <Badge variant="secondary" className={getStatusColorFromStage(position.stage)}>
-              {getStatusLabelFromStage(position.stage)}
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {position.stage && (
+              <Badge variant="secondary" className={getStatusColorFromStage(position.stage)}>
+                {getStatusLabelFromStage(position.stage)}
+              </Badge>
+            )}
+            {position.pending_comments_count !== undefined && position.pending_comments_count > 0 && (
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                <MessageCircle className="w-3 h-3 mr-1" />
+                {position.pending_comments_count}
+              </Badge>
+            )}
+          </div>
         </div>
 
       <div className="space-y-1 mb-3 text-xs text-gray-600">
@@ -712,27 +720,30 @@ function PositionsListPageContent() {
           onDragEnd={handleDragEnd}
         >
           <div className="space-y-4">
-            {/* Column stages (vertical) - shown in 2 columns grid */}
+            {/* Column stages (vertical) - shown in horizontal scrollable row */}
             {columnStages.length > 0 && (
-              <div className="grid grid-cols-2 gap-4">
-                {columnStages.map((stage) => {
-                  const stagePositions = positions.filter(
-                    (p) => p.stage_id === stage.id && p.job_position_workflow_id === currentWorkflow.id
-                  );
-                  console.log(`[PositionsList] Column Stage ${stage.id} (${stage.name}): ${stagePositions.length} positions`);
-                  return (
-                    <StageColumn
-                      key={stage.id}
-                      stage={stage}
-                      positions={stagePositions}
-                      onView={(id) => navigate(`/company/positions/${id}`)}
-                      onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
-                      onViewPublic={handleViewPublic}
-                      horizontalStages={horizontalStages}
-                      onMoveToStage={handleMoveToStage}
-                    />
-                  );
-                })}
+              <div className="overflow-x-auto pb-4">
+                <div className="flex gap-4 min-w-max">
+                  {columnStages.map((stage) => {
+                    const stagePositions = positions.filter(
+                      (p) => p.stage_id === stage.id && p.job_position_workflow_id === currentWorkflow.id
+                    );
+                    console.log(`[PositionsList] Column Stage ${stage.id} (${stage.name}): ${stagePositions.length} positions`);
+                    return (
+                      <div key={stage.id} className="w-80 flex-shrink-0">
+                        <StageColumn
+                          stage={stage}
+                          positions={stagePositions}
+                          onView={(id) => navigate(`/company/positions/${id}`)}
+                          onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
+                          onViewPublic={handleViewPublic}
+                          horizontalStages={horizontalStages}
+                          onMoveToStage={handleMoveToStage}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
             
@@ -767,24 +778,27 @@ function PositionsListPageContent() {
             
             {/* If no stages are configured, show all stages as columns */}
             {columnStages.length === 0 && horizontalStages.length === 0 && (
-              <div className="grid grid-cols-2 gap-4">
-                {currentWorkflow.stages.map((stage) => {
-                  const stagePositions = positions.filter(
-                    (p) => p.stage_id === stage.id && p.job_position_workflow_id === currentWorkflow.id
-                  );
-                  return (
-                    <StageColumn
-                      key={stage.id}
-                      stage={stage}
-                      positions={stagePositions}
-                      onView={(id) => navigate(`/company/positions/${id}`)}
-                      onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
-                      onViewPublic={handleViewPublic}
-                      horizontalStages={horizontalStages}
-                      onMoveToStage={handleMoveToStage}
-                    />
-                  );
-                })}
+              <div className="overflow-x-auto pb-4">
+                <div className="flex gap-4 min-w-max">
+                  {currentWorkflow.stages.map((stage) => {
+                    const stagePositions = positions.filter(
+                      (p) => p.stage_id === stage.id && p.job_position_workflow_id === currentWorkflow.id
+                    );
+                    return (
+                      <div key={stage.id} className="w-80 flex-shrink-0">
+                        <StageColumn
+                          stage={stage}
+                          positions={stagePositions}
+                          onView={(id) => navigate(`/company/positions/${id}`)}
+                          onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
+                          onViewPublic={handleViewPublic}
+                          horizontalStages={horizontalStages}
+                          onMoveToStage={handleMoveToStage}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

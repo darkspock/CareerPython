@@ -84,6 +84,7 @@ export interface Position {
   public_slug?: string | null;
   created_at?: string;
   updated_at?: string;
+  pending_comments_count?: number;  // Number of pending comments
   
   // Expanded data (when workflow/stage is loaded)
   stage?: JobPositionWorkflowStage;

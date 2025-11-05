@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.shared.application.command_bus import Command, CommandHandler
-from src.company_candidate.domain.enums import CommentVisibility
+from src.job_position.domain.enums import CommentVisibilityEnum
 from src.job_position.domain.value_objects import JobPositionCommentId
 from src.job_position.domain.infrastructure.job_position_comment_repository_interface import (
     JobPositionCommentRepositoryInterface
@@ -44,7 +44,7 @@ class UpdateJobPositionCommentCommandHandler(CommandHandler[UpdateJobPositionCom
             raise ValueError(f"Comment with ID {command.comment_id} not found")
 
         # Update the comment
-        new_visibility = CommentVisibility(command.visibility) if command.visibility else None
+        new_visibility = CommentVisibilityEnum(command.visibility) if command.visibility else None
         comment.update(
             comment=command.comment,
             visibility=new_visibility,

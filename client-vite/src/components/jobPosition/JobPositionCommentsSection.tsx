@@ -18,14 +18,18 @@ const toast = {
 
 interface JobPositionCommentsSectionProps {
   positionId: string;
+  workflowId?: string;
   currentStageId?: string;
+  onCommentsChange?: () => void;
 }
 
 type CommentTab = 'current' | 'global' | 'all';
 
 export const JobPositionCommentsSection: React.FC<JobPositionCommentsSectionProps> = ({
   positionId,
+  workflowId,
   currentStageId,
+  onCommentsChange,
 }) => {
   const [activeTab, setActiveTab] = useState<CommentTab>('current');
   const [comments, setComments] = useState<JobPositionComment[]>([]);
@@ -70,6 +74,7 @@ export const JobPositionCommentsSection: React.FC<JobPositionCommentsSectionProp
   // Create comment
   const handleCreateComment = async (data: {
     comment: string;
+    workflow_id?: string | null;
     stage_id?: string | null;
     visibility: any;
     review_status: any;
@@ -78,6 +83,7 @@ export const JobPositionCommentsSection: React.FC<JobPositionCommentsSectionProp
     try {
       await JobPositionCommentService.createComment(positionId, data);
       await loadComments();
+      onCommentsChange?.();
     } catch (error) {
       console.error('Error creating comment:', error);
       toast.error('Error al crear comentario');
@@ -96,6 +102,7 @@ export const JobPositionCommentsSection: React.FC<JobPositionCommentsSectionProp
       await JobPositionCommentService.deleteComment(commentId);
       toast.success('Comentario eliminado');
       await loadComments();
+      onCommentsChange?.();
     } catch (error) {
       console.error('Error deleting comment:', error);
       toast.error('Error al eliminar comentario');
@@ -114,6 +121,7 @@ export const JobPositionCommentsSection: React.FC<JobPositionCommentsSectionProp
         await JobPositionCommentService.markCommentAsPending(commentId);
       }
       await loadComments();
+      onCommentsChange?.();
     } catch (error) {
       console.error('Error toggling comment review status:', error);
       toast.error('Error al actualizar el estado del comentario');
@@ -173,6 +181,7 @@ export const JobPositionCommentsSection: React.FC<JobPositionCommentsSectionProp
       {/* Comment form */}
       <JobPositionCommentForm
         onSubmit={handleCreateComment}
+        workflowId={workflowId}
         currentStageId={currentStageId}
         isGlobalComment={activeTab === 'global'}
         isSubmitting={isSubmitting}

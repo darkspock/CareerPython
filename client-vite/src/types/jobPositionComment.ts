@@ -34,6 +34,7 @@ export interface JobPositionComment {
 
 export interface CreateJobPositionCommentRequest {
   comment: string;
+  workflow_id?: string | null;
   stage_id?: string | null;
   visibility?: CommentVisibility;
   review_status?: CommentReviewStatus;

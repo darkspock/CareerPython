@@ -129,10 +129,13 @@ class JobPositionCommentService {
 
   /**
    * Get all comments for a position (regardless of stage)
+   * This makes a direct API call to get ALL comments without stage filtering
    */
   async getAllComments(positionId: string): Promise<JobPositionComment[]> {
-    const response = await this.listComments(positionId, undefined, true);
-    return response.comments;
+    return ApiClient.authenticatedRequest<JobPositionComment[]>(
+      `${this.baseUrl}/${positionId}/comments/all`,
+      { method: 'GET' }
+    );
   }
 
   /**

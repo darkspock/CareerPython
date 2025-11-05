@@ -7,9 +7,9 @@ from sqlalchemy import String, Text, DateTime, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base
-from src.company_candidate.domain.enums import (
-    CommentVisibility,
-    CommentReviewStatus,
+from src.job_position.domain.enums import (
+    CommentVisibilityEnum,
+    CommentReviewStatusEnum,
 )
 
 
@@ -44,15 +44,15 @@ class JobPositionCommentModel(Base):
         index=True
     )
     review_status: Mapped[str] = mapped_column(
-        SQLEnum(CommentReviewStatus, native_enum=False, length=20),
+        SQLEnum(CommentReviewStatusEnum, native_enum=False, length=20),
         nullable=False,
-        default=CommentReviewStatus.REVIEWED.value,
+        default=CommentReviewStatusEnum.REVIEWED.value,
         index=True
     )
     visibility: Mapped[str] = mapped_column(
-        SQLEnum(CommentVisibility, native_enum=False, length=30),
+        SQLEnum(CommentVisibilityEnum, native_enum=False, length=30),
         nullable=False,
-        default=CommentVisibility.PRIVATE.value
+        default=CommentVisibilityEnum.SHARED.value
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

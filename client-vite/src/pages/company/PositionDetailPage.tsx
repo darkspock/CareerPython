@@ -15,6 +15,7 @@ import { DynamicCustomFields } from '../../components/jobPosition/DynamicCustomF
 import { JobPositionCommentsSection } from '../../components/jobPosition/JobPositionCommentsSection';
 import { JobPositionActivityTimeline } from '../../components/jobPosition/JobPositionActivityTimeline';
 import JobPositionActivityService from '../../services/JobPositionActivityService';
+import JobPositionCommentService from '../../services/JobPositionCommentService';
 import type { JobPositionActivity } from '../../types/jobPositionActivity';
 
 export default function PositionDetailPage() {
@@ -27,10 +28,12 @@ export default function PositionDetailPage() {
   const [activeTab, setActiveTab] = useState<'info' | 'comments' | 'history'>('info');
   const [activities, setActivities] = useState<JobPositionActivity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
+  const [pendingCommentsCount, setPendingCommentsCount] = useState(0);
 
   useEffect(() => {
     if (id) {
       loadPosition();
+      loadPendingCommentsCount();
       if (activeTab === 'history') {
         loadActivities();
       }
@@ -75,6 +78,18 @@ export default function PositionDetailPage() {
       console.error('Error loading activities:', err);
     } finally {
       setLoadingActivities(false);
+    }
+  };
+
+  const loadPendingCommentsCount = async () => {
+    if (!id) return;
+    
+    try {
+      const allComments = await JobPositionCommentService.getAllComments(id);
+      const pendingCount = JobPositionCommentService.countPendingComments(allComments);
+      setPendingCommentsCount(pendingCount);
+    } catch (err) {
+      console.error('Error loading pending comments count:', err);
     }
   };
 
@@ -222,6 +237,11 @@ export default function PositionDetailPage() {
           >
             <MessageSquare className="h-4 w-4" />
             <span>Comments</span>
+            {pendingCommentsCount > 0 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                {pendingCommentsCount}
+              </span>
+            )}
           </button>
 
           <button
@@ -427,7 +447,9 @@ export default function PositionDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-6">Position Comments</h2>
           <JobPositionCommentsSection
             positionId={id!}
+            workflowId={position.job_position_workflow_id || undefined}
             currentStageId={position.stage_id || undefined}
+            onCommentsChange={loadPendingCommentsCount}
           />
         </div>
       )}

@@ -27,6 +27,7 @@ class JobPositionDto:
     public_slug: Optional[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
+    pending_comments_count: int = 0  # Number of pending comments
 
     @staticmethod
     def from_entity(entity: JobPosition) -> 'JobPositionDto':

@@ -9,10 +9,8 @@ from src.job_position.domain.value_objects import (
     JobPositionWorkflowId,
 )
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
-from src.company_candidate.domain.enums import (
-    CommentVisibility,
-    CommentReviewStatus,
-)
+from src.job_position.domain.enums.comment_visibility import CommentVisibilityEnum
+from src.job_position.domain.enums.comment_review_status import CommentReviewStatusEnum
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 
 
@@ -32,8 +30,8 @@ class JobPositionComment:
     workflow_id: Optional[JobPositionWorkflowId]
     stage_id: Optional[str]  # NULL = global comment (visible at all stages)
     created_by_user_id: CompanyUserId
-    review_status: CommentReviewStatus
-    visibility: CommentVisibility
+    review_status: CommentReviewStatusEnum
+    visibility: CommentVisibilityEnum
     created_at: datetime
     updated_at: datetime
 
@@ -46,8 +44,8 @@ class JobPositionComment:
         created_by_user_id: CompanyUserId,
         workflow_id: Optional[JobPositionWorkflowId] = None,
         stage_id: Optional[str] = None,
-        visibility: CommentVisibility = CommentVisibility.PRIVATE,
-        review_status: CommentReviewStatus = CommentReviewStatus.REVIEWED,
+        visibility: CommentVisibilityEnum = CommentVisibilityEnum.SHARED,
+        review_status: CommentReviewStatusEnum = CommentReviewStatusEnum.REVIEWED,
     ) -> "JobPositionComment":
         """
         Factory method to create a new comment
@@ -89,7 +87,7 @@ class JobPositionComment:
     def update(
         self,
         comment: Optional[str] = None,
-        visibility: Optional[CommentVisibility] = None,
+        visibility: Optional[CommentVisibilityEnum] = None,
     ) -> None:
         """
         Update comment content or visibility
@@ -113,12 +111,12 @@ class JobPositionComment:
 
     def mark_as_pending(self) -> None:
         """Mark this comment as pending review"""
-        self.review_status = CommentReviewStatus.PENDING
+        self.review_status = CommentReviewStatusEnum.PENDING
         self.updated_at = datetime.utcnow()
 
     def mark_as_reviewed(self) -> None:
         """Mark this comment as reviewed"""
-        self.review_status = CommentReviewStatus.REVIEWED
+        self.review_status = CommentReviewStatusEnum.REVIEWED
         self.updated_at = datetime.utcnow()
 
     @property

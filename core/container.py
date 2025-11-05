@@ -277,6 +277,7 @@ from src.job_position.application.queries.get_public_job_position import GetPubl
 from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQueryHandler
 from src.job_position.application.queries.list_job_position_workflows import ListJobPositionWorkflowsQueryHandler
 from src.job_position.application.queries.list_job_position_comments_query import ListJobPositionCommentsQueryHandler
+from src.job_position.application.queries.list_all_job_position_comments_query import ListAllJobPositionCommentsQueryHandler
 from src.job_position.application.queries.list_job_position_activities_query import ListJobPositionActivitiesQueryHandler
 
 # Job Position Infrastructure
@@ -991,7 +992,8 @@ class Container(containers.DeclarativeContainer):
     # Job Position Query Handlers
     list_job_positions_query_handler = providers.Factory(
         ListJobPositionsQueryHandler,
-        job_position_repository=job_position_repository
+        job_position_repository=job_position_repository,
+        job_position_comment_repository=job_position_comment_repository
     )
 
     get_job_position_by_id_query_handler = providers.Factory(
@@ -1028,6 +1030,11 @@ class Container(containers.DeclarativeContainer):
 
     list_job_position_comments_query_handler = providers.Factory(
         ListJobPositionCommentsQueryHandler,
+        comment_repository=job_position_comment_repository
+    )
+
+    list_all_job_position_comments_query_handler = providers.Factory(
+        ListAllJobPositionCommentsQueryHandler,
         comment_repository=job_position_comment_repository
     )
 

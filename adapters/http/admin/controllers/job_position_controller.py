@@ -51,7 +51,8 @@ class JobPositionController:
             is_remote: Optional[bool] = None,
             is_active: Optional[bool] = None,
             page: Optional[int] = None,
-            page_size: Optional[int] = None
+            page_size: Optional[int] = None,
+            current_user_id: Optional[str] = None
     ) -> JobPositionListResponse:
         """List job positions with filters"""
         try:
@@ -63,7 +64,8 @@ class JobPositionController:
                 company_id=company_id,
                 search_term=search_term,
                 limit=page_size,
-                offset=offset
+                offset=offset,
+                current_user_id=current_user_id
             )
 
             positions: List[JobPositionDto] = self.query_bus.query(query)

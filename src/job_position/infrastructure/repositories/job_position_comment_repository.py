@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
 from src.job_position.domain.entities.job_position_comment import JobPositionComment
-from src.company_candidate.domain.enums import (
-    CommentVisibility,
-    CommentReviewStatus,
+from src.job_position.domain.enums import (
+    CommentVisibilityEnum,
+    CommentReviewStatusEnum,
 )
 from src.job_position.domain.value_objects import (
     JobPositionCommentId,
@@ -41,8 +41,8 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
             workflow_id=JobPositionWorkflowId.from_string(model.workflow_id) if model.workflow_id else None,
             stage_id=model.stage_id,  # Keep as string (can be None for global comments)
             created_by_user_id=CompanyUserId.from_string(model.created_by_user_id),
-            review_status=CommentReviewStatus(model.review_status),
-            visibility=CommentVisibility(model.visibility),
+            review_status=CommentReviewStatusEnum(model.review_status),
+            visibility=CommentVisibilityEnum(model.visibility),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -83,50 +83,98 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
 
     def list_by_job_position(
         self,
-        job_position_id: JobPositionId
+        job_position_id: JobPositionId,
+        current_user_id: Optional[str] = None
     ) -> List[JobPositionComment]:
-        """List all comments for a job position"""
+        """
+        List all comments for a job position with visibility filtering.
+        
+        PRIVATE comments are only visible to their creator.
+        SHARED comments are visible to all team members.
+        """
         session = self._get_session()
-        models = session.query(JobPositionCommentModel).filter(
+        query = session.query(JobPositionCommentModel).filter(
             JobPositionCommentModel.job_position_id == str(job_position_id)
-        ).order_by(JobPositionCommentModel.created_at.desc()).all()
-
+        )
+        
+        # Apply visibility filtering if current_user_id is provided
+        if current_user_id:
+            query = query.filter(
+                or_(
+                    # Show SHARED comments to everyone
+                    JobPositionCommentModel.visibility == CommentVisibilityEnum.SHARED.value,
+                    # Show PRIVATE comments only to their creator
+                    (
+                        (JobPositionCommentModel.visibility == CommentVisibilityEnum.PRIVATE.value) &
+                        (JobPositionCommentModel.created_by_user_id == current_user_id)
+                    )
+                )
+            )
+        
+        models = query.order_by(JobPositionCommentModel.created_at.desc()).all()
         return [self._to_domain(model) for model in models]
 
     def list_by_stage_and_global(
         self,
         job_position_id: JobPositionId,
-        stage_id: Optional[str]
+        stage_id: Optional[str],
+        include_global: bool = True,
+        current_user_id: Optional[str] = None
     ) -> List[JobPositionComment]:
         """
-        List comments for a job position in a specific stage PLUS all global comments
+        List comments for a job position, filtered by stage, and optionally including global comments.
         
-        This is the key method for "current comments" view.
+        Visibility filtering:
+        - PRIVATE comments: only visible to their creator
+        - SHARED comments: visible to all team members
+        
+        Args:
+            job_position_id: ID of the job position
+            stage_id: ID of the stage (can be None to get only global comments)
+            include_global: If True, includes global comments (stage_id IS NULL)
+            current_user_id: ID of the current user (for filtering PRIVATE comments)
+            
         Returns:
-        - Comments where stage_id matches the provided stage_id
-        - Comments where stage_id is NULL (global comments)
-        
-        SQL equivalent:
-        WHERE job_position_id = ? AND (stage_id = ? OR stage_id IS NULL)
+            List[JobPositionComment]: Filtered comments (ordered by created_at DESC)
         """
         session = self._get_session()
         
-        # Build query: job_position_id matches AND (stage_id matches OR stage_id is NULL)
+        # Build query: job_position_id matches
         query = session.query(JobPositionCommentModel).filter(
             JobPositionCommentModel.job_position_id == str(job_position_id)
         )
         
+        # Stage filtering
         if stage_id is not None:
-            # Filter for specific stage OR global (stage_id IS NULL)
-            query = query.filter(
-                or_(
-                    JobPositionCommentModel.stage_id == stage_id,
-                    JobPositionCommentModel.stage_id.is_(None)
+            # Filter for specific stage
+            if include_global:
+                # Include both stage-specific AND global comments
+                query = query.filter(
+                    or_(
+                        JobPositionCommentModel.stage_id == stage_id,
+                        JobPositionCommentModel.stage_id.is_(None)
+                    )
                 )
-            )
+            else:
+                # Only stage-specific comments
+                query = query.filter(JobPositionCommentModel.stage_id == stage_id)
         else:
             # If stage_id is None, only get global comments
             query = query.filter(JobPositionCommentModel.stage_id.is_(None))
+        
+        # Visibility filtering
+        if current_user_id:
+            query = query.filter(
+                or_(
+                    # Show SHARED comments to everyone
+                    JobPositionCommentModel.visibility == CommentVisibilityEnum.SHARED.value,
+                    # Show PRIVATE comments only to their creator
+                    (
+                        (JobPositionCommentModel.visibility == CommentVisibilityEnum.PRIVATE.value) &
+                        (JobPositionCommentModel.created_by_user_id == current_user_id)
+                    )
+                )
+            )
         
         models = query.order_by(JobPositionCommentModel.created_at.desc()).all()
         
@@ -161,7 +209,7 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
         session = self._get_session()
         count = session.query(JobPositionCommentModel).filter(
             JobPositionCommentModel.job_position_id == str(job_position_id),
-            JobPositionCommentModel.review_status == CommentReviewStatus.PENDING.value
+            JobPositionCommentModel.review_status == CommentReviewStatusEnum.PENDING.value
         ).count()
 
         return count

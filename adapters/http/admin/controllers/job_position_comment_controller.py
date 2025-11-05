@@ -55,8 +55,8 @@ class JobPositionCommentController:
             created_by_user_id=user_id,
             workflow_id=request.workflow_id,
             stage_id=request.stage_id,
-            visibility=request.visibility.value,
-            review_status=request.review_status.value,
+            visibility=request.visibility,
+            review_status=request.review_status,
         )
         
         self._command_bus.dispatch(command)
@@ -76,7 +76,7 @@ class JobPositionCommentController:
         command = UpdateJobPositionCommentCommand(
             comment_id=comment_id,
             comment=request.comment,
-            visibility=request.visibility.value if request.visibility else None,
+            visibility=request.visibility,
         )
         
         self._command_bus.dispatch(command)
@@ -125,6 +125,7 @@ class JobPositionCommentController:
         job_position_id: str,
         stage_id: Optional[str] = None,
         include_global: bool = True,
+        current_user_id: Optional[str] = None,
     ) -> JobPositionCommentListResponse:
         """
         List comments for a job position
@@ -133,6 +134,7 @@ class JobPositionCommentController:
             job_position_id: ID of the job position
             stage_id: Optional stage ID to filter by
             include_global: Include global comments (default: True)
+            current_user_id: Current user ID for visibility filtering
             
         Returns:
             JobPositionCommentListResponse: List of comments
@@ -141,12 +143,45 @@ class JobPositionCommentController:
             job_position_id=job_position_id,
             stage_id=stage_id,
             include_global=include_global,
+            current_user_id=current_user_id,
         )
         
         comment_dtos: List[JobPositionCommentDto] = self._query_bus.query(query)
         
         return JobPositionCommentListResponse(
-            items=[
+            comments=[
+                JobPositionCommentResponse(**dto.__dict__)
+                for dto in comment_dtos
+            ],
+            total=len(comment_dtos),
+        )
+
+    def list_all_comments(
+        self,
+        job_position_id: str,
+        current_user_id: Optional[str] = None,
+    ) -> JobPositionCommentListResponse:
+        """
+        List ALL comments for a job position (no filtering)
+        
+        Args:
+            job_position_id: ID of the job position
+            current_user_id: Current user ID for visibility filtering
+            
+        Returns:
+            JobPositionCommentListResponse: List of all comments
+        """
+        from src.job_position.application.queries.list_all_job_position_comments_query import ListAllJobPositionCommentsQuery
+        
+        query = ListAllJobPositionCommentsQuery(
+            job_position_id=job_position_id,
+            current_user_id=current_user_id,
+        )
+        
+        comment_dtos: List[JobPositionCommentDto] = self._query_bus.query(query)
+        
+        return JobPositionCommentListResponse(
+            comments=[
                 JobPositionCommentResponse(**dto.__dict__)
                 for dto in comment_dtos
             ],
@@ -176,7 +211,7 @@ class JobPositionCommentController:
         activity_dtos: List[JobPositionActivityDto] = self._query_bus.query(query)
         
         return JobPositionActivityListResponse(
-            items=[
+            activities=[
                 JobPositionActivityResponse(**dto.__dict__)
                 for dto in activity_dtos
             ],

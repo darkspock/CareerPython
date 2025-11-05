@@ -11,10 +11,12 @@ import { CommentVisibility, CommentReviewStatus } from '@/types/jobPositionComme
 interface JobPositionCommentFormProps {
   onSubmit: (data: {
     comment: string;
+    workflow_id?: string | null;
     stage_id?: string | null;
     visibility: CommentVisibility;
     review_status: CommentReviewStatus;
   }) => Promise<void>;
+  workflowId?: string | null;
   currentStageId?: string | null;
   isGlobalComment?: boolean;
   isSubmitting?: boolean;
@@ -22,12 +24,13 @@ interface JobPositionCommentFormProps {
 
 export const JobPositionCommentForm: React.FC<JobPositionCommentFormProps> = ({
   onSubmit,
+  workflowId,
   currentStageId,
   isGlobalComment = false,
   isSubmitting = false,
 }) => {
   const [comment, setComment] = useState('');
-  const [visibility, setVisibility] = useState<CommentVisibility>(CommentVisibility.PRIVATE);
+  const [visibility, setVisibility] = useState<CommentVisibility>(CommentVisibility.SHARED);
   const [isReviewed, setIsReviewed] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,6 +42,7 @@ export const JobPositionCommentForm: React.FC<JobPositionCommentFormProps> = ({
 
     await onSubmit({
       comment: comment.trim(),
+      workflow_id: workflowId,
       stage_id: isGlobalComment ? null : currentStageId,
       visibility,
       review_status: isReviewed ? CommentReviewStatus.REVIEWED : CommentReviewStatus.PENDING,
@@ -46,7 +50,7 @@ export const JobPositionCommentForm: React.FC<JobPositionCommentFormProps> = ({
 
     // Reset form
     setComment('');
-    setVisibility(CommentVisibility.PRIVATE);
+    setVisibility(CommentVisibility.SHARED);
     setIsReviewed(true);
   };
 

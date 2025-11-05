@@ -5,9 +5,9 @@ from typing import Optional
 from src.shared.application.command_bus import Command, CommandHandler
 from src.job_position.domain.entities.job_position_comment import JobPositionComment
 from src.job_position.domain.entities.job_position_activity import JobPositionActivity
-from src.company_candidate.domain.enums import (
-    CommentVisibility,
-    CommentReviewStatus,
+from src.job_position.domain.enums import (
+    CommentVisibilityEnum,
+    CommentReviewStatusEnum,
 )
 from src.job_position.domain.value_objects import (
     JobPositionCommentId,
@@ -71,8 +71,8 @@ class CreateJobPositionCommentCommandHandler(CommandHandler[CreateJobPositionCom
             created_by_user_id=created_by_user_id,
             workflow_id=workflow_id,
             stage_id=command.stage_id,
-            visibility=CommentVisibility(command.visibility),
-            review_status=CommentReviewStatus(command.review_status),
+            visibility=CommentVisibilityEnum(command.visibility),
+            review_status=CommentReviewStatusEnum(command.review_status),
         )
 
         # Save the comment
@@ -83,11 +83,9 @@ class CreateJobPositionCommentCommandHandler(CommandHandler[CreateJobPositionCom
         activity = JobPositionActivity.from_comment_added(
             id=activity_id,
             job_position_id=job_position_id,
-            created_by_user_id=created_by_user_id,
+            user_id=created_by_user_id,
             comment_id=str(comment_id),
             is_global=comment.is_global,
-            workflow_id=workflow_id,
-            stage_id=command.stage_id,
         )
 
         # Save the activity

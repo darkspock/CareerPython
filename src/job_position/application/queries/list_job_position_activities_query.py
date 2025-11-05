@@ -48,11 +48,9 @@ class ListJobPositionActivitiesQueryHandler(QueryHandler[ListJobPositionActiviti
             JobPositionActivityDto(
                 id=str(activity.id),
                 job_position_id=str(activity.job_position_id),
-                activity_type=activity.activity_type,
+                activity_type=activity.activity_type.value,
                 description=activity.description,
-                created_by_user_id=str(activity.created_by_user_id),
-                workflow_id=str(activity.workflow_id) if activity.workflow_id else None,
-                stage_id=activity.stage_id,
+                performed_by_user_id=str(activity.performed_by_user_id),
                 metadata=activity.metadata,
                 created_at=activity.created_at,
             )

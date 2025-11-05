@@ -35,13 +35,19 @@ class JobPositionCommentRepositoryInterface(ABC):
     @abstractmethod
     def list_by_job_position(
         self,
-        job_position_id: JobPositionId
+        job_position_id: JobPositionId,
+        current_user_id: Optional[str] = None
     ) -> List[JobPositionComment]:
         """
         List all comments for a job position
         
+        Visibility filtering:
+        - PRIVATE comments: only visible to their creator
+        - SHARED comments: visible to all team members
+        
         Args:
             job_position_id: ID of the job position
+            current_user_id: ID of the current user (for filtering PRIVATE comments)
             
         Returns:
             List[JobPositionComment]: All comments for the job position (ordered by created_at DESC)
@@ -52,24 +58,25 @@ class JobPositionCommentRepositoryInterface(ABC):
     def list_by_stage_and_global(
         self,
         job_position_id: JobPositionId,
-        stage_id: Optional[str]
+        stage_id: Optional[str],
+        include_global: bool = True,
+        current_user_id: Optional[str] = None
     ) -> List[JobPositionComment]:
         """
-        List comments for a job position in a specific stage PLUS all global comments
+        List comments for a job position, filtered by stage, and optionally including global comments.
         
-        This is the key method for displaying "current comments" - it returns:
-        - Comments where stage_id matches the provided stage_id
-        - Comments where stage_id is NULL (global comments)
-        
-        SQL equivalent:
-        WHERE job_position_id = ? AND (stage_id = ? OR stage_id IS NULL)
+        Visibility filtering:
+        - PRIVATE comments: only visible to their creator
+        - SHARED comments: visible to all team members
         
         Args:
             job_position_id: ID of the job position
             stage_id: ID of the stage (can be None to get only global comments)
+            include_global: If True, includes global comments (stage_id IS NULL)
+            current_user_id: ID of the current user (for filtering PRIVATE comments)
             
         Returns:
-            List[JobPositionComment]: Stage-specific + global comments (ordered by created_at DESC)
+            List[JobPositionComment]: Filtered comments (ordered by created_at DESC)
         """
         pass
 

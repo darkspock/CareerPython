@@ -7,8 +7,9 @@ from pydantic import BaseModel, Field
 class CreateJobPositionCommentRequest(BaseModel):
     """Request schema for creating a job position comment"""
     comment: str = Field(..., min_length=1, description="Comment text content")
+    workflow_id: Optional[str] = Field(None, description="Workflow ID (optional)")
     stage_id: Optional[str] = Field(None, description="Stage ID (null = global comment)")
-    visibility: str = Field("private", description="Comment visibility: private or shared")
+    visibility: str = Field("shared", description="Comment visibility: private or shared")
     review_status: str = Field("reviewed", description="Review status: pending or reviewed")
 
     class Config:
