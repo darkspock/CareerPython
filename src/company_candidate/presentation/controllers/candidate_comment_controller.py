@@ -9,7 +9,7 @@ from src.company_candidate.application.commands.create_candidate_comment_command
 from src.company_candidate.application.commands.update_candidate_comment_command import UpdateCandidateCommentCommand
 from src.company_candidate.application.commands.delete_candidate_comment_command import DeleteCandidateCommentCommand
 from src.company_candidate.application.commands.mark_comment_as_pending_command import MarkCommentAsPendingCommand
-from src.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCommentAsReviewedCommand
+from src.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCandidateCommentAsReviewedCommand
 from src.company_candidate.application.queries.get_candidate_comment_by_id import GetCandidateCommentByIdQuery
 from src.company_candidate.application.queries.list_candidate_comments_by_company_candidate import ListCandidateCommentsByCompanyCandidateQuery
 from src.company_candidate.application.queries.list_candidate_comments_by_stage import ListCandidateCommentsByStageQuery
@@ -123,7 +123,7 @@ class CandidateCommentController:
 
     def mark_as_reviewed(self, comment_id: str) -> Optional[CandidateCommentResponse]:
         """Mark a comment as reviewed."""
-        command = MarkCommentAsReviewedCommand(id=comment_id)
+        command = MarkCandidateCommentAsReviewedCommand(id=comment_id)
         self._command_bus.dispatch(command)
 
         query = GetCandidateCommentByIdQuery(id=comment_id)

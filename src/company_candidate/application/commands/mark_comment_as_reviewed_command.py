@@ -6,18 +6,18 @@ from src.company_candidate.domain.infrastructure.candidate_comment_repository_in
 
 
 @dataclass(frozen=True)
-class MarkCommentAsReviewedCommand(Command):
-    """Command to mark a comment as reviewed"""
+class MarkCandidateCommentAsReviewedCommand(Command):
+    """Command to mark a candidate comment as reviewed"""
     id: str
 
 
-class MarkCommentAsReviewedCommandHandler(CommandHandler[MarkCommentAsReviewedCommand]):
-    """Handler for marking comments as reviewed"""
+class MarkCandidateCommentAsReviewedCommandHandler(CommandHandler[MarkCandidateCommentAsReviewedCommand]):
+    """Handler for marking candidate comments as reviewed"""
 
     def __init__(self, repository: CandidateCommentRepositoryInterface):
         self._repository = repository
 
-    def execute(self, command: MarkCommentAsReviewedCommand) -> None:
+    def execute(self, command: MarkCandidateCommentAsReviewedCommand) -> None:
         """Handle the mark comment as reviewed command"""
         comment = self._repository.get_by_id(CandidateCommentId.from_string(command.id))
         if not comment:

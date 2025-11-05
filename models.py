@@ -3,6 +3,10 @@ from src.interview.interview_template.infrastructure.models.interview_template i
 from src.interview.interview_template.infrastructure.models.interview_template_question import InterviewTemplateQuestionModel
 from src.interview.interview_template.infrastructure.models.interview_template_section import InterviewTemplateSectionModel
 from src.job_position.infrastructure.models.job_position_model import JobPositionModel
+from src.job_position.infrastructure.models.job_position_workflow_model import JobPositionWorkflowModel
+from src.job_position.infrastructure.models.job_position_comment_model import JobPositionCommentModel
+from src.job_position.infrastructure.models.job_position_activity_model import JobPositionActivityModel
+from src.phase.infrastructure.models.phase_model import PhaseModel
 from src.company.infrastructure.models.company_model import CompanyModel
 from src.company.infrastructure.models.company_user_model import CompanyUserModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
@@ -27,6 +31,10 @@ __all__ = [
     "InterviewTemplateQuestionModel",
     "InterviewTemplateSectionModel",
     "JobPositionModel",
+    "JobPositionWorkflowModel",
+    "JobPositionCommentModel",
+    "JobPositionActivityModel",
+    "PhaseModel",
     "CompanyModel",
     "CompanyUserModel",
     "CompanyCandidateModel",

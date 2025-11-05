@@ -8,6 +8,7 @@ from adapters.http.admin.controllers.inverview_template_controller import Interv
 from adapters.http.admin.controllers.company_controller import CompanyController
 from adapters.http.admin.controllers import JobPositionController
 from adapters.http.admin.controllers.job_position_workflow_controller import JobPositionWorkflowController
+from adapters.http.admin.controllers.job_position_comment_controller import JobPositionCommentController
 from adapters.http.admin.controllers.interview_controller import InterviewController
 from adapters.http.shared.controllers.user import UserController
 
@@ -152,7 +153,7 @@ from src.company_candidate.application.commands.create_candidate_comment_command
 from src.company_candidate.application.commands.update_candidate_comment_command import UpdateCandidateCommentCommandHandler
 from src.company_candidate.application.commands.delete_candidate_comment_command import DeleteCandidateCommentCommandHandler
 from src.company_candidate.application.commands.mark_comment_as_pending_command import MarkCommentAsPendingCommandHandler
-from src.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCommentAsReviewedCommandHandler
+from src.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCandidateCommentAsReviewedCommandHandler
 
 # CompanyCandidate Application Layer - Queries
 from src.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQueryHandler
@@ -262,6 +263,11 @@ from src.job_position.application.commands.create_job_position_workflow import C
 from src.job_position.application.commands.update_job_position_workflow import UpdateJobPositionWorkflowCommandHandler
 from src.job_position.application.commands.move_job_position_to_stage import MoveJobPositionToStageCommandHandler
 from src.job_position.application.commands.update_job_position_custom_fields import UpdateJobPositionCustomFieldsCommandHandler
+from src.job_position.application.commands.create_job_position_comment_command import CreateJobPositionCommentCommandHandler
+from src.job_position.application.commands.update_job_position_comment_command import UpdateJobPositionCommentCommandHandler
+from src.job_position.application.commands.delete_job_position_comment_command import DeleteJobPositionCommentCommandHandler
+from src.job_position.application.commands.mark_comment_as_reviewed_command import MarkJobPositionCommentAsReviewedCommandHandler
+from src.job_position.application.commands.mark_comment_as_pending_command import MarkJobPositionCommentAsPendingCommandHandler
 from src.job_position.application.queries.list_job_positions import ListJobPositionsQueryHandler
 from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQueryHandler
 from src.job_position.application.queries.get_job_positions_stats import GetJobPositionsStatsQueryHandler
@@ -270,10 +276,14 @@ from src.job_position.application.queries.list_public_job_positions import ListP
 from src.job_position.application.queries.get_public_job_position import GetPublicJobPositionQueryHandler
 from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQueryHandler
 from src.job_position.application.queries.list_job_position_workflows import ListJobPositionWorkflowsQueryHandler
+from src.job_position.application.queries.list_job_position_comments_query import ListJobPositionCommentsQueryHandler
+from src.job_position.application.queries.list_job_position_activities_query import ListJobPositionActivitiesQueryHandler
 
 # Job Position Infrastructure
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepository
 from src.job_position.infrastructure.repositories.job_position_workflow_repository import JobPositionWorkflowRepository
+from src.job_position.infrastructure.repositories.job_position_comment_repository import JobPositionCommentRepository
+from src.job_position.infrastructure.repositories.job_position_activity_repository import JobPositionActivityRepository
 
 # Phase 10: Public Position Controller
 from src.job_position.presentation.controllers.public_position_controller import PublicPositionController
@@ -568,6 +578,16 @@ class Container(containers.DeclarativeContainer):
     # Job Position Workflow Repository
     job_position_workflow_repository = providers.Factory(
         JobPositionWorkflowRepository,
+        database=database
+    )
+
+    job_position_comment_repository = providers.Factory(
+        JobPositionCommentRepository,
+        database=database
+    )
+
+    job_position_activity_repository = providers.Factory(
+        JobPositionActivityRepository,
         database=database
     )
 
@@ -1006,6 +1026,16 @@ class Container(containers.DeclarativeContainer):
         workflow_repository=job_position_workflow_repository
     )
 
+    list_job_position_comments_query_handler = providers.Factory(
+        ListJobPositionCommentsQueryHandler,
+        comment_repository=job_position_comment_repository
+    )
+
+    list_job_position_activities_query_handler = providers.Factory(
+        ListJobPositionActivitiesQueryHandler,
+        activity_repository=job_position_activity_repository
+    )
+
     # Phase 12: Phase Query Handlers
     get_phase_by_id_query_handler = providers.Factory(
         GetPhaseByIdQueryHandler,
@@ -1344,8 +1374,8 @@ class Container(containers.DeclarativeContainer):
         repository=candidate_comment_repository
     )
 
-    mark_comment_as_reviewed_command_handler = providers.Factory(
-        MarkCommentAsReviewedCommandHandler,
+    mark_candidate_comment_as_reviewed_command_handler = providers.Factory(
+        MarkCandidateCommentAsReviewedCommandHandler,
         repository=candidate_comment_repository
     )
 
@@ -1561,6 +1591,32 @@ class Container(containers.DeclarativeContainer):
     update_job_position_custom_fields_command_handler = providers.Factory(
         UpdateJobPositionCustomFieldsCommandHandler,
         job_position_repository=job_position_repository
+    )
+
+    create_job_position_comment_command_handler = providers.Factory(
+        CreateJobPositionCommentCommandHandler,
+        comment_repository=job_position_comment_repository,
+        activity_repository=job_position_activity_repository
+    )
+
+    update_job_position_comment_command_handler = providers.Factory(
+        UpdateJobPositionCommentCommandHandler,
+        comment_repository=job_position_comment_repository
+    )
+
+    delete_job_position_comment_command_handler = providers.Factory(
+        DeleteJobPositionCommentCommandHandler,
+        comment_repository=job_position_comment_repository
+    )
+
+    mark_job_position_comment_as_reviewed_command_handler = providers.Factory(
+        MarkJobPositionCommentAsReviewedCommandHandler,
+        comment_repository=job_position_comment_repository
+    )
+
+    mark_job_position_comment_as_pending_command_handler = providers.Factory(
+        MarkJobPositionCommentAsPendingCommandHandler,
+        comment_repository=job_position_comment_repository
     )
 
     # Position Stage Assignment Command Handlers
@@ -2083,6 +2139,12 @@ class Container(containers.DeclarativeContainer):
 
     job_position_workflow_controller = providers.Factory(
         JobPositionWorkflowController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
+    job_position_comment_controller = providers.Factory(
+        JobPositionCommentController,
         command_bus=command_bus,
         query_bus=query_bus
     )

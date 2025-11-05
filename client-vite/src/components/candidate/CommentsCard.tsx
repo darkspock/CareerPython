@@ -201,9 +201,9 @@ export default function CommentsCard({ companyCandidateId, stageId, currentWorkf
                   title={comment.review_status === 'pending' ? t('company.candidates.detail.markAsReviewed') : t('company.candidates.detail.markAsPending')}
                 >
                   {comment.review_status === 'pending' ? (
-                    <Clock className="w-4 h-4" />
-                  ) : (
                     <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <Clock className="w-4 h-4" />
                   )}
                 </button>
               </div>

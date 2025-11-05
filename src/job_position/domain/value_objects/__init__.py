@@ -5,6 +5,8 @@ from .salary_range import SalaryRange
 from .job_position_workflow_id import JobPositionWorkflowId
 from .stage_id import StageId
 from .workflow_stage import WorkflowStage
+from .job_position_comment_id import JobPositionCommentId
+from .job_position_activity_id import JobPositionActivityId
 
 __all__ = [
     "JobPositionId",
@@ -12,4 +14,6 @@ __all__ = [
     "JobPositionWorkflowId",
     "StageId",
     "WorkflowStage",
+    "JobPositionCommentId",
+    "JobPositionActivityId",
 ]

@@ -7,6 +7,7 @@ from .workflow_type import WorkflowTypeEnum
 from .comment_review_status import CommentReviewStatusEnum
 from .comment_visibility import CommentVisibilityEnum
 from .job_position_visibility import JobPositionVisibilityEnum
+from .activity_type_enum import ActivityTypeEnum
 
 __all__ = [
     "JobPositionStatusEnum",
@@ -18,4 +19,5 @@ __all__ = [
     "CommentReviewStatusEnum",
     "CommentVisibilityEnum",
     "JobPositionVisibilityEnum",
+    "ActivityTypeEnum",
 ]

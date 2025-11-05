@@ -18,6 +18,7 @@ from adapters.http.admin.controllers.interview_controller import InterviewContro
 from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
 from adapters.http.admin.controllers.job_position_controller import JobPositionController
 from adapters.http.admin.controllers.job_position_workflow_controller import JobPositionWorkflowController
+from adapters.http.admin.controllers.job_position_comment_controller import JobPositionCommentController
 # Company schemas
 from adapters.http.admin.schemas.company import (
     CompanyResponse, CompanyCreate, CompanyUpdate, CompanyListResponse,
@@ -44,10 +45,19 @@ from adapters.http.admin.schemas.job_position_workflow import (
     JobPositionWorkflowCreate, JobPositionWorkflowUpdate, JobPositionWorkflowResponse,
     MoveJobPositionToStageRequest, UpdateJobPositionCustomFieldsRequest
 )
+from adapters.http.admin.schemas.job_position_comment import (
+    CreateJobPositionCommentRequest, UpdateJobPositionCommentRequest,
+    JobPositionCommentResponse, JobPositionCommentListResponse
+)
+from adapters.http.admin.schemas.job_position_activity import (
+    JobPositionActivityResponse, JobPositionActivityListResponse
+)
 from adapters.http.shared.schemas.token import Token
 from adapters.http.shared.schemas.user import UserResponse
 from core.container import Container
+from src.company.application.dtos import CompanyUserDto
 from src.company.domain import CompanyId
+from src.job_position.application.queries.job_position_dto import JobPositionDto
 from src.shared.application.query_bus import QueryBus
 from src.user.application.queries.authenticate_user_query import AuthenticateUserQuery
 from src.user.application.queries.dtos.auth_dto import CurrentUserDto, AuthenticatedUserDto
@@ -707,6 +717,114 @@ def update_position_custom_fields(
 ) -> dict:
     """Update custom fields values for a job position"""
     return controller.update_custom_fields(position_id, request)
+
+
+# Job Position Comments & Activity Endpoints
+
+
+@router.post("/positions/{position_id}/comments", status_code=status.HTTP_201_CREATED)
+@inject
+def create_job_position_comment(
+        position_id: str,
+        request: CreateJobPositionCommentRequest,
+        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
+) -> None:
+    """Create a new comment for a job position"""
+    # Get the job position to find the company_id
+    from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
+    from src.job_position.domain.value_objects import JobPositionId
+    from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    
+    position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
+    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
+    
+    if not position_dto:
+        raise HTTPException(status_code=404, detail="Job position not found")
+    
+    # Get company_user_id for the current user
+    company_user_query = GetCompanyUserByCompanyAndUserQuery(
+        company_id=position_dto.company_id.value,
+        user_id=current_admin.id
+    )
+    company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+    
+    if not company_user_dto:
+        raise HTTPException(status_code=403, detail="User not authorized for this company")
+    
+    controller.create_comment(position_id, request, company_user_dto.id)
+
+
+@router.get("/positions/{position_id}/comments", response_model=JobPositionCommentListResponse)
+@inject
+def list_job_position_comments(
+        position_id: str,
+        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        stage_id: Optional[str] = Query(None, description="Filter by stage (null = global comments only)"),
+        include_global: bool = Query(True, description="Include global comments"),
+) -> JobPositionCommentListResponse:
+    """List comments for a job position"""
+    return controller.list_comments(position_id, stage_id, include_global)
+
+
+@router.put("/positions/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@inject
+def update_job_position_comment(
+        comment_id: str,
+        request: UpdateJobPositionCommentRequest,
+        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> None:
+    """Update a job position comment"""
+    controller.update_comment(comment_id, request)
+
+
+@router.delete("/positions/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@inject
+def delete_job_position_comment(
+        comment_id: str,
+        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> None:
+    """Delete a job position comment"""
+    controller.delete_comment(comment_id)
+
+
+@router.post("/positions/comments/{comment_id}/mark-reviewed", status_code=status.HTTP_204_NO_CONTENT)
+@inject
+def mark_comment_as_reviewed(
+        comment_id: str,
+        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> None:
+    """Mark a comment as reviewed"""
+    controller.mark_comment_as_reviewed(comment_id)
+
+
+@router.post("/positions/comments/{comment_id}/mark-pending", status_code=status.HTTP_204_NO_CONTENT)
+@inject
+def mark_comment_as_pending(
+        comment_id: str,
+        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+) -> None:
+    """Mark a comment as pending"""
+    controller.mark_comment_as_pending(comment_id)
+
+
+@router.get("/positions/{position_id}/activities", response_model=JobPositionActivityListResponse)
+@inject
+def list_job_position_activities(
+        position_id: str,
+        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        limit: int = Query(50, ge=1, le=100, description="Maximum number of activities"),
+) -> JobPositionActivityListResponse:
+    """List activities for a job position"""
+    return controller.list_activities(position_id, limit)
 
 
 # Enum metadata endpoint

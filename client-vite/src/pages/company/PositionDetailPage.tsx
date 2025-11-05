@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, Workflow, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Workflow, Eye, EyeOff, FileText, MessageSquare, History } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { Position, JobPositionWorkflow } from '../../types/position';
 import { 
@@ -12,6 +12,10 @@ import {
   getSkills
 } from '../../types/position';
 import { DynamicCustomFields } from '../../components/jobPosition/DynamicCustomFields';
+import { JobPositionCommentsSection } from '../../components/jobPosition/JobPositionCommentsSection';
+import { JobPositionActivityTimeline } from '../../components/jobPosition/JobPositionActivityTimeline';
+import JobPositionActivityService from '../../services/JobPositionActivityService';
+import type { JobPositionActivity } from '../../types/jobPositionActivity';
 
 export default function PositionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,12 +24,18 @@ export default function PositionDetailPage() {
   const [workflow, setWorkflow] = useState<JobPositionWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'info' | 'comments' | 'history'>('info');
+  const [activities, setActivities] = useState<JobPositionActivity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(false);
 
   useEffect(() => {
     if (id) {
       loadPosition();
+      if (activeTab === 'history') {
+        loadActivities();
+      }
     }
-  }, [id]);
+  }, [id, activeTab]);
 
   const loadPosition = async () => {
     if (!id) return;
@@ -51,6 +61,20 @@ export default function PositionDetailPage() {
       console.error('Error loading position:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadActivities = async () => {
+    if (!id) return;
+    
+    try {
+      setLoadingActivities(true);
+      const fetchedActivities = await JobPositionActivityService.getActivities(id);
+      setActivities(fetchedActivities);
+    } catch (err) {
+      console.error('Error loading activities:', err);
+    } finally {
+      setLoadingActivities(false);
     }
   };
 
@@ -173,7 +197,50 @@ export default function PositionDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Tabs */}
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+              activeTab === 'info'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            <span>Information</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('comments')}
+            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+              activeTab === 'comments'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <MessageSquare className="h-4 w-4" />
+            <span>Comments</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+              activeTab === 'history'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <History className="h-4 w-4" />
+            <span>History</span>
+          </button>
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'info' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
@@ -351,7 +418,30 @@ export default function PositionDetailPage() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      )}
+
+      {/* Comments Tab */}
+      {activeTab === 'comments' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Position Comments</h2>
+          <JobPositionCommentsSection
+            positionId={id!}
+            currentStageId={position.stage_id || undefined}
+          />
+        </div>
+      )}
+
+      {/* History Tab */}
+      {activeTab === 'history' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Activity History</h2>
+          <JobPositionActivityTimeline
+            activities={activities}
+            isLoading={loadingActivities}
+          />
+        </div>
+      )}
     </div>
   );
 }
