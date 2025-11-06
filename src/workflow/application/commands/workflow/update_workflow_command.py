@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
-from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
-    WorkflowRepositoryInterface
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared.application.command_bus import Command, CommandHandler
 
@@ -31,10 +30,10 @@ class UpdateWorkflowCommandHandler(CommandHandler[UpdateWorkflowCommand]):
         if not workflow:
             raise WorkflowNotFound(f"Workflow with id {command.id} not found")
 
-        updated_workflow = workflow.update(
+        workflow.update(
             name=command.name,
             description=command.description,
             phase_id=command.phase_id  # Phase 12: Phase association
         )
 
-        self._repository.save(updated_workflow)
+        self._repository.save(workflow)

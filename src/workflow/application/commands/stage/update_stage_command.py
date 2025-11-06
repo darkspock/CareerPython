@@ -3,12 +3,14 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 from decimal import Decimal
 
-from src.workflow.domain.enums.stage_type import StageType
-from src.workflow.domain.exceptions.stage_not_found import StageNotFound
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.workflow.domain.value_objects.stage_style import StageStyle
+from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+from src.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
+from src.workflow.domain.exceptions.workflow_stage_not_found import WorkflowStageNotFound
+from src.phase.domain.value_objects.phase_id import PhaseId
 from src.shared.application.command_bus import Command, CommandHandler
 
 
@@ -31,6 +33,8 @@ class UpdateStageCommand(Command):
     next_phase_id: Optional[str] = None  # Phase 12: Phase transition
     style: Optional[Dict[str, Any]] = None  # Stage style
     kanban_display: Optional[str] = None  # Kanban display configuration
+    validation_rules: Optional[Dict[str, Any]] = None  # JsonLogic validation rules
+    recommended_rules: Optional[Dict[str, Any]] = None  # JsonLogic recommendation rules
 
 
 class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
@@ -47,22 +51,35 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
             command: The update stage command
 
         Raises:
-            StageNotFound: If stage doesn't exist
+            WorkflowStageNotFound: If stage doesn't exist
         """
         stage_id = WorkflowStageId.from_string(command.id)
         stage = self.repository.get_by_id(stage_id)
 
         if not stage:
-            raise StageNotFound(f"Stage with id {command.id} not found")
+            raise WorkflowStageNotFound(f"Stage with id {command.id} not found")
 
-        stage_type = StageType(command.stage_type)
+        stage_type = WorkflowStageTypeEnum(command.stage_type)
+        
+        # Convert kanban_display string to enum if provided
+        kanban_display = None
+        if command.kanban_display is not None:
+            kanban_display = KanbanDisplayEnum(command.kanban_display)
         
         # Handle style update
         style = None
         if command.style is not None:
-            style = StageStyle.from_dict(command.style)
+            style = WorkflowStageStyle(
+                background_color=command.style.get("background_color", "#ffffff"),
+                text_color=command.style.get("text_color", "#000000"),
+                icon=command.style.get("icon", "")
+            )
+        
+        # Convert next_phase_id string to PhaseId if provided
+        next_phase_id = PhaseId.from_string(command.next_phase_id) if command.next_phase_id else None
 
-        updated_stage = stage.update(
+        # Update modifies the instance directly (mutability)
+        stage.update(
             name=command.name,
             description=command.description,
             stage_type=stage_type,
@@ -74,9 +91,11 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
             custom_email_text=command.custom_email_text,
             deadline_days=command.deadline_days,
             estimated_cost=command.estimated_cost,
-            next_phase_id=command.next_phase_id,  # Phase 12: Phase transition
+            next_phase_id=next_phase_id,
             style=style,
-            kanban_display=command.kanban_display
+            kanban_display=kanban_display,
+            validation_rules=command.validation_rules,
+            recommended_rules=command.recommended_rules
         )
 
-        self.repository.save(updated_stage)
+        self.repository.save(stage)

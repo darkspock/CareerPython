@@ -5,7 +5,7 @@ from typing import Optional
 from src.shared.application.query_bus import Query, QueryHandler
 from src.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
 from src.workflow.application.mappers.workflow_stage_mapper import WorkflowStageMapper
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 

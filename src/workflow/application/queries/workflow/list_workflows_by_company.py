@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List
 
 from src.company.domain.value_objects.company_id import CompanyId
-from src.workflow.application.dtos.candidate_application_workflow_dto import WorkflowDto
+from src.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.workflow.application.mappers.candidate_application_workflow_mapper import WorkflowMapper
 from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
     WorkflowRepositoryInterface

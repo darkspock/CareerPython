@@ -1,8 +1,8 @@
 """Deactivate Stage Command."""
 from dataclasses import dataclass
 
-from src.workflow.domain.exceptions.stage_not_found import StageNotFound
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
+from src.workflow.domain.exceptions.workflow_stage_not_found import WorkflowStageNotFound
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared.application.command_bus import Command, CommandHandler
@@ -15,7 +15,7 @@ class DeactivateStageCommand(Command):
     id: str
 
 
-class DeactivateStageCommandHandler(CommandHandler):
+class DeactivateStageCommandHandler(CommandHandler[DeactivateStageCommand]):
     """Handler for deactivating a workflow stage."""
 
     def __init__(self, repository: WorkflowStageRepositoryInterface):
@@ -29,13 +29,14 @@ class DeactivateStageCommandHandler(CommandHandler):
             command: The deactivate stage command
 
         Raises:
-            StageNotFound: If stage doesn't exist
+            WorkflowStageNotFound: If stage doesn't exist
         """
         stage_id = WorkflowStageId.from_string(command.id)
         stage = self.repository.get_by_id(stage_id)
 
         if not stage:
-            raise StageNotFound(f"Stage with id {command.id} not found")
+            raise WorkflowStageNotFound(f"Stage with id {command.id} not found")
 
-        deactivated_stage = stage.deactivate()
-        self.repository.save(deactivated_stage)
+        # deactivate() modifies the instance directly (mutability)
+        stage.deactivate()
+        self.repository.save(stage)

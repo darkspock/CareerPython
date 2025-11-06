@@ -3,10 +3,11 @@ from typing import Optional, List, Any
 from src.workflow.domain.entities.workflow_stage import WorkflowStage
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.workflow.domain.value_objects.stage_style import StageStyle
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
-from src.workflow.domain.enums.stage_type import StageType
+from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+from src.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
 from src.phase.domain.value_objects.phase_id import PhaseId
 
 
@@ -54,7 +55,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
         with self._database.get_session() as session:
             model = session.query(WorkflowStageModel).filter_by(
                 workflow_id=str(workflow_id),
-                stage_type=StageType.INITIAL.value
+                stage_type=WorkflowStageTypeEnum.INITIAL.value
             ).first()
             if model:
                 return self._to_domain(model)
@@ -65,7 +66,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
         with self._database.get_session() as session:
             models = session.query(WorkflowStageModel).filter(
                 WorkflowStageModel.workflow_id == str(workflow_id),
-                WorkflowStageModel.stage_type.in_([StageType.SUCCESS.value, StageType.FAIL.value])
+                WorkflowStageModel.stage_type.in_([WorkflowStageTypeEnum.SUCCESS.value, WorkflowStageTypeEnum.FAIL.value])
             ).all()
             return [self._to_domain(model) for model in models]
 
@@ -99,7 +100,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             workflow_id=WorkflowId.from_string(model.workflow_id),
             name=model.name,
             description=model.description,
-            stage_type=StageType(model.stage_type),
+            stage_type=WorkflowStageTypeEnum(model.stage_type),
             order=model.order,
             allow_skip=model.allow_skip,
             estimated_duration_days=model.estimated_duration_days,
@@ -110,9 +111,15 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             custom_email_text=model.custom_email_text,
             deadline_days=model.deadline_days,
             estimated_cost=Decimal(str(model.estimated_cost)) if model.estimated_cost is not None else None,
-            next_phase_id=model.next_phase_id,
-            kanban_display=model.kanban_display,
-            style=StageStyle.from_dict(model.style) if model.style else StageStyle.create(),
+            next_phase_id=PhaseId.from_string(model.next_phase_id) if model.next_phase_id else None,
+            kanban_display=KanbanDisplayEnum(model.kanban_display),
+            style=WorkflowStageStyle(**model.style) if model.style else WorkflowStageStyle(
+                background_color="#ffffff",
+                text_color="#000000",
+                icon=""
+            ),
+            validation_rules=cast(dict, model.validation_rules) if model.validation_rules else None,
+            recommended_rules=cast(dict, model.recommended_rules) if model.recommended_rules else None,
             created_at=model.created_at,
             updated_at=model.updated_at
         )
@@ -135,9 +142,15 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             custom_email_text=entity.custom_email_text,
             deadline_days=entity.deadline_days,
             estimated_cost=float(entity.estimated_cost) if entity.estimated_cost is not None else None,
-            next_phase_id=entity.next_phase_id,
-            kanban_display=entity.kanban_display,
-            style=entity.style.to_dict(),
+            next_phase_id=str(entity.next_phase_id) if entity.next_phase_id else None,
+            kanban_display=entity.kanban_display.value,
+            style={
+                "background_color": entity.style.background_color,
+                "text_color": entity.style.text_color,
+                "icon": entity.style.icon
+            } if entity.style else None,
+            validation_rules=entity.validation_rules,
+            recommended_rules=entity.recommended_rules,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

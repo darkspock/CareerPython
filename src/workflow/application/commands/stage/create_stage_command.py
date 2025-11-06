@@ -1,14 +1,17 @@
 """Create Stage Command."""
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from decimal import Decimal
 
 from src.workflow.domain.entities.workflow_stage import WorkflowStage
-from src.workflow.domain.enums.stage_type import StageType
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+from src.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
+from src.phase.domain.value_objects.phase_id import PhaseId
 from src.shared.application.command_bus import Command, CommandHandler
 
 
@@ -32,6 +35,10 @@ class CreateStageCommand(Command):
     deadline_days: Optional[int] = None
     estimated_cost: Optional[Decimal] = None
     next_phase_id: Optional[str] = None  # Phase 12: Phase transition
+    kanban_display: Optional[str] = None  # Kanban display configuration
+    style: Optional[Dict[str, Any]] = None  # Visual styling
+    validation_rules: Optional[Dict[str, Any]] = None  # JsonLogic validation rules
+    recommended_rules: Optional[Dict[str, Any]] = None  # JsonLogic recommendation rules
 
 
 class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
@@ -47,9 +54,24 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
         Args:
             command: The create stage command
         """
-        stage_id = WorkflowStageId(command.id)
-        workflow_id = WorkflowId(command.workflow_id)
-        stage_type = StageType(command.stage_type)
+        stage_id = WorkflowStageId.from_string(command.id)
+        workflow_id = WorkflowId.from_string(command.workflow_id)
+        stage_type = WorkflowStageTypeEnum(command.stage_type)
+        
+        # Convert kanban_display string to enum
+        kanban_display = KanbanDisplayEnum(command.kanban_display) if command.kanban_display else KanbanDisplayEnum.COLUMN
+        
+        # Convert style dict to WorkflowStageStyle if provided
+        style = None
+        if command.style:
+            style = WorkflowStageStyle(
+                background_color=command.style.get("background_color", "#ffffff"),
+                text_color=command.style.get("text_color", "#000000"),
+                icon=command.style.get("icon", "")
+            )
+        
+        # Convert next_phase_id string to PhaseId if provided
+        next_phase_id = PhaseId.from_string(command.next_phase_id) if command.next_phase_id else None
 
         stage = WorkflowStage.create(
             id=stage_id,
@@ -67,7 +89,11 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
             custom_email_text=command.custom_email_text,
             deadline_days=command.deadline_days,
             estimated_cost=command.estimated_cost,
-            next_phase_id=command.next_phase_id  # Phase 12: Phase transition
+            next_phase_id=next_phase_id,
+            kanban_display=kanban_display,
+            style=style,
+            validation_rules=command.validation_rules,
+            recommended_rules=command.recommended_rules
         )
 
         self.repository.save(stage)

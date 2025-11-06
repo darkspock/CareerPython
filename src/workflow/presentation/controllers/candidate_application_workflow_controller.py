@@ -2,7 +2,7 @@ import ulid
 from typing import List, Optional, Any
 from sqlalchemy import func
 
-from src.workflow.application.dtos.candidate_application_workflow_dto import WorkflowDto
+from src.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.company.domain.value_objects.company_id import CompanyId
 from src.shared.application.command_bus import CommandBus

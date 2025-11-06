@@ -2,8 +2,7 @@
 from dataclasses import dataclass
 
 from src.workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
-from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
-    WorkflowRepositoryInterface
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared.application.command_bus import Command, CommandHandler
 
@@ -37,7 +36,7 @@ class UnsetAsDefaultWorkflowCommandHandler(CommandHandler[UnsetAsDefaultWorkflow
             raise WorkflowNotFound(f"Workflow with id {command.workflow_id} not found")
 
         # Unset as default
-        unset_workflow = workflow.unset_as_default()
+        workflow.unset_as_default()
 
         # Save changes
-        self.repository.save(unset_workflow)
+        self.repository.save(workflow)

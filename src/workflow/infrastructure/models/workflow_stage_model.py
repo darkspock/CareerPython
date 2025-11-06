@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base
 from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
 
 
 @dataclass
@@ -39,10 +40,18 @@ class WorkflowStageModel(Base):
     next_phase_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # Phase to transition to (only for SUCCESS/FAIL stages)
 
     # Kanban display configuration
-    kanban_display: Mapped[str] = mapped_column(String(10), nullable=False, default='column')  # 'column', 'row', or 'none'
+    kanban_display: Mapped[str] = mapped_column(
+        SQLEnum(KanbanDisplayEnum, native_enum=False, length=30),
+        nullable=False,
+        default=KanbanDisplayEnum.COLUMN.value
+    )
 
     # Visual styling
-    style: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # StageStyle as JSON
+    style: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # WorkflowStageStyle as JSON
+
+    # JsonLogic validation and recommendation rules
+    validation_rules: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # JsonLogic rules that must pass
+    recommended_rules: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # JsonLogic rules that are recommended
 
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

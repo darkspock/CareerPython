@@ -3,8 +3,7 @@ from typing import Optional
 
 from src.company.domain.value_objects.company_id import CompanyId
 from src.workflow.domain.entities.workflow import Workflow
-from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
-    WorkflowRepositoryInterface
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared.application.command_bus import Command, CommandHandler
 

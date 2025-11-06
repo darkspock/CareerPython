@@ -1,4 +1,4 @@
-from src.workflow.application.dtos.candidate_application_workflow_dto import WorkflowDto
+from src.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.workflow.domain.entities.workflow import Workflow
 
 

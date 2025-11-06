@@ -2,8 +2,7 @@
 from dataclasses import dataclass
 
 from src.workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
-from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
-    WorkflowRepositoryInterface
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared.application.command_bus import Command, CommandHandler
 

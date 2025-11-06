@@ -3,8 +3,12 @@ from typing import Optional, List, Any
 from src.workflow.domain.entities.workflow import Workflow
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.company.domain.value_objects.company_id import CompanyId
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.workflow.infrastructure.models.workflow_model import WorkflowModel
 from src.workflow.domain.enums.workflow_status_enum import WorkflowStatusEnum
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+from src.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
+from src.phase.domain.value_objects.phase_id import PhaseId
 
 
 class WorkflowRepository(WorkflowRepositoryInterface):
@@ -69,7 +73,9 @@ class WorkflowRepository(WorkflowRepositoryInterface):
         return Workflow(
             id=WorkflowId.from_string(model.id),
             company_id=CompanyId.from_string(model.company_id),
-            phase_id=model.phase_id,
+            workflow_type=WorkflowTypeEnum(model.workflow_type),
+            display=WorkflowDisplayEnum(model.display),
+            phase_id=PhaseId.from_string(model.phase_id) if model.phase_id else None,
             name=model.name,
             description=model.description,
             status=WorkflowStatusEnum(model.status),
@@ -83,7 +89,9 @@ class WorkflowRepository(WorkflowRepositoryInterface):
         return WorkflowModel(
             id=str(entity.id),
             company_id=str(entity.company_id),
-            phase_id=entity.phase_id,
+            workflow_type=entity.workflow_type.value,
+            display=entity.display.value,
+            phase_id=str(entity.phase_id) if entity.phase_id else None,
             name=entity.name,
             description=entity.description,
             status=entity.status.value,

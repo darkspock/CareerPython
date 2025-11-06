@@ -227,8 +227,8 @@ from src.customization.infrastructure.repositories.field_configuration_repositor
 # CandidateApplicationWorkflow Presentation Controllers
 from src.workflow.presentation.controllers.candidate_application_workflow_controller import CandidateApplicationWorkflowController
 from src.workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
-from src.workflow.presentation.controllers.custom_field_value_controller import CustomFieldValueController
-from src.workflow.presentation.controllers.custom_field_controller import CustomFieldController
+from src.customization.custom_field_value_controller import CustomFieldValueController
+from src.customization.custom_field_controller import CustomFieldController
 
 # FieldValidation Application Layer - Commands
 from src.field_validation.application.commands.create_validation_rule_command import CreateValidationRuleCommandHandler

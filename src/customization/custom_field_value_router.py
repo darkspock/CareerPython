@@ -5,7 +5,7 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from core.container import Container
-from src.workflow.presentation.controllers.custom_field_value_controller import CustomFieldValueController
+from src.customization.custom_field_value_controller import CustomFieldValueController
 from src.workflow.presentation.schemas.create_custom_field_value_request import CreateCustomFieldValueRequest
 from src.workflow.presentation.schemas.update_custom_field_value_request import UpdateCustomFieldValueRequest
 from src.workflow.presentation.schemas.custom_field_value_response import CustomFieldValueResponse

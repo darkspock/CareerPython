@@ -1,4 +1,4 @@
-from src.workflow.application.dtos.candidate_application_workflow_dto import WorkflowDto
+from src.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.workflow.presentation.schemas.candidate_application_workflow_response import WorkflowResponse
 
 

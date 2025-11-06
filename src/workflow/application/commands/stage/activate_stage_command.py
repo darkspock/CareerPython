@@ -1,8 +1,8 @@
 """Activate Stage Command."""
 from dataclasses import dataclass
 
-from src.workflow.domain.exceptions.stage_not_found import StageNotFound
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
+from src.workflow.domain.exceptions.workflow_stage_not_found import WorkflowStageNotFound
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared.application.command_bus import Command, CommandHandler
@@ -15,7 +15,7 @@ class ActivateStageCommand(Command):
     id: str
 
 
-class ActivateStageCommandHandler(CommandHandler):
+class ActivateStageCommandHandler(CommandHandler[ActivateStageCommand]):
     """Handler for activating a workflow stage."""
 
     def __init__(self, repository: WorkflowStageRepositoryInterface):
@@ -29,13 +29,14 @@ class ActivateStageCommandHandler(CommandHandler):
             command: The activate stage command
 
         Raises:
-            StageNotFound: If stage doesn't exist
+            WorkflowStageNotFound: If stage doesn't exist
         """
         stage_id = WorkflowStageId.from_string(command.id)
         stage = self.repository.get_by_id(stage_id)
 
         if not stage:
-            raise StageNotFound(f"Stage with id {command.id} not found")
+            raise WorkflowStageNotFound(f"Stage with id {command.id} not found")
 
-        activated_stage = stage.activate()
-        self.repository.save(activated_stage)
+        # activate() modifies the instance directly (mutability)
+        stage.activate()
+        self.repository.save(stage)
