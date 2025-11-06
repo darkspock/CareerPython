@@ -190,11 +190,11 @@ from src.workflow.application.commands.stage.delete_stage_command import DeleteS
 from src.workflow.application.commands.stage.reorder_stages_command import ReorderStagesCommandHandler
 from src.workflow.application.commands.stage.activate_stage_command import ActivateStageCommandHandler
 from src.workflow.application.commands.stage.deactivate_stage_command import DeactivateStageCommandHandler
-from src.customization.applicatoin.create_custom_field_command import CreateCustomFieldCommandHandler
+from src.customization.application.create_custom_field_command import CreateCustomFieldCommandHandler
 from src.customization.application.update_custom_field_command import UpdateCustomFieldCommandHandler
 from src.customization.application.delete_custom_field_command import DeleteCustomFieldCommandHandler
 from src.customization.application.reorder_custom_field_command import ReorderCustomFieldCommandHandler
-from src.customization.applicatoin.configure_stage_field_command import ConfigureStageFieldCommandHandler
+from src.customization.application.configure_stage_field_command import ConfigureStageFieldCommandHandler
 from src.customization.application.update_field_visibility_command import UpdateFieldVisibilityCommandHandler
 
 # CandidateApplicationWorkflow Application Layer - Queries
@@ -212,21 +212,20 @@ from src.customization.application.list_field_configurations_by_stage import Lis
 from src.customization.application.get_field_configuration_by_id import GetFieldConfigurationByIdQueryHandler
 from src.customization.application.get_custom_field_values_by_company_candidate import GetCustomFieldValuesByCompanyCandidateQueryHandler
 from src.customization.application.get_all_custom_field_values_by_company_candidate import GetAllCustomFieldValuesByCompanyCandidateQueryHandler
-from src.customization.applicatoin.create_custom_field_value_command import CreateCustomFieldValueCommandHandler
+from src.customization.application.create_custom_field_value_command import CreateCustomFieldValueCommandHandler
 from src.customization.application.update_custom_field_value_command import UpdateCustomFieldValueCommandHandler
 from src.customization.application.delete_custom_field_value_command import DeleteCustomFieldValueCommandHandler
 from src.customization.application.get_custom_field_value_by_id import GetCustomFieldValueByIdQueryHandler
 
 # CandidateApplicationWorkflow Infrastructure
-from src.workflow.infrastructure.repositories.workflow_repository import CandidateApplicationWorkflowRepository
 from src.workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
 from src.customization.infrastructure.repositories.custom_field_repository import CustomFieldRepository
 from src.customization.infrastructure.repositories.custom_field_value_repository import CustomFieldValueRepository
 from src.customization.infrastructure.repositories.field_configuration_repository import FieldConfigurationRepository
 
 # CandidateApplicationWorkflow Presentation Controllers
-from src.workflow.presentation.controllers.candidate_application_workflow_controller import CandidateApplicationWorkflowController
-from src.workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
+from adapters.http.workflow.controllers import WorkflowController
+from adapters.http.workflow.controllers import WorkflowStageController
 from src.customization.custom_field_value_controller import CustomFieldValueController
 from src.customization.custom_field_controller import CustomFieldController
 
@@ -2113,7 +2112,7 @@ class Container(containers.DeclarativeContainer):
     )
 
     candidate_application_workflow_controller = providers.Factory(
-        CandidateApplicationWorkflowController,
+        WorkflowController,
         command_bus=command_bus,
         query_bus=query_bus,
         database=database

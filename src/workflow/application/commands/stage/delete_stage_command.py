@@ -12,7 +12,7 @@ from src.shared.application.command_bus import Command, CommandHandler
 class DeleteStageCommand(Command):
     """Command to delete a workflow stage."""
 
-    id: str
+    id: WorkflowStageId
 
 
 class DeleteStageCommandHandler(CommandHandler[DeleteStageCommand]):
@@ -31,10 +31,9 @@ class DeleteStageCommandHandler(CommandHandler[DeleteStageCommand]):
         Raises:
             WorkflowStageNotFound: If stage doesn't exist
         """
-        stage_id = WorkflowStageId.from_string(command.id)
-        stage = self.repository.get_by_id(stage_id)
+        stage = self.repository.get_by_id(command.id)
 
         if not stage:
             raise WorkflowStageNotFound(f"Stage with id {command.id} not found")
 
-        self.repository.delete(stage_id)
+        self.repository.delete(command.id)

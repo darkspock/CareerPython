@@ -4,16 +4,19 @@ from typing import Optional
 from src.workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
 from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
+from src.phase.domain.value_objects.phase_id import PhaseId
 from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
 class UpdateWorkflowCommand(Command):
     """Command to update workflow information"""
-    id: str
+    id: WorkflowId
     name: str
     description: str
-    phase_id: Optional[str] = None  # Phase 12: Phase association
+    display: Optional[WorkflowDisplayEnum] = None
+    phase_id: Optional[PhaseId] = None  # Phase 12: Phase association
 
 
 class UpdateWorkflowCommandHandler(CommandHandler[UpdateWorkflowCommand]):
@@ -24,8 +27,7 @@ class UpdateWorkflowCommandHandler(CommandHandler[UpdateWorkflowCommand]):
 
     def execute(self, command: UpdateWorkflowCommand) -> None:
         """Handle the update workflow command"""
-        workflow_id = WorkflowId.from_string(command.id)
-        workflow = self._repository.get_by_id(workflow_id)
+        workflow = self._repository.get_by_id(command.id)
 
         if not workflow:
             raise WorkflowNotFound(f"Workflow with id {command.id} not found")
@@ -33,7 +35,8 @@ class UpdateWorkflowCommandHandler(CommandHandler[UpdateWorkflowCommand]):
         workflow.update(
             name=command.name,
             description=command.description,
-            phase_id=command.phase_id  # Phase 12: Phase association
+            display=command.display,
+            phase_id=command.phase_id
         )
 
         self._repository.save(workflow)

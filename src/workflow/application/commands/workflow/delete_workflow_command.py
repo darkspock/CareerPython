@@ -35,8 +35,5 @@ class DeleteWorkflowCommandHandler(CommandHandler):
         if not workflow:
             raise WorkflowNotFound(f"Workflow with id {command.workflow_id} not found")
 
-        # Archive workflow (soft delete)
-        workflow.archive()
-
-        # Save changes
-        self.repository.save(workflow)
+        # Delete workflow permanently
+        self.repository.delete(command.workflow_id)

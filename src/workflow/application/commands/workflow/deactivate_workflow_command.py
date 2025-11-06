@@ -35,8 +35,8 @@ class DeactivateWorkflowCommandHandler(CommandHandler[DeactivateWorkflowCommand]
         if not workflow:
             raise WorkflowNotFound(f"Workflow with id {command.workflow_id} not found")
 
-        # Deactivate workflow
-        deactivated_workflow = workflow.deactivate()
+        # deactivate() modifies the instance directly (mutability)
+        workflow.deactivate()
 
         # Save changes
-        self.repository.save(deactivated_workflow)
+        self.repository.save(workflow)

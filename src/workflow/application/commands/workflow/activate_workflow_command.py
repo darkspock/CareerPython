@@ -9,7 +9,7 @@ from src.shared.application.command_bus import Command, CommandHandler
 @dataclass(frozen=True)
 class ActivateWorkflowCommand(Command):
     """Command to activate a workflow"""
-    id: str
+    id: WorkflowId
 
 
 class ActivateWorkflowCommandHandler(CommandHandler[ActivateWorkflowCommand]):
@@ -17,8 +17,10 @@ class ActivateWorkflowCommandHandler(CommandHandler[ActivateWorkflowCommand]):
         self._repository = repository
 
     def execute(self, command: ActivateWorkflowCommand) -> None:
-        workflow_id = WorkflowId.from_string(command.id)
-        workflow = self._repository.get_by_id(workflow_id)
+        workflow = self._repository.get_by_id(command.id)
         if not workflow:
             raise WorkflowNotFound(f"Workflow with id {command.id} not found")
-        self._repository.save(workflow.activate())
+        
+        # activate() modifies the instance directly (mutability)
+        workflow.activate()
+        self._repository.save(workflow)

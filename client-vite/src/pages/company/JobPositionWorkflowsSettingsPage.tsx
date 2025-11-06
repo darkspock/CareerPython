@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Settings, Edit, Briefcase, CheckCircle, Archive } from 'lucide-react';
-import { PositionService } from '../../services/positionService';
-import type { JobPositionWorkflow } from '../../types/position';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
+import { PositionService } from '../../services/positionService.ts';
+import type { JobPositionWorkflow } from '../../types/position.ts';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip.tsx';
 
 export default function JobPositionWorkflowsSettingsPage() {
   const navigate = useNavigate();

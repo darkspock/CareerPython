@@ -64,10 +64,13 @@ class Workflow:
             self,
             name: str,
             description: str,
+            display: Optional[WorkflowDisplayEnum] = None,
             phase_id: Optional["PhaseId"] = None
     ) -> None:
         self.name = name
         self.description = description
+        if display is not None:
+            self.display = display
         if phase_id is not None:
             self.phase_id = phase_id
         self.updated_at = datetime.utcnow()

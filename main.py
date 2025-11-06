@@ -1,7 +1,6 @@
 """
 FastAPI app minimal - Solo admin interview templates
 """
-import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,10 +27,10 @@ from adapters.http.company.routers.email_template_router import router as email_
 from src.talent_pool.presentation.routers.talent_pool_router import router as talent_pool_router
 from src.workflow_analytics.presentation.routers.workflow_analytics_router import router as workflow_analytics_router
 from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
-from adapters.http.candidate_application_workflow.routers.candidate_application_workflow_router import router as candidate_application_workflow_router
-from adapters.http.candidate_application_workflow.routers.workflow_stage_router import router as workflow_stage_router
-from adapters.http.candidate_application_workflow.routers.custom_field_router import router as custom_field_router
-from adapters.http.candidate_application_workflow.routers.custom_field_value_router import router as custom_field_value_router
+from adapters.http.workflow.routers.workflow_router import router as candidate_application_workflow_router
+from adapters.http.workflow.routers.workflow_stage_router import router as workflow_stage_router
+from adapters.http.customization.routers.custom_field_router import router as custom_field_router
+from adapters.http.customization.routers.custom_field_value_router import router as custom_field_value_router
 from adapters.http.company.routers.candidate_comment_router import router as candidate_comment_router
 from src.field_validation.presentation.routers.validation_rule_router import router as validation_rule_router
 from src.position_stage_assignment.presentation.routers import router as position_stage_assignment_router

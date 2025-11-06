@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from src.company.domain.value_objects.company_id import CompanyId
 from src.workflow.application.dtos.workflow_dto import WorkflowDto
@@ -13,7 +13,7 @@ from src.workflow.domain.interfaces.workflow_repository_interface import Workflo
 class ListWorkflowsByCompanyQuery(Query):
     """Query to list all workflows for a company"""
     company_id: CompanyId
-    workflow_type: WorkflowTypeEnum
+    workflow_type: Optional[WorkflowTypeEnum] = None
 
 
 class ListWorkflowsByCompanyQueryHandler(QueryHandler[ListWorkflowsByCompanyQuery, List[WorkflowDto]]):

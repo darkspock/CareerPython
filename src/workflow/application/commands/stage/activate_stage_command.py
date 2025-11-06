@@ -12,7 +12,7 @@ from src.shared.application.command_bus import Command, CommandHandler
 class ActivateStageCommand(Command):
     """Command to activate a workflow stage."""
 
-    id: str
+    id: WorkflowStageId
 
 
 class ActivateStageCommandHandler(CommandHandler[ActivateStageCommand]):
@@ -31,8 +31,7 @@ class ActivateStageCommandHandler(CommandHandler[ActivateStageCommand]):
         Raises:
             WorkflowStageNotFound: If stage doesn't exist
         """
-        stage_id = WorkflowStageId.from_string(command.id)
-        stage = self.repository.get_by_id(stage_id)
+        stage = self.repository.get_by_id(command.id)
 
         if not stage:
             raise WorkflowStageNotFound(f"Stage with id {command.id} not found")

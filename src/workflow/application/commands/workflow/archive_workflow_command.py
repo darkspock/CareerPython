@@ -35,8 +35,8 @@ class ArchiveWorkflowCommandHandler(CommandHandler):
         if not workflow:
             raise WorkflowNotFound(f"Workflow with id {command.workflow_id} not found")
 
-        # Archive workflow
-        archived_workflow = workflow.archive()
+        # archive() modifies the instance directly (mutability)
+        workflow.archive()
 
         # Save changes
-        self.repository.save(archived_workflow)
+        self.repository.save(workflow)

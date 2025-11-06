@@ -10,7 +10,7 @@ from src.customization.create_custom_field_value_request import CreateCustomFiel
 from src.customization.update_custom_field_value_request import UpdateCustomFieldValueRequest
 from src.customization.custom_field_value_response import CustomFieldValueResponse
 
-router = APIRouter(prefix="/custom-field-values", tags=["Custom Field Values"])
+router = APIRouter(prefix="/api/company-workflow/custom-field-values", tags=["Custom Field Values"])
 
 
 @router.post("", response_model=CustomFieldValueResponse, status_code=status.HTTP_201_CREATED)
@@ -51,8 +51,17 @@ def get_custom_field_values_by_company_candidate(
     company_candidate_id: str,
     controller: CustomFieldValueController = Depends(Provide[Container.custom_field_value_controller])
 ) -> Dict[str, Any]:
-    """Get all custom field values for a company candidate"""
+    """Get all custom field values for a company candidate (current workflow only)"""
     return controller.get_custom_field_values_by_company_candidate(company_candidate_id)
+
+@router.get("/company-candidate/{company_candidate_id}/all", response_model=Dict[str, Dict[str, Any]])
+@inject
+def get_all_custom_field_values_by_company_candidate(
+    company_candidate_id: str,
+    controller: CustomFieldValueController = Depends(Provide[Container.custom_field_value_controller])
+) -> Dict[str, Dict[str, Any]]:
+    """Get all custom field values for a company candidate, organized by workflow_id"""
+    return controller.get_all_custom_field_values_by_company_candidate(company_candidate_id)
 
 
 @router.put("/{value_id}", response_model=CustomFieldValueResponse)
@@ -70,6 +79,25 @@ def update_custom_field_value(
             detail="Custom field value not found"
         )
     return result
+
+
+@router.put("/company-candidate/{company_candidate_id}/field/{custom_field_id}", response_model=CustomFieldValueResponse)
+@inject
+def upsert_single_field_value(
+    company_candidate_id: str,
+    custom_field_id: str,
+    request: Dict[str, Any],  # Just the value
+    controller: CustomFieldValueController = Depends(Provide[Container.custom_field_value_controller])
+) -> CustomFieldValueResponse:
+    """Update or create a single custom field value by company candidate and custom field ID"""
+    try:
+        value = request.get('value') if isinstance(request, dict) else request
+        return controller.upsert_single_field_value(company_candidate_id, custom_field_id, value)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 
 @router.delete("/{value_id}", status_code=status.HTTP_204_NO_CONTENT)
