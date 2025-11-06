@@ -24,9 +24,15 @@ class WorkflowStageMapper:
             custom_email_text=entity.custom_email_text,
             deadline_days=entity.deadline_days,
             estimated_cost=entity.estimated_cost,
-            next_phase_id=entity.next_phase_id,
-            kanban_display=entity.kanban_display,
-            style=entity.style.to_dict(),
+            next_phase_id=str(entity.next_phase_id) if entity.next_phase_id else None,
+            kanban_display=entity.kanban_display.value,
+            style={
+                "background_color": entity.style.background_color,
+                "text_color": entity.style.text_color,
+                "icon": entity.style.icon
+            },
+            validation_rules=entity.validation_rules,
+            recommended_rules=entity.recommended_rules,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

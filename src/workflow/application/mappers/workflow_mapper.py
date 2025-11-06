@@ -11,7 +11,9 @@ class WorkflowMapper:
         return WorkflowDto(
             id=str(entity.id),
             company_id=str(entity.company_id),
-            phase_id=entity.phase_id,
+            workflow_type=entity.workflow_type.value,
+            display=entity.display.value,
+            phase_id=str(entity.phase_id) if entity.phase_id else None,
             name=entity.name,
             description=entity.description,
             status=entity.status.value,

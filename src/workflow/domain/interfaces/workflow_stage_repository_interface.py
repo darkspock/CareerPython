@@ -4,6 +4,7 @@ from typing import Optional, List
 from src.workflow.domain.entities.workflow_stage import WorkflowStage
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.phase.domain.value_objects.phase_id import PhaseId
 
 
@@ -41,7 +42,7 @@ class WorkflowStageRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def list_by_phase(self, phase_id: PhaseId) -> List[WorkflowStage]:
-        """List all stages for a phase, ordered by order field"""
+    def list_by_phase(self, phase_id: PhaseId, workflow_type: WorkflowTypeEnum) -> List[WorkflowStage]:
+        """List all stages for a phase, filtered by workflow_type, ordered by order field"""
         pass
 

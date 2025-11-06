@@ -12,7 +12,7 @@ from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 @dataclass(frozen=True)
 class GetStageByIdQuery(Query):
     """Query to get a workflow stage by ID."""
-    id: str
+    id: WorkflowStageId
 
 
 class GetStageByIdQueryHandler(QueryHandler[GetStageByIdQuery, Optional[WorkflowStageDto]]):
@@ -31,8 +31,7 @@ class GetStageByIdQueryHandler(QueryHandler[GetStageByIdQuery, Optional[Workflow
         Returns:
             WorkflowStageDto if found, None otherwise
         """
-        stage_id = WorkflowStageId.from_string(query.id)
-        stage = self.repository.get_by_id(stage_id)
+        stage = self.repository.get_by_id(query.id)
 
         if not stage:
             return None

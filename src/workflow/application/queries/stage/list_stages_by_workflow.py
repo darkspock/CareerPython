@@ -12,7 +12,7 @@ from src.workflow.domain.value_objects.workflow_id import WorkflowId
 @dataclass(frozen=True)
 class ListStagesByWorkflowQuery(Query):
     """Query to list all stages for a workflow."""
-    workflow_id: str
+    workflow_id: WorkflowId
 
 
 class ListStagesByWorkflowQueryHandler(QueryHandler[ListStagesByWorkflowQuery, List[WorkflowStageDto]]):
@@ -31,7 +31,6 @@ class ListStagesByWorkflowQueryHandler(QueryHandler[ListStagesByWorkflowQuery, L
         Returns:
             List of WorkflowStageDto
         """
-        workflow_id = WorkflowId.from_string(query.workflow_id)
-        stages = self.repository.list_by_workflow(workflow_id)
+        stages = self.repository.list_by_workflow(query.workflow_id)
 
         return [WorkflowStageMapper.entity_to_dto(stage) for stage in stages]

@@ -37,13 +37,13 @@ class SetAsDefaultWorkflowCommandHandler(CommandHandler[SetAsDefaultWorkflowComm
         if not workflow:
             raise WorkflowNotFound(f"Workflow with id {command.workflow_id} not found")
 
-        # Get current default workflow (if any) and unset it
-        current_default = self.repository.get_default_by_company(command.company_id)
+        # Get current default workflow of the same type (if any) and unset it
+        current_default = self.repository.get_default_by_company(command.company_id, workflow.workflow_type)
         if current_default and current_default.id != command.workflow_id:
             current_default.unset_as_default()
             self.repository.save(current_default)
 
-            # Set new default workflow
+        # Set new default workflow
         workflow.set_as_default()
 
         # Save changes

@@ -2,9 +2,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.workflow.application.dtos.workflow_dto import WorkflowDto
-from src.workflow.application.mappers.candidate_application_workflow_mapper import WorkflowMapper
-from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
-    WorkflowRepositoryInterface
+from src.workflow.application.mappers.workflow_mapper import WorkflowMapper
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared.application.query_bus import Query, QueryHandler
 

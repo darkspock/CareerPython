@@ -36,19 +36,25 @@ class WorkflowRepository(WorkflowRepositoryInterface):
                 return self._to_domain(model)
             return None
 
-    def list_by_company(self, company_id: CompanyId) -> List[Workflow]:
-        """List all workflows for a company"""
+    def list_by_company(self, company_id: CompanyId, workflow_type: Optional[WorkflowTypeEnum] = None) -> List[Workflow]:
+        """List all workflows for a company, optionally filtered by workflow_type"""
         with self._database.get_session() as session:
-            models = session.query(WorkflowModel).filter_by(company_id=str(company_id)).all()
+            query = session.query(WorkflowModel).filter_by(company_id=str(company_id))
+            if workflow_type:
+                query = query.filter_by(workflow_type=workflow_type.value)
+            models = query.all()
             return [self._to_domain(model) for model in models]
 
-    def get_default_by_company(self, company_id: CompanyId) -> Optional[Workflow]:
-        """Get the default workflow for a company"""
+    def get_default_by_company(self, company_id: CompanyId, workflow_type: Optional[WorkflowTypeEnum] = None) -> Optional[Workflow]:
+        """Get the default workflow for a company, optionally filtered by workflow_type"""
         with self._database.get_session() as session:
-            model = session.query(WorkflowModel).filter_by(
+            query = session.query(WorkflowModel).filter_by(
                 company_id=str(company_id),
                 is_default=True
-            ).first()
+            )
+            if workflow_type:
+                query = query.filter_by(workflow_type=workflow_type.value)
+            model = query.first()
             if model:
                 return self._to_domain(model)
             return None
@@ -59,13 +65,15 @@ class WorkflowRepository(WorkflowRepositoryInterface):
             session.query(WorkflowModel).filter_by(id=str(workflow_id)).delete()
             session.commit()
 
-    def list_by_phase_id(self, phase_id: str) -> List[Workflow]:
-        """List all workflows for a phase - Phase 12"""
+    def list_by_phase_id(self, phase_id: PhaseId, workflow_type: Optional[WorkflowTypeEnum] = None, status: Optional[str] = None) -> List[Workflow]:
+        """List all workflows for a phase, optionally filtered by workflow_type and status"""
         with self._database.get_session() as session:
-            models = session.query(WorkflowModel).filter_by(
-                phase_id=phase_id,
-                status=WorkflowStatusEnum.ACTIVE.value
-            ).all()
+            query = session.query(WorkflowModel).filter_by(phase_id=str(phase_id))
+            if workflow_type:
+                query = query.filter_by(workflow_type=workflow_type.value)
+            if status:
+                query = query.filter_by(status=status)
+            models = query.all()
             return [self._to_domain(model) for model in models]
 
     def _to_domain(self, model: WorkflowModel) -> Workflow:

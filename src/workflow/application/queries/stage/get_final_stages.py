@@ -12,7 +12,7 @@ from src.workflow.domain.value_objects.workflow_id import WorkflowId
 @dataclass(frozen=True)
 class GetFinalStagesQuery(Query):
     """Query to get all final stages of a workflow."""
-    workflow_id: str
+    workflow_id: WorkflowId
 
 
 class GetFinalStagesQueryHandler(QueryHandler[GetFinalStagesQuery, List[WorkflowStageDto]]):
@@ -31,7 +31,6 @@ class GetFinalStagesQueryHandler(QueryHandler[GetFinalStagesQuery, List[Workflow
         Returns:
             List of WorkflowStageDto for final stages
         """
-        workflow_id = WorkflowId.from_string(query.workflow_id)
-        stages = self.repository.get_final_stages(workflow_id)
+        stages = self.repository.get_final_stages(query.workflow_id)
 
         return [WorkflowStageMapper.entity_to_dto(stage) for stage in stages]

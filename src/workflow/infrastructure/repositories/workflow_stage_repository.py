@@ -6,6 +6,7 @@ from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
 from src.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
 from src.phase.domain.value_objects.phase_id import PhaseId
@@ -70,12 +71,15 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             ).all()
             return [self._to_domain(model) for model in models]
 
-    def list_by_phase(self, phase_id: PhaseId) -> List[WorkflowStage]:
-        """List all stages for a phase, ordered by order field"""
+    def list_by_phase(self, phase_id: PhaseId, workflow_type: WorkflowTypeEnum) -> List[WorkflowStage]:
+        """List all stages for a phase, filtered by workflow_type, ordered by order field"""
         with self._database.get_session() as session:
-            # First get the workflow for this phase
+            # First get the workflow for this phase and workflow_type
             from src.workflow.infrastructure.models.workflow_model import WorkflowModel
-            workflow = session.query(WorkflowModel).filter_by(phase_id=str(phase_id)).first()
+            workflow = session.query(WorkflowModel).filter_by(
+                phase_id=str(phase_id),
+                workflow_type=workflow_type.value
+            ).first()
             
             if not workflow:
                 return []

@@ -12,7 +12,7 @@ from src.workflow.domain.value_objects.workflow_id import WorkflowId
 @dataclass(frozen=True)
 class GetInitialStageQuery(Query):
     """Query to get the initial stage of a workflow."""
-    workflow_id: str
+    workflow_id: WorkflowId
 
 
 class GetInitialStageQueryHandler(QueryHandler[GetInitialStageQuery, Optional[WorkflowStageDto]]):
@@ -31,8 +31,7 @@ class GetInitialStageQueryHandler(QueryHandler[GetInitialStageQuery, Optional[Wo
         Returns:
             WorkflowStageDto if found, None otherwise
         """
-        workflow_id = WorkflowId.from_string(query.workflow_id)
-        stage = self.repository.get_initial_stage(workflow_id)
+        stage = self.repository.get_initial_stage(query.workflow_id)
 
         if not stage:
             return None
