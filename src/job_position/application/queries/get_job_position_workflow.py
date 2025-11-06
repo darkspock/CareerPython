@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import Optional
 
-from src.shared.application.query_bus import Query, QueryHandler
 from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
+from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import \
+    JobPositionWorkflowRepositoryInterface
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
-from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass
@@ -26,4 +26,3 @@ class GetJobPositionWorkflowQueryHandler(QueryHandler[GetJobPositionWorkflowQuer
             raise ValueError(f"Workflow with id {query.workflow_id.value} not found")
 
         return JobPositionWorkflowDto.from_entity(workflow)
-

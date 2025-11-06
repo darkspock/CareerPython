@@ -1,6 +1,7 @@
-from pydantic import BaseModel, field_validator, ConfigDict
 from datetime import date, datetime
 from typing import Optional, Any
+
+from pydantic import BaseModel, field_validator, ConfigDict
 
 
 class CandidateEducationBase(BaseModel):

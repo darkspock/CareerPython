@@ -3,8 +3,8 @@ from typing import List
 
 from src.company.application.dtos.company_user_dto import CompanyUserDto
 from src.company.application.mappers.company_user_mapper import CompanyUserMapper
-from src.company.domain.value_objects import CompanyId
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
+from src.company.domain.value_objects import CompanyId
 from src.shared.application.query_bus import Query, QueryHandler
 from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 
@@ -22,9 +22,9 @@ class ListCompanyUsersByCompanyQueryHandler(
     """Handler for listing company users by company - returns list of DTOs"""
 
     def __init__(
-        self, 
-        company_user_repository: CompanyUserRepositoryInterface,
-        user_repository: UserRepositoryInterface
+            self,
+            company_user_repository: CompanyUserRepositoryInterface,
+            user_repository: UserRepositoryInterface
     ):
         self.company_user_repository = company_user_repository
         self.user_repository = user_repository

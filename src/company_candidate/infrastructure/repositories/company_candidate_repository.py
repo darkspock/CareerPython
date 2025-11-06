@@ -2,32 +2,32 @@ from typing import Optional, List
 
 from sqlalchemy.orm import Session
 
+from core.database import SQLAlchemyDatabase
+from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.candidate.infrastructure.models.candidate_model import CandidateModel
+from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
+from src.company.domain.value_objects import CompanyId
+from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company_candidate.domain.entities.company_candidate import CompanyCandidate
 from src.company_candidate.domain.enums import (
     CompanyCandidateStatus,
     OwnershipStatus,
     CandidatePriority,
 )
-from src.company_candidate.domain.value_objects import (
-    CompanyCandidateId,
-    VisibilitySettings,
+from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import (
+    CompanyCandidateRepositoryInterface
 )
 from src.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
     CompanyCandidateWithCandidateReadModel
 )
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import (
-    CompanyCandidateRepositoryInterface
+from src.company_candidate.domain.value_objects import (
+    CompanyCandidateId,
+    VisibilitySettings,
 )
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
-from src.candidate.infrastructure.models.candidate_model import CandidateModel
-from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
-from src.job_position.infrastructure.models.job_position_model import JobPositionModel
-from src.company.domain.value_objects import CompanyId
-from src.company.domain.value_objects.company_user_id import CompanyUserId
-from src.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from core.database import SQLAlchemyDatabase
+from src.job_position.infrastructure.models.job_position_model import JobPositionModel
 
 
 class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
@@ -65,7 +65,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             lead_id=model.lead_id,
             source=model.source,
             resume_url=model.resume_url,
-            resume_uploaded_by=CompanyUserId.from_string(model.resume_uploaded_by) if model.resume_uploaded_by else None,
+            resume_uploaded_by=CompanyUserId.from_string(
+                model.resume_uploaded_by) if model.resume_uploaded_by else None,
             resume_uploaded_at=model.resume_uploaded_at,
             created_at=model.created_at,
             updated_at=model.updated_at,
@@ -115,7 +116,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             model.ownership_status = company_candidate.ownership_status.value
             model.created_by_user_id = str(company_candidate.created_by_user_id)
             model.workflow_id = str(company_candidate.workflow_id) if company_candidate.workflow_id else None
-            model.current_stage_id = str(company_candidate.current_stage_id) if company_candidate.current_stage_id else None
+            model.current_stage_id = str(
+                company_candidate.current_stage_id) if company_candidate.current_stage_id else None
             model.invited_at = company_candidate.invited_at
             model.confirmed_at = company_candidate.confirmed_at
             model.rejected_at = company_candidate.rejected_at
@@ -129,7 +131,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             model.lead_id = company_candidate.lead_id
             model.source = company_candidate.source
             model.resume_url = company_candidate.resume_url
-            model.resume_uploaded_by = str(company_candidate.resume_uploaded_by) if company_candidate.resume_uploaded_by else None
+            model.resume_uploaded_by = str(
+                company_candidate.resume_uploaded_by) if company_candidate.resume_uploaded_by else None
             model.resume_uploaded_at = company_candidate.resume_uploaded_at
             model.updated_at = company_candidate.updated_at
         else:
@@ -145,7 +148,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         model = session.query(CompanyCandidateModel).filter_by(id=str(company_candidate_id)).first()
         return self._to_domain(model) if model else None
 
-    def get_by_id_with_candidate_info(self, company_candidate_id: CompanyCandidateId) -> Optional[CompanyCandidateWithCandidateReadModel]:
+    def get_by_id_with_candidate_info(self, company_candidate_id: CompanyCandidateId) -> Optional[
+        CompanyCandidateWithCandidateReadModel]:
         """
         Get a single company candidate by ID with candidate basic info and position.
         Uses SQL JOIN for efficient data retrieval.
@@ -156,7 +160,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
         from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
         # from src.phase.infrastructure.models.phase_model import PhaseModel  # Temporarily disabled
-        
+
         # Perform JOINs between company_candidates, candidates, candidate_applications, job_positions, workflows, and stages
         result = session.query(
             CompanyCandidateModel,
@@ -190,8 +194,12 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         if not result:
             return None
 
-        cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name = result
-        
+        (
+            cc_model, candidate_name, candidate_email, candidate_phone,
+            job_position_id, application_status, job_position_title,
+            workflow_name, stage_name
+        ) = result
+
         return CompanyCandidateWithCandidateReadModel(
             id=cc_model.id,
             company_id=cc_model.company_id,
@@ -235,9 +243,9 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         )
 
     def get_by_company_and_candidate(
-        self,
-        company_id: CompanyId,
-        candidate_id: CandidateId
+            self,
+            company_id: CompanyId,
+            candidate_id: CandidateId
     ) -> Optional[CompanyCandidate]:
         """Get a company candidate by company and candidate IDs"""
         session = self._get_session()
@@ -278,7 +286,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         session.query(CompanyCandidateModel).filter_by(id=str(company_candidate_id)).delete()
         session.commit()
 
-    def list_by_company_with_candidate_info(self, company_id: CompanyId) -> List[CompanyCandidateWithCandidateReadModel]:
+    def list_by_company_with_candidate_info(self, company_id: CompanyId) -> List[
+        CompanyCandidateWithCandidateReadModel]:
         """
         List all company candidates for a company with candidate basic info and position.
         Uses SQL JOIN for efficient data retrieval.
@@ -292,7 +301,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         from src.company_candidate.domain.enums.comment_review_status import CommentReviewStatus
         from sqlalchemy import func
         # from src.phase.infrastructure.models.phase_model import PhaseModel  # Temporarily disabled
-        
+
         # Subquery to count pending comments per company candidate
         pending_comments_subquery = session.query(
             CandidateCommentModel.company_candidate_id,
@@ -300,7 +309,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         ).filter(
             CandidateCommentModel.review_status == CommentReviewStatus.PENDING.value
         ).group_by(CandidateCommentModel.company_candidate_id).subquery()
-        
+
         # Perform JOINs between company_candidates, candidates, candidate_applications, job_positions, workflows, and stages
         results = session.query(
             CompanyCandidateModel,
@@ -337,7 +346,11 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
 
         # Convert to read models
         read_models = []
-        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name, pending_comments_count in results:
+        for (
+            cc_model, candidate_name, candidate_email, candidate_phone,
+            job_position_id, application_status, job_position_title,
+            workflow_name, stage_name, pending_comments_count
+        ) in results:
             read_model = CompanyCandidateWithCandidateReadModel(
                 id=cc_model.id,
                 company_id=cc_model.company_id,

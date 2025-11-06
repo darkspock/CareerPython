@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
 
 
 @dataclass(frozen=True)
@@ -16,16 +16,17 @@ class CustomFieldValue:
     id: CustomFieldValueId
     company_candidate_id: CompanyCandidateId
     workflow_id: CompanyWorkflowId
-    values: Dict[str, Any]  # JSON with all field values, keyed by field_id (not field_key, to avoid data loss on rename)
+    values: Dict[
+        str, Any]  # JSON with all field values, keyed by field_id (not field_key, to avoid data loss on rename)
     created_at: datetime
     updated_at: datetime
 
     @staticmethod
     def create(
-        id: CustomFieldValueId,
-        company_candidate_id: CompanyCandidateId,
-        workflow_id: CompanyWorkflowId,
-        values: Optional[Dict[str, Any]] = None
+            id: CustomFieldValueId,
+            company_candidate_id: CompanyCandidateId,
+            workflow_id: CompanyWorkflowId,
+            values: Optional[Dict[str, Any]] = None
     ) -> "CustomFieldValue":
         """Create a corresponding custom field value record"""
         now = datetime.utcnow()

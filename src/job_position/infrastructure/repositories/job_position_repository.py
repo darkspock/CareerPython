@@ -58,7 +58,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
                         limit: int = 50, offset: int = 0,
                         visibility: Optional[JobPositionVisibilityEnum] = None) -> List[JobPosition]:
         """Find job positions by filters
-        
+
         Args:
             status: Single status or list of statuses to filter by
         """
@@ -103,7 +103,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
     def count_by_status(self, status: JobPositionStatusEnum) -> int:
         """
         Count job positions by status.
-        
+
         TODO: This now requires access to workflow repository to check stage.status_mapping.
         This will be implemented in Phase 3 when we have workflow repository access.
         """
@@ -127,7 +127,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
     def count_active_by_company_id(self, company_id: str) -> int:
         """
         Count active job positions by company ID.
-        
+
         TODO: This now requires access to workflow repository to check if stage.status_mapping is ACTIVE.
         This will be properly implemented in Phase 3.
         For now, we count positions that have a workflow and stage assigned.
@@ -173,7 +173,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         job_position_workflow_id = None
         if model.job_position_workflow_id:
             job_position_workflow_id = JobPositionWorkflowId.from_string(model.job_position_workflow_id)
-        
+
         stage_id = None
         if model.stage_id:
             stage_id = StageId.from_string(model.stage_id)
@@ -181,7 +181,8 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         # Convert visibility - handle migration from is_public if needed
         # Visibility is stored as string value, convert to enum
         if hasattr(model, 'visibility') and model.visibility:
-            visibility = JobPositionVisibilityEnum(model.visibility.lower()) if isinstance(model.visibility, str) else model.visibility
+            visibility = JobPositionVisibilityEnum(model.visibility.lower()) if isinstance(model.visibility,
+                                                                                           str) else model.visibility
         else:
             visibility = JobPositionVisibilityEnum.HIDDEN
         # TODO: Migration logic - if visibility doesn't exist but is_public does, convert it
@@ -208,12 +209,15 @@ class JobPositionRepository(JobPositionRepositoryInterface):
     def _create_model_from_entity(self, job_position: JobPosition) -> JobPositionModel:
         """Create JobPositionModel from JobPosition entity"""
         # Ensure visibility is converted to string value (lowercase)
-        visibility_value = job_position.visibility.value if isinstance(job_position.visibility, JobPositionVisibilityEnum) else str(job_position.visibility).lower()
-        
+        visibility_value = job_position.visibility.value if isinstance(job_position.visibility,
+                                                                       JobPositionVisibilityEnum) else str(
+            job_position.visibility).lower()
+
         return JobPositionModel(
             id=job_position.id.value,
             company_id=job_position.company_id.value,
-            job_position_workflow_id=str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None,
+            job_position_workflow_id=str(
+                job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None,
             stage_id=str(job_position.stage_id) if job_position.stage_id else None,
             phase_workflows=job_position.phase_workflows or {},
             custom_fields_values=job_position.custom_fields_values or {},
@@ -230,7 +234,8 @@ class JobPositionRepository(JobPositionRepositoryInterface):
 
     def _update_model_from_entity(self, model: JobPositionModel, job_position: JobPosition) -> None:
         """Update JobPositionModel with JobPosition entity data"""
-        model.job_position_workflow_id = str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None
+        model.job_position_workflow_id = str(
+            job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None
         model.stage_id = str(job_position.stage_id) if job_position.stage_id else None
         model.phase_workflows = job_position.phase_workflows or {}
         model.custom_fields_values = job_position.custom_fields_values or {}
@@ -240,7 +245,9 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         model.open_at = job_position.open_at
         model.application_deadline = job_position.application_deadline
         # Ensure visibility is converted to string value (lowercase)
-        visibility_value = job_position.visibility.value if isinstance(job_position.visibility, JobPositionVisibilityEnum) else str(job_position.visibility).lower()
+        visibility_value = job_position.visibility.value if isinstance(job_position.visibility,
+                                                                       JobPositionVisibilityEnum) else str(
+            job_position.visibility).lower()
         model.visibility = visibility_value
         model.public_slug = job_position.public_slug
         model.updated_at = job_position.updated_at or datetime.utcnow()

@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Optional
+
 from sqlalchemy import String, Boolean, DateTime, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column
+
 from core.database import Base
 
 

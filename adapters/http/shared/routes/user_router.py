@@ -3,13 +3,13 @@ from typing import Annotated
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, Query
 
-from core.container import Container
 from adapters.http.shared.controllers.user import UserController
 from adapters.http.shared.schemas.token import PasswordResetResponse, PasswordResetConfirm, UserExistsResponse, \
     PasswordResetRequest
 from adapters.http.shared.schemas.user import UserAutoCreateResponse, UserAutoCreateRequest, UserCreate, UserResponse, \
     UserLanguageRequest, UserLanguageResponse, UserLanguageUpdateResponse
 from adapters.http.shared.services.authentication_service import get_current_user
+from core.container import Container
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 

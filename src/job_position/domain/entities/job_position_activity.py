@@ -3,12 +3,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, Optional
 
+from src.company.domain.value_objects.company_user_id import CompanyUserId
+from src.job_position.domain.enums.activity_type_enum import ActivityTypeEnum
 from src.job_position.domain.value_objects import (
     JobPositionActivityId,
     JobPositionId,
 )
-from src.job_position.domain.enums.activity_type_enum import ActivityTypeEnum
-from src.company.domain.value_objects.company_user_id import CompanyUserId
 
 
 @dataclass
@@ -16,7 +16,7 @@ class JobPositionActivity:
     """
     JobPositionActivity domain entity
     Represents an activity/interaction on a job position
-    
+
     Activities track the history of changes and interactions:
     - CREATED: Position was created
     - EDITED: Fields were modified
@@ -34,13 +34,13 @@ class JobPositionActivity:
 
     @classmethod
     def create(
-        cls,
-        id: JobPositionActivityId,
-        job_position_id: JobPositionId,
-        activity_type: ActivityTypeEnum,
-        description: str,
-        performed_by_user_id: CompanyUserId,
-        metadata: Optional[Dict[str, Any]] = None,
+            cls,
+            id: JobPositionActivityId,
+            job_position_id: JobPositionId,
+            activity_type: ActivityTypeEnum,
+            description: str,
+            performed_by_user_id: CompanyUserId,
+            metadata: Optional[Dict[str, Any]] = None,
     ) -> "JobPositionActivity":
         """
         Factory method to create a new activity
@@ -68,12 +68,12 @@ class JobPositionActivity:
 
     @staticmethod
     def from_edit(
-        id: JobPositionActivityId,
-        job_position_id: JobPositionId,
-        user_id: CompanyUserId,
-        changed_fields: list[str],
-        old_values: Dict[str, Any],
-        new_values: Dict[str, Any],
+            id: JobPositionActivityId,
+            job_position_id: JobPositionId,
+            user_id: CompanyUserId,
+            changed_fields: list[str],
+            old_values: Dict[str, Any],
+            new_values: Dict[str, Any],
     ) -> "JobPositionActivity":
         """
         Static factory to create an EDITED activity
@@ -95,7 +95,7 @@ class JobPositionActivity:
             "old_values": old_values,
             "new_values": new_values,
         }
-        
+
         return JobPositionActivity.create(
             id=id,
             job_position_id=job_position_id,
@@ -107,13 +107,13 @@ class JobPositionActivity:
 
     @staticmethod
     def from_stage_move(
-        id: JobPositionActivityId,
-        job_position_id: JobPositionId,
-        user_id: CompanyUserId,
-        old_stage_id: Optional[str],
-        old_stage_name: Optional[str],
-        new_stage_id: str,
-        new_stage_name: str,
+            id: JobPositionActivityId,
+            job_position_id: JobPositionId,
+            user_id: CompanyUserId,
+            old_stage_id: Optional[str],
+            old_stage_name: Optional[str],
+            new_stage_id: str,
+            new_stage_name: str,
     ) -> "JobPositionActivity":
         """
         Static factory to create a STAGE_MOVED activity
@@ -134,14 +134,14 @@ class JobPositionActivity:
             description = f"Moved from '{old_stage_name}' to '{new_stage_name}'"
         else:
             description = f"Moved to '{new_stage_name}'"
-            
+
         metadata = {
             "old_stage_id": old_stage_id,
             "old_stage_name": old_stage_name,
             "new_stage_id": new_stage_id,
             "new_stage_name": new_stage_name,
         }
-        
+
         return JobPositionActivity.create(
             id=id,
             job_position_id=job_position_id,
@@ -153,11 +153,11 @@ class JobPositionActivity:
 
     @staticmethod
     def from_status_change(
-        id: JobPositionActivityId,
-        job_position_id: JobPositionId,
-        user_id: CompanyUserId,
-        old_status: str,
-        new_status: str,
+            id: JobPositionActivityId,
+            job_position_id: JobPositionId,
+            user_id: CompanyUserId,
+            old_status: str,
+            new_status: str,
     ) -> "JobPositionActivity":
         """
         Static factory to create a STATUS_CHANGED activity
@@ -177,7 +177,7 @@ class JobPositionActivity:
             "old_status": old_status,
             "new_status": new_status,
         }
-        
+
         return JobPositionActivity.create(
             id=id,
             job_position_id=job_position_id,
@@ -189,11 +189,11 @@ class JobPositionActivity:
 
     @staticmethod
     def from_comment_added(
-        id: JobPositionActivityId,
-        job_position_id: JobPositionId,
-        user_id: CompanyUserId,
-        comment_id: str,
-        is_global: bool,
+            id: JobPositionActivityId,
+            job_position_id: JobPositionId,
+            user_id: CompanyUserId,
+            comment_id: str,
+            is_global: bool,
     ) -> "JobPositionActivity":
         """
         Static factory to create a COMMENT_ADDED activity
@@ -213,7 +213,7 @@ class JobPositionActivity:
             "comment_id": comment_id,
             "is_global": is_global,
         }
-        
+
         return JobPositionActivity.create(
             id=id,
             job_position_id=job_position_id,
@@ -222,4 +222,3 @@ class JobPositionActivity:
             performed_by_user_id=user_id,
             metadata=metadata,
         )
-

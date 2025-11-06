@@ -47,4 +47,3 @@ class CompanyUserInvitationModel(Base):
 
     def __repr__(self) -> str:
         return f"<CompanyUserInvitationModel(id={self.id}, email={self.email}, status={self.status})>"
-

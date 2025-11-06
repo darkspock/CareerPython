@@ -1,12 +1,13 @@
 from typing import Optional, List, Any
 
 from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.company_workflow.domain.enums.stage_type import StageType
+from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.value_objects.stage_style import StageStyle
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
-from src.company_workflow.domain.enums.stage_type import StageType
 from src.phase.domain.value_objects.phase_id import PhaseId
 
 
@@ -75,10 +76,10 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             # First get the workflow for this phase
             from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
             workflow = session.query(CompanyWorkflowModel).filter_by(phase_id=str(phase_id)).first()
-            
+
             if not workflow:
                 return []
-            
+
             # Then get all stages for that workflow
             models = session.query(WorkflowStageModel).filter_by(
                 workflow_id=str(workflow.id)

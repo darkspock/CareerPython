@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 
-from src.company_workflow.domain.infrastructure.field_configuration_repository_interface import FieldConfigurationRepositoryInterface
-from src.company_workflow.domain.value_objects.field_configuration_id import FieldConfigurationId
 from src.company_workflow.domain.enums.field_visibility import FieldVisibility
+from src.company_workflow.domain.infrastructure.field_configuration_repository_interface import \
+    FieldConfigurationRepositoryInterface
+from src.company_workflow.domain.value_objects.field_configuration_id import FieldConfigurationId
 from src.shared.application.command_bus import Command, CommandHandler
 
 

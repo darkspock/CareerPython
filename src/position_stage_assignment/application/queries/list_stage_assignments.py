@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.position_stage_assignment.domain import PositionStageAssignmentRepositoryInterface
 from src.position_stage_assignment.application.queries.position_stage_assignment_dto import PositionStageAssignmentDto
+from src.position_stage_assignment.domain import PositionStageAssignmentRepositoryInterface
 from src.shared.application.query_bus import Query, QueryHandler
 
 

@@ -1,11 +1,8 @@
 """Job position workflow admin schemas"""
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional, List, Dict, Any
 
-from src.job_position.domain.enums.view_type import ViewTypeEnum
-from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
-from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
+from pydantic import BaseModel, Field
 
 
 class WorkflowStageCreate(BaseModel):
@@ -20,7 +17,8 @@ class WorkflowStageCreate(BaseModel):
     kanban_display: str = Field("vertical", description="Kanban display type")
     field_visibility: Dict[str, bool] = Field(default_factory=dict, description="Field visibility configuration")
     field_validation: Dict[str, Any] = Field(default_factory=dict, description="Field validation configuration")
-    field_candidate_visibility: Dict[str, bool] = Field(default_factory=dict, description="Field visibility for candidates")
+    field_candidate_visibility: Dict[str, bool] = Field(default_factory=dict,
+                                                        description="Field visibility for candidates")
 
 
 class WorkflowStageResponse(BaseModel):
@@ -78,4 +76,3 @@ class MoveJobPositionToStageRequest(BaseModel):
 class UpdateJobPositionCustomFieldsRequest(BaseModel):
     """Schema for updating custom fields values"""
     custom_fields_values: Dict[str, Any] = Field(..., description="Custom fields values")
-

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Dict, List
+
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class CreateCompanyCandidateRequest(BaseModel):
@@ -19,6 +20,7 @@ class CreateCompanyCandidateRequest(BaseModel):
     position: Optional[str] = Field(default=None, description="Position/role for the candidate")
     department: Optional[str] = Field(default=None, description="Department")
     priority: str = Field(default="medium", description="Priority level: low, medium, high")
-    visibility_settings: Optional[Dict[str, bool]] = Field(default=None, description="Visibility settings for candidate data")
+    visibility_settings: Optional[Dict[str, bool]] = Field(default=None,
+                                                           description="Visibility settings for candidate data")
     tags: List[str] = Field(default_factory=list, description="Tags for categorization")
     internal_notes: str = Field(default="", description="Internal notes about the candidate")

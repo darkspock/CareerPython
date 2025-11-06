@@ -1,32 +1,33 @@
-import ulid
 from typing import List, Optional, Any
+
+import ulid
 from sqlalchemy import func
 
-from src.company_workflow.application.dtos.company_workflow_dto import CompanyWorkflowDto
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
 from src.company.domain.value_objects.company_id import CompanyId
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.company_workflow.application.commands.create_workflow_command import CreateWorkflowCommand
-from src.company_workflow.application.commands.update_workflow_command import UpdateWorkflowCommand
+from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 from src.company_workflow.application.commands.activate_workflow_command import ActivateWorkflowCommand
-from src.company_workflow.application.commands.deactivate_workflow_command import DeactivateWorkflowCommand
 from src.company_workflow.application.commands.archive_workflow_command import ArchiveWorkflowCommand
+from src.company_workflow.application.commands.create_workflow_command import CreateWorkflowCommand
+from src.company_workflow.application.commands.deactivate_workflow_command import DeactivateWorkflowCommand
 from src.company_workflow.application.commands.delete_workflow_command import DeleteWorkflowCommand
 from src.company_workflow.application.commands.set_as_default_workflow_command import SetAsDefaultWorkflowCommand
 from src.company_workflow.application.commands.unset_as_default_workflow_command import UnsetAsDefaultWorkflowCommand
+from src.company_workflow.application.commands.update_workflow_command import UpdateWorkflowCommand
+from src.company_workflow.application.dtos.company_workflow_dto import CompanyWorkflowDto
 from src.company_workflow.application.queries.get_workflow_by_id import GetWorkflowByIdQuery
+from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQuery
 from src.company_workflow.application.queries.list_workflows_by_company import ListWorkflowsByCompanyQuery
 from src.company_workflow.application.queries.list_workflows_by_phase import ListWorkflowsByPhaseQuery
-from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQuery
-from src.company_workflow.presentation.schemas.create_workflow_request import CreateWorkflowRequest
-from src.company_workflow.presentation.schemas.update_workflow_request import UpdateWorkflowRequest
-from src.company_workflow.presentation.schemas.company_workflow_response import CompanyWorkflowResponse
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.presentation.mappers.company_workflow_mapper import CompanyWorkflowResponseMapper
 from src.company_workflow.presentation.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
-from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+from src.company_workflow.presentation.schemas.company_workflow_response import CompanyWorkflowResponse
+from src.company_workflow.presentation.schemas.create_workflow_request import CreateWorkflowRequest
+from src.company_workflow.presentation.schemas.update_workflow_request import UpdateWorkflowRequest
 from src.job_position.infrastructure.models.job_position_model import JobPositionModel
-from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
+from src.shared.application.command_bus import CommandBus
+from src.shared.application.query_bus import QueryBus
 
 
 class CompanyWorkflowController:
@@ -83,7 +84,8 @@ class CompanyWorkflowController:
             from src.company_workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
             stages_query = ListStagesByWorkflowQuery(workflow_id=dto.id)
             stage_dtos: List[WorkflowStageDto] = self._query_bus.query(stages_query)
-            response.stages = [WorkflowStageResponseMapper.dto_to_response(stage_dto).dict() for stage_dto in stage_dtos]
+            response.stages = [WorkflowStageResponseMapper.dto_to_response(stage_dto).dict() for stage_dto in
+                               stage_dtos]
 
             # Enrich with counts using database queries
             with self._database.get_session() as session:
@@ -96,9 +98,9 @@ class CompanyWorkflowController:
 
                 # Count distinct open positions that have candidates in this workflow
                 # through candidate_applications
-                from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
                 from src.job_position.domain.enums.job_position_visibility import JobPositionVisibilityEnum
-                active_position_count = session.query(func.count(func.distinct(CandidateApplicationModel.job_position_id))).join(
+                active_position_count = session.query(
+                    func.count(func.distinct(CandidateApplicationModel.job_position_id))).join(
                     CompanyCandidateModel,
                     CompanyCandidateModel.candidate_id == CandidateApplicationModel.candidate_id
                 ).join(
@@ -106,7 +108,8 @@ class CompanyWorkflowController:
                     JobPositionModel.id == CandidateApplicationModel.job_position_id
                 ).filter(
                     CompanyCandidateModel.workflow_id == dto.id,
-                    JobPositionModel.visibility == JobPositionVisibilityEnum.PUBLIC,  # TODO: Check status from workflow stage
+                    JobPositionModel.visibility == JobPositionVisibilityEnum.PUBLIC,
+                    # TODO: Check status from workflow stage
                     JobPositionModel.company_id == company_id
                 ).scalar() or 0
 

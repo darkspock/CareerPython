@@ -1,7 +1,9 @@
+from src.field_validation.application.dtos.stage_validation_result_dto import StageValidationResultDto, \
+    ValidationIssueDto
 from src.field_validation.application.dtos.validation_rule_dto import ValidationRuleDto
-from src.field_validation.application.dtos.stage_validation_result_dto import StageValidationResultDto, ValidationIssueDto
+from src.field_validation.presentation.schemas.validation_result_response import ValidationResultResponse, \
+    ValidationIssueResponse
 from src.field_validation.presentation.schemas.validation_rule_response import ValidationRuleResponse
-from src.field_validation.presentation.schemas.validation_result_response import ValidationResultResponse, ValidationIssueResponse
 
 
 class ValidationRuleResponseMapper:

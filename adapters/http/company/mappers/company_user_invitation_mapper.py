@@ -1,9 +1,9 @@
-from core.config import settings
-from src.company.application.dtos.company_user_invitation_dto import CompanyUserInvitationDto
 from adapters.http.company.schemas.company_user_invitation_response import (
     CompanyUserInvitationResponse,
     UserInvitationLinkResponse
 )
+from core.config import settings
+from src.company.application.dtos.company_user_invitation_dto import CompanyUserInvitationDto
 
 
 class CompanyUserInvitationResponseMapper:
@@ -13,7 +13,7 @@ class CompanyUserInvitationResponseMapper:
     def dto_to_response(dto: CompanyUserInvitationDto) -> CompanyUserInvitationResponse:
         """Convert DTO to response with invitation link"""
         invitation_link = f"{settings.FRONTEND_URL}/invitations/accept?token={dto.token}"
-        
+
         return CompanyUserInvitationResponse(
             id=dto.id,
             company_id=dto.company_id,
@@ -33,11 +33,10 @@ class CompanyUserInvitationResponseMapper:
     def dto_to_link_response(dto: CompanyUserInvitationDto) -> UserInvitationLinkResponse:
         """Convert DTO to link response for sharing"""
         invitation_link = f"{settings.FRONTEND_URL}/invitations/accept?token={dto.token}"
-        
+
         return UserInvitationLinkResponse(
             invitation_id=dto.id,
             invitation_link=invitation_link,
             expires_at=dto.expires_at,
             email=dto.email,
         )
-

@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
+from src.user.domain.value_objects.UserId import UserId
 from ..entities.company_user import CompanyUser
 from ..value_objects.company_id import CompanyId
 from ..value_objects.company_user_id import CompanyUserId
-from src.user.domain.value_objects.UserId import UserId
 
 
 class CompanyUserRepositoryInterface(ABC):
@@ -22,9 +22,9 @@ class CompanyUserRepositoryInterface(ABC):
 
     @abstractmethod
     def get_by_company_and_user(
-        self,
-        company_id: CompanyId,
-        user_id: UserId
+            self,
+            company_id: CompanyId,
+            user_id: UserId
     ) -> Optional[CompanyUser]:
         """Get a company user by company and user ID"""
         pass

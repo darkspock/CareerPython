@@ -1,8 +1,8 @@
 """CandidateStage SQLAlchemy model"""
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Dict, Any
 from decimal import Decimal
+from typing import Optional, Dict, Any
 
 from sqlalchemy import String, DateTime, Text, JSON, Numeric, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column

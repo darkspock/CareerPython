@@ -24,8 +24,8 @@ class UnclaimTaskCommandHandler(CommandHandler[UnclaimTaskCommand]):
     """Handler for unclaiming tasks"""
 
     def __init__(
-        self,
-        application_repository: CandidateApplicationRepositoryInterface
+            self,
+            application_repository: CandidateApplicationRepositoryInterface
     ):
         self.application_repository = application_repository
 

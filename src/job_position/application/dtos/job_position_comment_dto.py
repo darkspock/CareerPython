@@ -26,10 +26,10 @@ class JobPositionCommentDto:
     def from_entity(entity) -> "JobPositionCommentDto":  # type: ignore
         """
         Convert domain entity to DTO
-        
+
         Args:
             entity: JobPositionComment entity
-            
+
         Returns:
             JobPositionCommentDto
         """
@@ -46,4 +46,3 @@ class JobPositionCommentDto:
             updated_at=entity.updated_at,
             is_global=entity.is_global,
         )
-

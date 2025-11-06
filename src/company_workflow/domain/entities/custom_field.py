@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 
-from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.field_option import FieldOption
 from src.company_workflow.domain.enums.field_type import FieldType
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
+from src.company_workflow.domain.value_objects.field_option import FieldOption
 
 
 @dataclass(frozen=True)
@@ -23,13 +23,13 @@ class CustomField:
 
     @staticmethod
     def create(
-        id: CustomFieldId,
-        workflow_id: CompanyWorkflowId,
-        field_key: str,
-        field_name: str,
-        field_type: FieldType,
-        order_index: int,
-        field_config: Optional[Dict[str, Any]] = None
+            id: CustomFieldId,
+            workflow_id: CompanyWorkflowId,
+            field_key: str,
+            field_name: str,
+            field_type: FieldType,
+            order_index: int,
+            field_config: Optional[Dict[str, Any]] = None
     ) -> "CustomField":
         """Factory method to create a new custom field"""
         if not field_key:
@@ -60,10 +60,10 @@ class CustomField:
         )
 
     def update(
-        self,
-        field_name: str,
-        field_type: FieldType,
-        field_config: Optional[Dict[str, Any]] = None
+            self,
+            field_name: str,
+            field_type: FieldType,
+            field_config: Optional[Dict[str, Any]] = None
     ) -> "CustomField":
         """Update field information"""
         if not field_name:
@@ -105,8 +105,8 @@ class CustomField:
 
     @staticmethod
     def _validate_field_config(
-        field_type: FieldType,
-        field_config: Optional[Dict[str, Any]]
+            field_type: FieldType,
+            field_config: Optional[Dict[str, Any]]
     ) -> Optional[Dict[str, Any]]:
         """Validate field configuration based on field type"""
         if field_config is None:
@@ -120,7 +120,7 @@ class CustomField:
                 raise ValueError(f"{field_type.value} options must be a list")
             if len(field_config["options"]) == 0:
                 raise ValueError(f"{field_type.value} must have at least one option")
-            
+
             # Validate options - support both old format (strings) and new format (objects with id, sort, labels)
             for i, option in enumerate(field_config["options"]):
                 if isinstance(option, dict):
@@ -134,11 +134,13 @@ class CustomField:
                             raise ValueError(f"Option at index {i} must have at least one label in 'labels' array")
                         for label in option["labels"]:
                             if not isinstance(label, dict) or "language" not in label or "label" not in label:
-                                raise ValueError(f"Label in option at index {i} must have 'language' and 'label' fields")
+                                raise ValueError(
+                                    f"Label in option at index {i} must have 'language' and 'label' fields")
                     # If dict doesn't have id/labels, it might be a different config structure - allow it
                 elif not isinstance(option, str):
                     # Old format should be strings
-                    raise ValueError(f"Option at index {i} must be either a string (old format) or an object with id/sort/labels (new format)")
+                    raise ValueError(
+                        f"Option at index {i} must be either a string (old format) or an object with id/sort/labels (new format)")
 
         if field_type == FieldType.NUMBER:
             if "min" in field_config and "max" in field_config:
@@ -190,10 +192,10 @@ class CustomField:
         """
         Get options as simple strings (for backward compatibility)
         Uses new format if available, falls back to old format
-        
+
         Args:
             language: Language code for i18n labels (defaults to first label)
-        
+
         Returns:
             List of option label strings
         """
@@ -202,7 +204,7 @@ class CustomField:
         options = self.get_config_value("options", [])
         if not options:
             return []
-        
+
         result = []
         for option in options:
             if isinstance(option, dict):
@@ -219,14 +221,14 @@ class CustomField:
             elif isinstance(option, str):
                 # Old format: direct string
                 result.append(option)
-        
+
         return result
 
     def get_options_as_objects(self) -> List[FieldOption]:
         """
         Get options as FieldOption objects (new format)
         Converts old format to new format automatically
-        
+
         Returns:
             List of FieldOption objects
         """
@@ -235,14 +237,14 @@ class CustomField:
         options = self.get_config_value("options", [])
         if not options:
             return []
-        
+
         result = []
         for i, option in enumerate(options):
             if isinstance(option, dict):
                 # New format: convert from dict
                 try:
                     result.append(FieldOption.from_dict(option))
-                except Exception as e:
+                except Exception:
                     # If conversion fails, create from legacy format
                     if "label" in option:
                         legacy_label = option["label"]
@@ -260,35 +262,35 @@ class CustomField:
                     labels=[{"language": "en", "label": option}],
                     sort=i
                 ))
-        
+
         return result
 
     def update_options(self, new_options: List[FieldOption]) -> "CustomField":
         """
         Update options with new FieldOption objects
-        
+
         Args:
             new_options: List of FieldOption objects
-        
+
         Returns:
             New CustomField instance with updated options
         """
         if not self.has_options():
             raise ValueError(f"{self.field_type.value} fields do not support options")
-        
+
         if not new_options:
             raise ValueError("Must have at least one option")
-        
+
         # Convert to dict format
         options_dict = [option.to_dict() for option in new_options]
-        
+
         # Sort by sort index
         options_dict.sort(key=lambda x: x["sort"])
-        
+
         # Update field_config
         new_config = self.field_config.copy() if self.field_config else {}
         new_config["options"] = options_dict
-        
+
         return self.update(
             field_name=self.field_name,
             field_type=self.field_type,

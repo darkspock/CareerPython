@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
+# TYPE_CHECKING to avoid circular imports
+from typing import TYPE_CHECKING
 
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company.domain.value_objects.company_id import CompanyId
 from src.company_workflow.domain.enums.workflow_status import WorkflowStatus
 from src.company_workflow.domain.exceptions.invalid_workflow_operation import InvalidWorkflowOperation
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 
-# TYPE_CHECKING to avoid circular imports
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from src.phase.domain.value_objects.phase_id import PhaseId
+    pass
 
 
 @dataclass(frozen=True)
@@ -28,13 +28,13 @@ class CompanyWorkflow:
 
     @classmethod
     def create(
-        cls,
-        id: CompanyWorkflowId,
-        company_id: CompanyId,
-        name: str,
-        description: str,
-        phase_id: Optional[str] = None,
-        is_default: bool = False
+            cls,
+            id: CompanyWorkflowId,
+            company_id: CompanyId,
+            name: str,
+            description: str,
+            phase_id: Optional[str] = None,
+            is_default: bool = False
     ) -> "CompanyWorkflow":
         """Factory method to create a new company workflow"""
         if not name:
@@ -54,10 +54,10 @@ class CompanyWorkflow:
         )
 
     def update(
-        self,
-        name: str,
-        description: str,
-        phase_id: Optional[str] = None
+            self,
+            name: str,
+            description: str,
+            phase_id: Optional[str] = None
     ) -> "CompanyWorkflow":
         """Update workflow information"""
         if not name:

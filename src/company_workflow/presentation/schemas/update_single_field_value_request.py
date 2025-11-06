@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class UpdateSingleFieldValueRequest(BaseModel):
@@ -14,4 +15,3 @@ class UpdateSingleFieldValueRequest(BaseModel):
                 "value": "75000"
             }
         }
-

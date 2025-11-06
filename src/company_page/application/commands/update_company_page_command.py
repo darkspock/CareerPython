@@ -10,7 +10,7 @@ from src.shared.application.command_bus import Command
 @dataclass(frozen=True)
 class UpdateCompanyPageCommand(Command):
     """Comando para actualizar una página de empresa existente"""
-    
+
     page_id: str
     title: str
     html_content: str

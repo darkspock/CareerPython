@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
-from src.shared.application.query_bus import Query, QueryHandler
-from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
 from src.company.domain.value_objects.company_id import CompanyId
-from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
+from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
+from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import \
+    JobPositionWorkflowRepositoryInterface
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass
@@ -23,4 +24,3 @@ class ListJobPositionWorkflowsQueryHandler(QueryHandler[ListJobPositionWorkflows
         """Handle the query - returns list of workflow DTOs"""
         workflows = self.workflow_repository.get_by_company_id(query.company_id)
         return [JobPositionWorkflowDto.from_entity(workflow) for workflow in workflows]
-

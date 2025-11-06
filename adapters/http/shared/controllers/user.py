@@ -3,10 +3,10 @@ from typing import Optional
 import ulid
 from fastapi import HTTPException, status
 
-from core.exceptions import UserAlreadyExistsException
 from adapters.http.shared.schemas.token import PasswordResetRequest, PasswordResetResponse, PasswordResetConfirm, \
     UserExistsResponse
 from adapters.http.shared.schemas.user import UserCreate, UserResponse, UserAutoCreateRequest, UserAutoCreateResponse
+from core.exceptions import UserAlreadyExistsException
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.user.application.commands.create_user_automatically_command import CreateUserAutomaticallyCommand

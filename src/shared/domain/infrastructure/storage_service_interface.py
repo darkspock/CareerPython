@@ -50,13 +50,13 @@ class StorageServiceInterface(ABC):
 
     @abstractmethod
     def upload_file(
-        self,
-        file_content: bytes,
-        filename: str,
-        content_type: str,
-        storage_type: StorageType,
-        entity_id: str,
-        company_id: str,
+            self,
+            file_content: bytes,
+            filename: str,
+            content_type: str,
+            storage_type: StorageType,
+            entity_id: str,
+            company_id: str,
     ) -> UploadedFile:
         """Upload a file to storage.
 
@@ -129,10 +129,10 @@ class StorageServiceInterface(ABC):
         pass
 
     def validate_file(
-        self,
-        filename: str,
-        file_size: int,
-        config: Optional[StorageConfig] = None
+            self,
+            filename: str,
+            file_size: int,
+            config: Optional[StorageConfig] = None
     ) -> None:
         """Validate file before upload.
 
@@ -165,11 +165,11 @@ class StorageServiceInterface(ABC):
             )
 
     def generate_file_path(
-        self,
-        storage_type: StorageType,
-        company_id: str,
-        entity_id: str,
-        filename: str
+            self,
+            storage_type: StorageType,
+            company_id: str,
+            entity_id: str,
+            filename: str
     ) -> str:
         """Generate a consistent file path for storage.
 

@@ -9,5 +9,5 @@ from src.shared.application.command_bus import Command
 @dataclass(frozen=True)
 class PublishCompanyPageCommand(Command):
     """Comando para publicar una página de empresa"""
-    
+
     page_id: str

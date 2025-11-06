@@ -1,14 +1,14 @@
 """Update Stage Command."""
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
 from decimal import Decimal
+from typing import Optional, List, Dict, Any
 
 from src.company_workflow.domain.enums.stage_type import StageType
 from src.company_workflow.domain.exceptions.stage_not_found import StageNotFound
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.domain.value_objects.stage_style import StageStyle
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared.application.command_bus import Command, CommandHandler
 
 
@@ -56,7 +56,7 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
             raise StageNotFound(f"Stage with id {command.id} not found")
 
         stage_type = StageType(command.stage_type)
-        
+
         # Handle style update
         style = None
         if command.style is not None:

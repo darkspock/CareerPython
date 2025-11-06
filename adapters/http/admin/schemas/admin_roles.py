@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
 
 from src.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
 

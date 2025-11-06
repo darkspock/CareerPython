@@ -35,8 +35,8 @@ class InvitationController:
         self.query_bus = query_bus
 
     def get_invitation_by_token(
-        self,
-        token: str
+            self,
+            token: str
     ) -> CompanyUserInvitationResponse:
         """Get invitation details by token"""
         try:
@@ -62,8 +62,8 @@ class InvitationController:
             )
 
     def accept_invitation(
-        self,
-        request: AcceptInvitationRequest
+            self,
+            request: AcceptInvitationRequest
     ) -> dict:
         """Accept a user invitation"""
         try:
@@ -87,4 +87,3 @@ class InvitationController:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e)
             )
-

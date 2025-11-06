@@ -16,4 +16,3 @@ class CandidateCommentDto:
     visibility: str  # 'private' or 'shared_with_candidate'
     created_at: datetime
     updated_at: datetime
-

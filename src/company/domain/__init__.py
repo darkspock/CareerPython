@@ -1,13 +1,13 @@
 """Company domain module"""
 from .entities import Company, CompanyUser
 from .enums import CompanyStatusEnum, CompanyUserRole, CompanyUserStatus
-from .value_objects import CompanyId, CompanySettings
 from .exceptions import (
     CompanyNotFoundError,
     CompanyAlreadyExistsError,
     CompanyValidationError,
     CompanyNotApprovedException
 )
+from .value_objects import CompanyId, CompanySettings
 
 # Backward compatibility
 CompanyStatusEnum = CompanyStatusEnum

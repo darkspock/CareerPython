@@ -4,8 +4,7 @@ from dataclasses import dataclass
 from src.position_stage_assignment.domain import (
     PositionStageAssignment,
     PositionStageAssignmentId,
-    PositionStageAssignmentRepositoryInterface,
-    PositionStageAssignmentNotFoundException
+    PositionStageAssignmentRepositoryInterface
 )
 from src.shared.application.command_bus import Command, CommandHandler
 

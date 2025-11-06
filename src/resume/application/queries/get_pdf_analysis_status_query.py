@@ -48,7 +48,8 @@ class GetPDFAnalysisStatusQueryHandler(QueryHandler[GetPDFAnalysisStatusQuery, O
         )
 
 
-class GetPDFAnalysisStatusByAssetQueryHandler(QueryHandler[GetPDFAnalysisStatusByAssetQuery, Optional[AsyncJobStatusDto]]):
+class GetPDFAnalysisStatusByAssetQueryHandler(
+    QueryHandler[GetPDFAnalysisStatusByAssetQuery, Optional[AsyncJobStatusDto]]):
     """Handler for GetPDFAnalysisStatusByAssetQuery."""
 
     def __init__(self, async_job_service: AsyncJobService):

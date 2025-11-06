@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.shared.application.query_bus import Query, QueryHandler
 from src.company_workflow.application.dtos.custom_field_value_dto import CustomFieldValueDto
 from src.company_workflow.application.mappers.custom_field_value_mapper import CustomFieldValueMapper
+from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import \
+    CustomFieldValueRepositoryInterface
 from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
-from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import CustomFieldValueRepositoryInterface
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
@@ -25,5 +26,5 @@ class GetCustomFieldValueByIdQueryHandler(QueryHandler[GetCustomFieldValueByIdQu
         custom_field_value = self._repository.get_by_id(CustomFieldValueId(query.id))
         if not custom_field_value:
             return None
-        
+
         return CustomFieldValueMapper.entity_to_dto(custom_field_value)

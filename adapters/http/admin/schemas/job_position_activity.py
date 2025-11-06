@@ -1,6 +1,7 @@
 """Job Position Activity Schemas."""
 from datetime import datetime
 from typing import Dict, Any
+
 from pydantic import BaseModel
 
 
@@ -38,7 +39,7 @@ class JobPositionActivityListResponse(BaseModel):
     """Response schema for list of job position activities"""
     activities: list[JobPositionActivityResponse]
     total: int
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -46,4 +47,3 @@ class JobPositionActivityListResponse(BaseModel):
                 "total": 0
             }
         }
-

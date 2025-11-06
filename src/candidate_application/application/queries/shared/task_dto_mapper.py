@@ -14,14 +14,14 @@ class TaskDtoMapper:
 
     @staticmethod
     def from_entity(
-        application: CandidateApplication,
-        candidate_name: str,
-        position_title: str,
-        current_stage_name: Optional[str] = None,
-        candidate_email: Optional[str] = None,
-        candidate_photo_url: Optional[str] = None,
-        position_company_name: Optional[str] = None,
-        can_user_process: bool = False
+            application: CandidateApplication,
+            candidate_name: str,
+            position_title: str,
+            current_stage_name: Optional[str] = None,
+            candidate_email: Optional[str] = None,
+            candidate_photo_url: Optional[str] = None,
+            position_company_name: Optional[str] = None,
+            can_user_process: bool = False
     ) -> TaskDto:
         """Convert CandidateApplication entity to TaskDto with enriched data
 

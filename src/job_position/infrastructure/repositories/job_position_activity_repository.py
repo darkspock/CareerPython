@@ -3,18 +3,18 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from core.database import SQLAlchemyDatabase
+from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.job_position.domain.entities.job_position_activity import JobPositionActivity
 from src.job_position.domain.enums.activity_type_enum import ActivityTypeEnum
+from src.job_position.domain.infrastructure.job_position_activity_repository_interface import (
+    JobPositionActivityRepositoryInterface
+)
 from src.job_position.domain.value_objects import (
     JobPositionActivityId,
     JobPositionId,
 )
-from src.job_position.domain.infrastructure.job_position_activity_repository_interface import (
-    JobPositionActivityRepositoryInterface
-)
 from src.job_position.infrastructure.models.job_position_activity_model import JobPositionActivityModel
-from src.company.domain.value_objects.company_user_id import CompanyUserId
-from core.database import SQLAlchemyDatabase
 
 
 class JobPositionActivityRepository(JobPositionActivityRepositoryInterface):
@@ -59,9 +59,9 @@ class JobPositionActivityRepository(JobPositionActivityRepositoryInterface):
         session.commit()
 
     def list_by_job_position(
-        self,
-        job_position_id: JobPositionId,
-        limit: int = 50
+            self,
+            job_position_id: JobPositionId,
+            limit: int = 50
     ) -> List[JobPositionActivity]:
         """List activities for a job position"""
         session = self._get_session()
@@ -70,4 +70,3 @@ class JobPositionActivityRepository(JobPositionActivityRepositoryInterface):
         ).order_by(JobPositionActivityModel.created_at.desc()).limit(limit).all()
 
         return [self._to_domain(model) for model in models]
-

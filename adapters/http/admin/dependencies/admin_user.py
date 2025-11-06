@@ -3,6 +3,7 @@ Dependency to get current admin user from request state
 """
 
 from typing import Optional
+
 from fastapi import Request, HTTPException, status
 
 from adapters.http.shared.schemas.user import UserResponse

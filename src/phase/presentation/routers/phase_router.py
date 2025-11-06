@@ -1,8 +1,8 @@
 """Phase router for REST API endpoints"""
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
 from dependency_injector.wiring import inject, Provide
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from core.container import Container
 from src.phase.presentation.controllers.phase_controller import PhaseController
@@ -23,9 +23,9 @@ router = APIRouter(prefix="/api/companies/{company_id}/phases", tags=["phases"])
 )
 @inject
 def create_phase(
-    company_id: str,
-    request: CreatePhaseRequest,
-    controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company_id: str,
+        request: CreatePhaseRequest,
+        controller: PhaseController = Depends(Provide[Container.phase_controller])
 ) -> PhaseResponse:
     """Create a new phase for a company
 
@@ -54,8 +54,8 @@ def create_phase(
 )
 @inject
 def list_phases(
-    company_id: str,
-    controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company_id: str,
+        controller: PhaseController = Depends(Provide[Container.phase_controller])
 ) -> List[PhaseResponse]:
     """List all phases for a company, ordered by sort_order
 
@@ -78,9 +78,9 @@ def list_phases(
 )
 @inject
 def get_phase(
-    company_id: str,
-    phase_id: str,
-    controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company_id: str,
+        phase_id: str,
+        controller: PhaseController = Depends(Provide[Container.phase_controller])
 ) -> PhaseResponse:
     """Get a phase by ID
 
@@ -109,10 +109,10 @@ def get_phase(
 )
 @inject
 def update_phase(
-    company_id: str,
-    phase_id: str,
-    request: UpdatePhaseRequest,
-    controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company_id: str,
+        phase_id: str,
+        request: UpdatePhaseRequest,
+        controller: PhaseController = Depends(Provide[Container.phase_controller])
 ) -> PhaseResponse:
     """Update an existing phase
 
@@ -142,9 +142,9 @@ def update_phase(
 )
 @inject
 def delete_phase(
-    company_id: str,
-    phase_id: str,
-    controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company_id: str,
+        phase_id: str,
+        controller: PhaseController = Depends(Provide[Container.phase_controller])
 ) -> None:
     """Delete a phase
 
@@ -171,8 +171,8 @@ def delete_phase(
 )
 @inject
 def initialize_default_phases(
-    company_id: str,
-    controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company_id: str,
+        controller: PhaseController = Depends(Provide[Container.phase_controller])
 ) -> List[PhaseResponse]:
     """Initialize default phases for a company (reset to defaults)
 
@@ -203,9 +203,9 @@ def initialize_default_phases(
 )
 @inject
 def archive_phase(
-    company_id: str,
-    phase_id: str,
-    controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company_id: str,
+        phase_id: str,
+        controller: PhaseController = Depends(Provide[Container.phase_controller])
 ) -> PhaseResponse:
     """Archive a phase (soft delete)
 
@@ -234,9 +234,9 @@ def archive_phase(
 )
 @inject
 def activate_phase(
-    company_id: str,
-    phase_id: str,
-    controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company_id: str,
+        phase_id: str,
+        controller: PhaseController = Depends(Provide[Container.phase_controller])
 ) -> PhaseResponse:
     """Activate a phase
 

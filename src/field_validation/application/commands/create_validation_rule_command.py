@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 from typing import Optional, Any
 
-from src.shared.application.command_bus import Command
-from src.shared.application.command_bus import CommandHandler
-from src.field_validation.domain.entities.validation_rule import ValidationRule
-from src.field_validation.domain.value_objects.validation_rule_id import ValidationRuleId
-from src.field_validation.domain.infrastructure.validation_rule_repository_interface import ValidationRuleRepositoryInterface
-from src.field_validation.domain.enums.validation_rule_type import ValidationRuleType
-from src.field_validation.domain.enums.comparison_operator import ComparisonOperator
-from src.field_validation.domain.enums.validation_severity import ValidationSeverity
 from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.field_validation.domain.entities.validation_rule import ValidationRule
+from src.field_validation.domain.enums.comparison_operator import ComparisonOperator
+from src.field_validation.domain.enums.validation_rule_type import ValidationRuleType
+from src.field_validation.domain.enums.validation_severity import ValidationSeverity
+from src.field_validation.domain.infrastructure.validation_rule_repository_interface import \
+    ValidationRuleRepositoryInterface
+from src.field_validation.domain.value_objects.validation_rule_id import ValidationRuleId
+from src.shared.application.command_bus import Command
+from src.shared.application.command_bus import CommandHandler
 
 
 @dataclass(frozen=True)

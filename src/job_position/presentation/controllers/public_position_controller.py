@@ -6,6 +6,8 @@ from typing import Optional, List
 
 import math
 
+from adapters.http.admin.mappers.job_position_mapper import JobPositionMapper
+from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQuery
 from src.job_position.application.queries.get_public_job_position import (
     GetPublicJobPositionQuery
 )
@@ -13,7 +15,6 @@ from src.job_position.application.queries.job_position_dto import JobPositionDto
 from src.job_position.application.queries.list_public_job_positions import (
     ListPublicJobPositionsQuery
 )
-from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQuery
 from src.job_position.domain.exceptions import JobPositionNotFoundError
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.presentation.schemas.public_position_schemas import (
@@ -22,7 +23,6 @@ from src.job_position.presentation.schemas.public_position_schemas import (
     SubmitApplicationRequest,
     SubmitApplicationResponse
 )
-from adapters.http.admin.mappers.job_position_mapper import JobPositionMapper
 from src.shared.application.query_bus import QueryBus
 
 
@@ -76,7 +76,7 @@ class PublicPositionController:
                 except Exception:
                     # If workflow not found, continue without it
                     pass
-            
+
             # Use mapper to get only visible fields for candidates
             public_response = JobPositionMapper.dto_to_public_response(dto, workflow_dto)
             positions.append(PublicPositionResponse.from_public_response(public_response))

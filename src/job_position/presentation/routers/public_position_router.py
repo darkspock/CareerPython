@@ -3,8 +3,9 @@ Public Position Router
 Phase 10: REST API endpoints for public job positions (no auth required for browsing)
 """
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
 from dependency_injector.wiring import inject, Provide
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from core.container import Container
 from src.job_position.domain.exceptions import JobPositionNotFoundError
@@ -27,10 +28,10 @@ router = APIRouter(prefix="/public/positions", tags=["public-positions"])
 )
 @inject
 def list_public_positions(
-    search: Optional[str] = Query(None, description="Search term for title/description"),
-    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
-    page_size: int = Query(12, ge=1, le=100, description="Items per page"),
-    controller: PublicPositionController = Depends(Provide[Container.public_position_controller])
+        search: Optional[str] = Query(None, description="Search term for title/description"),
+        page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+        page_size: int = Query(12, ge=1, le=100, description="Items per page"),
+        controller: PublicPositionController = Depends(Provide[Container.public_position_controller])
 ) -> PublicPositionListResponse:
     """
     List public job positions with optional filters - simplified
@@ -67,8 +68,8 @@ def list_public_positions(
 )
 @inject
 def get_public_position(
-    slug_or_id: str,
-    controller: PublicPositionController = Depends(Provide[Container.public_position_controller])
+        slug_or_id: str,
+        controller: PublicPositionController = Depends(Provide[Container.public_position_controller])
 ) -> PublicPositionResponse:
     """
     Get a single public job position by slug or ID
@@ -108,10 +109,10 @@ def get_public_position(
 )
 @inject
 def submit_application(
-    slug_or_id: str,
-    request: SubmitApplicationRequest,
-    controller: PublicPositionController = Depends(Provide[Container.public_position_controller])
-    # TODO: Add candidate authentication dependency
+        slug_or_id: str,
+        request: SubmitApplicationRequest,
+        controller: PublicPositionController = Depends(Provide[Container.public_position_controller])
+        # TODO: Add candidate authentication dependency
 ) -> SubmitApplicationResponse:
     """
     Submit an application to a public job position

@@ -8,4 +8,3 @@ class CompanyUserInvitationStatus(str, Enum):
     REJECTED = "rejected"  # Invitación rechazada
     EXPIRED = "expired"  # Invitación expirada
     CANCELLED = "cancelled"  # Invitación cancelada
-

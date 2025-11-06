@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
-from src.shared.application.command_bus import Command, CommandHandler
+from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import \
+    CustomFieldValueRepositoryInterface
 from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
-from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import CustomFieldValueRepositoryInterface
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,7 @@ class UpdateCustomFieldValueCommandHandler(CommandHandler[UpdateCustomFieldValue
         existing_value = self._repository.get_by_id(CustomFieldValueId(command.id))
         if not existing_value:
             raise ValueError(f"Custom field value with id {command.id} not found")
-        
+
         # Update the values (merge with existing)
         if command.values:
             updated_value = existing_value.update_values(command.values)

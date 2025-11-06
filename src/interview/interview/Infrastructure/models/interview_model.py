@@ -47,8 +47,8 @@ class InterviewModel(Base):
     updated_by: Mapped[Optional[str]] = mapped_column(String)  # User ID who last updated the interview
 
     # Relationships
-    answers: Mapped[List["InterviewAnswerModel"]] = relationship(back_populates="interview",   # type: ignore # noqa: F821
-                                                                 cascade="all, delete-orphan")
+    answers: Mapped[List["InterviewAnswerModel"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        back_populates="interview", cascade="all, delete-orphan")
     application: Mapped[Optional["CandidateApplicationModel"]] = relationship("CandidateApplicationModel",
                                                                               back_populates="interviews")
 

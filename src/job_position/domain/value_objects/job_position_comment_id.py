@@ -8,4 +8,3 @@ class JobPositionCommentId(BaseId):
     Inherits from BaseId to provide standard ID functionality.
     """
     pass
-

@@ -1,16 +1,18 @@
 """
 Company Page Response Schemas - Response schemas for company pages
 """
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, Field
+
 
 # Note: Response schemas use plain strings, not domain enums
 
 
 class CompanyPageResponse(BaseModel):
     """Response for a company page"""
-    
+
     id: str = Field(..., description="Unique page ID")
     company_id: str = Field(..., description="Company ID")
     page_type: str = Field(..., description="Page type")
@@ -27,24 +29,24 @@ class CompanyPageResponse(BaseModel):
     created_at: datetime = Field(..., description="Creation date")
     updated_at: datetime = Field(..., description="Last update date")
     published_at: Optional[datetime] = Field(None, description="Publication date")
-    
+
     class Config:
         from_attributes = True
 
 
 class CompanyPageListResponse(BaseModel):
     """Response for company page list"""
-    
+
     pages: List[CompanyPageResponse] = Field(..., description="List of pages")
     total: int = Field(..., description="Total number of pages")
-    
+
     class Config:
         from_attributes = True
 
 
 class CompanyPageSummaryResponse(BaseModel):
     """Summary response for a company page (for lists)"""
-    
+
     id: str = Field(..., description="Unique page ID")
     page_type: str = Field(..., description="Page type")
     title: str = Field(..., description="Page title")
@@ -54,6 +56,6 @@ class CompanyPageSummaryResponse(BaseModel):
     created_at: datetime = Field(..., description="Creation date")
     updated_at: datetime = Field(..., description="Last update date")
     published_at: Optional[datetime] = Field(None, description="Publication date")
-    
+
     class Config:
         from_attributes = True

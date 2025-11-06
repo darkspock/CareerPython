@@ -3,9 +3,9 @@ from typing import List, Optional
 
 from src.company_workflow.application.dtos.company_workflow_dto import CompanyWorkflowDto
 from src.company_workflow.application.mappers.company_workflow_mapper import CompanyWorkflowMapper
+from src.company_workflow.domain.enums.workflow_status import WorkflowStatus
 from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
     CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.enums.workflow_status import WorkflowStatus
 from src.phase.domain.value_objects.phase_id import PhaseId
 from src.shared.application.query_bus import Query, QueryHandler
 

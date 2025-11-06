@@ -1,5 +1,5 @@
-from src.company_workflow.domain.entities.custom_field_value import CustomFieldValue
 from src.company_workflow.application.dtos.custom_field_value_dto import CustomFieldValueDto
+from src.company_workflow.domain.entities.custom_field_value import CustomFieldValue
 
 
 class CustomFieldValueMapper:

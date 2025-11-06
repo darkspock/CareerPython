@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any
 
-from src.company_workflow.domain.entities.custom_field_value import CustomFieldValue
-from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_workflow.domain.entities.custom_field_value import CustomFieldValue
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
 
 
 class CustomFieldValueRepositoryInterface(ABC):
@@ -22,17 +22,17 @@ class CustomFieldValueRepositoryInterface(ABC):
 
     @abstractmethod
     def get_by_company_candidate_and_workflow(
-        self, 
-        company_candidate_id: CompanyCandidateId, 
-        workflow_id: CompanyWorkflowId
+            self,
+            company_candidate_id: CompanyCandidateId,
+            workflow_id: CompanyWorkflowId
     ) -> Optional[CustomFieldValue]:
         """Get custom field value by company candidate and workflow"""
         pass
 
     @abstractmethod
     def get_values_by_company_candidate(
-        self, 
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> Dict[str, Dict[str, Any]]:
         """
         Get all custom field values for a company candidate

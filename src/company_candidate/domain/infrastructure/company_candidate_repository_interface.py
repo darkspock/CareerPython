@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from ..entities.company_candidate import CompanyCandidate
-from ..value_objects import CompanyCandidateId
-from ..read_models.company_candidate_with_candidate_read_model import CompanyCandidateWithCandidateReadModel
-from src.company.domain.value_objects import CompanyId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company.domain.value_objects import CompanyId
+from ..entities.company_candidate import CompanyCandidate
+from ..read_models.company_candidate_with_candidate_read_model import CompanyCandidateWithCandidateReadModel
+from ..value_objects import CompanyCandidateId
 
 
 class CompanyCandidateRepositoryInterface(ABC):
@@ -22,7 +22,8 @@ class CompanyCandidateRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def get_by_id_with_candidate_info(self, company_candidate_id: CompanyCandidateId) -> Optional[CompanyCandidateWithCandidateReadModel]:
+    def get_by_id_with_candidate_info(self, company_candidate_id: CompanyCandidateId) -> Optional[
+        CompanyCandidateWithCandidateReadModel]:
         """
         Get a single company candidate by ID with candidate basic info.
         Returns read model (not entity) with data from both tables via JOIN.
@@ -31,9 +32,9 @@ class CompanyCandidateRepositoryInterface(ABC):
 
     @abstractmethod
     def get_by_company_and_candidate(
-        self,
-        company_id: CompanyId,
-        candidate_id: CandidateId
+            self,
+            company_id: CompanyId,
+            candidate_id: CandidateId
     ) -> Optional[CompanyCandidate]:
         """Get a company candidate by company and candidate IDs"""
         pass
@@ -59,7 +60,8 @@ class CompanyCandidateRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def list_by_company_with_candidate_info(self, company_id: CompanyId) -> List[CompanyCandidateWithCandidateReadModel]:
+    def list_by_company_with_candidate_info(self, company_id: CompanyId) -> List[
+        CompanyCandidateWithCandidateReadModel]:
         """
         List all company candidates for a company with candidate basic info.
         Returns read models (not entities) with data from both tables via JOIN.

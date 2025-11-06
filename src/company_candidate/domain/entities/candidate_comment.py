@@ -2,15 +2,15 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.company_candidate.domain.value_objects import (
-    CandidateCommentId,
-    CompanyCandidateId,
-)
+from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company_candidate.domain.enums import (
     CommentVisibility,
     CommentReviewStatus,
 )
-from src.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_candidate.domain.value_objects import (
+    CandidateCommentId,
+    CompanyCandidateId,
+)
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
@@ -34,15 +34,15 @@ class CandidateComment:
 
     @classmethod
     def create(
-        cls,
-        id: CandidateCommentId,
-        company_candidate_id: CompanyCandidateId,
-        comment: str,
-        created_by_user_id: CompanyUserId,
-        workflow_id: Optional[CompanyWorkflowId] = None,
-        stage_id: Optional[WorkflowStageId] = None,
-        visibility: CommentVisibility = CommentVisibility.PRIVATE,
-        review_status: CommentReviewStatus = CommentReviewStatus.REVIEWED,
+            cls,
+            id: CandidateCommentId,
+            company_candidate_id: CompanyCandidateId,
+            comment: str,
+            created_by_user_id: CompanyUserId,
+            workflow_id: Optional[CompanyWorkflowId] = None,
+            stage_id: Optional[WorkflowStageId] = None,
+            visibility: CommentVisibility = CommentVisibility.PRIVATE,
+            review_status: CommentReviewStatus = CommentReviewStatus.REVIEWED,
     ) -> "CandidateComment":
         """
         Factory method to create a new comment
@@ -79,9 +79,9 @@ class CandidateComment:
         )
 
     def update(
-        self,
-        comment: Optional[str] = None,
-        visibility: Optional[CommentVisibility] = None,
+            self,
+            comment: Optional[str] = None,
+            visibility: Optional[CommentVisibility] = None,
     ) -> "CandidateComment":
         """
         Update comment content or visibility
@@ -154,4 +154,3 @@ class CandidateComment:
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
-

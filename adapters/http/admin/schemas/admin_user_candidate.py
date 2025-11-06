@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List, Dict
 from datetime import datetime
+from typing import Optional, List, Dict
+
+from pydantic import BaseModel, Field, EmailStr
 
 from src.candidate.domain.enums import WorkModalityEnum, LanguageLevelEnum, CandidateTypeEnum, CandidateStatusEnum
 from src.shared.domain.enums.job_category import JobCategoryEnum
@@ -24,7 +25,8 @@ class AdminUserCandidateCreate(BaseModel):
     currency: Optional[str] = Field("USD", description="Currency for salary")
     relocation: Optional[bool] = Field(False, description="Willing to relocate")
     work_modality: List[WorkModalityEnum] = Field(default_factory=list, description="Preferred work modalities")
-    languages: Dict[LanguageLevelEnum, LanguageLevelEnum] = Field(default_factory=dict, description="Languages and proficiency levels")
+    languages: Dict[LanguageLevelEnum, LanguageLevelEnum] = Field(default_factory=dict,
+                                                                  description="Languages and proficiency levels")
     type: CandidateTypeEnum = Field(CandidateTypeEnum.BASIC, description="Candidate type")
 
     # Admin fields

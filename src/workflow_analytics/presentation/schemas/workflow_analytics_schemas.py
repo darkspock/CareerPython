@@ -3,9 +3,10 @@ Workflow Analytics Response Schemas
 Phase 9: Pydantic schemas for API responses
 """
 
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
 from datetime import datetime
+from typing import List, Optional, Dict
+
+from pydantic import BaseModel, Field
 
 
 class StageAnalyticsResponse(BaseModel):

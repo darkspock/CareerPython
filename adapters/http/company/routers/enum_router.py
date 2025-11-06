@@ -13,7 +13,7 @@ def get_enum_controller() -> CompanyEnumController:
 
 @router.get("/metadata", response_model=CompanyEnumMetadataResponse)
 async def get_enum_metadata(
-    controller: CompanyEnumController = Depends(get_enum_controller)
+        controller: CompanyEnumController = Depends(get_enum_controller)
 ) -> CompanyEnumMetadataResponse:
     """Get all enum definitions for company frontend consumption"""
     return controller.get_enum_metadata()

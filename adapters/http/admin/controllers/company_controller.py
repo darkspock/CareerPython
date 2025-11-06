@@ -14,12 +14,11 @@ from src.company.application.queries.get_companies_stats import GetCompaniesStat
 from src.company.application.queries.get_company_by_id import GetCompanyByIdQuery
 # Company queries
 from src.company.application.queries.list_companies import ListCompaniesQuery
-from src.company.domain import Company, CompanyId
+from src.company.domain import CompanyId
 # Domain enums
 from src.company.domain.enums.company_status import CompanyStatusEnum
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
-from src.user.domain.value_objects.UserId import UserId
 
 logger = logging.getLogger(__name__)
 

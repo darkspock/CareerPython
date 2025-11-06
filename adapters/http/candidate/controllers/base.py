@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from fastapi import HTTPException
 
 from core.exceptions import EntityNotFoundException, ValidationException, DomainException

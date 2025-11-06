@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
+
 from ..enums.validation_severity import ValidationSeverity
 
 
@@ -28,9 +29,9 @@ class ValidationResult:
 
     @staticmethod
     def warning(
-        field_key: str,
-        rule_id: str,
-        message: str
+            field_key: str,
+            rule_id: str,
+            message: str
     ) -> "ValidationResult":
         """Create a warning validation result."""
         return ValidationResult(
@@ -43,11 +44,11 @@ class ValidationResult:
 
     @staticmethod
     def error(
-        field_key: str,
-        rule_id: str,
-        message: str,
-        auto_reject: bool = False,
-        rejection_reason: Optional[str] = None
+            field_key: str,
+            rule_id: str,
+            message: str,
+            auto_reject: bool = False,
+            rejection_reason: Optional[str] = None
     ) -> "ValidationResult":
         """Create an error validation result."""
         return ValidationResult(

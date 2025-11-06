@@ -5,8 +5,8 @@ from typing import Optional
 from fastapi import UploadFile, HTTPException
 from pydantic import ValidationError
 
-from core.database import database
 from adapters.http.candidate.schemas.onboarding import LandingRequest, LandingResponse
+from core.database import database
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.shared.domain.entities.async_job import AsyncJobId

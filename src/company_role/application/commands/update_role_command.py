@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company_role.domain.exceptions.role_not_found import RoleNotFound
 from src.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
+from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.shared.application.command_bus import Command, CommandHandler
 
 

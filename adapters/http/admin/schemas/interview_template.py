@@ -1,15 +1,15 @@
-from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict, Any
 
+from pydantic import BaseModel, ConfigDict
+
 from src.interview.interview_template.application.queries.dtos.interview_template_dto import InterviewTemplateDto
-from src.interview.interview_template.application.queries.dtos.interview_template_list_dto import \
-    InterviewTemplateListDto
 from src.interview.interview_template.application.queries.dtos.interview_template_full_dto import \
     InterviewTemplateSectionDto, InterviewTemplateFullDto
-from src.interview.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum, InterviewTemplateSectionEnum
-from src.interview.interview_template.domain.value_objects import InterviewTemplateId
+from src.interview.interview_template.application.queries.dtos.interview_template_list_dto import \
+    InterviewTemplateListDto
+from src.interview.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum, \
+    InterviewTemplateSectionEnum
 from src.shared.domain.enums.job_category import JobCategoryEnum
-from src.shared.infrastructure.helpers.mixed_helper import MixedHelper
 
 
 class InterviewTemplateBase(BaseModel):
@@ -183,7 +183,7 @@ class InterviewTemplateQuestionCreate(InterviewTemplateQuestionBase):
 
 class InterviewTemplateQuestionUpdate(InterviewTemplateQuestionBase):
     interview_template_section_id: str
-    scope: str   # InterviewTemplateQuestionScopeEnum
+    scope: str  # InterviewTemplateQuestionScopeEnum
     data_type: str  # InterviewTemplateQuestionDataTypeEnum
 
     model_config = ConfigDict(use_enum_values=True)

@@ -1,12 +1,13 @@
 from typing import Optional, List, Any
 
 from src.company_workflow.domain.entities.field_configuration import FieldConfiguration
+from src.company_workflow.domain.enums.field_visibility import FieldVisibility
+from src.company_workflow.domain.infrastructure.field_configuration_repository_interface import \
+    FieldConfigurationRepositoryInterface
+from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
 from src.company_workflow.domain.value_objects.field_configuration_id import FieldConfigurationId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.company_workflow.domain.infrastructure.field_configuration_repository_interface import FieldConfigurationRepositoryInterface
 from src.company_workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
-from src.company_workflow.domain.enums.field_visibility import FieldVisibility
 
 
 class FieldConfigurationRepository(FieldConfigurationRepositoryInterface):
@@ -40,7 +41,8 @@ class FieldConfigurationRepository(FieldConfigurationRepositoryInterface):
             models = session.query(FieldConfigurationModel).filter_by(stage_id=str(stage_id)).all()
             return [self._to_domain(model) for model in models]
 
-    def get_by_stage_and_field(self, stage_id: WorkflowStageId, custom_field_id: CustomFieldId) -> Optional[FieldConfiguration]:
+    def get_by_stage_and_field(self, stage_id: WorkflowStageId, custom_field_id: CustomFieldId) -> Optional[
+        FieldConfiguration]:
         """Get a field configuration by stage ID and custom field ID"""
         with self._database.get_session() as session:
             model = session.query(FieldConfigurationModel).filter_by(

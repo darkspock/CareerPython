@@ -2,15 +2,15 @@
 from typing import List
 
 from src.company.domain.value_objects.company_id import CompanyId
+from src.phase.application.commands.activate_phase_command import ActivatePhaseCommand, ActivatePhaseCommandHandler
+from src.phase.application.commands.archive_phase_command import ArchivePhaseCommand, ArchivePhaseCommandHandler
 from src.phase.application.commands.create_phase_command import CreatePhaseCommand, CreatePhaseCommandHandler
 from src.phase.application.commands.delete_phase_command import DeletePhaseCommand, DeletePhaseCommandHandler
-from src.phase.application.commands.update_phase_command import UpdatePhaseCommand, UpdatePhaseCommandHandler
-from src.phase.application.commands.archive_phase_command import ArchivePhaseCommand, ArchivePhaseCommandHandler
-from src.phase.application.commands.activate_phase_command import ActivatePhaseCommand, ActivatePhaseCommandHandler
 from src.phase.application.commands.initialize_company_phases_command import (
     InitializeCompanyPhasesCommand,
     InitializeCompanyPhasesCommandHandler
 )
+from src.phase.application.commands.update_phase_command import UpdatePhaseCommand, UpdatePhaseCommandHandler
 from src.phase.application.queries.get_phase_by_id_query import GetPhaseByIdQuery, GetPhaseByIdQueryHandler
 from src.phase.application.queries.list_phases_by_company_query import (
     ListPhasesByCompanyQuery,
@@ -29,15 +29,15 @@ class PhaseController:
     """Controller for Phase operations"""
 
     def __init__(
-        self,
-        create_handler: CreatePhaseCommandHandler,
-        update_handler: UpdatePhaseCommandHandler,
-        delete_handler: DeletePhaseCommandHandler,
-        archive_handler: ArchivePhaseCommandHandler,
-        activate_handler: ActivatePhaseCommandHandler,
-        get_by_id_handler: GetPhaseByIdQueryHandler,
-        list_by_company_handler: ListPhasesByCompanyQueryHandler,
-        initialize_handler: InitializeCompanyPhasesCommandHandler
+            self,
+            create_handler: CreatePhaseCommandHandler,
+            update_handler: UpdatePhaseCommandHandler,
+            delete_handler: DeletePhaseCommandHandler,
+            archive_handler: ArchivePhaseCommandHandler,
+            activate_handler: ActivatePhaseCommandHandler,
+            get_by_id_handler: GetPhaseByIdQueryHandler,
+            list_by_company_handler: ListPhasesByCompanyQueryHandler,
+            initialize_handler: InitializeCompanyPhasesCommandHandler
     ):
         self.create_handler = create_handler
         self.update_handler = update_handler

@@ -20,8 +20,8 @@ class StorageFactory:
 
     @staticmethod
     def create_storage_service(
-        storage_type: Optional[str] = None,
-        config: Optional[StorageConfig] = None
+            storage_type: Optional[str] = None,
+            config: Optional[StorageConfig] = None
     ) -> StorageServiceInterface:
         """Create a storage service instance based on configuration.
 
@@ -111,8 +111,8 @@ class StorageFactory:
 
 # Convenience function for quick access
 def get_storage_service(
-    storage_type: Optional[str] = None,
-    config: Optional[StorageConfig] = None
+        storage_type: Optional[str] = None,
+        config: Optional[StorageConfig] = None
 ) -> StorageServiceInterface:
     """Get a storage service instance.
 

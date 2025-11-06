@@ -9,5 +9,5 @@ from src.shared.application.query_bus import Query
 @dataclass(frozen=True)
 class GetCompanyPageByIdQuery(Query):
     """Query para obtener una página de empresa por ID"""
-    
+
     page_id: str

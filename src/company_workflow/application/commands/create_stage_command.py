@@ -1,7 +1,7 @@
 """Create Stage Command."""
 from dataclasses import dataclass
-from typing import Optional, List
 from decimal import Decimal
+from typing import Optional, List
 
 from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
 from src.company_workflow.domain.enums.stage_type import StageType

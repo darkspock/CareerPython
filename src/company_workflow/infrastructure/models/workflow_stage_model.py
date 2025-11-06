@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any
+
 from sqlalchemy import String, Integer, Boolean, Enum as SQLEnum, ForeignKey, JSON, Text, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -36,10 +37,12 @@ class WorkflowStageModel(Base):
     estimated_cost: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), nullable=True)  # Cost tracking
 
     # Phase 12: Phase transition
-    next_phase_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # Phase to transition to (only for SUCCESS/FAIL stages)
+    next_phase_id: Mapped[Optional[str]] = mapped_column(String(255),
+                                                         nullable=True)  # Phase to transition to (only for SUCCESS/FAIL stages)
 
     # Kanban display configuration
-    kanban_display: Mapped[str] = mapped_column(String(10), nullable=False, default='column')  # 'column', 'row', or 'none'
+    kanban_display: Mapped[str] = mapped_column(String(10), nullable=False,
+                                                default='column')  # 'column', 'row', or 'none'
 
     # Visual styling
     style: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # StageStyle as JSON

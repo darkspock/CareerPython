@@ -27,9 +27,9 @@ class CompanyUserInvitationRepositoryInterface(ABC):
 
     @abstractmethod
     def get_by_email_and_company(
-        self,
-        email: str,
-        company_id: CompanyId
+            self,
+            email: str,
+            company_id: CompanyId
     ) -> Optional[CompanyUserInvitation]:
         """Get a company user invitation by email and company ID"""
         pass
@@ -48,4 +48,3 @@ class CompanyUserInvitationRepositoryInterface(ABC):
     def delete(self, invitation_id: CompanyUserInvitationId) -> None:
         """Delete a company user invitation"""
         pass
-

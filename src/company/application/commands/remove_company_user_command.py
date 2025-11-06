@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyNotFoundError
+from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
+from src.company.domain.value_objects import CompanyId
 from src.shared.application.command_bus import Command, CommandHandler
 from src.user.domain.value_objects.UserId import UserId
 

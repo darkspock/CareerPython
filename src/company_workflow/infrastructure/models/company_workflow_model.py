@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+
 from sqlalchemy import String, Boolean, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -15,7 +16,8 @@ class CompanyWorkflowModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
     company_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    phase_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)  # Phase 12: Phase association
+    phase_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True,
+                                                    index=True)  # Phase 12: Phase association
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False, default="")
     status: Mapped[str] = mapped_column(

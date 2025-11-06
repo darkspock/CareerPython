@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any
+
 from sqlalchemy import String, Integer, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -13,7 +14,8 @@ class CustomFieldModel(Base):
     __tablename__ = "workflow_custom_fields"
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
-    workflow_id: Mapped[str] = mapped_column(String(255), ForeignKey("company_workflows.id", ondelete="CASCADE"), nullable=False, index=True)
+    workflow_id: Mapped[str] = mapped_column(String(255), ForeignKey("company_workflows.id", ondelete="CASCADE"),
+                                             nullable=False, index=True)
     field_key: Mapped[str] = mapped_column(String(100), nullable=False)
     field_name: Mapped[str] = mapped_column(String(255), nullable=False)
     field_type: Mapped[str] = mapped_column(String(50), nullable=False)

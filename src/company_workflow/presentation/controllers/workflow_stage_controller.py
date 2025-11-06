@@ -1,26 +1,27 @@
 """Workflow Stage Controller."""
-import ulid
 from typing import List, Optional
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.company_workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
+import ulid
+
+from src.company_workflow.application.commands.activate_stage_command import ActivateStageCommand
 from src.company_workflow.application.commands.create_stage_command import CreateStageCommand
-from src.company_workflow.application.commands.update_stage_command import UpdateStageCommand
+from src.company_workflow.application.commands.deactivate_stage_command import DeactivateStageCommand
 from src.company_workflow.application.commands.delete_stage_command import DeleteStageCommand
 from src.company_workflow.application.commands.reorder_stages_command import ReorderStagesCommand
-from src.company_workflow.application.commands.activate_stage_command import ActivateStageCommand
-from src.company_workflow.application.commands.deactivate_stage_command import DeactivateStageCommand
+from src.company_workflow.application.commands.update_stage_command import UpdateStageCommand
+from src.company_workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
+from src.company_workflow.application.queries.get_final_stages import GetFinalStagesQuery
+from src.company_workflow.application.queries.get_initial_stage import GetInitialStageQuery
 from src.company_workflow.application.queries.get_stage_by_id import GetStageByIdQuery
 from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQuery
-from src.company_workflow.application.queries.get_initial_stage import GetInitialStageQuery
-from src.company_workflow.application.queries.get_final_stages import GetFinalStagesQuery
+from src.company_workflow.presentation.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
 from src.company_workflow.presentation.schemas.create_stage_request import CreateStageRequest
-from src.company_workflow.presentation.schemas.update_stage_request import UpdateStageRequest
 from src.company_workflow.presentation.schemas.reorder_stages_request import ReorderStagesRequest
 from src.company_workflow.presentation.schemas.stage_style_request import UpdateStageStyleRequest
+from src.company_workflow.presentation.schemas.update_stage_request import UpdateStageRequest
 from src.company_workflow.presentation.schemas.workflow_stage_response import WorkflowStageResponse
-from src.company_workflow.presentation.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
+from src.shared.application.command_bus import CommandBus
+from src.shared.application.query_bus import QueryBus
 
 
 class WorkflowStageController:
@@ -83,7 +84,7 @@ class WorkflowStageController:
     def list_stages_by_phase(self, phase_id: str) -> List[WorkflowStageResponse]:
         """List all stages for a phase."""
         from src.company_workflow.application.queries.list_stages_by_phase import ListStagesByPhaseQuery
-        
+
         query = ListStagesByPhaseQuery(phase_id=phase_id)
         dtos: List[WorkflowStageDto] = self._query_bus.query(query)
 
@@ -185,7 +186,7 @@ class WorkflowStageController:
         # First get the current stage
         query = GetStageByIdQuery(id=stage_id)
         dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
-        
+
         if not dto:
             raise Exception("Stage not found")
 

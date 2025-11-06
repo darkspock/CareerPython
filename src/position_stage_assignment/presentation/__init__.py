@@ -1,4 +1,6 @@
 """Position stage assignment presentation layer"""
+from .controllers import PositionStageAssignmentController
+from .mappers import PositionStageAssignmentMapper
 from .schemas import (
     AssignUsersToStageRequest,
     AddUserToStageRequest,
@@ -6,8 +8,6 @@ from .schemas import (
     CopyWorkflowAssignmentsRequest,
     PositionStageAssignmentResponse
 )
-from .controllers import PositionStageAssignmentController
-from .mappers import PositionStageAssignmentMapper
 
 __all__ = [
     'AssignUsersToStageRequest',

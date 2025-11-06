@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from typing import Dict, Any
 
-from src.shared.application.query_bus import Query, QueryHandler
+from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
+    CompanyCandidateRepositoryInterface
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
-from src.company_workflow.infrastructure.repositories.custom_field_value_repository import CustomFieldValueRepository
 from src.company_workflow.domain.infrastructure.custom_field_repository_interface import CustomFieldRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.infrastructure.repositories.custom_field_value_repository import CustomFieldValueRepository
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
@@ -21,10 +22,10 @@ class GetCustomFieldValuesByCompanyCandidateQueryHandler(
     """Handler for getting custom field values by company candidate"""
 
     def __init__(
-        self, 
-        custom_field_value_repository: CustomFieldValueRepository,
-        custom_field_repository: CustomFieldRepositoryInterface,
-        company_candidate_repository: CompanyCandidateRepositoryInterface
+            self,
+            custom_field_value_repository: CustomFieldValueRepository,
+            custom_field_repository: CustomFieldRepositoryInterface,
+            company_candidate_repository: CompanyCandidateRepositoryInterface
     ):
         self._custom_field_value_repository = custom_field_value_repository
         self._custom_field_repository = custom_field_repository
@@ -40,18 +41,18 @@ class GetCustomFieldValuesByCompanyCandidateQueryHandler(
         if not company_candidate or not company_candidate.workflow_id:
             # No workflow assigned, return empty dict
             return {}
-        
+
         # Get all custom fields for the workflow (metadata)
         workflow_id = CompanyWorkflowId(company_candidate.workflow_id.value)
         custom_fields = self._custom_field_repository.list_by_workflow(workflow_id)
-        
+
         # Get existing values for this candidate and workflow
         existing_value = self._custom_field_value_repository.get_by_company_candidate_and_workflow(
             query.company_candidate_id,
             workflow_id
         )
         values_dict = existing_value.values if existing_value else {}
-        
+
         # Build result with ALL custom fields (including those without values)
         result = {}
         for custom_field in custom_fields:
@@ -62,7 +63,7 @@ class GetCustomFieldValuesByCompanyCandidateQueryHandler(
             field_value = values_dict.get(field_id) if values_dict else None
             if field_value is None and values_dict:
                 field_value = values_dict.get(field_key)
-            
+
             # Return with field_key as key for frontend compatibility
             result[field_key] = {
                 'id': str(existing_value.id) if existing_value else None,
@@ -74,5 +75,5 @@ class GetCustomFieldValuesByCompanyCandidateQueryHandler(
                 'created_at': existing_value.created_at.isoformat() if existing_value else None,
                 'updated_at': existing_value.updated_at.isoformat() if existing_value else None
             }
-        
+
         return result

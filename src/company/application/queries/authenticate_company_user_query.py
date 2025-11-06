@@ -2,10 +2,10 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.shared.application.query_bus import Query, QueryHandler
 from src.company.application.dtos.auth_dto import AuthenticatedCompanyUserDto
 from src.company.domain.enums import CompanyUserStatus
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
+from src.shared.application.query_bus import Query, QueryHandler
 from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.user.domain.services.password_service import PasswordService
 from src.user.domain.services.token_service import TokenService
@@ -18,13 +18,14 @@ class AuthenticateCompanyUserQuery(Query):
     password: str
 
 
-class AuthenticateCompanyUserQueryHandler(QueryHandler[AuthenticateCompanyUserQuery, Optional[AuthenticatedCompanyUserDto]]):
+class AuthenticateCompanyUserQueryHandler(
+    QueryHandler[AuthenticateCompanyUserQuery, Optional[AuthenticatedCompanyUserDto]]):
     """Handler for company user authentication query."""
 
     def __init__(
-        self,
-        user_repository: UserRepositoryInterface,
-        company_user_repository: CompanyUserRepositoryInterface
+            self,
+            user_repository: UserRepositoryInterface,
+            company_user_repository: CompanyUserRepositoryInterface
     ):
         self.user_repository = user_repository
         self.company_user_repository = company_user_repository

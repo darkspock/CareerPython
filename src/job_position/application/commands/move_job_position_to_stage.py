@@ -1,18 +1,19 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Any
 
-from src.shared.application.command_bus import Command, CommandHandler
 from src.job_position.domain.exceptions import JobPositionNotFoundException
-from src.job_position.domain.value_objects.job_position_id import JobPositionId
-from src.job_position.domain.value_objects.stage_id import StageId
-from src.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
 from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import (
     JobPositionWorkflowRepositoryInterface
 )
+from src.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
+from src.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.job_position.domain.value_objects.stage_id import StageId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 class JobPositionValidationError(Exception):
     """Exception raised when job position validation fails"""
+
     def __init__(self, message: str, validation_errors: Dict[str, List[str]]):
         super().__init__(message)
         self.validation_errors = validation_errors
@@ -30,9 +31,9 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
     """Handler for moving a job position to a new stage"""
 
     def __init__(
-        self,
-        job_position_repository: JobPositionRepositoryInterface,
-        workflow_repository: JobPositionWorkflowRepositoryInterface
+            self,
+            job_position_repository: JobPositionRepositoryInterface,
+            workflow_repository: JobPositionWorkflowRepositoryInterface
     ):
         self.job_position_repository = job_position_repository
         self.workflow_repository = workflow_repository
@@ -84,33 +85,33 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
         self.job_position_repository.save(job_position)
 
     def _validate_custom_fields(
-        self,
-        field_values: Dict[str, Any],
-        field_validation: Dict[str, Any],
-        custom_fields_config: Dict[str, Any]
+            self,
+            field_values: Dict[str, Any],
+            field_validation: Dict[str, Any],
+            custom_fields_config: Dict[str, Any]
     ) -> Dict[str, List[str]]:
         """
         Validate custom field values against stage validation rules.
-        
+
         Args:
             field_values: Current custom field values
             field_validation: Validation configuration from stage
             custom_fields_config: Custom fields definition from workflow
-            
+
         Returns:
             Dict mapping field names to list of error messages
         """
         errors: Dict[str, List[str]] = {}
-        
+
         # Check each field's validation requirements
         for field_name, validation_rule in field_validation.items():
             # Get the field value
             field_value = field_values.get(field_name)
-            
+
             # Get field configuration
             field_config = custom_fields_config.get(field_name, {})
             field_label = field_config.get('label', field_name)
-            
+
             # Check validation rule
             if isinstance(validation_rule, str):
                 # Simple string validation: 'required', 'optional', 'recommended'
@@ -127,6 +128,5 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
                         if field_name not in errors:
                             errors[field_name] = []
                         errors[field_name].append(f"{field_label} is required for this stage")
-        
-        return errors
 
+        return errors

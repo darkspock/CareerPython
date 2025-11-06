@@ -3,11 +3,11 @@ from typing import Optional
 
 from src.company.application.dtos.company_user_dto import CompanyUserDto
 from src.company.application.mappers.company_user_mapper import CompanyUserMapper
-from src.company.domain.value_objects import CompanyId
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
-from src.user.domain.value_objects.UserId import UserId
-from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface
+from src.company.domain.value_objects import CompanyId
 from src.shared.application.query_bus import Query, QueryHandler
+from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface
+from src.user.domain.value_objects.UserId import UserId
 
 
 @dataclass
@@ -23,9 +23,9 @@ class GetCompanyUserByCompanyAndUserQueryHandler(
     """Handler for getting a company user by company and user - returns DTO"""
 
     def __init__(
-        self, 
-        company_user_repository: CompanyUserRepositoryInterface,
-        user_repository: UserRepositoryInterface
+            self,
+            company_user_repository: CompanyUserRepositoryInterface,
+            user_repository: UserRepositoryInterface
     ):
         self.company_user_repository = company_user_repository
         self.user_repository = user_repository
@@ -45,5 +45,5 @@ class GetCompanyUserByCompanyAndUserQueryHandler(
         user = self.user_repository.get_by_id(company_user.user_id)
         email = user.email if user else None
         company_roles = self.company_user_repository.get_company_role_ids(company_user.id)
-        
+
         return CompanyUserMapper.entity_to_dto(company_user, email, company_roles)

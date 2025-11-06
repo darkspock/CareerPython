@@ -1,6 +1,6 @@
 """Role Response Mapper."""
-from src.company_role.application.dtos.company_role_dto import CompanyRoleDto
 from adapters.http.company.schemas.role_response import RoleResponse
+from src.company_role.application.dtos.company_role_dto import CompanyRoleDto
 
 
 class RoleResponseMapper:

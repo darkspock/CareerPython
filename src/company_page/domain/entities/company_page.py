@@ -6,22 +6,21 @@ from datetime import datetime
 from typing import Optional
 
 from src.company.domain.value_objects.company_id import CompanyId
-from src.company_page.domain.enums.page_type import PageType
 from src.company_page.domain.enums.page_status import PageStatus
-from src.company_page.domain.value_objects.page_id import PageId
-from src.company_page.domain.value_objects.page_content import PageContent
-from src.company_page.domain.value_objects.page_metadata import PageMetadata
+from src.company_page.domain.enums.page_type import PageType
 from src.company_page.domain.exceptions.company_page_exceptions import (
-    PageTypeAlreadyExistsException,
     InvalidPageStatusTransitionException,
     PageAlreadyDefaultException
 )
+from src.company_page.domain.value_objects.page_content import PageContent
+from src.company_page.domain.value_objects.page_id import PageId
+from src.company_page.domain.value_objects.page_metadata import PageMetadata
 
 
 @dataclass
 class CompanyPage:
     """Entidad para páginas de empresa"""
-    
+
     id: PageId
     company_id: CompanyId
     page_type: PageType
@@ -34,32 +33,32 @@ class CompanyPage:
     created_at: datetime
     updated_at: datetime
     published_at: Optional[datetime]
-    
+
     @classmethod
     def create(
-        cls,
-        company_id: CompanyId,
-        page_type: PageType,
-        title: str,
-        html_content: str,
-        metadata: PageMetadata,
-        is_default: bool = False
+            cls,
+            company_id: CompanyId,
+            page_type: PageType,
+            title: str,
+            html_content: str,
+            metadata: PageMetadata,
+            is_default: bool = False
     ) -> "CompanyPage":
         """Factory method para crear una nueva página"""
-        
+
         # Validar que el título no esté vacío
         if not title.strip():
             raise ValueError("Title cannot be empty")
-        
+
         # Crear contenido
         content = PageContent.create(html_content)
-        
+
         # Crear ID único
         page_id = PageId.generate()
-        
+
         # Fecha actual
         now = datetime.now()
-        
+
         return cls(
             id=page_id,
             company_id=company_id,
@@ -74,21 +73,21 @@ class CompanyPage:
             updated_at=now,
             published_at=None
         )
-    
+
     def update_content(
-        self,
-        title: str,
-        html_content: str,
-        metadata: PageMetadata
+            self,
+            title: str,
+            html_content: str,
+            metadata: PageMetadata
     ) -> "CompanyPage":
         """Actualizar contenido de la página"""
-        
+
         if not title.strip():
             raise ValueError("Title cannot be empty")
-        
+
         # Crear nuevo contenido
         new_content = PageContent.create(html_content)
-        
+
         # Crear nueva instancia con contenido actualizado
         return CompanyPage(
             id=self.id,
@@ -104,19 +103,19 @@ class CompanyPage:
             updated_at=datetime.now(),
             published_at=self.published_at
         )
-    
+
     def publish(self) -> "CompanyPage":
         """Publicar la página"""
-        
+
         if self.status == PageStatus.PUBLISHED:
             return self  # Ya está publicada
-        
+
         if self.status == PageStatus.ARCHIVED:
             raise InvalidPageStatusTransitionException(
                 current_status=self.status.value,
                 target_status=PageStatus.PUBLISHED.value
             )
-        
+
         # Crear nueva instancia con estado publicado
         return CompanyPage(
             id=self.id,
@@ -132,13 +131,13 @@ class CompanyPage:
             updated_at=datetime.now(),
             published_at=datetime.now()
         )
-    
+
     def archive(self) -> "CompanyPage":
         """Archivar la página"""
-        
+
         if self.status == PageStatus.ARCHIVED:
             return self  # Ya está archivada
-        
+
         # Crear nueva instancia con estado archivado
         return CompanyPage(
             id=self.id,
@@ -154,19 +153,19 @@ class CompanyPage:
             updated_at=datetime.now(),
             published_at=self.published_at
         )
-    
+
     def set_as_default(self) -> "CompanyPage":
         """Marcar como página por defecto para su tipo"""
-        
+
         if self.is_default:
             raise PageAlreadyDefaultException(self.id.value)
-        
+
         if self.status != PageStatus.PUBLISHED:
             raise InvalidPageStatusTransitionException(
                 current_status=self.status.value,
                 target_status="default"
             )
-        
+
         # Crear nueva instancia marcada como default
         return CompanyPage(
             id=self.id,
@@ -182,13 +181,13 @@ class CompanyPage:
             updated_at=datetime.now(),
             published_at=self.published_at
         )
-    
+
     def unset_as_default(self) -> "CompanyPage":
         """Desmarcar como página por defecto"""
-        
+
         if not self.is_default:
             return self  # Ya no es default
-        
+
         # Crear nueva instancia sin ser default
         return CompanyPage(
             id=self.id,
@@ -204,19 +203,19 @@ class CompanyPage:
             updated_at=datetime.now(),
             published_at=self.published_at
         )
-    
+
     def is_publicly_visible(self) -> bool:
         """Verificar si la página es visible públicamente"""
         return self.status == PageStatus.PUBLISHED
-    
+
     def can_be_edited(self) -> bool:
         """Verificar si la página puede ser editada"""
         return self.status in [PageStatus.DRAFT, PageStatus.PUBLISHED]
-    
+
     def can_be_published(self) -> bool:
         """Verificar si la página puede ser publicada"""
         return self.status == PageStatus.DRAFT
-    
+
     def can_be_archived(self) -> bool:
         """Verificar si la página puede ser archivada"""
         return self.status in [PageStatus.DRAFT, PageStatus.PUBLISHED]

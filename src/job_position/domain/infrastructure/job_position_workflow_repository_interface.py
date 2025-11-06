@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
+from src.company.domain.value_objects.company_id import CompanyId
 from src.job_position.domain.entities.job_position_workflow import JobPositionWorkflow
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
-from src.company.domain.value_objects.company_id import CompanyId
 
 
 class JobPositionWorkflowRepositoryInterface(ABC):
@@ -28,4 +28,3 @@ class JobPositionWorkflowRepositoryInterface(ABC):
     def delete(self, workflow_id: JobPositionWorkflowId) -> None:
         """Delete a workflow"""
         pass
-

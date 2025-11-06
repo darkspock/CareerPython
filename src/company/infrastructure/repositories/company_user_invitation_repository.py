@@ -4,13 +4,13 @@ from typing import Optional, List
 from core.database import DatabaseInterface
 from src.company.domain.entities.company_user_invitation import CompanyUserInvitation
 from src.company.domain.enums import CompanyUserInvitationStatus
+from src.company.domain.infrastructure.company_user_invitation_repository_interface import (
+    CompanyUserInvitationRepositoryInterface
+)
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company.domain.value_objects.company_user_invitation_id import CompanyUserInvitationId
 from src.company.domain.value_objects.invitation_token import InvitationToken
-from src.company.domain.infrastructure.company_user_invitation_repository_interface import (
-    CompanyUserInvitationRepositoryInterface
-)
 from src.company.infrastructure.models.company_user_invitation_model import CompanyUserInvitationModel
 
 logger = logging.getLogger(__name__)
@@ -57,9 +57,9 @@ class CompanyUserInvitationRepository(CompanyUserInvitationRepositoryInterface):
             raise
 
     def get_by_email_and_company(
-        self,
-        email: str,
-        company_id: CompanyId
+            self,
+            email: str,
+            company_id: CompanyId
     ) -> Optional[CompanyUserInvitation]:
         """Get a company user invitation by email and company ID"""
         with self.database.get_session() as session:
@@ -135,4 +135,3 @@ class CompanyUserInvitationRepository(CompanyUserInvitationRepositoryInterface):
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
-

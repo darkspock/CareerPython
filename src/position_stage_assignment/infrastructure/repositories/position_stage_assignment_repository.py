@@ -151,7 +151,8 @@ class PositionStageAssignmentRepository(PositionStageAssignmentRepositoryInterfa
             updated_at=assignment.updated_at
         )
 
-    def _update_model_from_entity(self, model: PositionStageAssignmentModel, assignment: PositionStageAssignment) -> None:
+    def _update_model_from_entity(self, model: PositionStageAssignmentModel,
+                                  assignment: PositionStageAssignment) -> None:
         """Update model with entity data"""
         model.assigned_user_ids = assignment.assigned_user_ids
         model.updated_at = assignment.updated_at

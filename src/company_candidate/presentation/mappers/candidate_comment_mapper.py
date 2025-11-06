@@ -20,4 +20,3 @@ class CandidateCommentResponseMapper:
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
-

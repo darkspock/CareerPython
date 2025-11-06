@@ -132,7 +132,7 @@ class CompanyCandidateController:
         from src.company_workflow.application.queries.get_custom_field_values_by_company_candidate import (
             GetCustomFieldValuesByCompanyCandidateQuery
         )
-        
+
         query = GetCompanyCandidateByIdWithCandidateInfoQuery(id=CompanyCandidateId(company_candidate_id))
         read_model: Optional[CompanyCandidateWithCandidateReadModel] = self._query_bus.query(query)
 

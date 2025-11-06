@@ -45,4 +45,3 @@ async def accept_invitation(
 ) -> dict:
     """Accept a user invitation (public endpoint)"""
     return controller.accept_invitation(request)
-

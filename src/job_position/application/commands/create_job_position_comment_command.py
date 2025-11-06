@@ -2,12 +2,18 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.shared.application.command_bus import Command, CommandHandler
-from src.job_position.domain.entities.job_position_comment import JobPositionComment
+from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.job_position.domain.entities.job_position_activity import JobPositionActivity
+from src.job_position.domain.entities.job_position_comment import JobPositionComment
 from src.job_position.domain.enums import (
     CommentVisibilityEnum,
     CommentReviewStatusEnum,
+)
+from src.job_position.domain.infrastructure.job_position_activity_repository_interface import (
+    JobPositionActivityRepositoryInterface
+)
+from src.job_position.domain.infrastructure.job_position_comment_repository_interface import (
+    JobPositionCommentRepositoryInterface
 )
 from src.job_position.domain.value_objects import (
     JobPositionCommentId,
@@ -15,14 +21,7 @@ from src.job_position.domain.value_objects import (
     JobPositionWorkflowId,
     JobPositionActivityId,
 )
-from src.job_position.domain.enums.activity_type_enum import ActivityTypeEnum
-from src.job_position.domain.infrastructure.job_position_comment_repository_interface import (
-    JobPositionCommentRepositoryInterface
-)
-from src.job_position.domain.infrastructure.job_position_activity_repository_interface import (
-    JobPositionActivityRepositoryInterface
-)
-from src.company.domain.value_objects.company_user_id import CompanyUserId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -43,9 +42,9 @@ class CreateJobPositionCommentCommandHandler(CommandHandler[CreateJobPositionCom
     """Handler for CreateJobPositionCommentCommand"""
 
     def __init__(
-        self,
-        comment_repository: JobPositionCommentRepositoryInterface,
-        activity_repository: JobPositionActivityRepositoryInterface,
+            self,
+            comment_repository: JobPositionCommentRepositoryInterface,
+            activity_repository: JobPositionActivityRepositoryInterface,
     ):
         self._comment_repository = comment_repository
         self._activity_repository = activity_repository
@@ -53,7 +52,7 @@ class CreateJobPositionCommentCommandHandler(CommandHandler[CreateJobPositionCom
     def execute(self, command: CreateJobPositionCommentCommand) -> None:
         """
         Execute the command
-        
+
         Args:
             command: Command with data for creating the comment
         """
@@ -90,4 +89,3 @@ class CreateJobPositionCommentCommandHandler(CommandHandler[CreateJobPositionCom
 
         # Save the activity
         self._activity_repository.save(activity)
-

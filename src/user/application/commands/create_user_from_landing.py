@@ -5,7 +5,8 @@ from typing import Optional, Dict, Tuple, Any
 
 from src.candidate.application.commands.create_candidate import CreateCandidateCommand
 from src.candidate.domain.value_objects.candidate_id import CandidateId
-from src.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
+from src.candidate_application.application.commands.create_candidate_application import \
+    CreateCandidateApplicationCommand
 from src.notification.application.commands.send_email_command import SendEmailCommand
 from src.notification.domain.enums.notification_type import NotificationTypeEnum
 from src.resume.application.commands.analyze_pdf_resume_command import AnalyzePDFResumeCommand
@@ -138,7 +139,8 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
             self.logger.error(f"Error creating user from landing: {str(e)}")
             raise
 
-    def _process_pdf(self, user_id: UserId, pdf_bytes: bytes, filename: str) -> Tuple[Optional[Dict[str, str]], Optional[UserAssetId]]:
+    def _process_pdf(self, user_id: UserId, pdf_bytes: bytes, filename: str) -> Tuple[
+        Optional[Dict[str, str]], Optional[UserAssetId]]:
         """Process PDF and extract information"""
         try:
             # Validate PDF
@@ -220,7 +222,8 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
             # Don't raise - PDF analysis failure shouldn't break user creation
             return None
 
-    def _send_password_reset_email(self, email: str, reset_token: str, extracted_data: Optional[Dict[str, str]]) -> None:
+    def _send_password_reset_email(self, email: str, reset_token: str,
+                                   extracted_data: Optional[Dict[str, str]]) -> None:
         """Send password reset email to new user"""
         try:
             name = "User"

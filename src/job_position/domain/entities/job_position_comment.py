@@ -3,15 +3,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from src.company.domain.value_objects.company_user_id import CompanyUserId
+from src.job_position.domain.enums.comment_review_status import CommentReviewStatusEnum
+from src.job_position.domain.enums.comment_visibility import CommentVisibilityEnum
 from src.job_position.domain.value_objects import (
     JobPositionCommentId,
     JobPositionId,
     JobPositionWorkflowId,
 )
-from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
-from src.job_position.domain.enums.comment_visibility import CommentVisibilityEnum
-from src.job_position.domain.enums.comment_review_status import CommentReviewStatusEnum
-from src.company.domain.value_objects.company_user_id import CompanyUserId
 
 
 @dataclass
@@ -19,7 +18,7 @@ class JobPositionComment:
     """
     JobPositionComment domain entity
     Represents a comment on a job position
-    
+
     Comments can be:
     - Global: visible at all stages (stage_id = None)
     - Stage-specific: only visible when position is in that stage (stage_id != None)
@@ -37,15 +36,15 @@ class JobPositionComment:
 
     @classmethod
     def create(
-        cls,
-        id: JobPositionCommentId,
-        job_position_id: JobPositionId,
-        comment: str,
-        created_by_user_id: CompanyUserId,
-        workflow_id: Optional[JobPositionWorkflowId] = None,
-        stage_id: Optional[str] = None,
-        visibility: CommentVisibilityEnum = CommentVisibilityEnum.SHARED,
-        review_status: CommentReviewStatusEnum = CommentReviewStatusEnum.REVIEWED,
+            cls,
+            id: JobPositionCommentId,
+            job_position_id: JobPositionId,
+            comment: str,
+            created_by_user_id: CompanyUserId,
+            workflow_id: Optional[JobPositionWorkflowId] = None,
+            stage_id: Optional[str] = None,
+            visibility: CommentVisibilityEnum = CommentVisibilityEnum.SHARED,
+            review_status: CommentReviewStatusEnum = CommentReviewStatusEnum.REVIEWED,
     ) -> "JobPositionComment":
         """
         Factory method to create a new comment
@@ -62,7 +61,7 @@ class JobPositionComment:
 
         Returns:
             JobPositionComment: New comment instance
-            
+
         Raises:
             ValueError: If comment text is empty
         """
@@ -85,9 +84,9 @@ class JobPositionComment:
         )
 
     def update(
-        self,
-        comment: Optional[str] = None,
-        visibility: Optional[CommentVisibilityEnum] = None,
+            self,
+            comment: Optional[str] = None,
+            visibility: Optional[CommentVisibilityEnum] = None,
     ) -> None:
         """
         Update comment content or visibility
@@ -95,7 +94,7 @@ class JobPositionComment:
         Args:
             comment: New comment text (optional)
             visibility: New visibility level (optional)
-            
+
         Raises:
             ValueError: If new comment text is empty
         """
@@ -123,9 +122,8 @@ class JobPositionComment:
     def is_global(self) -> bool:
         """
         Check if this is a global comment (visible at all stages)
-        
+
         Returns:
             bool: True if stage_id is None (global comment), False otherwise
         """
         return self.stage_id is None
-

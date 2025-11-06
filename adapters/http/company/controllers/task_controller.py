@@ -7,12 +7,12 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.candidate_application.application.queries.get_my_assigned_tasks_query import GetMyAssignedTasksQuery
 from src.candidate_application.application.commands.claim_task_command import ClaimTaskCommand
 from src.candidate_application.application.commands.unclaim_task_command import UnclaimTaskCommand
+from src.candidate_application.application.queries.get_my_assigned_tasks_query import GetMyAssignedTasksQuery
 from src.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
+from src.shared.application.command_bus import CommandBus
+from src.shared.application.query_bus import QueryBus
 
 logger = logging.getLogger(__name__)
 
@@ -21,18 +21,18 @@ class TaskController:
     """Controller for managing task assignment and processing"""
 
     def __init__(
-        self,
-        command_bus: CommandBus,
-        query_bus: QueryBus
+            self,
+            command_bus: CommandBus,
+            query_bus: QueryBus
     ):
         self._command_bus = command_bus
         self._query_bus = query_bus
 
     def get_my_assigned_tasks(
-        self,
-        user_id: str,
-        stage_id: Optional[str] = None,
-        limit: Optional[int] = None
+            self,
+            user_id: str,
+            stage_id: Optional[str] = None,
+            limit: Optional[int] = None
     ) -> List[CandidateApplicationDto]:
         """Get all tasks assigned to the current user
 
@@ -59,9 +59,9 @@ class TaskController:
             raise HTTPException(status_code=500, detail=f"Error retrieving assigned tasks: {str(e)}")
 
     def claim_task(
-        self,
-        application_id: str,
-        user_id: str
+            self,
+            application_id: str,
+            user_id: str
     ) -> dict:
         """Claim a task for processing
 
@@ -94,9 +94,9 @@ class TaskController:
             raise HTTPException(status_code=500, detail=f"Error claiming task: {str(e)}")
 
     def unclaim_task(
-        self,
-        application_id: str,
-        user_id: str
+            self,
+            application_id: str,
+            user_id: str
     ) -> dict:
         """Unclaim/release a task back to pending status
 

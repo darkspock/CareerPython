@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from src.company_workflow.domain.enums.field_visibility import FieldVisibility
+from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
 from src.company_workflow.domain.value_objects.field_configuration_id import FieldConfigurationId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.company_workflow.domain.enums.field_visibility import FieldVisibility
 
 
 @dataclass(frozen=True)
@@ -19,10 +19,10 @@ class FieldConfiguration:
 
     @staticmethod
     def create(
-        id: FieldConfigurationId,
-        stage_id: WorkflowStageId,
-        custom_field_id: CustomFieldId,
-        visibility: FieldVisibility
+            id: FieldConfigurationId,
+            stage_id: WorkflowStageId,
+            custom_field_id: CustomFieldId,
+            visibility: FieldVisibility
     ) -> "FieldConfiguration":
         """Factory method to create a new field configuration"""
         now = datetime.utcnow()

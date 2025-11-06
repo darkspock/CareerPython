@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.shared.application.command_bus import Command, CommandHandler
-from src.company_candidate.domain.value_objects import CandidateCommentId
 from src.company_candidate.domain.enums import CommentVisibility
-from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
+from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import \
+    CandidateCommentRepositoryInterface
+from src.company_candidate.domain.value_objects import CandidateCommentId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,5 @@ class UpdateCandidateCommentCommandHandler(CommandHandler[UpdateCandidateComment
             comment=command.comment,
             visibility=visibility,
         )
-        
-        self._repository.save(updated_comment)
 
+        self._repository.save(updated_comment)

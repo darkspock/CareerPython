@@ -1,9 +1,9 @@
 """Job position mapper for converting DTOs to response schemas"""
 from typing import Optional, Dict, Any
 
-from src.job_position.application.queries.job_position_dto import JobPositionDto
-from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
 from adapters.http.admin.schemas.job_position import JobPositionResponse, JobPositionPublicResponse
+from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
+from src.job_position.application.queries.job_position_dto import JobPositionDto
 
 
 class JobPositionMapper:
@@ -16,16 +16,16 @@ class JobPositionMapper:
 
     @staticmethod
     def get_visible_fields_for_candidate(
-        dto: JobPositionDto,
-        workflow_dto: Optional[JobPositionWorkflowDto] = None
+            dto: JobPositionDto,
+            workflow_dto: Optional[JobPositionWorkflowDto] = None
     ) -> Dict[str, Any]:
         """
         Get only fields visible to candidates based on workflow/stage configuration.
-        
+
         Args:
             dto: JobPositionDto
             workflow_dto: Optional workflow DTO (if available)
-            
+
         Returns:
             Dict[str, Any]: Filtered custom fields visible to candidates
         """
@@ -33,29 +33,31 @@ class JobPositionMapper:
             # If no workflow or stage, return empty dict (or all fields if no config)
             # For now, return empty dict as conservative default
             return {}
-        
+
         # Find the current stage
         current_stage = None
         for stage in workflow_dto.stages:
             if stage.id == dto.stage_id:
                 current_stage = stage
                 break
-        
+
         if not current_stage:
             # Stage not found, return empty dict
             return {}
-        
+
         # Get default visibility from workflow config
-        default_visibility = workflow_dto.custom_fields_config.get("field_candidate_visibility_default", {}) if workflow_dto.custom_fields_config else {}
-        
+        default_visibility = workflow_dto.custom_fields_config.get("field_candidate_visibility_default",
+                                                                   {}) if workflow_dto.custom_fields_config else {}
+
         # Get stage-specific visibility
-        stage_visibility = current_stage.field_candidate_visibility if hasattr(current_stage, 'field_candidate_visibility') else {}
-        
+        stage_visibility = current_stage.field_candidate_visibility if hasattr(current_stage,
+                                                                               'field_candidate_visibility') else {}
+
         # Filter custom_fields_values
         visible_fields = {}
         for field_name, field_value in dto.custom_fields_values.items():
             is_visible = False
-            
+
             # First check stage-specific visibility
             if field_name in stage_visibility:
                 is_visible = stage_visibility[field_name]
@@ -65,21 +67,21 @@ class JobPositionMapper:
             # Default to False if not specified
             else:
                 is_visible = False
-            
+
             if is_visible:
                 visible_fields[field_name] = field_value
-        
+
         return visible_fields
 
     @staticmethod
     def dto_to_public_response(
-        dto: JobPositionDto,
-        workflow_dto: Optional[JobPositionWorkflowDto] = None,
-        company_name: Optional[str] = None
+            dto: JobPositionDto,
+            workflow_dto: Optional[JobPositionWorkflowDto] = None,
+            company_name: Optional[str] = None
     ) -> JobPositionPublicResponse:
         """Convert JobPositionDto to JobPositionPublicResponse - only visible fields for candidates"""
         visible_fields = JobPositionMapper.get_visible_fields_for_candidate(dto, workflow_dto)
-        
+
         return JobPositionPublicResponse(
             id=dto.id.value,
             title=dto.title,

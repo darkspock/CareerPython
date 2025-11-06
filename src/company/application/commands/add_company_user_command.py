@@ -1,14 +1,13 @@
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 
 from src.company.domain.entities.company_user import CompanyUser
 from src.company.domain.enums import CompanyUserRole
+from src.company.domain.exceptions.company_exceptions import CompanyValidationError
+from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.domain.value_objects import CompanyId, CompanyUserId
 from src.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
-from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
-from src.company.domain.exceptions.company_exceptions import CompanyValidationError
 from src.shared.application.command_bus import Command, CommandHandler
-from src.staff.domain.enums.staff_enums import RoleEnum
 from src.user.domain.value_objects.UserId import UserId
 
 

@@ -42,8 +42,8 @@ class StageValidationResultDto:
 
     @staticmethod
     def with_issues(
-        errors: List[ValidationIssueDto],
-        warnings: List[ValidationIssueDto]
+            errors: List[ValidationIssueDto],
+            warnings: List[ValidationIssueDto]
     ) -> "StageValidationResultDto":
         """Create validation result with issues."""
         # Check if any error triggers auto-reject

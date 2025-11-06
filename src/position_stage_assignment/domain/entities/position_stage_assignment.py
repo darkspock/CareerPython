@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
-from src.position_stage_assignment.domain.value_objects import PositionStageAssignmentId
 from src.position_stage_assignment.domain.exceptions import PositionStageAssignmentValidationError
+from src.position_stage_assignment.domain.value_objects import PositionStageAssignmentId
 
 
 @dataclass

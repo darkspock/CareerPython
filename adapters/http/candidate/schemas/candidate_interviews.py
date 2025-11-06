@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List, Dict, Any
 from datetime import datetime
+from typing import Optional, List, Dict, Any
+
+from pydantic import BaseModel, Field, ConfigDict
 
 from src.interview.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
 

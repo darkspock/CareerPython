@@ -22,10 +22,10 @@ class JobPositionActivityDto:
     def from_entity(entity) -> "JobPositionActivityDto":  # type: ignore
         """
         Convert domain entity to DTO
-        
+
         Args:
             entity: JobPositionActivity entity
-            
+
         Returns:
             JobPositionActivityDto
         """
@@ -38,4 +38,3 @@ class JobPositionActivityDto:
             metadata=entity.metadata,
             created_at=entity.created_at,
         )
-

@@ -45,8 +45,13 @@ class CandidateModel(Base):
     candidate_notes: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
-    experiences: Mapped[List["CandidateExperienceModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
-    educations: Mapped[List["CandidateEducationModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
-    projects: Mapped[List["CandidateProjectModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
-    applications: Mapped[List["CandidateApplicationModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
-    file_attachments: Mapped[List["FileAttachmentModel"]] = relationship(back_populates="candidate")  # type: ignore # noqa: F821
+    experiences: Mapped[List["CandidateExperienceModel"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        back_populates="candidate")
+    educations: Mapped[List["CandidateEducationModel"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        back_populates="candidate")
+    projects: Mapped[List["CandidateProjectModel"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        back_populates="candidate")
+    applications: Mapped[List["CandidateApplicationModel"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        back_populates="candidate")
+    file_attachments: Mapped[List["FileAttachmentModel"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        back_populates="candidate")

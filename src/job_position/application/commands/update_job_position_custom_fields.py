@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Dict, Any
 
-from src.shared.application.command_bus import Command, CommandHandler
 from src.job_position.domain.exceptions import JobPositionNotFoundException
-from src.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
+from src.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -31,4 +31,3 @@ class UpdateJobPositionCustomFieldsCommandHandler(CommandHandler[UpdateJobPositi
         job_position.updated_at = job_position.updated_at or None  # Will be updated by repository
 
         self.job_position_repository.save(job_position)
-

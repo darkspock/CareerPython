@@ -3,10 +3,10 @@ from typing import Optional
 
 from src.company.application.dtos.company_user_invitation_dto import CompanyUserInvitationDto
 from src.company.application.mappers.company_user_invitation_mapper import CompanyUserInvitationMapper
-from src.company.domain.value_objects import CompanyId
 from src.company.domain.infrastructure.company_user_invitation_repository_interface import (
     CompanyUserInvitationRepositoryInterface
 )
+from src.company.domain.value_objects import CompanyId
 from src.shared.application.query_bus import Query, QueryHandler
 
 
@@ -36,4 +36,3 @@ class GetInvitationByEmailAndCompanyQueryHandler(
             return None
 
         return CompanyUserInvitationMapper.entity_to_dto(invitation)
-

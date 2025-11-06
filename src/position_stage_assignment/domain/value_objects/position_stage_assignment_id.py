@@ -1,5 +1,6 @@
 """Position stage assignment ID value object"""
 from dataclasses import dataclass
+
 import ulid
 
 

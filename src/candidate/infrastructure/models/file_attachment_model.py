@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from sqlalchemy import Column, String, DateTime, Integer, Text, ForeignKey
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import String, DateTime, Integer, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
+
 from core.base import Base
-from typing import TYPE_CHECKING, Optional
-from datetime import datetime
 
 if TYPE_CHECKING:
     from src.candidate.infrastructure.models.candidate_model import CandidateModel
@@ -31,7 +33,8 @@ class FileAttachmentModel(Base):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
+                                                 onupdate=func.now())
 
     # Relationship
     candidate: Mapped["CandidateModel"] = relationship("CandidateModel", back_populates="file_attachments")

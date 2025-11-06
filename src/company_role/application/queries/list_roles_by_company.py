@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import List
 
+from src.company.domain.value_objects.company_id import CompanyId
 from src.company_role.application.dtos.company_role_dto import CompanyRoleDto
 from src.company_role.application.mappers.company_role_mapper import CompanyRoleMapper
-from src.company.domain.value_objects.company_id import CompanyId
 from src.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
 from src.shared.application.query_bus import Query, QueryHandler
 

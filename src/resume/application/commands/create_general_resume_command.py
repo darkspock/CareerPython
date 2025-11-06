@@ -105,7 +105,8 @@ class CreateGeneralResumeCommandHandler(CommandHandler[CreateGeneralResumeComman
             self.resume_repository.update(created_resume)
             raise
 
-    def _prepare_candidate_data(self, candidate: Candidate, general_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _prepare_candidate_data(self, candidate: Candidate, general_data: Optional[Dict[str, Any]] = None) -> Dict[
+        str, Any]:
         """Prepare candidate data for generation"""
         candidate_data: Dict[str, Any] = {
             'name': candidate.name,

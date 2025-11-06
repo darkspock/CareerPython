@@ -10,6 +10,7 @@ from adapters.http.company_workflow.routers.company_workflow_router import route
 from adapters.http.company_workflow.routers.workflow_stage_router import router as workflow_stage_router
 from src.company_page.presentation.routers.company_page_router import router as company_page_router
 from src.company_page.presentation.routers.public_company_page_router import router as public_company_page_router
+
 # from presentation.candidate.routers.home_router import home_router
 # from presentation.candidate.routers import interview_router
 # from presentation.candidate.routers.profile_router import router as profile_router

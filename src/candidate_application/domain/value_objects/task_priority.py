@@ -4,7 +4,7 @@ Phase 6: Calculates priority score for application tasks based on multiple facto
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 
@@ -30,11 +30,11 @@ class TaskPriority:
     def total_score(self) -> int:
         """Calculate total priority score (0-150)"""
         return (
-            self.base_priority +
-            self.deadline_weight +
-            self.time_in_stage_weight +
-            self.position_weight +
-            self.candidate_weight
+                self.base_priority +
+                self.deadline_weight +
+                self.time_in_stage_weight +
+                self.position_weight +
+                self.candidate_weight
         )
 
     @property
@@ -52,9 +52,9 @@ class TaskPriority:
 
     @staticmethod
     def calculate(
-        stage_deadline: Optional[datetime],
-        stage_entered_at: Optional[datetime],
-        current_time: Optional[datetime] = None
+            stage_deadline: Optional[datetime],
+            stage_entered_at: Optional[datetime],
+            current_time: Optional[datetime] = None
     ) -> 'TaskPriority':
         """Calculate priority for an application
 

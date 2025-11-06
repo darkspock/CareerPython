@@ -1,8 +1,6 @@
 """Position stage assignment controller"""
 from typing import List
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
 from src.position_stage_assignment.application import (
     AssignUsersToStageCommand,
     AddUserToStageCommand,
@@ -12,6 +10,7 @@ from src.position_stage_assignment.application import (
     GetAssignedUsersQuery,
     WorkflowStageAssignment
 )
+from src.position_stage_assignment.presentation.mappers import PositionStageAssignmentMapper
 from src.position_stage_assignment.presentation.schemas import (
     AssignUsersToStageRequest,
     AddUserToStageRequest,
@@ -19,7 +18,8 @@ from src.position_stage_assignment.presentation.schemas import (
     CopyWorkflowAssignmentsRequest,
     PositionStageAssignmentResponse
 )
-from src.position_stage_assignment.presentation.mappers import PositionStageAssignmentMapper
+from src.shared.application.command_bus import CommandBus
+from src.shared.application.query_bus import QueryBus
 
 
 class PositionStageAssignmentController:
@@ -103,7 +103,8 @@ class PositionStageAssignmentController:
 
         raise ValueError(f"Assignment not found for position {request.position_id} and stage {request.stage_id}")
 
-    def copy_workflow_assignments(self, request: CopyWorkflowAssignmentsRequest) -> List[PositionStageAssignmentResponse]:
+    def copy_workflow_assignments(self, request: CopyWorkflowAssignmentsRequest) -> List[
+        PositionStageAssignmentResponse]:
         """Copy workflow assignments to a position"""
         workflow_stages = [
             WorkflowStageAssignment(

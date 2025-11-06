@@ -6,4 +6,3 @@ class KanbanDisplayEnum(str, Enum):
     VERTICAL = "vertical"  # Display as column in Kanban
     HORIZONTAL_BOTTOM = "horizontal_bottom"  # Display as row at bottom
     HIDDEN = "hidden"  # Hidden from Kanban view
-

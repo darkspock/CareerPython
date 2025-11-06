@@ -2,9 +2,10 @@
 Public Position Schemas
 Phase 10: Response schemas for public job positions - simplified
 """
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel
 from datetime import datetime, date
+from typing import Optional, List, Dict, Any
+
+from pydantic import BaseModel
 
 from adapters.http.admin.schemas.job_position import JobPositionPublicResponse
 

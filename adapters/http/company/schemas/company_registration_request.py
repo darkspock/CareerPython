@@ -1,28 +1,29 @@
 """Request schemas for company registration"""
 from typing import Optional
+
 from pydantic import BaseModel, field_validator, EmailStr
 
 
 class CompanyRegistrationRequest(BaseModel):
     """Request schema to register a company with a new user"""
-    
+
     # User data
     email: EmailStr
     password: str
     full_name: str
-    
+
     # Company data
     company_name: str
     domain: str
     logo_url: Optional[str] = None
     contact_phone: Optional[str] = None
     address: Optional[str] = None
-    
+
     # Options
     include_example_data: bool = False
     accept_terms: bool
     accept_privacy: bool
-    
+
     @field_validator('email')
     @classmethod
     def validate_email(cls, v: EmailStr) -> EmailStr:
@@ -30,7 +31,7 @@ class CompanyRegistrationRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError('Email is required')
         return v.strip().lower()
-    
+
     @field_validator('password')
     @classmethod
     def validate_password(cls, v: str) -> str:
@@ -40,7 +41,7 @@ class CompanyRegistrationRequest(BaseModel):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters')
         return v
-    
+
     @field_validator('full_name')
     @classmethod
     def validate_full_name(cls, v: str) -> str:
@@ -50,7 +51,7 @@ class CompanyRegistrationRequest(BaseModel):
         if len(v.strip()) < 2:
             raise ValueError('Full name must be at least 2 characters')
         return v.strip()
-    
+
     @field_validator('company_name')
     @classmethod
     def validate_company_name(cls, v: str) -> str:
@@ -60,7 +61,7 @@ class CompanyRegistrationRequest(BaseModel):
         if len(v.strip()) < 3:
             raise ValueError('Company name must be at least 3 characters')
         return v.strip()
-    
+
     @field_validator('domain')
     @classmethod
     def validate_domain(cls, v: str) -> str:
@@ -74,7 +75,7 @@ class CompanyRegistrationRequest(BaseModel):
         if len(domain) > 255:
             raise ValueError('Domain cannot exceed 255 characters')
         return domain
-    
+
     @field_validator('accept_terms', 'accept_privacy')
     @classmethod
     def validate_terms_accepted(cls, v: bool) -> bool:
@@ -86,23 +87,23 @@ class CompanyRegistrationRequest(BaseModel):
 
 class LinkUserRequest(BaseModel):
     """Request schema to link an existing user to a new company"""
-    
+
     # User authentication
     email: EmailStr
     password: str
-    
+
     # Company data
     company_name: str
     domain: str
     logo_url: Optional[str] = None
     contact_phone: Optional[str] = None
     address: Optional[str] = None
-    
+
     # Options
     include_example_data: bool = False
     accept_terms: bool
     accept_privacy: bool
-    
+
     @field_validator('email')
     @classmethod
     def validate_email(cls, v: EmailStr) -> EmailStr:
@@ -110,7 +111,7 @@ class LinkUserRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError('Email is required')
         return v.strip().lower()
-    
+
     @field_validator('password')
     @classmethod
     def validate_password(cls, v: str) -> str:
@@ -118,7 +119,7 @@ class LinkUserRequest(BaseModel):
         if not v:
             raise ValueError('Password is required')
         return v
-    
+
     @field_validator('company_name')
     @classmethod
     def validate_company_name(cls, v: str) -> str:
@@ -128,7 +129,7 @@ class LinkUserRequest(BaseModel):
         if len(v.strip()) < 3:
             raise ValueError('Company name must be at least 3 characters')
         return v.strip()
-    
+
     @field_validator('domain')
     @classmethod
     def validate_domain(cls, v: str) -> str:
@@ -141,7 +142,7 @@ class LinkUserRequest(BaseModel):
         if len(domain) > 255:
             raise ValueError('Domain cannot exceed 255 characters')
         return domain
-    
+
     @field_validator('accept_terms', 'accept_privacy')
     @classmethod
     def validate_terms_accepted(cls, v: bool) -> bool:
@@ -149,4 +150,3 @@ class LinkUserRequest(BaseModel):
         if not v:
             raise ValueError('You must accept the terms and conditions and privacy policy')
         return v
-

@@ -37,9 +37,9 @@ class CreateEmailTemplateCommandHandler(CommandHandler[CreateEmailTemplateComman
         """Execute the create email template command"""
         # Check if template already exists for this workflow+stage+trigger
         if self._repository.exists(
-            workflow_id=command.workflow_id,
-            stage_id=command.stage_id,
-            trigger_event=command.trigger_event
+                workflow_id=command.workflow_id,
+                stage_id=command.stage_id,
+                trigger_event=command.trigger_event
         ):
             raise ValueError(
                 f"Email template already exists for workflow {command.workflow_id}, "

@@ -2,19 +2,19 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
-from src.shared.application.query_bus import Query, QueryHandler
-from src.job_position.domain.value_objects import JobPositionId
+from src.job_position.application.dtos.job_position_comment_dto import JobPositionCommentDto
 from src.job_position.domain.infrastructure.job_position_comment_repository_interface import (
     JobPositionCommentRepositoryInterface
 )
-from src.job_position.application.dtos.job_position_comment_dto import JobPositionCommentDto
+from src.job_position.domain.value_objects import JobPositionId
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
 class ListJobPositionCommentsQuery(Query):
     """
     Query to list comments for a job position
-    
+
     Can be filtered by:
     - All comments (stage_id = None, include_global = None)
     - Comments for specific stage + global (stage_id = value, include_global = True)
@@ -35,15 +35,15 @@ class ListJobPositionCommentsQueryHandler(QueryHandler[ListJobPositionCommentsQu
     def handle(self, query: ListJobPositionCommentsQuery) -> List[JobPositionCommentDto]:
         """
         Execute the query
-        
+
         Args:
             query: Query with filters
-            
+
         Returns:
             List[JobPositionCommentDto]: List of comments
         """
         job_position_id = JobPositionId.from_string(query.job_position_id)
-        
+
         # Use the repository method that handles stage and global filtering
         comments = self._repository.list_by_stage_and_global(
             job_position_id=job_position_id,
@@ -69,4 +69,3 @@ class ListJobPositionCommentsQueryHandler(QueryHandler[ListJobPositionCommentsQu
             )
             for comment in comments
         ]
-

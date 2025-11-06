@@ -11,37 +11,37 @@ from src.company_page.domain.entities.company_page import CompanyPage
 @dataclass
 class CompanyPageDto:
     """DTO para transferencia de datos de páginas de empresa"""
-    
+
     # Identifiers
     id: str
     company_id: str
-    
+
     # Basic Fields
     page_type: str
     title: str
-    
+
     # Content Fields
     html_content: str
     plain_text: str
     word_count: int
-    
+
     # SEO Fields
     meta_description: Optional[str]
     meta_keywords: List[str]
     language: str
-    
+
     # Status Fields
     status: str
     is_default: bool
     version: int
-    
+
     # Timestamps
     created_at: datetime
     updated_at: datetime
     published_at: Optional[datetime]
-    
+
     @classmethod
-    def from_entity(cls, entity:CompanyPage) -> "CompanyPageDto":
+    def from_entity(cls, entity: CompanyPage) -> "CompanyPageDto":
         """Crear DTO desde entidad de dominio"""
         return cls(
             id=entity.id.value,

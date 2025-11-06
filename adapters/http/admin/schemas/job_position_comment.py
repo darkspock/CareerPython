@@ -1,6 +1,7 @@
 """Job Position Comment Schemas."""
 from datetime import datetime
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -74,7 +75,7 @@ class JobPositionCommentListResponse(BaseModel):
     """Response schema for list of job position comments"""
     comments: list[JobPositionCommentResponse]
     total: int
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -82,4 +83,3 @@ class JobPositionCommentListResponse(BaseModel):
                 "total": 0
             }
         }
-

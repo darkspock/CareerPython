@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from ..entities.candidate_comment import CandidateComment
 from ..value_objects import CandidateCommentId, CompanyCandidateId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 class CandidateCommentRepositoryInterface(ABC):
@@ -21,17 +21,17 @@ class CandidateCommentRepositoryInterface(ABC):
 
     @abstractmethod
     def list_by_company_candidate(
-        self,
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> List[CandidateComment]:
         """List all comments for a company candidate"""
         pass
 
     @abstractmethod
     def list_by_stage(
-        self,
-        company_candidate_id: CompanyCandidateId,
-        stage_id: WorkflowStageId
+            self,
+            company_candidate_id: CompanyCandidateId,
+            stage_id: WorkflowStageId
     ) -> List[CandidateComment]:
         """List all comments for a company candidate in a specific stage"""
         pass
@@ -43,9 +43,8 @@ class CandidateCommentRepositoryInterface(ABC):
 
     @abstractmethod
     def count_pending_by_company_candidate(
-        self,
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> int:
         """Count pending comments for a company candidate"""
         pass
-

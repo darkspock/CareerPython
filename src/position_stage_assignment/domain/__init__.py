@@ -1,13 +1,13 @@
 """Position stage assignment domain"""
 from .entities import PositionStageAssignment
-from .value_objects import PositionStageAssignmentId
-from .repositories import PositionStageAssignmentRepositoryInterface
 from .exceptions import (
     PositionStageAssignmentException,
     PositionStageAssignmentNotFoundException,
     PositionStageAssignmentValidationError,
     DuplicatePositionStageAssignmentException
 )
+from .repositories import PositionStageAssignmentRepositoryInterface
+from .value_objects import PositionStageAssignmentId
 
 __all__ = [
     'PositionStageAssignment',

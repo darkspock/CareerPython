@@ -58,12 +58,12 @@ class EmailServiceInterface(ABC):
 
     @abstractmethod
     async def send_user_invitation(
-        self,
-        email: str,
-        company_name: str,
-        invitation_link: str,
-        inviter_name: Optional[str] = None,
-        custom_message: Optional[str] = None
+            self,
+            email: str,
+            company_name: str,
+            invitation_link: str,
+            inviter_name: Optional[str] = None,
+            custom_message: Optional[str] = None
     ) -> bool:
         """Send user invitation email to join a company"""
         pass

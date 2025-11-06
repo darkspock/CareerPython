@@ -2,8 +2,8 @@
 Global admin authentication middleware for /admin routes
 """
 
-import json
 from typing import Callable, Any
+
 from fastapi import Request, Response, HTTPException, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware

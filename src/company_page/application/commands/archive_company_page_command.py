@@ -9,5 +9,5 @@ from src.shared.application.command_bus import Command
 @dataclass(frozen=True)
 class ArchiveCompanyPageCommand(Command):
     """Comando para archivar una página de empresa"""
-    
+
     page_id: str

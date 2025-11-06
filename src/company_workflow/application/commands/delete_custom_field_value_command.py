@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 
-from src.shared.application.command_bus import Command, CommandHandler
+from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import \
+    CustomFieldValueRepositoryInterface
 from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
-from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import CustomFieldValueRepositoryInterface
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)

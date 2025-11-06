@@ -190,7 +190,8 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             db_templates = query.all()
             return [self._to_domain(template) for template in db_templates]
 
-    def get_by_type(self, template_type: InterviewTemplateTypeEnum, include_disabled: bool = False) -> List[InterviewTemplate]:
+    def get_by_type(self, template_type: InterviewTemplateTypeEnum, include_disabled: bool = False) -> List[
+        InterviewTemplate]:
         """Get templates by type"""
         with self.database.get_session() as session:
             query = session.query(InterviewTemplateModel).filter(

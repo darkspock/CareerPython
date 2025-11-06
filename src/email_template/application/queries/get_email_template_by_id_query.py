@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.email_template.application.dtos.email_template_dto import EmailTemplateDto
-from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
+from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.shared.application.query_bus import Query, QueryHandler
 
 

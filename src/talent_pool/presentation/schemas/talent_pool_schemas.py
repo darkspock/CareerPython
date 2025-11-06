@@ -3,9 +3,10 @@ Talent Pool Schemas
 Phase 8: Request and response schemas for talent pool API
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from datetime import datetime
+from typing import Optional, List
+
+from pydantic import BaseModel, Field
 
 from src.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 

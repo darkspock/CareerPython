@@ -4,8 +4,8 @@ Phase 9: DTOs for workflow analytics data
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Dict
 from datetime import datetime
+from typing import List, Optional, Dict
 
 
 @dataclass

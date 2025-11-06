@@ -55,5 +55,5 @@ class CandidateCommentModel(Base):
         default=CommentVisibility.PRIVATE.value
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-
+    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow,
+                                                 onupdate=datetime.utcnow)

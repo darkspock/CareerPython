@@ -4,8 +4,8 @@ Phase 7: Domain event triggered when an application moves to a new stage
 """
 
 from dataclasses import dataclass
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 from src.shared.domain.events.domain_event import DomainEvent
 

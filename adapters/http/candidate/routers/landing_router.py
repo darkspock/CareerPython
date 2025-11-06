@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File, S
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 
-from core.container import Container
 from adapters.http.candidate.controllers.onboarding_controller import OnboardingController
 from adapters.http.candidate.schemas.onboarding import LandingResponse
+from core.container import Container
 from src.shared.application.query_bus import QueryBus
 from src.user.application.queries.dtos.auth_dto import CurrentUserDto
 from src.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery

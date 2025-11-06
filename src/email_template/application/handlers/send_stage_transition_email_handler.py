@@ -20,9 +20,9 @@ class SendStageTransitionEmailHandler(EventHandler[ApplicationStageChangedEvent]
     """Handler that sends emails when application stage changes"""
 
     def __init__(
-        self,
-        email_template_repository: EmailTemplateRepositoryInterface,
-        command_bus: CommandBus
+            self,
+            email_template_repository: EmailTemplateRepositoryInterface,
+            command_bus: CommandBus
     ):
         self._email_template_repository = email_template_repository
         self._command_bus = command_bus

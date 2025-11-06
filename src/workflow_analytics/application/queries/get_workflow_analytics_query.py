@@ -179,7 +179,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
                 average_completion_time_hours=None,  # Would need timestamp tracking
                 median_completion_time_hours=None,
                 overall_conversion_rate=None if total_applications == 0 else (
-                                                                                         completed_count / total_applications) * 100,
+                                                                                     completed_count / total_applications) * 100,
                 cost_per_hire=None,  # Would need cost tracking
                 time_to_hire_days=None,  # Would need timestamp tracking
                 applications_per_stage=applications_per_stage

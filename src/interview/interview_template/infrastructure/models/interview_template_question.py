@@ -34,7 +34,8 @@ class InterviewTemplateQuestionModel(Base):
         Enum(InterviewTemplateQuestionDataTypeEnum))
     scope: Mapped[InterviewTemplateQuestionScopeEnum] = mapped_column(Enum(InterviewTemplateQuestionScopeEnum))
     code: Mapped[str] = mapped_column(String)
-    allow_ai_followup: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # Allow AI to generate follow-up questions
+    allow_ai_followup: Mapped[bool] = mapped_column(Boolean, nullable=False,
+                                                    default=False)  # Allow AI to generate follow-up questions
     legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for this question
 
     section: Mapped["InterviewTemplateSectionModel"] = relationship("InterviewTemplateSectionModel",

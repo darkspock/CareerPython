@@ -8,9 +8,9 @@ from core.container import Container
 from src.company_workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
 from src.company_workflow.presentation.schemas.create_stage_request import CreateStageRequest
 from src.company_workflow.presentation.schemas.reorder_stages_request import ReorderStagesRequest
+from src.company_workflow.presentation.schemas.stage_style_request import UpdateStageStyleRequest
 from src.company_workflow.presentation.schemas.update_stage_request import UpdateStageRequest
 from src.company_workflow.presentation.schemas.workflow_stage_response import WorkflowStageResponse
-from src.company_workflow.presentation.schemas.stage_style_request import UpdateStageStyleRequest
 
 router = APIRouter(
     prefix="/api/workflow-stages",

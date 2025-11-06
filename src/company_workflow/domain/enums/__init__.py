@@ -1,9 +1,9 @@
 # Company workflow enums
-from .workflow_status import WorkflowStatus
-from .stage_type import StageType
-from .stage_outcome import StageOutcome
 from .field_type import FieldType
 from .field_visibility import FieldVisibility
+from .stage_outcome import StageOutcome
+from .stage_type import StageType
+from .workflow_status import WorkflowStatus
 
 __all__ = [
     "WorkflowStatus",

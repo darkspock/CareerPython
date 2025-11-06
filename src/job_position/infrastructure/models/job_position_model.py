@@ -19,10 +19,13 @@ class JobPositionModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     company_id: Mapped[str] = mapped_column(String, index=True)  # Removed ForeignKey
-    job_position_workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)  # Workflow system
+    job_position_workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True,
+                                                                    nullable=True)  # Workflow system
     stage_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)  # Current stage in workflow
-    phase_workflows: Mapped[Optional[Dict[str, str]]] = mapped_column(JSON)  # Phase 12.8: phase_id -> workflow_id mapping
-    custom_fields_values: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)  # Custom field values (JSON) - contains all removed fields
+    phase_workflows: Mapped[Optional[Dict[str, str]]] = mapped_column(
+        JSON)  # Phase 12.8: phase_id -> workflow_id mapping
+    custom_fields_values: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON,
+                                                                           nullable=True)  # Custom field values (JSON) - contains all removed fields
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text)  # Job description
     job_category: Mapped[JobCategoryEnum] = mapped_column(Enum(JobCategoryEnum), default=JobCategoryEnum.OTHER)
@@ -42,4 +45,8 @@ class JobPositionModel(Base):
         back_populates="job_position")
 
     def __repr__(self) -> str:
-        return f"<JobPositionModel(id={self.id}, title={self.title}, job_position_workflow_id={self.job_position_workflow_id}, stage_id={self.stage_id}, visibility={self.visibility})>"
+        return (
+            f"<JobPositionModel(id={self.id}, title={self.title}, "
+            f"job_position_workflow_id={self.job_position_workflow_id}, "
+            f"stage_id={self.stage_id}, visibility={self.visibility})>"
+        )

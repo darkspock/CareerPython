@@ -6,26 +6,25 @@ from adapters.http.admin.schemas.job_position_workflow import (
     JobPositionWorkflowCreate, JobPositionWorkflowUpdate, JobPositionWorkflowResponse,
     MoveJobPositionToStageRequest, UpdateJobPositionCustomFieldsRequest
 )
+from src.company.domain.value_objects.company_id import CompanyId
+from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.job_position.application.commands.create_job_position_workflow import CreateJobPositionWorkflowCommand
-from src.job_position.application.commands.update_job_position_workflow import UpdateJobPositionWorkflowCommand
 from src.job_position.application.commands.move_job_position_to_stage import (
-    MoveJobPositionToStageCommand,
-    JobPositionValidationError
+    MoveJobPositionToStageCommand
 )
 from src.job_position.application.commands.update_job_position_custom_fields import UpdateJobPositionCustomFieldsCommand
+from src.job_position.application.commands.update_job_position_workflow import UpdateJobPositionWorkflowCommand
+from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
 from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQuery
 from src.job_position.application.queries.list_job_position_workflows import ListJobPositionWorkflowsQuery
-from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
-from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
-from src.job_position.domain.value_objects.stage_id import StageId
-from src.job_position.domain.value_objects.job_position_id import JobPositionId
-from src.job_position.domain.enums.view_type import ViewTypeEnum
-from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
 from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
 from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
-from src.company.domain.value_objects.company_id import CompanyId
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.job_position.domain.enums.view_type import ViewTypeEnum
+from src.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.job_position.domain.value_objects.stage_id import StageId
+from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 
@@ -103,19 +102,19 @@ class JobPositionWorkflowController:
             from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
             from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
             from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
-            
+
             stages = []
             for stage_data in request.stages:
                 stage_id = StageId.from_string(stage_data.id)
                 status_mapping = JobPositionStatusEnum(stage_data.status_mapping)
                 kanban_display = KanbanDisplayEnum(stage_data.kanban_display)
                 role = CompanyRoleId.from_string(stage_data.role) if stage_data.role else None
-                
+
                 # Get field_candidate_visibility, defaulting to empty dict if not provided
                 field_candidate_visibility = getattr(stage_data, 'field_candidate_visibility', None)
                 if field_candidate_visibility is None:
                     field_candidate_visibility = {}
-                
+
                 stage = WorkflowStage.create(
                     id=stage_id,
                     name=stage_data.name,
@@ -175,7 +174,7 @@ class JobPositionWorkflowController:
     def initialize_default_workflows(self, company_id: str) -> List[JobPositionWorkflowResponse]:
         """
         Initialize default job position workflows for a company.
-        
+
         This will ARCHIVE all existing workflows and create new defaults.
         """
         company_id_vo = CompanyId.from_string(company_id)
@@ -183,7 +182,7 @@ class JobPositionWorkflowController:
         # Archive all existing workflows for this company
         query = ListJobPositionWorkflowsQuery(company_id=company_id_vo)
         existing_workflows: List[JobPositionWorkflowDto] = self.query_bus.query(query)
-        
+
         if existing_workflows:
             logger.info(f"Archiving {len(existing_workflows)} existing workflows for company {company_id}")
             for workflow_dto in existing_workflows:
@@ -382,7 +381,7 @@ class JobPositionWorkflowController:
     def move_position_to_stage(self, position_id: str, request: MoveJobPositionToStageRequest) -> dict:
         """
         Move a job position to a new stage.
-        
+
         Raises:
             JobPositionValidationError: If custom fields validation fails
         """
@@ -445,4 +444,3 @@ class JobPositionWorkflowController:
             created_at=dto.created_at,
             updated_at=dto.updated_at,
         )
-

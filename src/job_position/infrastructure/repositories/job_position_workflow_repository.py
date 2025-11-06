@@ -1,18 +1,19 @@
 from typing import Optional, List, Dict, Any
 
 from core.database import DatabaseInterface
+from src.company.domain.value_objects.company_id import CompanyId
+from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.job_position.domain.entities.job_position_workflow import JobPositionWorkflow
-from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
-from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
-from src.job_position.domain.value_objects.stage_id import StageId
-from src.job_position.domain.enums.view_type import ViewTypeEnum
 from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
 from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
 from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
-from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
+from src.job_position.domain.enums.view_type import ViewTypeEnum
+from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import \
+    JobPositionWorkflowRepositoryInterface
+from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.job_position.domain.value_objects.stage_id import StageId
+from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.infrastructure.models.job_position_workflow_model import JobPositionWorkflowModel
-from src.company.domain.value_objects.company_id import CompanyId
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 
 
 class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
@@ -47,7 +48,6 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
         with self._database.get_session() as session:
             models = session.query(JobPositionWorkflowModel).filter_by(company_id=str(company_id)).all()
             return [self._to_domain(model) for model in models]
-
 
     def delete(self, workflow_id: JobPositionWorkflowId) -> None:
         """Delete a workflow"""
@@ -133,7 +133,7 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
             stage_id = StageId.from_string(stage_dict["id"])
             status_mapping = JobPositionStatusEnum(stage_dict["status_mapping"])
             kanban_display = KanbanDisplayEnum(stage_dict["kanban_display"])
-            
+
             role = None
             if "role" in stage_dict and stage_dict["role"]:
                 role = CompanyRoleId.from_string(stage_dict["role"])
@@ -150,8 +150,7 @@ class JobPositionWorkflowRepository(JobPositionWorkflowRepositoryInterface):
                 field_visibility=stage_dict.get("field_visibility", {}),
                 field_validation=stage_dict.get("field_validation", {}),
             )
-        except (KeyError, ValueError) as e:
+        except (KeyError, ValueError):
             # Log error and return None if stage cannot be deserialized
             # This allows the workflow to load even if one stage is invalid
             return None
-

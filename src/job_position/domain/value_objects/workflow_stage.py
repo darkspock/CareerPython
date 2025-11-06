@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
-from src.job_position.domain.value_objects.stage_id import StageId
+from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
 from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.job_position.domain.value_objects.stage_id import StageId
 
 
 @dataclass(frozen=True)
 class WorkflowStage:
     """
     Value object representing a stage in a JobPosition workflow.
-    
+
     This is a simplified version for JobPosition workflows, different from
     the candidate workflow stages.
     """
@@ -40,21 +40,21 @@ class WorkflowStage:
 
     @staticmethod
     def create(
-        id: StageId,
-        name: str,
-        icon: str,
-        background_color: str,
-        text_color: str,
-        status_mapping: JobPositionStatusEnum,
-        kanban_display: KanbanDisplayEnum = KanbanDisplayEnum.VERTICAL,
-        role: Optional[CompanyRoleId] = None,
-        field_visibility: Optional[Dict[str, bool]] = None,
-        field_validation: Optional[Dict[str, Any]] = None,
-        field_candidate_visibility: Optional[Dict[str, bool]] = None,
+            id: StageId,
+            name: str,
+            icon: str,
+            background_color: str,
+            text_color: str,
+            status_mapping: JobPositionStatusEnum,
+            kanban_display: KanbanDisplayEnum = KanbanDisplayEnum.VERTICAL,
+            role: Optional[CompanyRoleId] = None,
+            field_visibility: Optional[Dict[str, bool]] = None,
+            field_validation: Optional[Dict[str, Any]] = None,
+            field_candidate_visibility: Optional[Dict[str, bool]] = None,
     ) -> "WorkflowStage":
         """
         Factory method to create a new WorkflowStage
-        
+
         Args:
             id: Stage ID
             name: Stage name
@@ -66,7 +66,7 @@ class WorkflowStage:
             role: Responsible role (optional)
             field_visibility: Field visibility configuration
             field_validation: Field validation configuration
-            
+
         Returns:
             WorkflowStage: New instance
         """
@@ -85,21 +85,21 @@ class WorkflowStage:
         )
 
     def update(
-        self,
-        name: Optional[str] = None,
-        icon: Optional[str] = None,
-        background_color: Optional[str] = None,
-        text_color: Optional[str] = None,
-        role: Optional[CompanyRoleId] = None,
-        status_mapping: Optional[JobPositionStatusEnum] = None,
-        kanban_display: Optional[KanbanDisplayEnum] = None,
-        field_visibility: Optional[Dict[str, bool]] = None,
-        field_validation: Optional[Dict[str, Any]] = None,
-        field_candidate_visibility: Optional[Dict[str, bool]] = None,
+            self,
+            name: Optional[str] = None,
+            icon: Optional[str] = None,
+            background_color: Optional[str] = None,
+            text_color: Optional[str] = None,
+            role: Optional[CompanyRoleId] = None,
+            status_mapping: Optional[JobPositionStatusEnum] = None,
+            kanban_display: Optional[KanbanDisplayEnum] = None,
+            field_visibility: Optional[Dict[str, bool]] = None,
+            field_validation: Optional[Dict[str, Any]] = None,
+            field_candidate_visibility: Optional[Dict[str, bool]] = None,
     ) -> "WorkflowStage":
         """
         Create a new instance with updated values
-        
+
         Returns:
             WorkflowStage: New instance with updated values
         """
@@ -117,25 +117,25 @@ class WorkflowStage:
             field_candidate_visibility=field_candidate_visibility if field_candidate_visibility is not None else self.field_candidate_visibility,
         )
 
-    def is_field_visible_to_candidate(self, field_name: str, default_visibility: Optional[Dict[str, bool]] = None) -> bool:
+    def is_field_visible_to_candidate(self, field_name: str,
+                                      default_visibility: Optional[Dict[str, bool]] = None) -> bool:
         """
         Check if a field is visible to candidates
-        
+
         Args:
             field_name: Name of the field to check
             default_visibility: Default visibility from custom_fields_config (optional)
-            
+
         Returns:
             bool: True if field is visible to candidates, False otherwise
         """
         # First check stage-specific visibility
         if field_name in self.field_candidate_visibility:
             return self.field_candidate_visibility[field_name]
-        
+
         # Then check default visibility from workflow config
         if default_visibility and field_name in default_visibility:
             return default_visibility[field_name]
-        
+
         # Default to False if not specified
         return False
-

@@ -17,11 +17,11 @@ class ProfileValidationService:
     """Service for validating and analyzing candidate profiles"""
 
     def calculate_profile_completeness(
-        self,
-        candidate: CandidateResponse,
-        experiences: List[CandidateExperienceResponse],
-        educations: List[CandidateEducationResponse],
-        projects: List[CandidateProjectResponse]
+            self,
+            candidate: CandidateResponse,
+            experiences: List[CandidateExperienceResponse],
+            educations: List[CandidateEducationResponse],
+            projects: List[CandidateProjectResponse]
     ) -> float:
         """Calculate profile completeness percentage"""
         score = 0
@@ -50,11 +50,11 @@ class ProfileValidationService:
         return (score / total_points) * 100
 
     def get_most_recent_update(
-        self,
-        candidate: CandidateResponse,
-        experiences: List[CandidateExperienceResponse],
-        educations: List[CandidateEducationResponse],
-        projects: List[CandidateProjectResponse]
+            self,
+            candidate: CandidateResponse,
+            experiences: List[CandidateExperienceResponse],
+            educations: List[CandidateEducationResponse],
+            projects: List[CandidateProjectResponse]
     ) -> Optional[str]:
         """Get the most recent update timestamp"""
         timestamps: List[Union[str, datetime, None]] = []
@@ -105,11 +105,11 @@ class ProfileValidationService:
         return most_recent.isoformat()
 
     def validate_profile_completeness(
-        self,
-        candidate: CandidateResponse,
-        experiences: List[CandidateExperienceResponse],
-        educations: List[CandidateEducationResponse],
-        projects: List[CandidateProjectResponse]
+            self,
+            candidate: CandidateResponse,
+            experiences: List[CandidateExperienceResponse],
+            educations: List[CandidateEducationResponse],
+            projects: List[CandidateProjectResponse]
     ) -> Dict[str, Any]:
         """Validate profile completeness and provide recommendations"""
         validation_results = {

@@ -1,13 +1,13 @@
-import logging
 import asyncio
+import logging
 
 from src.notification.application.commands.send_email_command import SendEmailCommand
 from src.notification.domain.entities.email_notification import EmailNotification, NotificationId
 from src.notification.domain.enums.notification_type import NotificationTypeEnum
 from src.notification.domain.exceptions.notification_exceptions import EmailSendingException
-from src.shared.domain.interfaces.email_service import EmailServiceInterface
 from src.shared.application.command_bus import CommandHandler
 from src.shared.domain.entities.base import generate_id
+from src.shared.domain.interfaces.email_service import EmailServiceInterface
 
 
 class SendEmailCommandHandler(CommandHandler[SendEmailCommand]):

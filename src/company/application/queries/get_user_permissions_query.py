@@ -1,11 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
-from src.company.domain.value_objects import CompanyId
 from src.company.domain.infrastructure.company_user_repository_interface import (
     CompanyUserRepositoryInterface
 )
-from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
+from src.company.domain.value_objects import CompanyId
 from src.shared.application.query_bus import Query, QueryHandler
 from src.user.domain.value_objects.UserId import UserId
 
@@ -38,4 +37,3 @@ class GetUserPermissionsQueryHandler(QueryHandler[GetUserPermissionsQuery, Optio
             "permissions": company_user.permissions.to_dict(),
             "status": company_user.status.value,
         }
-

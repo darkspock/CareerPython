@@ -1,6 +1,7 @@
-from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+
+from pydantic import BaseModel
 
 from src.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company.domain.value_objects.company_id import CompanyId

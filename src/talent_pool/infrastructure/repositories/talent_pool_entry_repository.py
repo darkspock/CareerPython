@@ -4,15 +4,16 @@ Phase 8: SQLAlchemy repository for talent pool entries
 """
 
 from typing import List, Optional
-from sqlalchemy.orm import Session
+
 from sqlalchemy import and_, or_, func
+from sqlalchemy.orm import Session
 
 from src.talent_pool.domain.entities.talent_pool_entry import TalentPoolEntry
-from src.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
 from src.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 from src.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (
     TalentPoolEntryRepositoryInterface,
 )
+from src.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
 from src.talent_pool.infrastructure.models.talent_pool_entry_model import TalentPoolEntryModel
 
 
@@ -54,11 +55,11 @@ class TalentPoolEntryRepository(TalentPoolEntryRepositoryInterface):
         return self._to_domain(model)
 
     def list_by_company(
-        self,
-        company_id: str,
-        status: Optional[TalentPoolStatus] = None,
-        tags: Optional[List[str]] = None,
-        min_rating: Optional[int] = None,
+            self,
+            company_id: str,
+            status: Optional[TalentPoolStatus] = None,
+            tags: Optional[List[str]] = None,
+            min_rating: Optional[int] = None,
     ) -> List[TalentPoolEntry]:
         """List talent pool entries for a company with optional filters"""
         query = self._db.query(TalentPoolEntryModel).filter(
@@ -87,12 +88,12 @@ class TalentPoolEntryRepository(TalentPoolEntryRepositoryInterface):
         return [self._to_domain(model) for model in models]
 
     def search(
-        self,
-        company_id: str,
-        search_term: Optional[str] = None,
-        status: Optional[TalentPoolStatus] = None,
-        tags: Optional[List[str]] = None,
-        min_rating: Optional[int] = None,
+            self,
+            company_id: str,
+            search_term: Optional[str] = None,
+            status: Optional[TalentPoolStatus] = None,
+            tags: Optional[List[str]] = None,
+            min_rating: Optional[int] = None,
     ) -> List[TalentPoolEntry]:
         """Search talent pool entries with filters"""
         query = self._db.query(TalentPoolEntryModel).filter(

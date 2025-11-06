@@ -1,23 +1,23 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from core.config import settings
 from src.company.domain.entities.company_user_invitation import CompanyUserInvitation
 from src.company.domain.enums import CompanyUserRole
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.company.domain.value_objects.company_user_invitation_id import CompanyUserInvitationId
+from src.company.domain.exceptions.company_exceptions import CompanyValidationError
+from src.company.domain.infrastructure.company_repository_interface import (
+    CompanyRepositoryInterface
+)
 from src.company.domain.infrastructure.company_user_invitation_repository_interface import (
     CompanyUserInvitationRepositoryInterface
 )
 from src.company.domain.infrastructure.company_user_repository_interface import (
     CompanyUserRepositoryInterface
 )
-from src.company.domain.infrastructure.company_repository_interface import (
-    CompanyRepositoryInterface
-)
-from src.company.domain.exceptions.company_exceptions import CompanyValidationError
+from src.company.domain.value_objects import CompanyId, CompanyUserId
+from src.company.domain.value_objects.company_user_invitation_id import CompanyUserInvitationId
 from src.shared.application.command_bus import Command, CommandHandler
 from src.shared.domain.interfaces.email_service import EmailServiceInterface
-from core.config import settings
 
 
 @dataclass
@@ -33,11 +33,11 @@ class InviteCompanyUserCommandHandler(CommandHandler):
     """Handler for inviting a user to a company"""
 
     def __init__(
-        self,
-        invitation_repository: CompanyUserInvitationRepositoryInterface,
-        company_user_repository: CompanyUserRepositoryInterface,
-        company_repository: CompanyRepositoryInterface,
-        email_service: EmailServiceInterface
+            self,
+            invitation_repository: CompanyUserInvitationRepositoryInterface,
+            company_user_repository: CompanyUserRepositoryInterface,
+            company_repository: CompanyRepositoryInterface,
+            email_service: EmailServiceInterface
     ):
         self.invitation_repository = invitation_repository
         self.company_user_repository = company_user_repository
@@ -66,9 +66,9 @@ class InviteCompanyUserCommandHandler(CommandHandler):
 
         # Check if user is already a company user
         # This would require checking User repository, but for now we'll allow and handle in accept
-        
+
         # Determine role (default to RECRUITER)
-        role = command.role if command.role else CompanyUserRole.RECRUITER
+        # role = command.role if command.role else CompanyUserRole.RECRUITER
 
         # Create invitation
         invitation_id = CompanyUserInvitationId.generate()
@@ -89,13 +89,13 @@ class InviteCompanyUserCommandHandler(CommandHandler):
             # Get company name for email
             company = self.company_repository.get_by_id(company_id)
             company_name = company.name if company else "the company"
-            
+
             # Get inviter name (optional, could be enhanced with User repository)
             inviter_name = None  # TODO: Get inviter name from User repository if needed
-            
+
             # Generate invitation link
             invitation_link = f"{settings.FRONTEND_URL}/invitations/accept?token={invitation.token}"
-            
+
             # Send email (async but we'll await it)
             import asyncio
             try:
@@ -136,4 +136,3 @@ class InviteCompanyUserCommandHandler(CommandHandler):
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to send invitation email: {str(e)}")
             # Email failure should not prevent invitation creation
-

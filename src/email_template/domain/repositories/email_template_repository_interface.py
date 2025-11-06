@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from src.email_template.domain.entities.email_template import EmailTemplate
-from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.email_template.domain.enums.trigger_event import TriggerEvent
+from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 
 
 class EmailTemplateRepositoryInterface(ABC):
@@ -84,11 +84,11 @@ class EmailTemplateRepositoryInterface(ABC):
 
     @abstractmethod
     def list_by_trigger(
-        self,
-        workflow_id: str,
-        trigger_event: TriggerEvent,
-        stage_id: Optional[str] = None,
-        active_only: bool = True
+            self,
+            workflow_id: str,
+            trigger_event: TriggerEvent,
+            stage_id: Optional[str] = None,
+            active_only: bool = True
     ) -> List[EmailTemplate]:
         """
         Get templates by trigger event

@@ -3,23 +3,23 @@ Workflow Analytics Controller
 Phase 9: HTTP controller for analytics endpoints
 """
 
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
 
 from src.shared.application.query_bus import QueryBus
-from src.workflow_analytics.application.queries import (
-    GetWorkflowAnalyticsQuery,
-    GetStageBottlenecksQuery
-)
 from src.workflow_analytics.application.dtos import (
     WorkflowAnalyticsDto,
     StageBottleneckDto
 )
+from src.workflow_analytics.application.queries import (
+    GetWorkflowAnalyticsQuery,
+    GetStageBottlenecksQuery
+)
+from src.workflow_analytics.presentation.mappers import WorkflowAnalyticsMapper
 from src.workflow_analytics.presentation.schemas import (
     WorkflowAnalyticsResponse,
     StageBottleneckResponse
 )
-from src.workflow_analytics.presentation.mappers import WorkflowAnalyticsMapper
 
 
 class WorkflowAnalyticsController:
@@ -29,10 +29,10 @@ class WorkflowAnalyticsController:
         self._query_bus = query_bus
 
     def get_workflow_analytics(
-        self,
-        workflow_id: str,
-        date_range_start: Optional[datetime] = None,
-        date_range_end: Optional[datetime] = None
+            self,
+            workflow_id: str,
+            date_range_start: Optional[datetime] = None,
+            date_range_end: Optional[datetime] = None
     ) -> WorkflowAnalyticsResponse:
         """
         Get comprehensive analytics for a workflow.
@@ -58,11 +58,11 @@ class WorkflowAnalyticsController:
         return WorkflowAnalyticsMapper.analytics_to_response(dto)
 
     def get_stage_bottlenecks(
-        self,
-        workflow_id: str,
-        date_range_start: Optional[datetime] = None,
-        date_range_end: Optional[datetime] = None,
-        min_bottleneck_score: float = 30.0
+            self,
+            workflow_id: str,
+            date_range_start: Optional[datetime] = None,
+            date_range_end: Optional[datetime] = None,
+            min_bottleneck_score: float = 30.0
     ) -> List[StageBottleneckResponse]:
         """
         Get list of bottleneck stages in a workflow.

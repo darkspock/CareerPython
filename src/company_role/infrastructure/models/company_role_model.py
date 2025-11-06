@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+
 from sqlalchemy import String, Boolean, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column
 

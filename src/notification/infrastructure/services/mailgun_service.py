@@ -5,8 +5,8 @@ from typing import Dict, Any, Optional, List
 import requests
 
 from core.config import settings
-from src.shared.domain.interfaces.email_service import EmailServiceInterface
 from src.notification.domain.exceptions.notification_exceptions import EmailSendingException
+from src.shared.domain.interfaces.email_service import EmailServiceInterface
 
 
 class MailgunService(EmailServiceInterface):
@@ -18,7 +18,8 @@ class MailgunService(EmailServiceInterface):
         self.api_url = settings.MAILGUN_API_URL
         self.logger = logging.getLogger(__name__)
         # Go up 4 levels: services -> infrastructure -> notification -> src, then go to shared
-        self.template_dir = Path(__file__).parent.parent.parent.parent / "shared" / "infrastructure" / "services" / "email_templates"
+        self.template_dir = Path(
+            __file__).parent.parent.parent.parent / "shared" / "infrastructure" / "services" / "email_templates"
 
     async def send_password_reset(self, email: str, reset_token: str) -> bool:
         """Send password reset email to user"""
@@ -186,12 +187,12 @@ class MailgunService(EmailServiceInterface):
             return []
 
     async def send_user_invitation(
-        self,
-        email: str,
-        company_name: str,
-        invitation_link: str,
-        inviter_name: Optional[str] = None,
-        custom_message: Optional[str] = None
+            self,
+            email: str,
+            company_name: str,
+            invitation_link: str,
+            inviter_name: Optional[str] = None,
+            custom_message: Optional[str] = None
     ) -> bool:
         """Send user invitation email to join a company"""
         try:
@@ -204,7 +205,7 @@ class MailgunService(EmailServiceInterface):
                 <p class="custom-message">{custom_message}</p>
             </div>
             """
-            
+
             template_data = {
                 "company_name": company_name,
                 "invitation_link": invitation_link,

@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from adapters.http.company.controllers.company_role_controller import CompanyRoleController
 from adapters.http.company.schemas.create_role_request import CreateRoleRequest
-from adapters.http.company.schemas.update_role_request import UpdateRoleRequest
 from adapters.http.company.schemas.role_response import RoleResponse
+from adapters.http.company.schemas.update_role_request import UpdateRoleRequest
 from core.container import Container
 from src.company_role.domain.exceptions.role_not_found import RoleNotFound
 from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
@@ -23,9 +23,9 @@ router = APIRouter(prefix="/companies/{company_id}/roles", tags=["Company Roles"
 )
 @inject
 def create_role(
-    company_id: str,
-    request: CreateRoleRequest,
-    controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
+        company_id: str,
+        request: CreateRoleRequest,
+        controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
 ) -> RoleResponse:
     """Create a new role for the company."""
     try:
@@ -41,9 +41,9 @@ def create_role(
 )
 @inject
 def list_roles(
-    company_id: str,
-    controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])],
-    active_only: bool = False
+        company_id: str,
+        controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])],
+        active_only: bool = False
 ) -> List[RoleResponse]:
     """List all roles for the company."""
     return controller.list_roles(company_id, active_only)
@@ -56,9 +56,9 @@ def list_roles(
 )
 @inject
 def get_role(
-    company_id: str,
-    role_id: str,
-    controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
+        company_id: str,
+        role_id: str,
+        controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
 ) -> RoleResponse:
     """Get a specific role by ID."""
     role = controller.get_role(CompanyRoleId.from_string(role_id))
@@ -77,9 +77,9 @@ def get_role(
 )
 @inject
 def update_role(
-    role_id: str,
-    request: UpdateRoleRequest,
-    controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
+        role_id: str,
+        request: UpdateRoleRequest,
+        controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
 ) -> RoleResponse:
     """Update an existing role."""
     try:
@@ -97,9 +97,9 @@ def update_role(
 )
 @inject
 def delete_role(
-    company_id: str,
-    role_id: str,
-    controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
+        company_id: str,
+        role_id: str,
+        controller: Annotated[CompanyRoleController, Depends(Provide[Container.company_role_controller])]
 ) -> None:
     """Delete a role."""
     try:

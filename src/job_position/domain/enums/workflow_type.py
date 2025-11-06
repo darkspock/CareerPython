@@ -8,4 +8,3 @@ class WorkflowTypeEnum(str, Enum):
     EXECUTIVE = "executive"  # Executive-level hiring
     INTERNSHIP = "internship"  # Internship program
     TEMPORARY = "temporary"  # Temporary positions
-

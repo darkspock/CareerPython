@@ -6,17 +6,20 @@ automatically transitions them to the next phase when they reach a SUCCESS stage
 from dataclasses import dataclass
 from typing import Optional
 
-from src.candidate_application.domain.repositories.candidate_application_repository_interface import CandidateApplicationRepositoryInterface
+from src.candidate_application.domain.repositories.candidate_application_repository_interface import \
+    CandidateApplicationRepositoryInterface
 from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.candidate_stage.domain.entities.candidate_stage import CandidateStage
-from src.candidate_stage.domain.infrastructure.candidate_stage_repository_interface import CandidateStageRepositoryInterface
+from src.candidate_stage.domain.infrastructure.candidate_stage_repository_interface import \
+    CandidateStageRepositoryInterface
 from src.candidate_stage.domain.value_objects.candidate_stage_id import CandidateStageId
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.company_workflow.domain.enums.stage_type import StageType
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.phase.domain.value_objects.phase_id import PhaseId
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
+from src.phase.domain.value_objects.phase_id import PhaseId
 from src.shared.application.command_bus import Command, CommandHandler
 
 
@@ -38,11 +41,11 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
     """Handler for moving candidates through workflow stages with automatic phase transitions"""
 
     def __init__(
-        self,
-        candidate_application_repository: CandidateApplicationRepositoryInterface,
-        candidate_stage_repository: CandidateStageRepositoryInterface,
-        workflow_stage_repository: WorkflowStageRepositoryInterface,
-        job_position_repository: JobPositionRepositoryInterface
+            self,
+            candidate_application_repository: CandidateApplicationRepositoryInterface,
+            candidate_stage_repository: CandidateStageRepositoryInterface,
+            workflow_stage_repository: WorkflowStageRepositoryInterface,
+            job_position_repository: JobPositionRepositoryInterface
     ):
         self.candidate_application_repository = candidate_application_repository
         self.candidate_stage_repository = candidate_stage_repository

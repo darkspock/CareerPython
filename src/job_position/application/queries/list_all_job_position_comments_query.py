@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from src.shared.application.query_bus import Query, QueryHandler
-from src.job_position.domain.value_objects import JobPositionId
+from src.job_position.application.dtos.job_position_comment_dto import JobPositionCommentDto
 from src.job_position.domain.infrastructure.job_position_comment_repository_interface import (
     JobPositionCommentRepositoryInterface
 )
-from src.job_position.application.dtos.job_position_comment_dto import JobPositionCommentDto
+from src.job_position.domain.value_objects import JobPositionId
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,8 @@ class ListAllJobPositionCommentsQuery(Query):
     current_user_id: Optional[str] = None  # For visibility filtering
 
 
-class ListAllJobPositionCommentsQueryHandler(QueryHandler[ListAllJobPositionCommentsQuery, List[JobPositionCommentDto]]):
+class ListAllJobPositionCommentsQueryHandler(
+    QueryHandler[ListAllJobPositionCommentsQuery, List[JobPositionCommentDto]]):
     """Handler for ListAllJobPositionCommentsQuery"""
 
     def __init__(self, comment_repository: JobPositionCommentRepositoryInterface):
@@ -28,15 +29,15 @@ class ListAllJobPositionCommentsQueryHandler(QueryHandler[ListAllJobPositionComm
     def handle(self, query: ListAllJobPositionCommentsQuery) -> List[JobPositionCommentDto]:
         """
         Execute the query
-        
+
         Args:
             query: Query with job position ID
-            
+
         Returns:
             List[JobPositionCommentDto]: List of ALL comments
         """
         job_position_id = JobPositionId.from_string(query.job_position_id)
-        
+
         # Use the repository method that returns ALL comments (with visibility filtering)
         comments = self._repository.list_by_job_position(
             job_position_id,
@@ -60,4 +61,3 @@ class ListAllJobPositionCommentsQueryHandler(QueryHandler[ListAllJobPositionComm
             )
             for comment in comments
         ]
-

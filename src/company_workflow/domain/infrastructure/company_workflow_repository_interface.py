@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
+from src.company.domain.value_objects.company_id import CompanyId
 from src.company_workflow.domain.entities.company_workflow import CompanyWorkflow
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company.domain.value_objects.company_id import CompanyId
 
 
 class CompanyWorkflowRepositoryInterface(ABC):

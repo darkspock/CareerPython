@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Optional, List
 
 from src.company_workflow.domain.entities.custom_field import CustomField
-from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
 
 
 class CustomFieldRepositoryInterface(ABC):

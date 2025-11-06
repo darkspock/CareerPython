@@ -1,15 +1,17 @@
 """CandidateStage repository implementation"""
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
-from src.candidate_stage.domain.entities.candidate_stage import CandidateStage
-from src.candidate_stage.domain.value_objects.candidate_stage_id import CandidateStageId
-from src.candidate_stage.domain.infrastructure.candidate_stage_repository_interface import CandidateStageRepositoryInterface
-from src.candidate_stage.infrastructure.models.candidate_stage_model import CandidateStageModel
 from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.phase.domain.value_objects.phase_id import PhaseId
+from src.candidate_stage.domain.entities.candidate_stage import CandidateStage
+from src.candidate_stage.domain.infrastructure.candidate_stage_repository_interface import \
+    CandidateStageRepositoryInterface
+from src.candidate_stage.domain.value_objects.candidate_stage_id import CandidateStageId
+from src.candidate_stage.infrastructure.models.candidate_stage_model import CandidateStageModel
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.phase.domain.value_objects.phase_id import PhaseId
 
 
 class CandidateStageRepository(CandidateStageRepositoryInterface):
@@ -64,8 +66,8 @@ class CandidateStageRepository(CandidateStageRepositoryInterface):
         return self._to_domain(model) if model else None
 
     def list_by_candidate_application(
-        self,
-        candidate_application_id: CandidateApplicationId
+            self,
+            candidate_application_id: CandidateApplicationId
     ) -> List[CandidateStage]:
         """Get all stages for a candidate application, ordered by started_at"""
         models = (
@@ -87,8 +89,8 @@ class CandidateStageRepository(CandidateStageRepositoryInterface):
         return [self._to_domain(model) for model in models]
 
     def get_current_stage(
-        self,
-        candidate_application_id: CandidateApplicationId
+            self,
+            candidate_application_id: CandidateApplicationId
     ) -> Optional[CandidateStage]:
         """Get the current (most recent uncompleted) stage for a candidate application"""
         model = (

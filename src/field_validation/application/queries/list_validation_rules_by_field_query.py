@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.shared.application.query_bus import Query
-from src.shared.application.query_bus import QueryHandler
 from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.field_validation.domain.infrastructure.validation_rule_repository_interface import ValidationRuleRepositoryInterface
 from src.field_validation.application.dtos.validation_rule_dto import ValidationRuleDto
 from src.field_validation.application.mappers.validation_rule_mapper import ValidationRuleMapper
+from src.field_validation.domain.infrastructure.validation_rule_repository_interface import \
+    ValidationRuleRepositoryInterface
+from src.shared.application.query_bus import Query
+from src.shared.application.query_bus import QueryHandler
 
 
 @dataclass(frozen=True)

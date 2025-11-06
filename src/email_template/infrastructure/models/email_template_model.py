@@ -26,7 +26,8 @@ class EmailTemplateModel(Base):
     trigger_event = Column(String(100), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, nullable=False, server_default=func.current_timestamp())
-    updated_at = Column(DateTime, nullable=False, server_default=func.current_timestamp(), onupdate=func.current_timestamp())
+    updated_at = Column(DateTime, nullable=False, server_default=func.current_timestamp(),
+                        onupdate=func.current_timestamp())
 
     # Indexes
     __table_args__ = (

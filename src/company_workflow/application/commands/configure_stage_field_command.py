@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
 from src.company_workflow.domain.entities.field_configuration import FieldConfiguration
-from src.company_workflow.domain.infrastructure.field_configuration_repository_interface import FieldConfigurationRepositoryInterface
+from src.company_workflow.domain.enums.field_visibility import FieldVisibility
+from src.company_workflow.domain.infrastructure.field_configuration_repository_interface import \
+    FieldConfigurationRepositoryInterface
+from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
 from src.company_workflow.domain.value_objects.field_configuration_id import FieldConfigurationId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.company_workflow.domain.enums.field_visibility import FieldVisibility
 from src.shared.application.command_bus import Command, CommandHandler
 
 

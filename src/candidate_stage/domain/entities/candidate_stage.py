@@ -1,14 +1,14 @@
 """CandidateStage entity - tracks phase progression history for candidate applications"""
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Dict, Any
 from decimal import Decimal
+from typing import Optional, Dict, Any
 
-from src.candidate_stage.domain.value_objects.candidate_stage_id import CandidateStageId
 from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.phase.domain.value_objects.phase_id import PhaseId
+from src.candidate_stage.domain.value_objects.candidate_stage_id import CandidateStageId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.phase.domain.value_objects.phase_id import PhaseId
 
 
 @dataclass
@@ -36,16 +36,16 @@ class CandidateStage:
 
     @staticmethod
     def create(
-        id: CandidateStageId,
-        candidate_application_id: CandidateApplicationId,
-        phase_id: Optional[PhaseId] = None,
-        workflow_id: Optional[CompanyWorkflowId] = None,
-        stage_id: Optional[WorkflowStageId] = None,
-        started_at: Optional[datetime] = None,
-        deadline: Optional[datetime] = None,
-        estimated_cost: Optional[Decimal] = None,
-        comments: Optional[str] = None,
-        data: Optional[Dict[str, Any]] = None
+            id: CandidateStageId,
+            candidate_application_id: CandidateApplicationId,
+            phase_id: Optional[PhaseId] = None,
+            workflow_id: Optional[CompanyWorkflowId] = None,
+            stage_id: Optional[WorkflowStageId] = None,
+            started_at: Optional[datetime] = None,
+            deadline: Optional[datetime] = None,
+            estimated_cost: Optional[Decimal] = None,
+            comments: Optional[str] = None,
+            data: Optional[Dict[str, Any]] = None
     ) -> 'CandidateStage':
         """Factory method to create a new candidate stage record"""
         now = datetime.utcnow()
@@ -67,10 +67,10 @@ class CandidateStage:
         )
 
     def complete(
-        self,
-        completed_at: Optional[datetime] = None,
-        actual_cost: Optional[Decimal] = None,
-        comments: Optional[str] = None
+            self,
+            completed_at: Optional[datetime] = None,
+            actual_cost: Optional[Decimal] = None,
+            comments: Optional[str] = None
     ) -> 'CandidateStage':
         """Mark this stage as completed"""
         return CandidateStage(

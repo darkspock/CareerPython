@@ -1,10 +1,11 @@
 from typing import Optional, Dict, Any
 
-from src.company_workflow.domain.entities.custom_field_value import CustomFieldValue
-from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_workflow.domain.entities.custom_field_value import CustomFieldValue
+from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import \
+    CustomFieldValueRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import CustomFieldValueRepositoryInterface
+from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
 from src.company_workflow.infrastructure.models.custom_field_value_model import CustomFieldValueModel
 
 
@@ -38,9 +39,9 @@ class CustomFieldValueRepository(CustomFieldValueRepositoryInterface):
             return None
 
     def get_by_company_candidate_and_workflow(
-        self, 
-        company_candidate_id: CompanyCandidateId, 
-        workflow_id: CompanyWorkflowId
+            self,
+            company_candidate_id: CompanyCandidateId,
+            workflow_id: CompanyWorkflowId
     ) -> Optional[CustomFieldValue]:
         """Get custom field value by company candidate and workflow"""
         with self._database.get_session() as session:
@@ -53,8 +54,8 @@ class CustomFieldValueRepository(CustomFieldValueRepositoryInterface):
             return None
 
     def get_values_by_company_candidate(
-        self, 
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> Dict[str, Dict[str, Any]]:
         """
         Get all custom field values for a company candidate
@@ -64,7 +65,7 @@ class CustomFieldValueRepository(CustomFieldValueRepositoryInterface):
             models = session.query(CustomFieldValueModel).filter_by(
                 company_candidate_id=str(company_candidate_id)
             ).all()
-            
+
             result = {}
             for model in models:
                 result[model.workflow_id] = model.values or {}

@@ -29,7 +29,8 @@ class InterviewTemplateModel(Base):
     status: Mapped[InterviewTemplateStatusEnum] = mapped_column(Enum(InterviewTemplateStatusEnum), nullable=False,
                                                                 default=InterviewTemplateStatusEnum.DRAFT, index=True)
     job_category: Mapped[Optional[JobCategoryEnum]] = mapped_column(Enum(JobCategoryEnum), nullable=True, index=True)
-    allow_ai_questions: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # Allow AI to generate additional questions
+    allow_ai_questions: Mapped[bool] = mapped_column(Boolean, nullable=False,
+                                                     default=False)  # Allow AI to generate additional questions
     legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for compliance
 
     # Extended metadata

@@ -6,7 +6,8 @@ class CompanyUserMapper:
     """Mapper for converting CompanyUser entities to DTOs"""
 
     @staticmethod
-    def entity_to_dto(entity: CompanyUser, email: str | None = None, company_roles: list[str] | None = None) -> CompanyUserDto:
+    def entity_to_dto(entity: CompanyUser, email: str | None = None,
+                      company_roles: list[str] | None = None) -> CompanyUserDto:
         """Convert entity to DTO"""
         return CompanyUserDto(
             id=str(entity.id),

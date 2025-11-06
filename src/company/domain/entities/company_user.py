@@ -27,12 +27,12 @@ class CompanyUser:
 
     @classmethod
     def create(
-        cls,
-        id: CompanyUserId,
-        company_id: CompanyId,
-        user_id: UserId,
-        role: CompanyUserRole,
-        permissions: Optional[CompanyUserPermissions] = None,
+            cls,
+            id: CompanyUserId,
+            company_id: CompanyId,
+            user_id: UserId,
+            role: CompanyUserRole,
+            permissions: Optional[CompanyUserPermissions] = None,
     ) -> "CompanyUser":
         """
         Factory method to create a new company user
@@ -81,9 +81,9 @@ class CompanyUser:
         )
 
     def update(
-        self,
-        role: CompanyUserRole,
-        permissions: CompanyUserPermissions,
+            self,
+            role: CompanyUserRole,
+            permissions: CompanyUserPermissions,
     ) -> None:
         """
         Updates the company user with new values

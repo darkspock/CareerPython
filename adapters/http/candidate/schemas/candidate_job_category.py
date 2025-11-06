@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict
+
 from src.shared.domain.enums.job_category import JobCategoryEnum
 
 

@@ -1,20 +1,20 @@
 """Initialize default phases for a new company"""
 from dataclasses import dataclass
-from typing import Optional
 
 from src.company.domain.value_objects.company_id import CompanyId
+from src.company_workflow.domain.entities.company_workflow import CompanyWorkflow
+from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
+from src.company_workflow.domain.enums.stage_type import StageType
+from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
+    CompanyWorkflowRepositoryInterface
+from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.phase.domain.entities.phase import Phase
 from src.phase.domain.enums.default_view_enum import DefaultView
 from src.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.phase.domain.value_objects.phase_id import PhaseId
-from src.company_workflow.domain.entities.company_workflow import CompanyWorkflow
-from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
-from src.company_workflow.domain.enums.stage_type import StageType
-from src.company_workflow.domain.enums.workflow_status import WorkflowStatus
-from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared.application.command_bus import Command, CommandHandler
 
 
@@ -34,10 +34,10 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
     """Handler for InitializeCompanyPhasesCommand"""
 
     def __init__(
-        self,
-        phase_repository: PhaseRepositoryInterface,
-        workflow_repository: CompanyWorkflowRepositoryInterface,
-        stage_repository: WorkflowStageRepositoryInterface
+            self,
+            phase_repository: PhaseRepositoryInterface,
+            workflow_repository: CompanyWorkflowRepositoryInterface,
+            stage_repository: WorkflowStageRepositoryInterface
     ):
         self.phase_repository = phase_repository
         self.workflow_repository = workflow_repository
@@ -115,7 +115,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
     def _create_sourcing_workflow(self, workflow_id: CompanyWorkflowId, company_id: CompanyId, phase_id: str) -> None:
         """Create Sourcing workflow with 5 stages per WORKFLOW3.md"""
         from src.company_workflow.domain.value_objects.stage_style import StageStyle
-        
+
         workflow = CompanyWorkflow.create(
             id=workflow_id, company_id=company_id, name="Sourcing Workflow",
             description="Screening and filtering candidates", phase_id=phase_id, is_default=True
@@ -124,7 +124,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         self.workflow_repository.save(workflow)
 
         stages = [
-            ("Pending", "Application pending review", StageType.INITIAL, 0, 
+            ("Pending", "Application pending review", StageType.INITIAL, 0,
              StageStyle.create(icon="📋", color="#92400e", background_color="#fef3c7")),  # amber
             ("Screening", "Initial screening in progress", StageType.STANDARD, 1,
              StageStyle.create(icon="🔍", color="#1e40af", background_color="#dbeafe")),  # blue
@@ -146,7 +146,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
     def _create_evaluation_workflow(self, workflow_id: CompanyWorkflowId, company_id: CompanyId, phase_id: str) -> None:
         """Create Evaluation workflow with 6 stages per WORKFLOW3.md"""
         from src.company_workflow.domain.value_objects.stage_style import StageStyle
-        
+
         workflow = CompanyWorkflow.create(
             id=workflow_id, company_id=company_id, name="Evaluation Workflow",
             description="Interview and assessment process", phase_id=phase_id, is_default=True
@@ -179,7 +179,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
     def _create_offer_workflow(self, workflow_id: CompanyWorkflowId, company_id: CompanyId, phase_id: str) -> None:
         """Create Offer and Pre-Onboarding workflow with 5 stages per WORKFLOW3.md"""
         from src.company_workflow.domain.value_objects.stage_style import StageStyle
-        
+
         workflow = CompanyWorkflow.create(
             id=workflow_id, company_id=company_id, name="Offer and Pre-Onboarding Workflow",
             description="Offer negotiation and document verification", phase_id=phase_id, is_default=True

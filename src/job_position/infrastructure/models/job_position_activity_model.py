@@ -35,4 +35,3 @@ class JobPositionActivityModel(Base):
     )
     activity_metadata: Mapped[dict] = mapped_column('metadata', JSON, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, index=True)
-

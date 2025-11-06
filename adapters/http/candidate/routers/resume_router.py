@@ -8,8 +8,8 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer
 
-from core.container import Container
 from adapters.http.shared.schemas.user import UserResponse
+from core.container import Container
 from src.resume.presentation.controllers.resume_controller import ResumeController
 from src.resume.presentation.schemas.resume_request import (
     CreateGeneralResumeRequest,

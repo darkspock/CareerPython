@@ -4,10 +4,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 
 from src.job_position.domain.entities.job_position_workflow import JobPositionWorkflow
-from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
-from src.job_position.domain.enums.view_type import ViewTypeEnum
-from src.company.domain.value_objects.company_id import CompanyId
 
 
 @dataclass
@@ -70,4 +67,3 @@ class JobPositionWorkflowDto:
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
-

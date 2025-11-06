@@ -3,14 +3,14 @@ from typing import Optional, List
 from core.database import DatabaseInterface
 from src.company.domain.entities.company_user import CompanyUser
 from src.company.domain.enums import CompanyUserRole, CompanyUserStatus
+from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
-from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
-from src.company.infrastructure.models.company_user_model import CompanyUserModel
 from src.company.infrastructure.models.company_user_company_role_model import CompanyUserCompanyRoleModel
-from src.user.domain.value_objects.UserId import UserId
+from src.company.infrastructure.models.company_user_model import CompanyUserModel
 from src.shared.domain.entities.base import generate_id
+from src.user.domain.value_objects.UserId import UserId
 
 
 class CompanyUserRepository(CompanyUserRepositoryInterface):
@@ -35,9 +35,9 @@ class CompanyUserRepository(CompanyUserRepositoryInterface):
             return self._to_domain(model) if model else None
 
     def get_by_company_and_user(
-        self,
-        company_id: CompanyId,
-        user_id: UserId
+            self,
+            company_id: CompanyId,
+            user_id: UserId
     ) -> Optional[CompanyUser]:
         """Get a company user by company and user ID"""
         with self.database.get_session() as session:
@@ -97,7 +97,7 @@ class CompanyUserRepository(CompanyUserRepositoryInterface):
             session.query(CompanyUserCompanyRoleModel).filter(
                 CompanyUserCompanyRoleModel.company_user_id == str(company_user_id)
             ).delete()
-            
+
             # Add new assignments
             for role_id in company_role_ids:
                 assignment = CompanyUserCompanyRoleModel(
@@ -106,7 +106,7 @@ class CompanyUserRepository(CompanyUserRepositoryInterface):
                     company_role_id=role_id
                 )
                 session.add(assignment)
-            
+
             session.commit()
 
     def get_company_role_ids(self, company_user_id: CompanyUserId) -> List[str]:

@@ -1,7 +1,7 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
-from src.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
+
 from core.database import database
+from src.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
 
 
 class FileAttachmentRepository:

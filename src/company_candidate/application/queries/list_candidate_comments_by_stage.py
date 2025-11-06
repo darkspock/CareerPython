@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.shared.application.query_bus import Query, QueryHandler
 from src.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
 from src.company_candidate.application.mappers.candidate_comment_mapper import CandidateCommentMapper
+from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import \
+    CandidateCommentRepositoryInterface
 from src.company_candidate.domain.value_objects import CompanyCandidateId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,8 @@ class ListCandidateCommentsByStageQuery(Query):
     stage_id: str
 
 
-class ListCandidateCommentsByStageQueryHandler(QueryHandler[ListCandidateCommentsByStageQuery, List[CandidateCommentDto]]):
+class ListCandidateCommentsByStageQueryHandler(
+    QueryHandler[ListCandidateCommentsByStageQuery, List[CandidateCommentDto]]):
     """Handler for listing candidate comments by stage"""
 
     def __init__(self, repository: CandidateCommentRepositoryInterface):
@@ -28,6 +30,5 @@ class ListCandidateCommentsByStageQueryHandler(QueryHandler[ListCandidateComment
             CompanyCandidateId.from_string(query.company_candidate_id),
             WorkflowStageId.from_string(query.stage_id)
         )
-        
-        return [CandidateCommentMapper.entity_to_dto(comment) for comment in comments]
 
+        return [CandidateCommentMapper.entity_to_dto(comment) for comment in comments]

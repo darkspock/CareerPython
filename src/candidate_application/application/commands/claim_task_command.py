@@ -24,8 +24,8 @@ class ClaimTaskCommandHandler(CommandHandler[ClaimTaskCommand]):
     """Handler for claiming tasks"""
 
     def __init__(
-        self,
-        application_repository: CandidateApplicationRepositoryInterface
+            self,
+            application_repository: CandidateApplicationRepositoryInterface
     ):
         self.application_repository = application_repository
 

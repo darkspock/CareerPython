@@ -3,7 +3,6 @@ Email Template ID Value Object
 Phase 7: Value object for email template identification
 """
 
-import ulid
 from dataclasses import dataclass
 
 

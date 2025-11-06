@@ -26,7 +26,7 @@ class FieldOptionLabel:
 class FieldOption:
     """
     Field Option Value Object
-    
+
     Represents a single option value for dropdown, multi-select, radio, or checkbox fields.
     Each option has:
     - id: ULID for stable reference (prevents data corruption on rename)
@@ -68,10 +68,10 @@ class FieldOption:
     def get_label(self, language: Optional[str] = None) -> str:
         """
         Get label for a specific language with fallback
-        
+
         Args:
             language: Language code (e.g., "en", "es"). If None, returns first label.
-        
+
         Returns:
             Label text for the requested language, or first label as fallback
         """

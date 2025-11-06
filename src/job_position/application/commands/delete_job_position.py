@@ -32,7 +32,6 @@ class DeleteJobPositionCommandHandler:
         if candidates:
             # TODO: Move to a closed stage instead of closing directly
             # For now, we just mark as hidden (not public)
-            from src.job_position.domain.entities.job_position import JobPosition
             job_position.visibility = JobPositionVisibilityEnum.HIDDEN
             self.job_position_repository.save(job_position)
         else:

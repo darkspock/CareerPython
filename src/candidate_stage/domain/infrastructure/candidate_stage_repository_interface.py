@@ -2,9 +2,9 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
+from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.candidate_stage.domain.entities.candidate_stage import CandidateStage
 from src.candidate_stage.domain.value_objects.candidate_stage_id import CandidateStageId
-from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.phase.domain.value_objects.phase_id import PhaseId
 
 
@@ -23,8 +23,8 @@ class CandidateStageRepositoryInterface(ABC):
 
     @abstractmethod
     def list_by_candidate_application(
-        self,
-        candidate_application_id: CandidateApplicationId
+            self,
+            candidate_application_id: CandidateApplicationId
     ) -> List[CandidateStage]:
         """Get all stages for a candidate application"""
         pass
@@ -36,8 +36,8 @@ class CandidateStageRepositoryInterface(ABC):
 
     @abstractmethod
     def get_current_stage(
-        self,
-        candidate_application_id: CandidateApplicationId
+            self,
+            candidate_application_id: CandidateApplicationId
     ) -> Optional[CandidateStage]:
         """Get the current (most recent uncompleted) stage for a candidate application"""
         pass

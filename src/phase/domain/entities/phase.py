@@ -24,13 +24,13 @@ class Phase:
 
     @staticmethod
     def create(
-        id: PhaseId,
-        company_id: CompanyId,
-        name: str,
-        sort_order: int,
-        default_view: DefaultView,
-        objective: Optional[str] = None,
-        status: PhaseStatus = PhaseStatus.ACTIVE
+            id: PhaseId,
+            company_id: CompanyId,
+            name: str,
+            sort_order: int,
+            default_view: DefaultView,
+            objective: Optional[str] = None,
+            status: PhaseStatus = PhaseStatus.ACTIVE
     ) -> 'Phase':
         """Create a new Phase"""
         if not name or name.strip() == "":
@@ -54,11 +54,11 @@ class Phase:
         )
 
     def update_details(
-        self,
-        name: str,
-        sort_order: int,
-        default_view: DefaultView,
-        objective: Optional[str] = None
+            self,
+            name: str,
+            sort_order: int,
+            default_view: DefaultView,
+            objective: Optional[str] = None
     ) -> None:
         """Update phase details"""
         if not name or name.strip() == "":
@@ -96,16 +96,16 @@ class Phase:
 
     @classmethod
     def _from_repository(
-        cls,
-        id: PhaseId,
-        company_id: CompanyId,
-        name: str,
-        sort_order: int,
-        default_view: DefaultView,
-        status: PhaseStatus,
-        objective: Optional[str],
-        created_at: datetime,
-        updated_at: datetime
+            cls,
+            id: PhaseId,
+            company_id: CompanyId,
+            name: str,
+            sort_order: int,
+            default_view: DefaultView,
+            status: PhaseStatus,
+            objective: Optional[str],
+            created_at: datetime,
+            updated_at: datetime
     ) -> 'Phase':
         """Create Phase from repository data - only for repositories to use"""
         return cls(

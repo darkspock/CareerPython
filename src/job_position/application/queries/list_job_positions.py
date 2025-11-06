@@ -26,9 +26,9 @@ class ListJobPositionsQuery(Query):
 
 class ListJobPositionsQueryHandler:
     def __init__(
-        self,
-        job_position_repository: JobPositionRepositoryInterface,
-        job_position_comment_repository: JobPositionCommentRepositoryInterface
+            self,
+            job_position_repository: JobPositionRepositoryInterface,
+            job_position_comment_repository: JobPositionCommentRepositoryInterface
     ):
         self.job_position_repository = job_position_repository
         self.job_position_comment_repository = job_position_comment_repository
@@ -44,29 +44,28 @@ class ListJobPositionsQueryHandler:
             limit=query.limit,
             offset=query.offset
         )
-        
+
         # Convert to DTOs and add pending comments count
         dtos = []
         for jp in jobPositions:
             dto = JobPositionDto.from_entity(jp)
-            
+
             # Count pending comments (with visibility filtering if current_user_id provided)
             if query.current_user_id:
                 # Get all comments for this position that the user can see
-                from src.job_position.domain.value_objects import JobPositionId
                 from src.job_position.domain.enums import CommentReviewStatusEnum
-                
+
                 all_comments = self.job_position_comment_repository.list_by_job_position(
                     job_position_id=dto.id,
                     current_user_id=query.current_user_id
                 )
-                
+
                 # Count how many are pending
                 dto.pending_comments_count = sum(
                     1 for comment in all_comments
                     if comment.review_status == CommentReviewStatusEnum.PENDING
                 )
-            
+
             dtos.append(dto)
-        
+
         return dtos

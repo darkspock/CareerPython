@@ -180,7 +180,7 @@ class CompanyPageRepository(CompanyPageRepositoryInterface):
                 and_(
                     CompanyPageModel.company_id == company_id.value,
                     CompanyPageModel.page_type == page_type.value,
-                    CompanyPageModel.is_default == True
+                    CompanyPageModel.is_default.is_(True)
                 )
             ).first()
 

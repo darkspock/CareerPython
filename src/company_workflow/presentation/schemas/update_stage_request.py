@@ -1,6 +1,7 @@
 """Update Stage Request Schema."""
-from typing import Optional, List
 from decimal import Decimal
+from typing import Optional, List
+
 from pydantic import BaseModel, Field
 
 
@@ -13,12 +14,14 @@ class UpdateStageRequest(BaseModel):
     allow_skip: bool = Field(False, description="Whether this stage can be skipped (optional stage)")
     estimated_duration_days: Optional[int] = Field(None, ge=0, description="Estimated duration in days")
     default_role_ids: Optional[List[str]] = Field(None, description="Default roles assigned to this stage")
-    default_assigned_users: Optional[List[str]] = Field(None, description="Default user IDs always assigned to this stage")
+    default_assigned_users: Optional[List[str]] = Field(None,
+                                                        description="Default user IDs always assigned to this stage")
     email_template_id: Optional[str] = Field(None, description="Email template ID to use when entering this stage")
     custom_email_text: Optional[str] = Field(None, description="Custom email text to append to template")
     deadline_days: Optional[int] = Field(None, ge=1, description="Days to complete this stage (for task priority)")
     estimated_cost: Optional[Decimal] = Field(None, ge=0, description="Estimated cost for this stage")
-    next_phase_id: Optional[str] = Field(None, description="Phase ID to transition to (Phase 12 - only for SUCCESS/FAIL stages)")
+    next_phase_id: Optional[str] = Field(None,
+                                         description="Phase ID to transition to (Phase 12 - only for SUCCESS/FAIL stages)")
     kanban_display: Optional[str] = Field(None, description="Kanban display mode: 'column', 'row', or 'none'")
 
     class Config:

@@ -1,11 +1,10 @@
 """Job position admin schemas - simplified version"""
-from typing import Optional, List, Dict, Any, Union
-from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, date
+from typing import Optional, List, Dict, Any, Union
 
-from src.shared.domain.enums.job_category import JobCategoryEnum
+from pydantic import BaseModel, Field, field_validator
+
 from src.job_position.application.queries.job_position_dto import JobPositionDto
-from src.job_position.domain.enums import JobPositionVisibilityEnum
 
 
 class JobPositionCreate(BaseModel):
@@ -14,7 +13,8 @@ class JobPositionCreate(BaseModel):
     job_position_workflow_id: Optional[str] = Field(None, description="Workflow ID")
     stage_id: Optional[str] = Field(None, description="Initial stage ID")
     phase_workflows: Optional[Dict[str, str]] = Field(None, description="Phase workflows mapping")
-    custom_fields_values: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Custom field values (all removed fields go here)")
+    custom_fields_values: Optional[Dict[str, Any]] = Field(default_factory=dict,
+                                                           description="Custom field values (all removed fields go here)")
     title: str = Field(..., description="Position title")
     description: Optional[str] = Field(None, description="Position description")
     job_category: Optional[str] = Field("other", description="Job category")
@@ -22,7 +22,7 @@ class JobPositionCreate(BaseModel):
     application_deadline: Optional[date] = Field(None, description="Application deadline")
     visibility: str = Field("hidden", description="Visibility level: hidden, internal, or public")
     public_slug: Optional[str] = Field(None, description="Public URL slug")
-    
+
     @field_validator('application_deadline', mode='before')
     @classmethod
     def validate_application_deadline(cls, v: Union[str, date, None]) -> Optional[date]:
@@ -55,7 +55,8 @@ class JobPositionUpdate(BaseModel):
     job_position_workflow_id: Optional[str] = Field(None, description="Workflow ID")
     stage_id: Optional[str] = Field(None, description="Stage ID")
     phase_workflows: Optional[Dict[str, str]] = Field(None, description="Phase workflows mapping")
-    custom_fields_values: Optional[Dict[str, Any]] = Field(None, description="Custom field values (all removed fields go here)")
+    custom_fields_values: Optional[Dict[str, Any]] = Field(None,
+                                                           description="Custom field values (all removed fields go here)")
     title: Optional[str] = Field(None, description="Position title")
     description: Optional[str] = Field(None, description="Position description")
     job_category: Optional[str] = Field(None, description="Job category")
@@ -63,7 +64,7 @@ class JobPositionUpdate(BaseModel):
     application_deadline: Optional[date] = Field(None, description="Application deadline")
     visibility: Optional[str] = Field(None, description="Visibility level: hidden, internal, or public")
     public_slug: Optional[str] = Field(None, description="Public URL slug")
-    
+
     @field_validator('visibility', mode='before')
     @classmethod
     def validate_visibility(cls, v: Union[str, None]) -> Optional[str]:
@@ -99,7 +100,8 @@ class JobPositionResponse(BaseModel):
     job_position_workflow_id: Optional[str] = None  # Workflow system
     stage_id: Optional[str] = None  # Current stage
     phase_workflows: Optional[Dict[str, str]] = None  # Phase workflows mapping
-    custom_fields_values: Dict[str, Any] = Field(default_factory=dict)  # Custom field values (contains all removed fields)
+    custom_fields_values: Dict[str, Any] = Field(
+        default_factory=dict)  # Custom field values (contains all removed fields)
     company_name: Optional[str] = None  # For display purposes
     description: Optional[str] = None
     job_category: str = "other"

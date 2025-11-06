@@ -1,23 +1,26 @@
 """Candidate Comment Controller."""
-import ulid
 from typing import Optional, List
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
+import ulid
+
 from src.company_candidate.application.commands.create_candidate_comment_command import CreateCandidateCommentCommand
-from src.company_candidate.application.commands.update_candidate_comment_command import UpdateCandidateCommentCommand
 from src.company_candidate.application.commands.delete_candidate_comment_command import DeleteCandidateCommentCommand
 from src.company_candidate.application.commands.mark_comment_as_pending_command import MarkCommentAsPendingCommand
-from src.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCandidateCommentAsReviewedCommand
-from src.company_candidate.application.queries.get_candidate_comment_by_id import GetCandidateCommentByIdQuery
-from src.company_candidate.application.queries.list_candidate_comments_by_company_candidate import ListCandidateCommentsByCompanyCandidateQuery
-from src.company_candidate.application.queries.list_candidate_comments_by_stage import ListCandidateCommentsByStageQuery
+from src.company_candidate.application.commands.mark_comment_as_reviewed_command import \
+    MarkCandidateCommentAsReviewedCommand
+from src.company_candidate.application.commands.update_candidate_comment_command import UpdateCandidateCommentCommand
+from src.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
 from src.company_candidate.application.queries.count_pending_comments_query import CountPendingCommentsQuery
+from src.company_candidate.application.queries.get_candidate_comment_by_id import GetCandidateCommentByIdQuery
+from src.company_candidate.application.queries.list_candidate_comments_by_company_candidate import \
+    ListCandidateCommentsByCompanyCandidateQuery
+from src.company_candidate.application.queries.list_candidate_comments_by_stage import ListCandidateCommentsByStageQuery
+from src.company_candidate.presentation.mappers.candidate_comment_mapper import CandidateCommentResponseMapper
+from src.company_candidate.presentation.schemas.candidate_comment_response import CandidateCommentResponse
 from src.company_candidate.presentation.schemas.create_candidate_comment_request import CreateCandidateCommentRequest
 from src.company_candidate.presentation.schemas.update_candidate_comment_request import UpdateCandidateCommentRequest
-from src.company_candidate.presentation.schemas.candidate_comment_response import CandidateCommentResponse
-from src.company_candidate.presentation.mappers.candidate_comment_mapper import CandidateCommentResponseMapper
+from src.shared.application.command_bus import CommandBus
+from src.shared.application.query_bus import QueryBus
 
 
 class CandidateCommentController:
@@ -27,7 +30,8 @@ class CandidateCommentController:
         self._command_bus = command_bus
         self._query_bus = query_bus
 
-    def create_comment(self, company_candidate_id: str, request: CreateCandidateCommentRequest, created_by_user_id: str) -> CandidateCommentResponse:
+    def create_comment(self, company_candidate_id: str, request: CreateCandidateCommentRequest,
+                       created_by_user_id: str) -> CandidateCommentResponse:
         """Create a new candidate comment."""
         comment_id = str(ulid.new())
 
@@ -84,7 +88,8 @@ class CandidateCommentController:
         query = CountPendingCommentsQuery(company_candidate_id=company_candidate_id)
         return self._query_bus.query(query)
 
-    def update_comment(self, comment_id: str, request: UpdateCandidateCommentRequest) -> Optional[CandidateCommentResponse]:
+    def update_comment(self, comment_id: str, request: UpdateCandidateCommentRequest) -> Optional[
+        CandidateCommentResponse]:
         """Update a candidate comment."""
         command = UpdateCandidateCommentCommand(
             id=comment_id,
@@ -133,4 +138,3 @@ class CandidateCommentController:
             return None
 
         return CandidateCommentResponseMapper.dto_to_response(dto)
-

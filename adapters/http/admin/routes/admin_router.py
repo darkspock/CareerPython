@@ -16,9 +16,9 @@ from adapters.http.admin.controllers.company_controller import CompanyController
 from adapters.http.admin.controllers.enum_controller import EnumController, EnumMetadataResponse
 from adapters.http.admin.controllers.interview_controller import InterviewController
 from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
+from adapters.http.admin.controllers.job_position_comment_controller import JobPositionCommentController
 from adapters.http.admin.controllers.job_position_controller import JobPositionController
 from adapters.http.admin.controllers.job_position_workflow_controller import JobPositionWorkflowController
-from adapters.http.admin.controllers.job_position_comment_controller import JobPositionCommentController
 # Company schemas
 from adapters.http.admin.schemas.company import (
     CompanyResponse, CompanyCreate, CompanyUpdate, CompanyListResponse,
@@ -41,16 +41,16 @@ from adapters.http.admin.schemas.job_position import (
     JobPositionResponse, JobPositionCreate, JobPositionUpdate, JobPositionListResponse,
     JobPositionStatsResponse, JobPositionActionResponse
 )
-from adapters.http.admin.schemas.job_position_workflow import (
-    JobPositionWorkflowCreate, JobPositionWorkflowUpdate, JobPositionWorkflowResponse,
-    MoveJobPositionToStageRequest, UpdateJobPositionCustomFieldsRequest
+from adapters.http.admin.schemas.job_position_activity import (
+    JobPositionActivityListResponse
 )
 from adapters.http.admin.schemas.job_position_comment import (
     CreateJobPositionCommentRequest, UpdateJobPositionCommentRequest,
     JobPositionCommentResponse, JobPositionCommentListResponse
 )
-from adapters.http.admin.schemas.job_position_activity import (
-    JobPositionActivityResponse, JobPositionActivityListResponse
+from adapters.http.admin.schemas.job_position_workflow import (
+    JobPositionWorkflowCreate, JobPositionWorkflowUpdate, JobPositionWorkflowResponse,
+    MoveJobPositionToStageRequest, UpdateJobPositionCustomFieldsRequest
 )
 from adapters.http.shared.schemas.token import Token
 from adapters.http.shared.schemas.user import UserResponse
@@ -535,7 +535,8 @@ def deactivate_company(
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> CompanyActionResponse:
     """Deactivate an active company"""
-    return controller.deactivate_company(company_id=CompanyId.from_string(company_id), current_admin_id=current_admin.id)
+    return controller.deactivate_company(company_id=CompanyId.from_string(company_id),
+                                         current_admin_id=current_admin.id)
 
 
 @router.delete("/companies/{company_id}", response_model=CompanyActionResponse)
@@ -571,15 +572,16 @@ def list_positions(
     # Get company_user_id for the current user (if company_id provided)
     company_user_id = None
     if company_id:
-        from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+        from src.company.application.queries.get_company_user_by_company_and_user import \
+            GetCompanyUserByCompanyAndUserQuery
         company_user_query = GetCompanyUserByCompanyAndUserQuery(
             company_id=company_id,
             user_id=current_admin.id
         )
-        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
-    
+
     return controller.list_positions(
         company_id=company_id,
         search_term=search_term,
@@ -660,7 +662,8 @@ def delete_position(
 @inject
 def create_workflow(
         workflow_data: JobPositionWorkflowCreate,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[
+            JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> JobPositionWorkflowResponse:
     """Create a new job position workflow"""
@@ -671,7 +674,8 @@ def create_workflow(
 @inject
 def get_workflow(
         workflow_id: str,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[
+            JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
 ) -> JobPositionWorkflowResponse:
     """Get a job position workflow by ID"""
     return controller.get_workflow(workflow_id)
@@ -682,7 +686,8 @@ def get_workflow(
 def update_workflow(
         workflow_id: str,
         workflow_data: JobPositionWorkflowUpdate,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[
+            JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> JobPositionWorkflowResponse:
     """Update a job position workflow"""
@@ -692,7 +697,8 @@ def update_workflow(
 @router.get("/workflows", response_model=List[JobPositionWorkflowResponse])
 @inject
 def list_workflows(
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[
+            JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
         company_id: str = Query(..., description="Company ID"),
 ) -> List[JobPositionWorkflowResponse]:
     """List job position workflows for a company"""
@@ -702,7 +708,8 @@ def list_workflows(
 @router.post("/workflows/initialize", response_model=List[JobPositionWorkflowResponse])
 @inject
 def initialize_default_workflows(
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[
+            JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         company_id: str = Query(..., description="Company ID"),
 ) -> List[JobPositionWorkflowResponse]:
@@ -715,13 +722,14 @@ def initialize_default_workflows(
 def move_position_to_stage(
         position_id: str,
         request: MoveJobPositionToStageRequest,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[
+            JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> dict:
     """Move a job position to a new stage with validation"""
     from src.job_position.application.commands.move_job_position_to_stage import JobPositionValidationError
     from fastapi import HTTPException
-    
+
     try:
         return controller.move_position_to_stage(position_id, request)
     except JobPositionValidationError as e:
@@ -740,7 +748,8 @@ def move_position_to_stage(
 def update_position_custom_fields(
         position_id: str,
         request: UpdateJobPositionCustomFieldsRequest,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[
+            JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> dict:
     """Update custom fields values for a job position"""
@@ -755,7 +764,8 @@ def update_position_custom_fields(
 def create_job_position_comment(
         position_id: str,
         request: CreateJobPositionCommentRequest,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
@@ -765,23 +775,23 @@ def create_job_position_comment(
     from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.job_position.domain.value_objects import JobPositionId
     from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
-    
+
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
-    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
-    
+    position_dto: Optional[JobPositionDto] = query_bus.query(position_query)
+
     if not position_dto:
         raise HTTPException(status_code=404, detail="Job position not found")
-    
+
     # Get company_user_id for the current user
     company_user_query = GetCompanyUserByCompanyAndUserQuery(
         company_id=position_dto.company_id.value,
         user_id=current_admin.id
     )
-    company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
-    
+    company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
+
     if not company_user_dto:
         raise HTTPException(status_code=403, detail="User not authorized for this company")
-    
+
     controller.create_comment(position_id, request, company_user_dto.id)
 
 
@@ -789,7 +799,8 @@ def create_job_position_comment(
 @inject
 def list_all_job_position_comments(
         position_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
         job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
@@ -799,20 +810,20 @@ def list_all_job_position_comments(
     from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.job_position.domain.value_objects import JobPositionId
     from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
-    
+
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
-    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
-    
+    position_dto: Optional[JobPositionDto] = query_bus.query(position_query)
+
     company_user_id = None
     if position_dto:
         company_user_query = GetCompanyUserByCompanyAndUserQuery(
             company_id=position_dto.company_id.value,
             user_id=current_admin.id
         )
-        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
-    
+
     response = controller.list_all_comments(position_id, current_user_id=company_user_id)
     return response.comments
 
@@ -821,7 +832,8 @@ def list_all_job_position_comments(
 @inject
 def list_job_position_comments(
         position_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
         job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
@@ -833,20 +845,20 @@ def list_job_position_comments(
     from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.job_position.domain.value_objects import JobPositionId
     from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
-    
+
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
-    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
-    
+    position_dto: Optional[JobPositionDto] = query_bus.query(position_query)
+
     company_user_id = None
     if position_dto:
         company_user_query = GetCompanyUserByCompanyAndUserQuery(
             company_id=position_dto.company_id.value,
             user_id=current_admin.id
         )
-        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
-    
+
     return controller.list_comments(position_id, stage_id, include_global, current_user_id=company_user_id)
 
 
@@ -855,7 +867,8 @@ def list_job_position_comments(
 def update_job_position_comment(
         comment_id: str,
         request: UpdateJobPositionCommentRequest,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> None:
     """Update a job position comment"""
@@ -866,7 +879,8 @@ def update_job_position_comment(
 @inject
 def delete_job_position_comment(
         comment_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> None:
     """Delete a job position comment"""
@@ -877,7 +891,8 @@ def delete_job_position_comment(
 @inject
 def mark_comment_as_reviewed(
         comment_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> None:
     """Mark a comment as reviewed"""
@@ -888,7 +903,8 @@ def mark_comment_as_reviewed(
 @inject
 def mark_comment_as_pending(
         comment_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> None:
     """Mark a comment as pending"""
@@ -899,7 +915,8 @@ def mark_comment_as_pending(
 @inject
 def list_job_position_activities(
         position_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         limit: int = Query(50, ge=1, le=100, description="Maximum number of activities"),
 ) -> JobPositionActivityListResponse:

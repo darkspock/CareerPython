@@ -1,13 +1,14 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
 
-from src.shared.application.command_bus import Command, CommandHandler
+from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
+from src.job_position.domain.enums.view_type import ViewTypeEnum
 from src.job_position.domain.exceptions import JobPositionNotFoundException
+from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import \
+    JobPositionWorkflowRepositoryInterface
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
-from src.job_position.domain.enums.view_type import ViewTypeEnum
-from src.job_position.domain.enums.job_position_workflow_status import JobPositionWorkflowStatusEnum
-from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -49,7 +50,7 @@ class UpdateJobPositionWorkflowCommandHandler(CommandHandler[UpdateJobPositionWo
                     workflow.remove_stage(stage_id)
                 except ValueError:
                     pass  # Stage might already be removed
-            
+
             # Add/update stages
             for stage in command.stages:
                 # Check if stage exists
@@ -62,4 +63,3 @@ class UpdateJobPositionWorkflowCommandHandler(CommandHandler[UpdateJobPositionWo
                     workflow.add_stage(stage)
 
         self.workflow_repository.save(workflow)
-

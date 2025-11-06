@@ -1,10 +1,10 @@
 """Company Role Repository implementation."""
 from typing import Optional, List, Any
 
-from src.company_role.domain.entities.company_role import CompanyRole
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company.domain.value_objects.company_id import CompanyId
+from src.company_role.domain.entities.company_role import CompanyRole
 from src.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
+from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company_role.infrastructure.models.company_role_model import CompanyRoleModel
 from src.shared.infrastructure.helpers.mixed_helper import MixedHelper
 

@@ -3,7 +3,8 @@ from typing import Optional
 
 from src.company_workflow.application.dtos.field_configuration_dto import FieldConfigurationDto
 from src.company_workflow.application.mappers.field_configuration_mapper import FieldConfigurationMapper
-from src.company_workflow.domain.infrastructure.field_configuration_repository_interface import FieldConfigurationRepositoryInterface
+from src.company_workflow.domain.infrastructure.field_configuration_repository_interface import \
+    FieldConfigurationRepositoryInterface
 from src.company_workflow.domain.value_objects.field_configuration_id import FieldConfigurationId
 from src.shared.application.query_bus import Query, QueryHandler
 
@@ -14,7 +15,8 @@ class GetFieldConfigurationByIdQuery(Query):
     id: str
 
 
-class GetFieldConfigurationByIdQueryHandler(QueryHandler[GetFieldConfigurationByIdQuery, Optional[FieldConfigurationDto]]):
+class GetFieldConfigurationByIdQueryHandler(
+    QueryHandler[GetFieldConfigurationByIdQuery, Optional[FieldConfigurationDto]]):
     def __init__(self, repository: FieldConfigurationRepositoryInterface):
         self._repository = repository
 

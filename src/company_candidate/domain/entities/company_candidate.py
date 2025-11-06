@@ -2,22 +2,22 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
 
+from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company.domain.value_objects import CompanyId
+from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company_candidate.domain.enums import (
     CompanyCandidateStatus,
     OwnershipStatus,
     CandidatePriority,
 )
-from src.company_candidate.domain.value_objects import (
-    CompanyCandidateId,
-    VisibilitySettings,
-)
 from src.company_candidate.domain.exceptions import (
     CompanyCandidateValidationError,
     InvalidOwnershipTransitionError,
 )
-from src.company.domain.value_objects import CompanyId
-from src.company.domain.value_objects.company_user_id import CompanyUserId
-from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company_candidate.domain.value_objects import (
+    CompanyCandidateId,
+    VisibilitySettings,
+)
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
@@ -58,23 +58,23 @@ class CompanyCandidate:
 
     @classmethod
     def create(
-        cls,
-        id: CompanyCandidateId,
-        company_id: CompanyId,
-        candidate_id: CandidateId,
-        created_by_user_id: CompanyUserId,
-        source: str,
-        position: Optional[str] = None,
-        department: Optional[str] = None,
-        priority: CandidatePriority = CandidatePriority.MEDIUM,
-        visibility_settings: Optional[VisibilitySettings] = None,
-        tags: Optional[List[str]] = None,
-        internal_notes: str = "",
-        ownership_status: OwnershipStatus = OwnershipStatus.COMPANY_OWNED,
-        lead_id: Optional[str] = None,
-        resume_url: Optional[str] = None,
-        resume_uploaded_by: Optional[CompanyUserId] = None,
-        phase_id: Optional[str] = None,
+            cls,
+            id: CompanyCandidateId,
+            company_id: CompanyId,
+            candidate_id: CandidateId,
+            created_by_user_id: CompanyUserId,
+            source: str,
+            position: Optional[str] = None,
+            department: Optional[str] = None,
+            priority: CandidatePriority = CandidatePriority.MEDIUM,
+            visibility_settings: Optional[VisibilitySettings] = None,
+            tags: Optional[List[str]] = None,
+            internal_notes: str = "",
+            ownership_status: OwnershipStatus = OwnershipStatus.COMPANY_OWNED,
+            lead_id: Optional[str] = None,
+            resume_url: Optional[str] = None,
+            resume_uploaded_by: Optional[CompanyUserId] = None,
+            phase_id: Optional[str] = None,
     ) -> "CompanyCandidate":
         """
         Factory method to create a new company-candidate relationship
@@ -165,13 +165,13 @@ class CompanyCandidate:
         )
 
     def update(
-        self,
-        position: Optional[str],
-        department: Optional[str],
-        priority: CandidatePriority,
-        visibility_settings: VisibilitySettings,
-        tags: List[str],
-        internal_notes: str,
+            self,
+            position: Optional[str],
+            department: Optional[str],
+            priority: CandidatePriority,
+            visibility_settings: VisibilitySettings,
+            tags: List[str],
+            internal_notes: str,
     ) -> "CompanyCandidate":
         """
         Updates the company-candidate relationship with new values
@@ -218,9 +218,9 @@ class CompanyCandidate:
         )
 
     def update_resume(
-        self,
-        resume_url: str,
-        uploaded_by: CompanyUserId,
+            self,
+            resume_url: str,
+            uploaded_by: CompanyUserId,
     ) -> "CompanyCandidate":
         """
         Updates the resume for this candidate
@@ -432,7 +432,8 @@ class CompanyCandidate:
             updated_at=datetime.utcnow(),
         )
 
-    def assign_workflow(self, workflow_id: CompanyWorkflowId, initial_stage_id: WorkflowStageId, phase_id: Optional[str] = None) -> "CompanyCandidate":
+    def assign_workflow(self, workflow_id: CompanyWorkflowId, initial_stage_id: WorkflowStageId,
+                        phase_id: Optional[str] = None) -> "CompanyCandidate":
         """
         Assigns a workflow and initial stage to this candidate
 

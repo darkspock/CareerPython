@@ -1,7 +1,7 @@
 """Position stage assignment SQLAlchemy model"""
-from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey, text
 from sqlalchemy.dialects.postgresql import JSONB
+
 from core.database import Base
 
 

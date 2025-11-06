@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
+from src.company_workflow.domain.enums.field_type import FieldType
 from src.company_workflow.domain.infrastructure.custom_field_repository_interface import CustomFieldRepositoryInterface
 from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.company_workflow.domain.enums.field_type import FieldType
 from src.shared.application.command_bus import Command, CommandHandler
 
 

@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 
-from src.shared.application.query_bus import Query, QueryHandler
+from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import \
+    CandidateCommentRepositoryInterface
 from src.company_candidate.domain.value_objects import CompanyCandidateId
-from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
+from src.shared.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
@@ -22,4 +23,3 @@ class CountPendingCommentsQueryHandler(QueryHandler[CountPendingCommentsQuery, i
         return self._repository.count_pending_by_company_candidate(
             CompanyCandidateId.from_string(query.company_candidate_id)
         )
-

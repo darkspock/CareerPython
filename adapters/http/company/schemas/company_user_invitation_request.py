@@ -37,17 +37,17 @@ class AcceptInvitationRequest(BaseModel):
             self.name is not None,
             self.password is not None
         ])
-        
+
         if has_user_id and (self.email is not None or self.name is not None or self.password is not None):
             raise ValueError(
                 "If user_id is provided, email, name, and password must not be provided"
             )
-        
+
         if not has_user_id and not has_new_user_fields:
             raise ValueError(
                 "Either user_id must be provided, or all of email, name, and password must be provided"
             )
-        
+
         return self
 
 
@@ -65,4 +65,3 @@ class AssignRoleRequest(BaseModel):
         if v.lower() not in allowed_roles:
             raise ValueError(f'Role must be one of: {", ".join(allowed_roles)}')
         return v.lower()
-

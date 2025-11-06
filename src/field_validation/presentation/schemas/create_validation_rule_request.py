@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import Optional, Any
+
+from pydantic import BaseModel, Field
 
 
 class CreateValidationRuleRequest(BaseModel):
@@ -19,7 +20,8 @@ class CreateValidationRuleRequest(BaseModel):
         ...,
         description="Message shown when validation fails. Supports {field_name}, {candidate_value}, {position_value}"
     )
-    position_field_path: Optional[str] = Field(None, description="Path to position field for comparison (e.g., 'salary.max')")
+    position_field_path: Optional[str] = Field(None,
+                                               description="Path to position field for comparison (e.g., 'salary.max')")
     comparison_value: Optional[Any] = Field(None, description="Static comparison value (for non-position rules)")
     auto_reject: bool = Field(False, description="Automatically reject application if this rule fails")
     rejection_reason: Optional[str] = Field(None, description="Reason for auto-rejection")

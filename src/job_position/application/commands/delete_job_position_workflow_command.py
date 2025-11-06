@@ -1,11 +1,11 @@
 """Delete job position workflow command"""
 from dataclasses import dataclass
 
-from src.shared.application.command_bus import Command, CommandHandler
-from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import (
     JobPositionWorkflowRepositoryInterface
 )
+from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -23,4 +23,3 @@ class DeleteJobPositionWorkflowCommandHandler(CommandHandler[DeleteJobPositionWo
     def execute(self, command: DeleteJobPositionWorkflowCommand) -> None:
         """Execute the delete command"""
         self._repository.delete(command.id)
-

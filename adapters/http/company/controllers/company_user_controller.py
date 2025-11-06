@@ -404,7 +404,7 @@ class CompanyUserController:
             if not dto:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Company user not found"
+                    detail="Company user not found"
                 )
 
             return CompanyUserResponseMapper.dto_to_response(dto)

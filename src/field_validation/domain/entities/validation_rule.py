@@ -1,15 +1,14 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any, Dict
-import re
 
-from ..value_objects.validation_rule_id import ValidationRuleId
-from ..value_objects.validation_result import ValidationResult
-from ..enums.validation_rule_type import ValidationRuleType
-from ..enums.comparison_operator import ComparisonOperator
-from ..enums.validation_severity import ValidationSeverity
 from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
 from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from ..enums.comparison_operator import ComparisonOperator
+from ..enums.validation_rule_type import ValidationRuleType
+from ..enums.validation_severity import ValidationSeverity
+from ..value_objects.validation_result import ValidationResult
+from ..value_objects.validation_rule_id import ValidationRuleId
 
 
 @dataclass(frozen=True)
@@ -33,18 +32,18 @@ class ValidationRule:
 
     @staticmethod
     def create(
-        id: ValidationRuleId,
-        custom_field_id: CustomFieldId,
-        stage_id: WorkflowStageId,
-        rule_type: ValidationRuleType,
-        comparison_operator: ComparisonOperator,
-        severity: ValidationSeverity,
-        validation_message: str,
-        position_field_path: Optional[str] = None,
-        comparison_value: Optional[Any] = None,
-        auto_reject: bool = False,
-        rejection_reason: Optional[str] = None,
-        is_active: bool = True
+            id: ValidationRuleId,
+            custom_field_id: CustomFieldId,
+            stage_id: WorkflowStageId,
+            rule_type: ValidationRuleType,
+            comparison_operator: ComparisonOperator,
+            severity: ValidationSeverity,
+            validation_message: str,
+            position_field_path: Optional[str] = None,
+            comparison_value: Optional[Any] = None,
+            auto_reject: bool = False,
+            rejection_reason: Optional[str] = None,
+            is_active: bool = True
     ) -> "ValidationRule":
         """Factory method to create a new validation rule."""
         # Validation
@@ -83,15 +82,15 @@ class ValidationRule:
         )
 
     def update(
-        self,
-        comparison_operator: ComparisonOperator,
-        severity: ValidationSeverity,
-        validation_message: str,
-        position_field_path: Optional[str] = None,
-        comparison_value: Optional[Any] = None,
-        auto_reject: bool = False,
-        rejection_reason: Optional[str] = None,
-        is_active: bool = True
+            self,
+            comparison_operator: ComparisonOperator,
+            severity: ValidationSeverity,
+            validation_message: str,
+            position_field_path: Optional[str] = None,
+            comparison_value: Optional[Any] = None,
+            auto_reject: bool = False,
+            rejection_reason: Optional[str] = None,
+            is_active: bool = True
     ) -> "ValidationRule":
         """Update validation rule."""
         if not validation_message:
@@ -159,10 +158,10 @@ class ValidationRule:
         )
 
     def evaluate(
-        self,
-        field_name: str,
-        candidate_value: Any,
-        position: Optional[Dict[str, Any]] = None
+            self,
+            field_name: str,
+            candidate_value: Any,
+            position: Optional[Dict[str, Any]] = None
     ) -> ValidationResult:
         """
         Evaluate the validation rule against a candidate's field value.
@@ -293,10 +292,10 @@ class ValidationRule:
             return False
 
     def _build_message(
-        self,
-        field_name: str,
-        candidate_value: Any,
-        comparison_target: Any
+            self,
+            field_name: str,
+            candidate_value: Any,
+            comparison_target: Any
     ) -> str:
         """Build validation message with variable substitution."""
         message = self.validation_message
@@ -304,7 +303,9 @@ class ValidationRule:
         # Replace variables
         message = message.replace('{field_name}', str(field_name))
         message = message.replace('{candidate_value}', str(candidate_value) if candidate_value is not None else 'N/A')
-        message = message.replace('{position_value}', str(comparison_target) if comparison_target is not None else 'N/A')
-        message = message.replace('{comparison_value}', str(comparison_target) if comparison_target is not None else 'N/A')
+        message = message.replace('{position_value}',
+                                  str(comparison_target) if comparison_target is not None else 'N/A')
+        message = message.replace('{comparison_value}',
+                                  str(comparison_target) if comparison_target is not None else 'N/A')
 
         return message

@@ -60,7 +60,8 @@ class CandidateApplication:
         self.notes = notes
         self.updated_at = datetime.utcnow()
 
-    def move_to_stage(self, new_stage_id: str, time_limit_hours: Optional[int] = None, changed_by: Optional[str] = None) -> None:
+    def move_to_stage(self, new_stage_id: str, time_limit_hours: Optional[int] = None,
+                      changed_by: Optional[str] = None) -> None:
         """Move application to a new workflow stage
 
         Args:
@@ -81,7 +82,8 @@ class CandidateApplication:
         # Reset task status when moving to new stage
         self.task_status = TaskStatus.PENDING
 
-    def move_to_next_phase(self, next_phase_id: str, initial_stage_id: Optional[str] = None, time_limit_hours: Optional[int] = None) -> None:
+    def move_to_next_phase(self, next_phase_id: str, initial_stage_id: Optional[str] = None,
+                           time_limit_hours: Optional[int] = None) -> None:
         """Move application to the next phase in the recruitment process
 
         Phase 12: This method is called when a candidate completes a terminal stage

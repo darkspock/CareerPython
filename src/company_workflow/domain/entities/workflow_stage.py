@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, List
 from decimal import Decimal
-
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.stage_style import StageStyle
-from src.company_workflow.domain.enums.stage_type import StageType
-
+from typing import Optional, List
 # TYPE_CHECKING to avoid circular imports
 from typing import TYPE_CHECKING
+
+from src.company_workflow.domain.enums.stage_type import StageType
+from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.company_workflow.domain.value_objects.stage_style import StageStyle
+from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+
 if TYPE_CHECKING:
-    from src.phase.domain.value_objects.phase_id import PhaseId
+    pass
 
 
 @dataclass(frozen=True)
@@ -49,24 +49,24 @@ class WorkflowStage:
 
     @staticmethod
     def create(
-        id: WorkflowStageId,
-        workflow_id: CompanyWorkflowId,
-        name: str,
-        description: str,
-        stage_type: StageType,
-        order: int,
-        allow_skip: bool = False,
-        estimated_duration_days: Optional[int] = None,
-        is_active: bool = True,
-        default_role_ids: Optional[List[str]] = None,
-        default_assigned_users: Optional[List[str]] = None,
-        email_template_id: Optional[str] = None,
-        custom_email_text: Optional[str] = None,
-        deadline_days: Optional[int] = None,
-        estimated_cost: Optional[Decimal] = None,
-        next_phase_id: Optional[str] = None,
-        kanban_display: str = 'column',
-        style: Optional[StageStyle] = None
+            id: WorkflowStageId,
+            workflow_id: CompanyWorkflowId,
+            name: str,
+            description: str,
+            stage_type: StageType,
+            order: int,
+            allow_skip: bool = False,
+            estimated_duration_days: Optional[int] = None,
+            is_active: bool = True,
+            default_role_ids: Optional[List[str]] = None,
+            default_assigned_users: Optional[List[str]] = None,
+            email_template_id: Optional[str] = None,
+            custom_email_text: Optional[str] = None,
+            deadline_days: Optional[int] = None,
+            estimated_cost: Optional[Decimal] = None,
+            next_phase_id: Optional[str] = None,
+            kanban_display: str = 'column',
+            style: Optional[StageStyle] = None
     ) -> "WorkflowStage":
         """Factory method to create a new workflow stage"""
         if not name:
@@ -87,10 +87,10 @@ class WorkflowStage:
         # Determine default style based on stage type if not provided
         if style is None:
             from src.company_workflow.domain.value_objects.stage_style import (
-                DEFAULT_STAGE_STYLE, SUCCESS_STAGE_STYLE, FAIL_STAGE_STYLE, 
+                DEFAULT_STAGE_STYLE, SUCCESS_STAGE_STYLE, FAIL_STAGE_STYLE,
                 PROCESS_STAGE_STYLE, REVIEW_STAGE_STYLE
             )
-            
+
             # Map stage types to their default styles
             style_mapping = {
                 StageType.SUCCESS: SUCCESS_STAGE_STYLE,
@@ -98,7 +98,7 @@ class WorkflowStage:
                 StageType.STANDARD: PROCESS_STAGE_STYLE,
                 StageType.INITIAL: REVIEW_STAGE_STYLE,
             }
-            
+
             style = style_mapping.get(stage_type, DEFAULT_STAGE_STYLE)
 
         now = datetime.utcnow()
@@ -126,21 +126,21 @@ class WorkflowStage:
         )
 
     def update(
-        self,
-        name: str,
-        description: str,
-        stage_type: StageType,
-        allow_skip: bool,
-        estimated_duration_days: Optional[int],
-        default_role_ids: Optional[List[str]] = None,
-        default_assigned_users: Optional[List[str]] = None,
-        email_template_id: Optional[str] = None,
-        custom_email_text: Optional[str] = None,
-        deadline_days: Optional[int] = None,
-        estimated_cost: Optional[Decimal] = None,
-        next_phase_id: Optional[str] = None,
-        style: Optional[StageStyle] = None,
-        kanban_display: Optional[str] = None
+            self,
+            name: str,
+            description: str,
+            stage_type: StageType,
+            allow_skip: bool,
+            estimated_duration_days: Optional[int],
+            default_role_ids: Optional[List[str]] = None,
+            default_assigned_users: Optional[List[str]] = None,
+            email_template_id: Optional[str] = None,
+            custom_email_text: Optional[str] = None,
+            deadline_days: Optional[int] = None,
+            estimated_cost: Optional[Decimal] = None,
+            next_phase_id: Optional[str] = None,
+            style: Optional[StageStyle] = None,
+            kanban_display: Optional[str] = None
     ) -> "WorkflowStage":
         """Update stage information"""
         if not name:

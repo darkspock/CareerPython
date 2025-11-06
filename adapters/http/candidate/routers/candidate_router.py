@@ -9,7 +9,6 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from core.container import Container
 from adapters.http.candidate.controllers.application_controller import ApplicationController
 from adapters.http.candidate.controllers.candidate import CandidateController
 from adapters.http.candidate.schemas.candidate import CandidateCreate, CandidateUpdate, CandidateResponse, \
@@ -26,6 +25,7 @@ from adapters.http.candidate.schemas.candidate_project import CandidateProjectRe
 from adapters.http.shared.schemas.token import Token
 from adapters.http.shared.schemas.user import UserResponse
 from adapters.http.shared.services.authentication_service import get_current_user
+from core.container import Container
 from src.candidate.application.queries.get_candidate_by_user_id import GetCandidateByUserIdQuery
 from src.candidate.application.queries.shared.candidate_dto import CandidateDto
 from src.candidate_application.domain.enums.application_status import ApplicationStatusEnum

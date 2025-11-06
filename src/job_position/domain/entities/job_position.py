@@ -1,4 +1,3 @@
-import logging
 from dataclasses import dataclass
 from datetime import datetime, date
 from typing import Optional, Dict, Any
@@ -34,10 +33,10 @@ class JobPosition:
     def get_status(self) -> JobPositionStatusEnum:
         """
         Get the status from the current stage.
-        
+
         The status is derived from the stage's status_mapping.
         If no workflow or stage is assigned, returns DRAFT as default.
-        
+
         Returns:
             JobPositionStatusEnum: The status derived from the current stage
         """
@@ -50,23 +49,23 @@ class JobPosition:
     def move_to_stage(self, stage_id: StageId) -> None:
         """
         Move the job position to a new stage.
-        
+
         Args:
             stage_id: The new stage ID
-            
+
         Raises:
             JobPositionValidationError: If no workflow is assigned
         """
         if not self.job_position_workflow_id:
             raise JobPositionValidationError("Cannot move to stage without an assigned workflow")
-        
+
         self.stage_id = stage_id
         self.updated_at = datetime.utcnow()
 
     def can_receive_applications(self) -> bool:
         """
         Check if job position can receive applications.
-        
+
         This is determined by the stage's status_mapping being ACTIVE.
         TODO: This will need access to the workflow repository to check the stage.
         """
@@ -85,27 +84,27 @@ class JobPosition:
         return None
 
     def get_visible_custom_fields_for_candidate(
-        self, 
-        stage_field_candidate_visibility: Optional[Dict[str, bool]] = None,
-        default_field_candidate_visibility: Optional[Dict[str, bool]] = None
+            self,
+            stage_field_candidate_visibility: Optional[Dict[str, bool]] = None,
+            default_field_candidate_visibility: Optional[Dict[str, bool]] = None
     ) -> Dict[str, Any]:
         """
         Get custom fields visible to candidates.
-        
+
         Filters custom_fields_values based on visibility configuration from workflow/stage.
-        
+
         Args:
             stage_field_candidate_visibility: Stage-specific visibility (from WorkflowStage)
             default_field_candidate_visibility: Default visibility (from JobPositionWorkflow.custom_fields_config)
-            
+
         Returns:
             Dict[str, Any]: Filtered custom fields visible to candidates
         """
         visible_fields = {}
-        
+
         for field_name, field_value in self.custom_fields_values.items():
             is_visible = False
-            
+
             # First check stage-specific visibility
             if stage_field_candidate_visibility and field_name in stage_field_candidate_visibility:
                 is_visible = stage_field_candidate_visibility[field_name]
@@ -115,16 +114,16 @@ class JobPosition:
             # Default to False if not specified
             else:
                 is_visible = False
-            
+
             if is_visible:
                 visible_fields[field_name] = field_value
-        
+
         return visible_fields
 
     def update_custom_fields_values(self, new_values: Dict[str, Any]) -> None:
         """
         Update custom fields values, merging with existing values.
-        
+
         Args:
             new_values: Dictionary of field names to values to update
         """
@@ -162,7 +161,7 @@ class JobPosition:
             self.visibility = visibility
         if public_slug is not None:
             self.public_slug = public_slug
-        
+
         self.title = title.strip()
         self.description = description
         self.job_category = job_category

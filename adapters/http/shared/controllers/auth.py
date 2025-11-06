@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Optional
 
-
 from adapters.http.candidate.schemas.candidate import CandidateResponse
 from src.candidate.application.queries import GetCandidateByUserIdQuery
 from src.shared.application.command_bus import CommandBus

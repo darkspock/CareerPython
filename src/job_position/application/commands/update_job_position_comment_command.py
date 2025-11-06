@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.shared.application.command_bus import Command, CommandHandler
 from src.job_position.domain.enums import CommentVisibilityEnum
-from src.job_position.domain.value_objects import JobPositionCommentId
 from src.job_position.domain.infrastructure.job_position_comment_repository_interface import (
     JobPositionCommentRepositoryInterface
 )
+from src.job_position.domain.value_objects import JobPositionCommentId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -29,17 +29,17 @@ class UpdateJobPositionCommentCommandHandler(CommandHandler[UpdateJobPositionCom
     def execute(self, command: UpdateJobPositionCommentCommand) -> None:
         """
         Execute the command
-        
+
         Args:
             command: Command with data for updating the comment
-            
+
         Raises:
             ValueError: If comment not found
         """
         # Retrieve the existing comment
         comment_id = JobPositionCommentId.from_string(command.comment_id)
         comment = self._repository.get_by_id(comment_id)
-        
+
         if not comment:
             raise ValueError(f"Comment with ID {command.comment_id} not found")
 
@@ -52,4 +52,3 @@ class UpdateJobPositionCommentCommandHandler(CommandHandler[UpdateJobPositionCom
 
         # Save the updated comment
         self._repository.save(comment)
-

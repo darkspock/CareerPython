@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
 from src.company.domain.entities.company import Company
-from src.company.domain.value_objects import CompanyId, CompanySettings
-from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError
-from src.shared.application.command_bus import Command, CommandHandler, CommandBus
+from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
+from src.company.domain.value_objects import CompanyId, CompanySettings
 from src.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommand
+from src.shared.application.command_bus import Command, CommandHandler, CommandBus
 
 
 @dataclass

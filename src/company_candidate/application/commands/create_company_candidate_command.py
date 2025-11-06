@@ -10,11 +10,12 @@ from src.company_candidate.domain.infrastructure.company_candidate_repository_in
     CompanyCandidateRepositoryInterface
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_candidate.domain.value_objects.visibility_settings import VisibilitySettings
-from src.shared.application.command_bus import Command, CommandHandler
-from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
+    CompanyWorkflowRepositoryInterface
+from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -40,10 +41,10 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
     """Handler for creating a new company candidate relationship"""
 
     def __init__(
-        self, 
-        repository: CompanyCandidateRepositoryInterface,
-        workflow_repository: CompanyWorkflowRepositoryInterface,
-        stage_repository: WorkflowStageRepositoryInterface
+            self,
+            repository: CompanyCandidateRepositoryInterface,
+            workflow_repository: CompanyWorkflowRepositoryInterface,
+            stage_repository: WorkflowStageRepositoryInterface
     ):
         self._repository = repository
         self._workflow_repository = workflow_repository
@@ -59,14 +60,14 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
         workflow_id = None
         initial_stage_id = None
         phase_id = None
-        
+
         try:
             # Get default workflow for the company
             default_workflow = self._workflow_repository.get_default_by_company(command.company_id)
             if default_workflow:
                 workflow_id = CompanyWorkflowId.from_string(str(default_workflow.id))
                 phase_id = default_workflow.phase_id
-                
+
                 # Get initial stage of the workflow
                 initial_stage = self._stage_repository.get_initial_stage(workflow_id)
                 if initial_stage:

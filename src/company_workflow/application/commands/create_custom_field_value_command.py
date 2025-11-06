@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
-from src.shared.application.command_bus import Command, CommandHandler
-from src.company_workflow.domain.entities.custom_field_value import CustomFieldValue
-from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_workflow.domain.entities.custom_field_value import CustomFieldValue
+from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import \
+    CustomFieldValueRepositoryInterface
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.infrastructure.custom_field_value_repository_interface import CustomFieldValueRepositoryInterface
+from src.company_workflow.domain.value_objects.custom_field_value_id import CustomFieldValueId
+from src.shared.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -32,5 +33,5 @@ class CreateCustomFieldValueCommandHandler(CommandHandler[CreateCustomFieldValue
             workflow_id=CompanyWorkflowId(command.workflow_id),
             values=command.values
         )
-        
+
         self._repository.save(custom_field_value)

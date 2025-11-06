@@ -5,8 +5,8 @@ Phase 7: Command to delete an email template
 
 from dataclasses import dataclass
 
-from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
+from src.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.shared.application.command_bus import Command, CommandHandler
 
 

@@ -23,4 +23,4 @@ class CandidateProjectModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    candidate: Mapped["CandidateModel"] = relationship(back_populates="projects")   # type: ignore # noqa: F821
+    candidate: Mapped["CandidateModel"] = relationship(back_populates="projects")  # type: ignore # noqa: F821

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from src.interview.interview_template.domain.enums.interview_template_question import (
     InterviewTemplateQuestionStatusEnum,
     InterviewTemplateQuestionDataTypeEnum,

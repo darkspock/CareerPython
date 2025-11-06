@@ -107,39 +107,40 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">ATSMonkey</div>
-        </div>
-
-        <h1>You've been invited!</h1>
-
-        <div class="content">
-            <p>Hello {{user_email}},</p>
-
-            <p><strong>{{inviter_name}}</strong> has invited you to join <strong>{{company_name}}</strong> on ATSMonkey.</p>
-
-            {{custom_message_section}}
-
-            <p>Click the button below to accept the invitation and join the team:</p>
-
-            <div class="button-container">
-                <a href="{{invitation_link}}" class="button">Accept Invitation</a>
-            </div>
-
-            <p>Or copy and paste this link into your browser:</p>
-            <div class="invitation-link">{{invitation_link}}</div>
-
-            <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
-                <strong>Note:</strong> This invitation will expire in 7 days. If you didn't expect this invitation, you can safely ignore this email.
-            </p>
-        </div>
-
-        <div class="footer">
-            <p>If you have any questions, please contact us at <a href="mailto:{{support_email}}">{{support_email}}</a></p>
-            <p style="margin-top: 10px;">© ATSMonkey. All rights reserved.</p>
-        </div>
+<div class="container">
+    <div class="header">
+        <div class="logo">ATSMonkey</div>
     </div>
+
+    <h1>You've been invited!</h1>
+
+    <div class="content">
+        <p>Hello {{user_email}},</p>
+
+        <p><strong>{{inviter_name}}</strong> has invited you to join <strong>{{company_name}}</strong> on ATSMonkey.</p>
+
+        {{custom_message_section}}
+
+        <p>Click the button below to accept the invitation and join the team:</p>
+
+        <div class="button-container">
+            <a href="{{invitation_link}}" class="button">Accept Invitation</a>
+        </div>
+
+        <p>Or copy and paste this link into your browser:</p>
+        <div class="invitation-link">{{invitation_link}}</div>
+
+        <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+            <strong>Note:</strong> This invitation will expire in 7 days. If you didn't expect this invitation, you can
+            safely ignore this email.
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>If you have any questions, please contact us at <a href="mailto:{{support_email}}">{{support_email}}</a></p>
+        <p style="margin-top: 10px;">© ATSMonkey. All rights reserved.</p>
+    </div>
+</div>
 </body>
 </html>
 

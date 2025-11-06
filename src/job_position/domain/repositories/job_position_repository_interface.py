@@ -24,7 +24,7 @@ class JobPositionRepositoryInterface(ABC):
                         limit: int = 50, offset: int = 0,
                         visibility: Optional[JobPositionVisibilityEnum] = None) -> List[JobPosition]:
         """Find job positions by filters
-        
+
         Args:
             status: Single status or list of statuses to filter by (deprecated, use stage filtering)
             visibility: Visibility filter (hidden, internal, public)

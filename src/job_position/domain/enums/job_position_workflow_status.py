@@ -7,4 +7,3 @@ class JobPositionWorkflowStatusEnum(str, Enum):
     DRAFT = "draft"
     PUBLISHED = "published"
     DEPRECATED = "deprecated"
-

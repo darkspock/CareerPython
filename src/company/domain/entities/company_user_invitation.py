@@ -30,13 +30,13 @@ class CompanyUserInvitation:
 
     @classmethod
     def create(
-        cls,
-        id: CompanyUserInvitationId,
-        company_id: CompanyId,
-        email: str,
-        invited_by_user_id: CompanyUserId,
-        token: Optional[InvitationToken] = None,
-        expires_in_days: int = 7,
+            cls,
+            id: CompanyUserInvitationId,
+            company_id: CompanyId,
+            email: str,
+            invited_by_user_id: CompanyUserId,
+            token: Optional[InvitationToken] = None,
+            expires_in_days: int = 7,
     ) -> "CompanyUserInvitation":
         """
         Factory method to create a new company user invitation
@@ -71,7 +71,7 @@ class CompanyUserInvitation:
 
         # Default values
         now = datetime.utcnow()
-        
+
         # Generate token if not provided
         if token is None:
             token = InvitationToken.generate()
@@ -174,4 +174,3 @@ class CompanyUserInvitation:
             bool: True if pending, False otherwise
         """
         return self.status == CompanyUserInvitationStatus.PENDING
-

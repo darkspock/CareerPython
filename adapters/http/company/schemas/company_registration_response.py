@@ -1,6 +1,7 @@
 """Response schemas for company registration"""
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
 
 
 class CompanyRegistrationResponse(BaseModel):
@@ -17,4 +18,3 @@ class LinkUserResponse(BaseModel):
     user_id: str
     message: str
     redirect_url: Optional[str] = None
-

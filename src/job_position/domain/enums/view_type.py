@@ -5,4 +5,3 @@ class ViewTypeEnum(str, Enum):
     """View type for job position workflow"""
     KANBAN = "kanban"
     LIST = "list"
-

@@ -6,8 +6,8 @@ from sqlalchemy import String, JSON, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.base import Base
-from src.shared.domain.entities.base import generate_id
 from src.job_position.domain.enums import JobPositionWorkflowStatusEnum
+from src.shared.domain.entities.base import generate_id
 
 
 @dataclass
@@ -25,11 +25,11 @@ class JobPositionWorkflowModel(Base):
         default=JobPositionWorkflowStatusEnum.PUBLISHED.value,
         index=True
     )  # Status stored as string value (draft, published, deprecated)
-    stages: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)  # List of WorkflowStage as JSON
+    stages: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, nullable=False,
+                                                         default=list)  # List of WorkflowStage as JSON
     custom_fields_config: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def __repr__(self) -> str:
         return f"<JobPositionWorkflowModel(id={self.id}, name={self.name})>"
-

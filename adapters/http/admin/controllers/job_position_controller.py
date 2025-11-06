@@ -1,6 +1,5 @@
 """Job position admin controller"""
 import logging
-from datetime import date
 from typing import List, Optional, Dict, Any
 
 from adapters.http.admin.mappers.job_position_mapper import JobPositionMapper
@@ -132,19 +131,21 @@ class JobPositionController:
         try:
             # Convert visibility string to enum (already normalized to lowercase by validator)
             try:
-                visibility = JobPositionVisibilityEnum(position_data.visibility.lower()) if position_data.visibility else JobPositionVisibilityEnum.HIDDEN
+                visibility = JobPositionVisibilityEnum(
+                    position_data.visibility.lower()) if position_data.visibility else JobPositionVisibilityEnum.HIDDEN
             except (ValueError, AttributeError):
                 # Fallback to default if invalid value
                 visibility = JobPositionVisibilityEnum.HIDDEN
-            
+
             # Convert job_category string to enum
-            job_category = JobCategoryEnum(position_data.job_category) if position_data.job_category else JobCategoryEnum.OTHER
-            
+            job_category = JobCategoryEnum(
+                position_data.job_category) if position_data.job_category else JobCategoryEnum.OTHER
+
             # Convert workflow and stage IDs to Value Objects
             job_position_workflow_id = None
             if position_data.job_position_workflow_id:
                 job_position_workflow_id = JobPositionWorkflowId.from_string(position_data.job_position_workflow_id)
-            
+
             stage_id = None
             if position_data.stage_id:
                 stage_id = StageId.from_string(position_data.stage_id)
@@ -246,7 +247,11 @@ class JobPositionController:
                 description=position_data.description if position_data.description is not None else current_dto.description,
                 job_category=job_category,
                 open_at=position_data.open_at if position_data.open_at is not None else current_dto.open_at,
-                application_deadline=position_data.application_deadline if position_data.application_deadline is not None else current_dto.application_deadline,
+                application_deadline=(
+                    position_data.application_deadline
+                    if position_data.application_deadline is not None
+                    else current_dto.application_deadline
+                ),
                 visibility=visibility,
                 public_slug=position_data.public_slug if position_data.public_slug is not None else current_dto.public_slug
             )

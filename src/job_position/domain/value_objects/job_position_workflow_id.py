@@ -7,4 +7,3 @@ from src.shared.domain.value_objects.base_id import BaseId
 class JobPositionWorkflowId(BaseId):
     """Value object for job position workflow ID"""
     value: str
-

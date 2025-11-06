@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class CreateCandidateCommentRequest(BaseModel):
@@ -20,4 +21,3 @@ class CreateCandidateCommentRequest(BaseModel):
                 "review_status": "reviewed"
             }
         }
-

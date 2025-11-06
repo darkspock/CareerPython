@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List, Dict, Any
 from datetime import datetime
+from typing import Optional, List, Dict, Any
+
+from pydantic import BaseModel, Field, ConfigDict
 
 from src.candidate.domain.enums import CandidateStatusEnum
 from src.shared.domain.enums.job_category import JobCategoryEnum

@@ -4,7 +4,6 @@ This implementation stores files in the local filesystem.
 Suitable for development and testing environments.
 """
 
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -21,10 +20,10 @@ class LocalStorageService(StorageServiceInterface):
     """Local filesystem implementation of StorageServiceInterface."""
 
     def __init__(
-        self,
-        base_path: str = "uploads",
-        base_url: str = "http://localhost:8000/uploads",
-        config: Optional[StorageConfig] = None
+            self,
+            base_path: str = "uploads",
+            base_url: str = "http://localhost:8000/uploads",
+            config: Optional[StorageConfig] = None
     ):
         """Initialize local storage service.
 
@@ -41,13 +40,13 @@ class LocalStorageService(StorageServiceInterface):
         self.base_path.mkdir(parents=True, exist_ok=True)
 
     def upload_file(
-        self,
-        file_content: bytes,
-        filename: str,
-        content_type: str,
-        storage_type: StorageType,
-        entity_id: str,
-        company_id: str,
+            self,
+            file_content: bytes,
+            filename: str,
+            content_type: str,
+            storage_type: StorageType,
+            entity_id: str,
+            company_id: str,
     ) -> UploadedFile:
         """Upload a file to local filesystem.
 

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from src.shared.application.command_bus import Command, CommandHandler
+from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.value_objects import CompanyId
-from src.company.domain.exceptions.company_exceptions import CompanyNotFoundError
+from src.shared.application.command_bus import Command, CommandHandler
 from src.shared.domain.infrastructure.storage_service_interface import (
     StorageServiceInterface,
     StorageType,
@@ -23,9 +23,9 @@ class UploadCompanyLogoCommandHandler(CommandHandler[UploadCompanyLogoCommand]):
     """Handler for uploading a logo for a company"""
 
     def __init__(
-        self,
-        repository: CompanyRepositoryInterface,
-        storage_service: StorageServiceInterface
+            self,
+            repository: CompanyRepositoryInterface,
+            storage_service: StorageServiceInterface
     ):
         self._repository = repository
         self._storage_service = storage_service
