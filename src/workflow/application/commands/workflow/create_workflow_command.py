@@ -1,0 +1,40 @@
+from dataclasses import dataclass
+from typing import Optional
+
+from src.company.domain.value_objects.company_id import CompanyId
+from src.workflow.domain.entities.workflow import Workflow
+from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
+    WorkflowRepositoryInterface
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared.application.command_bus import Command, CommandHandler
+
+
+@dataclass(frozen=True)
+class CreateWorkflowCommand(Command):
+    """Command to create a new workflow"""
+    id: str
+    company_id: str
+    name: str
+    description: str
+    phase_id: Optional[str] = None  # Phase 12: Phase association
+    is_default: bool = False
+
+
+class CreateWorkflowCommandHandler(CommandHandler[CreateWorkflowCommand]):
+    """Handler for creating a new workflow"""
+
+    def __init__(self, repository: WorkflowRepositoryInterface):
+        self._repository = repository
+
+    def execute(self, command: CreateWorkflowCommand) -> None:
+        """Handle the create workflow command"""
+        workflow = Workflow.create(
+            id=WorkflowId.from_string(command.id),
+            company_id=CompanyId.from_string(command.company_id),
+            name=command.name,
+            description=command.description,
+            phase_id=command.phase_id,  # Phase 12: Phase association
+            is_default=command.is_default
+        )
+
+        self._repository.save(workflow)
