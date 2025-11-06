@@ -35,7 +35,7 @@ Al implementar un nuevo módulo o feature en el sistema, seguir estrictamente es
    - Para cambios de status: método específico por cada transición
      * Ejemplo: `activate()`, `suspend()`, `archive()`
      * NO permitir cambio directo de status
-   - Los métodos de factory retornan la entidad
+   - **⚠️ MUTABILIDAD**: Los métodos `update()`, `activate()`, `suspend()`, etc. modifican la instancia directamente y retornan `None` (NO retornan nuevas instancias)
 
 **Ejemplo de Entidad:**
 ```python
@@ -179,7 +179,7 @@ class Company:
 - Propiedades públicas (no private con @property)
 - Factory methods para creación y actualización
 - Métodos específicos para transiciones de estado
-- Mutabilidad: los métodos modifican la instancia directamente (NO retornan nuevas instancias)
+- **⚠️ REGLA CRÍTICA - MUTABILIDAD**: Las entidades SIEMPRE son mutables. Los métodos modifican la instancia directamente (NO retornan nuevas instancias). Los métodos de actualización y cambio de estado retornan `None`, no nuevas instancias.
 
 ### Repositorios
 - Interface en domain layer

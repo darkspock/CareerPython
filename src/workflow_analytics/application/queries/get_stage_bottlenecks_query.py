@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast
 
-from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
-    CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
+    CandidateApplicationWorkflowRepositoryInterface
+from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared.application.query_bus import Query, QueryHandler
 from src.workflow_analytics.application.dtos import StageBottleneckDto
 
@@ -39,7 +39,7 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
     def __init__(
             self,
             database: "SQLAlchemyDatabase",
-            workflow_repository: CompanyWorkflowRepositoryInterface,
+            workflow_repository: CandidateApplicationWorkflowRepositoryInterface,
             stage_repository: WorkflowStageRepositoryInterface
     ):
         self._database = database
@@ -50,7 +50,7 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
         """Execute the query and return bottlenecks"""
         # Verify workflow exists
         workflow = self._workflow_repository.get_by_id(
-            CompanyWorkflowId.from_string(query.workflow_id)
+            WorkflowId.from_string(query.workflow_id)
         )
         if not workflow:
             raise ValueError(f"Workflow {query.workflow_id} not found")
@@ -133,7 +133,7 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
                 if cast(int, metric['total_count']) == 0:
                     continue
 
-                from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
+                from src.workflow.domain.entities.workflow_stage import WorkflowStage
                 stage = cast(WorkflowStage, metric['stage'])
                 conversion_rate = cast(float, metric['conversion_rate'])
                 current_count = cast(int, metric['current_count'])

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.entities.workflow_stage import WorkflowStage
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.phase.domain.value_objects.phase_id import PhaseId
 

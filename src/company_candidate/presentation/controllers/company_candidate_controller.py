@@ -30,8 +30,8 @@ from src.company_candidate.presentation.schemas.change_stage_request import Chan
 from src.company_candidate.presentation.schemas.company_candidate_response import CompanyCandidateResponse
 from src.company_candidate.presentation.schemas.create_company_candidate_request import CreateCompanyCandidateRequest
 from src.company_candidate.presentation.schemas.update_company_candidate_request import UpdateCompanyCandidateRequest
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.user.domain.value_objects.UserId import UserId
@@ -129,7 +129,7 @@ class CompanyCandidateController:
         from src.company_candidate.application.queries.get_company_candidate_by_id_with_candidate_info import (
             GetCompanyCandidateByIdWithCandidateInfoQuery
         )
-        from src.company_workflow.application.queries.get_custom_field_values_by_company_candidate import (
+        from src.customization.application.get_custom_field_values_by_company_candidate import (
             GetCustomFieldValuesByCompanyCandidateQuery
         )
         
@@ -338,7 +338,7 @@ class CompanyCandidateController:
         """Assign a workflow to a company candidate"""
         command = AssignWorkflowCommand(
             id=CompanyCandidateId.from_string(company_candidate_id),
-            workflow_id=CompanyWorkflowId.from_string(request.workflow_id),
+            workflow_id=WorkflowId.from_string(request.workflow_id),
             initial_stage_id=WorkflowStageId.from_string(request.initial_stage_id)
         )
 

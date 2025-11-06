@@ -24,16 +24,16 @@ from src.user.infrastructure.models.user_asset_model import UserAssetModel
 from src.company.infrastructure.models.company_model import CompanyModel
 from src.company.infrastructure.models.company_user_model import CompanyUserModel
 from src.phase.infrastructure.models.phase_model import PhaseModel
-from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
-from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
-from src.company_workflow.infrastructure.models.custom_field_model import CustomFieldModel
-from src.company_workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
+from src.workflow.infrastructure.models.workflow_model import CandidateApplicationWorkflowModel
+from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+from src.workflow.infrastructure.models.custom_field_model import CustomFieldModel
+from src.workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
 from src.candidate.infrastructure.models.candidate_model import CandidateModel
 from src.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
 from src.job_position.infrastructure.models.job_position_model import JobPositionModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
-from src.candidate_stage.infrastructure.models.candidate_stage_model import CandidateStageModel
+from src.candidate_application_stage.infrastructure.models.candidate_stage_model import CandidateApplicationStageModel
 from src.interview.interview.Infrastructure.models.interview_model import InterviewModel
 from src.interview.interview.Infrastructure.models.interview_answer_model import InterviewAnswerModel
 # from src.staff.infrastructure.models.staff_model import StaffModel
@@ -48,8 +48,8 @@ from src.interview.interview.Infrastructure.models.interview_answer_model import
 # Import enums
 from src.phase.domain.enums.phase_status_enum import PhaseStatus
 from src.phase.domain.enums.default_view_enum import DefaultView
-from src.company_workflow.domain.enums.workflow_status import WorkflowStatus
-from src.company_workflow.domain.enums.stage_type import StageType
+from src.workflow.domain.enums.workflow_status_enum import WorkflowStatusEnum
+from src.workflow.domain.enums.stage_type import StageType
 from src.company.domain.enums.company_user_role import CompanyUserRole
 from bcrypt import hashpw, gensalt
 import ulid
@@ -76,7 +76,7 @@ def clear_all_data(session):
         'candidates',
         'job_positions',
         'workflow_stages',
-        'company_workflows',
+        'candidate_application_workflows',
         'company_phases',
         'company_users',
         'users',
@@ -214,13 +214,13 @@ def create_phases_and_workflows(session, company_id: str) -> dict:
 
     # Sourcing workflow
     workflow1_id = generate_ulid()
-    workflow1 = CompanyWorkflowModel(
+    workflow1 = CandidateApplicationWorkflowModel(
         id=workflow1_id,
         company_id=company_id,
         name="Sourcing Workflow",
         description="Initial candidate screening",
         phase_id=phase1_id,
-        status=WorkflowStatus.ACTIVE,
+        status=WorkflowStatusEnum.ACTIVE,
         is_default=True,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC)
@@ -254,13 +254,13 @@ def create_phases_and_workflows(session, company_id: str) -> dict:
 
     # Evaluation workflow
     workflow2_id = generate_ulid()
-    workflow2 = CompanyWorkflowModel(
+    workflow2 = CandidateApplicationWorkflowModel(
         id=workflow2_id,
         company_id=company_id,
         name="Evaluation Workflow",
         description="Interview and assessment",
         phase_id=phase2_id,
-        status=WorkflowStatus.ACTIVE,
+        status=WorkflowStatusEnum.ACTIVE,
         is_default=True,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC)
@@ -295,13 +295,13 @@ def create_phases_and_workflows(session, company_id: str) -> dict:
 
     # Offer workflow
     workflow3_id = generate_ulid()
-    workflow3 = CompanyWorkflowModel(
+    workflow3 = CandidateApplicationWorkflowModel(
         id=workflow3_id,
         company_id=company_id,
         name="Offer Workflow",
         description="Offer and pre-onboarding",
         phase_id=phase3_id,
-        status=WorkflowStatus.ACTIVE,
+        status=WorkflowStatusEnum.ACTIVE,
         is_default=True,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC)
@@ -676,7 +676,7 @@ def link_candidates_to_positions(session, company_id: str, candidate_ids: list[s
             text("""
                 SELECT ws.id
                 FROM workflow_stages ws
-                JOIN company_workflows cw ON ws.workflow_id = cw.id
+                JOIN candidate_application_workflows cw ON ws.workflow_id = cw.id
                 WHERE cw.phase_id = :phase_id
                 AND ws.stage_type = 'INITIAL'
                 LIMIT 1

@@ -4,7 +4,7 @@ from src.company_candidate.domain.exceptions import CompanyCandidateNotFoundErro
 from src.shared.application.command_bus import Command, CommandHandler
 from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
 from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass(frozen=True)

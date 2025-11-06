@@ -15,7 +15,7 @@ export const KanbanDisplay = {
 } as const;
 export type KanbanDisplay = typeof KanbanDisplay[keyof typeof KanbanDisplay];
 
-export interface CompanyWorkflow {
+export interface CandidateApplicationWorkflow {
   id: string;
   company_id: string;
   phase_id?: string | null; // Phase 12: Phase association
@@ -32,6 +32,9 @@ export interface CompanyWorkflow {
   active_candidate_count?: number;
   active_position_count?: number;
 }
+
+// Alias for backward compatibility (deprecated, use CandidateApplicationWorkflow)
+export type CompanyWorkflow = CandidateApplicationWorkflow;
 
 export interface WorkflowStage {
   id: string;

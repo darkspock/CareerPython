@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from ..entities.candidate_comment import CandidateComment
 from ..value_objects import CandidateCommentId, CompanyCandidateId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 class CandidateCommentRepositoryInterface(ABC):

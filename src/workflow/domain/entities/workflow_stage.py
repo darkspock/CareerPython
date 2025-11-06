@@ -1,0 +1,259 @@
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional, List
+from decimal import Decimal
+
+from src.workflow.domain.value_objects.workflow_id import \
+    WorkflowId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.company_workflow.domain.value_objects.stage_style import StageStyle
+from src.company_workflow.domain.enums.stage_type import StageType
+
+# TYPE_CHECKING to avoid circular imports
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    pass
+
+
+@dataclass(frozen=True)
+class WorkflowStage:
+    """Workflow stage entity - represents a stage in a recruitment workflow"""
+    id: WorkflowStageId
+    workflow_id: WorkflowId
+    name: str
+    description: str
+    stage_type: StageType
+    order: int  # Position in the workflow
+    allow_skip: bool  # Whether this stage can be skipped (optional stage)
+    estimated_duration_days: Optional[int]  # Estimated days in this stage
+    is_active: bool
+
+    # Phase 2: Enhanced configuration fields
+    default_role_ids: Optional[List[str]]  # Role IDs that should be assigned to this stage
+    default_assigned_users: Optional[List[str]]  # User IDs always assigned to this stage
+    email_template_id: Optional[str]  # Email template to use when entering stage
+    custom_email_text: Optional[str]  # Additional text for email template
+    deadline_days: Optional[int]  # Days to complete this stage (for task priority)
+    estimated_cost: Optional[Decimal]  # Estimated cost for this stage
+
+    # Phase 12: Phase transition
+    next_phase_id: Optional[str]  # Phase to transition to when reaching this stage (only for SUCCESS/FAIL stages)
+
+    # Kanban display configuration
+    kanban_display: str  # 'column', 'row', or 'none'
+
+    # Visual styling
+    style: StageStyle
+
+    created_at: datetime
+    updated_at: datetime
+
+    @staticmethod
+    def create(
+        id: WorkflowStageId,
+        workflow_id: WorkflowId,
+        name: str,
+        description: str,
+        stage_type: StageType,
+        order: int,
+        allow_skip: bool = False,
+        estimated_duration_days: Optional[int] = None,
+        is_active: bool = True,
+        default_role_ids: Optional[List[str]] = None,
+        default_assigned_users: Optional[List[str]] = None,
+        email_template_id: Optional[str] = None,
+        custom_email_text: Optional[str] = None,
+        deadline_days: Optional[int] = None,
+        estimated_cost: Optional[Decimal] = None,
+        next_phase_id: Optional[str] = None,
+        kanban_display: str = 'column',
+        style: Optional[StageStyle] = None
+    ) -> "WorkflowStage":
+        """Factory method to create a new workflow stage"""
+        if not name:
+            raise ValueError("Stage name cannot be empty")
+        if order < 0:
+            raise ValueError("Stage order must be non-negative")
+        if estimated_duration_days is not None and estimated_duration_days < 0:
+            raise ValueError("Estimated duration must be non-negative")
+        if deadline_days is not None and deadline_days < 1:
+            raise ValueError("Deadline must be at least 1 day")
+        if estimated_cost is not None and estimated_cost < 0:
+            raise ValueError("Estimated cost must be non-negative")
+
+        # Validate next_phase_id can only be set for SUCCESS or FAIL stages
+        if next_phase_id is not None and stage_type not in [StageType.SUCCESS, StageType.FAIL]:
+            raise ValueError("next_phase_id can only be set for SUCCESS or FAIL stage types")
+
+        # Determine default style based on stage type if not provided
+        if style is None:
+            from src.company_workflow.domain.value_objects.stage_style import (
+                DEFAULT_STAGE_STYLE, SUCCESS_STAGE_STYLE, FAIL_STAGE_STYLE, 
+                PROCESS_STAGE_STYLE, REVIEW_STAGE_STYLE
+            )
+            
+            # Map stage types to their default styles
+            style_mapping = {
+                StageType.SUCCESS: SUCCESS_STAGE_STYLE,
+                StageType.FAIL: FAIL_STAGE_STYLE,
+                StageType.STANDARD: PROCESS_STAGE_STYLE,
+                StageType.INITIAL: REVIEW_STAGE_STYLE,
+            }
+            
+            style = style_mapping.get(stage_type, DEFAULT_STAGE_STYLE)
+
+        now = datetime.utcnow()
+        return WorkflowStage(
+            id=id,
+            workflow_id=workflow_id,
+            name=name,
+            description=description,
+            stage_type=stage_type,
+            order=order,
+            allow_skip=allow_skip,
+            estimated_duration_days=estimated_duration_days,
+            is_active=is_active,
+            default_role_ids=default_role_ids or [],
+            default_assigned_users=default_assigned_users or [],
+            email_template_id=email_template_id,
+            custom_email_text=custom_email_text,
+            deadline_days=deadline_days,
+            estimated_cost=estimated_cost,
+            next_phase_id=next_phase_id,
+            kanban_display=kanban_display,
+            style=style,
+            created_at=now,
+            updated_at=now
+        )
+
+    def update(
+        self,
+        name: str,
+        description: str,
+        stage_type: StageType,
+        allow_skip: bool,
+        estimated_duration_days: Optional[int],
+        default_role_ids: Optional[List[str]] = None,
+        default_assigned_users: Optional[List[str]] = None,
+        email_template_id: Optional[str] = None,
+        custom_email_text: Optional[str] = None,
+        deadline_days: Optional[int] = None,
+        estimated_cost: Optional[Decimal] = None,
+        next_phase_id: Optional[str] = None,
+        style: Optional[StageStyle] = None,
+        kanban_display: Optional[str] = None
+    ) -> "WorkflowStage":
+        """Update stage information"""
+        if not name:
+            raise ValueError("Stage name cannot be empty")
+        if estimated_duration_days is not None and estimated_duration_days < 0:
+            raise ValueError("Estimated duration must be non-negative")
+        if deadline_days is not None and deadline_days < 1:
+            raise ValueError("Deadline must be at least 1 day")
+        if estimated_cost is not None and estimated_cost < 0:
+            raise ValueError("Estimated cost must be non-negative")
+
+        # Validate next_phase_id can only be set for SUCCESS or FAIL stages
+        if next_phase_id is not None and stage_type not in [StageType.SUCCESS, StageType.FAIL]:
+            raise ValueError("next_phase_id can only be set for SUCCESS or FAIL stage types")
+
+        return WorkflowStage(
+            id=self.id,
+            workflow_id=self.workflow_id,
+            name=name,
+            description=description,
+            stage_type=stage_type,
+            order=self.order,
+            allow_skip=allow_skip,
+            estimated_duration_days=estimated_duration_days,
+            is_active=self.is_active,
+            default_role_ids=default_role_ids if default_role_ids is not None else self.default_role_ids,
+            default_assigned_users=default_assigned_users if default_assigned_users is not None else self.default_assigned_users,
+            email_template_id=email_template_id if email_template_id is not None else self.email_template_id,
+            custom_email_text=custom_email_text if custom_email_text is not None else self.custom_email_text,
+            deadline_days=deadline_days if deadline_days is not None else self.deadline_days,
+            estimated_cost=estimated_cost if estimated_cost is not None else self.estimated_cost,
+            next_phase_id=next_phase_id if next_phase_id is not None else self.next_phase_id,
+            kanban_display=kanban_display if kanban_display is not None else self.kanban_display,
+            style=style if style is not None else self.style,
+            created_at=self.created_at,
+            updated_at=datetime.utcnow()
+        )
+
+    def reorder(self, new_order: int) -> "WorkflowStage":
+        """Change the order of this stage"""
+        if new_order < 0:
+            raise ValueError("Stage order must be non-negative")
+
+        return WorkflowStage(
+            id=self.id,
+            workflow_id=self.workflow_id,
+            name=self.name,
+            description=self.description,
+            stage_type=self.stage_type,
+            order=new_order,
+            allow_skip=self.allow_skip,
+            estimated_duration_days=self.estimated_duration_days,
+            is_active=self.is_active,
+            default_role_ids=self.default_role_ids,
+            default_assigned_users=self.default_assigned_users,
+            email_template_id=self.email_template_id,
+            custom_email_text=self.custom_email_text,
+            deadline_days=self.deadline_days,
+            estimated_cost=self.estimated_cost,
+            next_phase_id=self.next_phase_id,
+            kanban_display=self.kanban_display,
+            style=self.style,
+            created_at=self.created_at,
+            updated_at=datetime.utcnow()
+        )
+
+    def activate(self) -> "WorkflowStage":
+        """Activate this stage"""
+        return WorkflowStage(
+            id=self.id,
+            workflow_id=self.workflow_id,
+            name=self.name,
+            description=self.description,
+            stage_type=self.stage_type,
+            order=self.order,
+            allow_skip=self.allow_skip,
+            estimated_duration_days=self.estimated_duration_days,
+            is_active=True,
+            default_role_ids=self.default_role_ids,
+            default_assigned_users=self.default_assigned_users,
+            email_template_id=self.email_template_id,
+            custom_email_text=self.custom_email_text,
+            deadline_days=self.deadline_days,
+            estimated_cost=self.estimated_cost,
+            next_phase_id=self.next_phase_id,
+            kanban_display=self.kanban_display,
+            style=self.style,
+            created_at=self.created_at,
+            updated_at=datetime.utcnow()
+        )
+
+    def deactivate(self) -> "WorkflowStage":
+        """Deactivate this stage"""
+        return WorkflowStage(
+            id=self.id,
+            workflow_id=self.workflow_id,
+            name=self.name,
+            description=self.description,
+            stage_type=self.stage_type,
+            order=self.order,
+            allow_skip=self.allow_skip,
+            estimated_duration_days=self.estimated_duration_days,
+            is_active=False,
+            default_role_ids=self.default_role_ids,
+            default_assigned_users=self.default_assigned_users,
+            email_template_id=self.email_template_id,
+            custom_email_text=self.custom_email_text,
+            deadline_days=self.deadline_days,
+            estimated_cost=self.estimated_cost,
+            next_phase_id=self.next_phase_id,
+            kanban_display=self.kanban_display,
+            style=self.style,
+            created_at=self.created_at,
+            updated_at=datetime.utcnow()
+        )

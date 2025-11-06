@@ -15,7 +15,7 @@ class EmailTemplateModel(Base):
     __tablename__ = 'email_templates'
 
     id = Column(String, primary_key=True)
-    workflow_id = Column(String, ForeignKey('company_workflows.id', ondelete='CASCADE'), nullable=False)
+    workflow_id = Column(String, ForeignKey('candidate_application_workflows.id', ondelete='CASCADE'), nullable=False)
     stage_id = Column(String, ForeignKey('workflow_stages.id', ondelete='CASCADE'), nullable=True)
     template_name = Column(String(200), nullable=False)
     template_key = Column(String(100), nullable=False)

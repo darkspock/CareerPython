@@ -11,10 +11,10 @@ from src.company.infrastructure.models.company_model import CompanyModel
 from src.company.infrastructure.models.company_user_model import CompanyUserModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
-from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
-from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
-from src.company_workflow.infrastructure.models.custom_field_model import CustomFieldModel
-from src.company_workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
+from src.workflow.infrastructure.models.workflow_model import CandidateApplicationWorkflowModel
+from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+from src.workflow.infrastructure.models.custom_field_model import CustomFieldModel
+from src.workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
 from src.field_validation.infrastructure.models.validation_rule_model import ValidationRuleModel
 from src.user.infrastructure.models.user_model import UserModel
 from src.user.infrastructure.models.user_asset_model import UserAssetModel
@@ -39,7 +39,7 @@ __all__ = [
     "CompanyUserModel",
     "CompanyCandidateModel",
     "CandidateCommentModel",
-    "CompanyWorkflowModel",
+    "CandidateApplicationWorkflowModel",
     "WorkflowStageModel",
     "CustomFieldModel",
     "FieldConfigurationModel",

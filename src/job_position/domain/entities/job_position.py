@@ -21,6 +21,7 @@ class JobPosition:
     job_position_workflow_id: Optional[JobPositionWorkflowId]  # Workflow system
     phase_workflows: Optional[Dict[str, str]]  # Phase 12.8: phase_id -> workflow_id mapping
     stage_id: Optional[StageId]  # Current stage in workflow
+    stage_assignments: Dict[str, list]  # Stage assignments: stage_id -> [company_user_id, ...]
     custom_fields_values: Dict[str, Any]  # Custom field values (JSON) - contains all removed fields
     description: Optional[str]
     job_category: JobCategoryEnum
@@ -131,6 +132,56 @@ class JobPosition:
         self.custom_fields_values.update(new_values)
         self.updated_at = datetime.utcnow()
 
+    def assign_users_to_stage(self, stage_id: str, user_ids: list[str]) -> None:
+        """
+        Assign users to a specific stage.
+        
+        Args:
+            stage_id: The stage ID
+            user_ids: List of company_user_id to assign
+        """
+        self.stage_assignments[stage_id] = user_ids
+        self.updated_at = datetime.utcnow()
+
+    def add_user_to_stage(self, stage_id: str, user_id: str) -> None:
+        """
+        Add a user to a stage assignment.
+        
+        Args:
+            stage_id: The stage ID
+            user_id: The company_user_id to add
+        """
+        if stage_id not in self.stage_assignments:
+            self.stage_assignments[stage_id] = []
+        
+        if user_id not in self.stage_assignments[stage_id]:
+            self.stage_assignments[stage_id].append(user_id)
+            self.updated_at = datetime.utcnow()
+
+    def remove_user_from_stage(self, stage_id: str, user_id: str) -> None:
+        """
+        Remove a user from a stage assignment.
+        
+        Args:
+            stage_id: The stage ID
+            user_id: The company_user_id to remove
+        """
+        if stage_id in self.stage_assignments and user_id in self.stage_assignments[stage_id]:
+            self.stage_assignments[stage_id].remove(user_id)
+            self.updated_at = datetime.utcnow()
+
+    def get_stage_assigned_users(self, stage_id: str) -> list[str]:
+        """
+        Get users assigned to a specific stage.
+        
+        Args:
+            stage_id: The stage ID
+            
+        Returns:
+            List of company_user_ids assigned to the stage
+        """
+        return self.stage_assignments.get(stage_id, [])
+
     def update_details(
             self,
             title: str,
@@ -199,6 +250,7 @@ class JobPosition:
             job_position_workflow_id=job_position_workflow_id,
             stage_id=stage_id,
             phase_workflows=phase_workflows or {},
+            stage_assignments={},  # Initialize empty stage assignments
             custom_fields_values=custom_fields_values or {},
             description=description,
             job_category=job_category,
@@ -219,6 +271,7 @@ class JobPosition:
             job_position_workflow_id: Optional[JobPositionWorkflowId],
             stage_id: Optional[StageId],
             phase_workflows: Optional[Dict[str, str]],
+            stage_assignments: Optional[Dict[str, list]],
             custom_fields_values: Optional[Dict[str, Any]],
             description: Optional[str],
             job_category: JobCategoryEnum,
@@ -237,6 +290,7 @@ class JobPosition:
             job_position_workflow_id=job_position_workflow_id,
             stage_id=stage_id,
             phase_workflows=phase_workflows or {},
+            stage_assignments=stage_assignments or {},
             custom_fields_values=custom_fields_values or {},
             description=description,
             job_category=job_category,

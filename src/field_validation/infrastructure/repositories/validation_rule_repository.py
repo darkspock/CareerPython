@@ -6,8 +6,8 @@ from src.field_validation.domain.enums.validation_rule_type import ValidationRul
 from src.field_validation.domain.enums.comparison_operator import ComparisonOperator
 from src.field_validation.domain.enums.validation_severity import ValidationSeverity
 from src.field_validation.infrastructure.models.validation_rule_model import ValidationRuleModel
-from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.custom_field_id import CustomFieldId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from core.database import database
 
 

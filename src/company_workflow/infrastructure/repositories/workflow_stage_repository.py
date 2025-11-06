@@ -1,7 +1,7 @@
 from typing import Optional, List, Any
 
-from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.entities.workflow_stage import WorkflowStage
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
 from src.company_workflow.domain.value_objects.stage_style import StageStyle
 from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface

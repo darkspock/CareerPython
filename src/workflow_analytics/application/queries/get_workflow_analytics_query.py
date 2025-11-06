@@ -8,11 +8,11 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from typing import TYPE_CHECKING
 
-from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
-    CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
+    CandidateApplicationWorkflowRepositoryInterface
+from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared.application.query_bus import Query, QueryHandler
 from src.workflow_analytics.application.dtos import (
     WorkflowAnalyticsDto,
@@ -44,7 +44,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
     def __init__(
             self,
             database: "SQLAlchemyDatabase",
-            workflow_repository: CompanyWorkflowRepositoryInterface,
+            workflow_repository: CandidateApplicationWorkflowRepositoryInterface,
             stage_repository: WorkflowStageRepositoryInterface
     ):
         self._database = database
@@ -55,7 +55,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
         """Execute the query and return analytics"""
         # Get workflow entity
         workflow = self._workflow_repository.get_by_id(
-            CompanyWorkflowId.from_string(query.workflow_id)
+            WorkflowId.from_string(query.workflow_id)
         )
         if not workflow:
             raise ValueError(f"Workflow {query.workflow_id} not found")

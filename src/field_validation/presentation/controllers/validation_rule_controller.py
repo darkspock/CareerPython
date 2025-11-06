@@ -7,8 +7,8 @@ from src.field_validation.domain.value_objects.validation_rule_id import Validat
 from src.field_validation.domain.enums.validation_rule_type import ValidationRuleType
 from src.field_validation.domain.enums.comparison_operator import ComparisonOperator
 from src.field_validation.domain.enums.validation_severity import ValidationSeverity
-from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.custom_field_id import CustomFieldId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.field_validation.application.commands.create_validation_rule_command import CreateValidationRuleCommand
 from src.field_validation.application.commands.update_validation_rule_command import UpdateValidationRuleCommand
 from src.field_validation.application.commands.delete_validation_rule_command import DeleteValidationRuleCommand

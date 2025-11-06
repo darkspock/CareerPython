@@ -3,8 +3,8 @@ from typing import Optional, List
 
 from ..entities.validation_rule import ValidationRule
 from ..value_objects.validation_rule_id import ValidationRuleId
-from src.company_workflow.domain.value_objects.custom_field_id import CustomFieldId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.custom_field_id import CustomFieldId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 class ValidationRuleRepositoryInterface(ABC):

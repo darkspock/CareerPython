@@ -286,7 +286,7 @@ def upgrade() -> None:
     op.drop_index(op.f('ix_companies_slug'), table_name='companies')
     op.create_index(op.f('ix_companies_slug'), 'companies', ['slug'], unique=True)
     op.create_index(op.f('ix_company_phases_id'), 'company_phases', ['id'], unique=False)
-    op.drop_constraint(op.f('fk_company_workflows_phase_id'), 'company_workflows', type_='foreignkey')
+    op.drop_constraint(op.f('fk_candidate_application_workflows_phase_id'), 'candidate_application_workflows', type_='foreignkey')
     op.drop_constraint(op.f('field_validation_rules_custom_field_id_fkey'), 'field_validation_rules', type_='foreignkey')
     op.drop_constraint(op.f('field_validation_rules_stage_id_fkey'), 'field_validation_rules', type_='foreignkey')
     op.alter_column('interview_template_questions', 'name',
@@ -535,7 +535,7 @@ def downgrade() -> None:
                nullable=True)
     op.create_foreign_key(op.f('field_validation_rules_stage_id_fkey'), 'field_validation_rules', 'workflow_stages', ['stage_id'], ['id'], ondelete='CASCADE')
     op.create_foreign_key(op.f('field_validation_rules_custom_field_id_fkey'), 'field_validation_rules', 'workflow_custom_fields', ['custom_field_id'], ['id'], ondelete='CASCADE')
-    op.create_foreign_key(op.f('fk_company_workflows_phase_id'), 'company_workflows', 'company_phases', ['phase_id'], ['id'])
+    op.create_foreign_key(op.f('fk_candidate_application_workflows_phase_id'), 'candidate_application_workflows', 'company_phases', ['phase_id'], ['id'])
     op.drop_index(op.f('ix_company_phases_id'), table_name='company_phases')
     op.drop_index(op.f('ix_companies_slug'), table_name='companies')
     op.create_index(op.f('ix_companies_slug'), 'companies', ['slug'], unique=False)
@@ -648,7 +648,7 @@ def downgrade() -> None:
     sa.Column('created_at', postgresql.TIMESTAMP(), server_default=sa.text('now()'), autoincrement=False, nullable=False),
     sa.Column('updated_at', postgresql.TIMESTAMP(), server_default=sa.text('now()'), autoincrement=False, nullable=False),
     sa.ForeignKeyConstraint(['company_candidate_id'], ['company_candidates.id'], name=op.f('custom_field_values_new_company_candidate_id_fkey'), ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['workflow_id'], ['company_workflows.id'], name=op.f('custom_field_values_new_workflow_id_fkey'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['workflow_id'], ['candidate_application_workflows.id'], name=op.f('custom_field_values_new_workflow_id_fkey'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('custom_field_values_new_pkey')),
     sa.UniqueConstraint('company_candidate_id', 'workflow_id', name=op.f('uq_company_candidate_workflow'), postgresql_include=[], postgresql_nulls_not_distinct=False)
     )
@@ -937,7 +937,7 @@ def downgrade() -> None:
     sa.ForeignKeyConstraint(['candidate_application_id'], ['candidate_applications.id'], name=op.f('candidate_stages_candidate_application_id_fkey'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['phase_id'], ['company_phases.id'], name=op.f('candidate_stages_phase_id_fkey'), ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['stage_id'], ['workflow_stages.id'], name=op.f('candidate_stages_stage_id_fkey'), ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['workflow_id'], ['company_workflows.id'], name=op.f('candidate_stages_workflow_id_fkey'), ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['workflow_id'], ['candidate_application_workflows.id'], name=op.f('candidate_stages_workflow_id_fkey'), ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id', name=op.f('candidate_stages_pkey'))
     )
     op.create_index(op.f('ix_candidate_stages_workflow_id'), 'candidate_stages', ['workflow_id'], unique=False)
@@ -1030,7 +1030,7 @@ def downgrade() -> None:
     sa.Column('created_at', postgresql.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), autoincrement=False, nullable=False),
     sa.Column('updated_at', postgresql.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), autoincrement=False, nullable=False),
     sa.ForeignKeyConstraint(['stage_id'], ['workflow_stages.id'], name=op.f('fk_email_templates_stage_id'), ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['workflow_id'], ['company_workflows.id'], name=op.f('fk_email_templates_workflow_id'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['workflow_id'], ['candidate_application_workflows.id'], name=op.f('fk_email_templates_workflow_id'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('email_templates_pkey')),
     sa.UniqueConstraint('workflow_id', 'stage_id', 'trigger_event', name=op.f('uq_email_templates_workflow_stage_trigger'), postgresql_include=[], postgresql_nulls_not_distinct=False)
     )

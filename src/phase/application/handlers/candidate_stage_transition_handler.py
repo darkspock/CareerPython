@@ -9,13 +9,13 @@ from typing import Optional
 from src.candidate_application.domain.repositories.candidate_application_repository_interface import \
     CandidateApplicationRepositoryInterface
 from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import \
+from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
-from src.company_workflow.domain.infrastructure.company_workflow_repository_interface import \
-    CompanyWorkflowRepositoryInterface
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_workflow.domain.enums.stage_type import StageType
-from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
+from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
+    CandidateApplicationWorkflowRepositoryInterface
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.enums.stage_type import StageType
+from src.workflow.domain.entities.workflow_stage import WorkflowStage
 
 
 class CandidateStageTransitionHandler:
@@ -30,7 +30,7 @@ class CandidateStageTransitionHandler:
         self,
         application_repository: CandidateApplicationRepositoryInterface,
         stage_repository: WorkflowStageRepositoryInterface,
-        workflow_repository: CompanyWorkflowRepositoryInterface
+        workflow_repository: CandidateApplicationWorkflowRepositoryInterface
     ):
         self.application_repository = application_repository
         self.stage_repository = stage_repository

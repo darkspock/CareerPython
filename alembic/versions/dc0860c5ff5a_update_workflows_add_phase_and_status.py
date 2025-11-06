@@ -20,10 +20,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    # Add phase_id column to company_workflows table
-    op.add_column('company_workflows', sa.Column('phase_id', sa.String(), nullable=True))
-    op.create_foreign_key('fk_company_workflows_phase_id', 'company_workflows', 'company_phases', ['phase_id'], ['id'])
-    op.create_index('ix_company_workflows_phase_id', 'company_workflows', ['phase_id'])
+    # Add phase_id column to candidate_application_workflows table
+    op.add_column('candidate_application_workflows', sa.Column('phase_id', sa.String(), nullable=True))
+    op.create_foreign_key('fk_candidate_application_workflows_phase_id', 'candidate_application_workflows', 'company_phases', ['phase_id'], ['id'])
+    op.create_index('ix_candidate_application_workflows_phase_id', 'candidate_application_workflows', ['phase_id'])
 
     # Create or update WorkflowStatus enum
     # Check if enum exists, if not create it, if yes, skip for now
@@ -33,12 +33,12 @@ def upgrade() -> None:
             -- Check if the enum type exists
             IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'workflowstatus') THEN
                 -- Update existing values
-                UPDATE company_workflows SET status = 'draft' WHERE status = 'inactive';
+                UPDATE candidate_application_workflows SET status = 'draft' WHERE status = 'inactive';
 
                 -- Recreate the enum
                 ALTER TYPE workflowstatus RENAME TO workflowstatus_old;
                 CREATE TYPE workflowstatus AS ENUM ('draft', 'active', 'archived');
-                ALTER TABLE company_workflows ALTER COLUMN status TYPE workflowstatus USING status::text::workflowstatus;
+                ALTER TABLE candidate_application_workflows ALTER COLUMN status TYPE workflowstatus USING status::text::workflowstatus;
                 DROP TYPE workflowstatus_old;
             ELSE
                 -- Create new enum
@@ -53,11 +53,11 @@ def downgrade() -> None:
     # Revert WorkflowStatus enum changes
     op.execute("ALTER TYPE workflowstatus RENAME TO workflowstatus_old")
     op.execute("CREATE TYPE workflowstatus AS ENUM ('active', 'inactive', 'archived')")
-    op.execute("UPDATE company_workflows SET status = 'inactive' WHERE status = 'draft'")
-    op.execute("ALTER TABLE company_workflows ALTER COLUMN status TYPE workflowstatus USING status::text::workflowstatus")
+    op.execute("UPDATE candidate_application_workflows SET status = 'inactive' WHERE status = 'draft'")
+    op.execute("ALTER TABLE candidate_application_workflows ALTER COLUMN status TYPE workflowstatus USING status::text::workflowstatus")
     op.execute("DROP TYPE workflowstatus_old")
 
     # Drop phase_id column
-    op.drop_index('ix_company_workflows_phase_id', table_name='company_workflows')
-    op.drop_constraint('fk_company_workflows_phase_id', 'company_workflows', type_='foreignkey')
-    op.drop_column('company_workflows', 'phase_id')
+    op.drop_index('ix_candidate_application_workflows_phase_id', table_name='candidate_application_workflows')
+    op.drop_constraint('fk_candidate_application_workflows_phase_id', 'candidate_application_workflows', type_='foreignkey')
+    op.drop_column('candidate_application_workflows', 'phase_id')

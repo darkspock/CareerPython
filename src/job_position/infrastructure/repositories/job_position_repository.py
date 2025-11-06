@@ -194,6 +194,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             job_position_workflow_id=job_position_workflow_id,
             stage_id=stage_id,
             phase_workflows=model.phase_workflows or {},
+            stage_assignments=model.stage_assignments or {},
             custom_fields_values=model.custom_fields_values or {},
             description=model.description,
             job_category=model.job_category,
@@ -216,6 +217,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             job_position_workflow_id=str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None,
             stage_id=str(job_position.stage_id) if job_position.stage_id else None,
             phase_workflows=job_position.phase_workflows or {},
+            stage_assignments=job_position.stage_assignments or {},
             custom_fields_values=job_position.custom_fields_values or {},
             title=job_position.title,
             description=job_position.description,
@@ -233,6 +235,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         model.job_position_workflow_id = str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None
         model.stage_id = str(job_position.stage_id) if job_position.stage_id else None
         model.phase_workflows = job_position.phase_workflows or {}
+        model.stage_assignments = job_position.stage_assignments or {}
         model.custom_fields_values = job_position.custom_fields_values or {}
         model.title = job_position.title
         model.description = job_position.description

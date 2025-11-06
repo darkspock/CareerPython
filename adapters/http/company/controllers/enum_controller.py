@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Type
 
 from pydantic import BaseModel
 
-from src.company_workflow.domain.enums.stage_type import StageType
+from src.workflow.domain.enums.stage_type import StageType
 
 
 class EnumOption(BaseModel):

@@ -7,12 +7,13 @@ from src.company.domain.value_objects.company_id import CompanyId
 from src.phase.domain.enums.default_view_enum import DefaultView
 from src.phase.domain.enums.phase_status_enum import PhaseStatus
 from src.phase.domain.value_objects.phase_id import PhaseId
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 
 
 @dataclass
 class Phase:
-    """Phase domain entity - represents a high-level stage in the recruitment process"""
     id: PhaseId
+    workflow_type: WorkflowTypeEnum
     company_id: CompanyId
     name: str
     sort_order: int
@@ -24,13 +25,14 @@ class Phase:
 
     @staticmethod
     def create(
-        id: PhaseId,
-        company_id: CompanyId,
-        name: str,
-        sort_order: int,
-        default_view: DefaultView,
-        objective: Optional[str] = None,
-        status: PhaseStatus = PhaseStatus.ACTIVE
+            id: PhaseId,
+            workflow_type: WorkflowTypeEnum,
+            company_id: CompanyId,
+            name: str,
+            sort_order: int,
+            default_view: DefaultView,
+            objective: Optional[str] = None,
+            status: PhaseStatus = PhaseStatus.ACTIVE
     ) -> 'Phase':
         """Create a new Phase"""
         if not name or name.strip() == "":
@@ -43,6 +45,7 @@ class Phase:
 
         return Phase(
             id=id,
+            workflow_type=workflow_type,
             company_id=company_id,
             name=name.strip(),
             sort_order=sort_order,
@@ -54,11 +57,11 @@ class Phase:
         )
 
     def update_details(
-        self,
-        name: str,
-        sort_order: int,
-        default_view: DefaultView,
-        objective: Optional[str] = None
+            self,
+            name: str,
+            sort_order: int,
+            default_view: DefaultView,
+            objective: Optional[str] = None
     ) -> None:
         """Update phase details"""
         if not name or name.strip() == "":
@@ -93,29 +96,3 @@ class Phase:
             raise ValueError("Phase is already in draft status")
         self.status = PhaseStatus.DRAFT
         self.updated_at = datetime.utcnow()
-
-    @classmethod
-    def _from_repository(
-        cls,
-        id: PhaseId,
-        company_id: CompanyId,
-        name: str,
-        sort_order: int,
-        default_view: DefaultView,
-        status: PhaseStatus,
-        objective: Optional[str],
-        created_at: datetime,
-        updated_at: datetime
-    ) -> 'Phase':
-        """Create Phase from repository data - only for repositories to use"""
-        return cls(
-            id=id,
-            company_id=company_id,
-            name=name,
-            sort_order=sort_order,
-            default_view=default_view,
-            status=status,
-            objective=objective,
-            created_at=created_at,
-            updated_at=updated_at
-        )

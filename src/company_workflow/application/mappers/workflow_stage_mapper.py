@@ -1,5 +1,5 @@
 from src.company_workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
-from src.company_workflow.domain.entities.workflow_stage import WorkflowStage
+from src.workflow.domain.entities.workflow_stage import WorkflowStage
 
 
 class WorkflowStageMapper:

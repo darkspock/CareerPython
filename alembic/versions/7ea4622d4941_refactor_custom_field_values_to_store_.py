@@ -32,7 +32,7 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('now()')),
         sa.ForeignKeyConstraint(['company_candidate_id'], ['company_candidates.id'], ondelete='CASCADE'),
-        sa.ForeignKeyConstraint(['workflow_id'], ['company_workflows.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['workflow_id'], ['candidate_application_workflows.id'], ondelete='CASCADE'),
         sa.UniqueConstraint('company_candidate_id', 'workflow_id', name='uq_company_candidate_workflow')
     )
     

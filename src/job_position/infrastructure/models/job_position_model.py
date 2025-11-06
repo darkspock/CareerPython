@@ -22,6 +22,7 @@ class JobPositionModel(Base):
     job_position_workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)  # Workflow system
     stage_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)  # Current stage in workflow
     phase_workflows: Mapped[Optional[Dict[str, str]]] = mapped_column(JSON)  # Phase 12.8: phase_id -> workflow_id mapping
+    stage_assignments: Mapped[Optional[Dict[str, list]]] = mapped_column(JSON, nullable=True)  # Stage assignments: stage_id -> [company_user_id, ...]
     custom_fields_values: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)  # Custom field values (JSON) - contains all removed fields
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text)  # Job description

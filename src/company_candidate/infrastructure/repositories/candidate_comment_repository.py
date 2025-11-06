@@ -16,8 +16,8 @@ from src.company_candidate.domain.infrastructure.candidate_comment_repository_in
 )
 from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
 from src.company.domain.value_objects.company_user_id import CompanyUserId
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from core.database import SQLAlchemyDatabase
 
 
@@ -37,7 +37,7 @@ class CandidateCommentRepository(CandidateCommentRepositoryInterface):
             id=CandidateCommentId.from_string(model.id),
             company_candidate_id=CompanyCandidateId.from_string(model.company_candidate_id),
             comment=model.comment,
-            workflow_id=CompanyWorkflowId.from_string(model.workflow_id) if model.workflow_id else None,
+            workflow_id=WorkflowId.from_string(model.workflow_id) if model.workflow_id else None,
             stage_id=WorkflowStageId.from_string(model.stage_id) if model.stage_id else None,
             created_by_user_id=CompanyUserId.from_string(model.created_by_user_id),
             review_status=CommentReviewStatus(model.review_status),

@@ -11,8 +11,8 @@ from src.company_candidate.domain.enums import (
     CommentReviewStatus,
 )
 from src.company.domain.value_objects.company_user_id import CompanyUserId
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass
@@ -24,7 +24,7 @@ class CandidateComment:
     id: CandidateCommentId
     company_candidate_id: CompanyCandidateId
     comment: str
-    workflow_id: Optional[CompanyWorkflowId]
+    workflow_id: Optional[WorkflowId]
     stage_id: Optional[WorkflowStageId]
     created_by_user_id: CompanyUserId
     review_status: CommentReviewStatus
@@ -39,7 +39,7 @@ class CandidateComment:
         company_candidate_id: CompanyCandidateId,
         comment: str,
         created_by_user_id: CompanyUserId,
-        workflow_id: Optional[CompanyWorkflowId] = None,
+        workflow_id: Optional[WorkflowId] = None,
         stage_id: Optional[WorkflowStageId] = None,
         visibility: CommentVisibility = CommentVisibility.PRIVATE,
         review_status: CommentReviewStatus = CommentReviewStatus.REVIEWED,

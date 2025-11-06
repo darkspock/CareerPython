@@ -4,7 +4,7 @@
  */
 
 import { ApiClient } from '../lib/api';
-import type { CompanyWorkflow } from '../types/workflow';
+import type { CandidateApplicationWorkflow } from '../types/workflow';
 
 interface ListWorkflowsFilters {
   phase_id?: string;
@@ -20,7 +20,7 @@ export const workflowService = {
   async listWorkflows(
     companyId: string,
     filters?: ListWorkflowsFilters
-  ): Promise<CompanyWorkflow[]> {
+  ): Promise<CandidateApplicationWorkflow[]> {
     // Build query parameters
     const params = new URLSearchParams();
 
@@ -37,6 +37,6 @@ export const workflowService = {
       ? `/api/company-workflows?${queryString}`
       : `/api/company-workflows/company/${companyId}`;
 
-    return ApiClient.get<CompanyWorkflow[]>(url);
+    return ApiClient.get<CandidateApplicationWorkflow[]>(url);
   },
 };

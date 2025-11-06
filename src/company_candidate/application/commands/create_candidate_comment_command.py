@@ -5,8 +5,8 @@ from src.shared.application.command_bus import Command, CommandHandler
 from src.company_candidate.domain.entities.candidate_comment import CandidateComment
 from src.company_candidate.domain.value_objects import CandidateCommentId, CompanyCandidateId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.company_candidate.domain.enums import CommentVisibility, CommentReviewStatus
 from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
 
@@ -37,7 +37,7 @@ class CreateCandidateCommentCommandHandler(CommandHandler[CreateCandidateComment
             company_candidate_id=CompanyCandidateId.from_string(command.company_candidate_id),
             comment=command.comment,
             created_by_user_id=CompanyUserId.from_string(command.created_by_user_id),
-            workflow_id=CompanyWorkflowId.from_string(command.workflow_id) if command.workflow_id else None,
+            workflow_id=WorkflowId.from_string(command.workflow_id) if command.workflow_id else None,
             stage_id=WorkflowStageId.from_string(command.stage_id) if command.stage_id else None,
             visibility=CommentVisibility(command.visibility),
             review_status=CommentReviewStatus(command.review_status),

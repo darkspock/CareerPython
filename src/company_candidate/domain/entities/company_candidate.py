@@ -18,8 +18,8 @@ from src.company_candidate.domain.exceptions import (
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass
@@ -34,7 +34,7 @@ class CompanyCandidate:
     status: CompanyCandidateStatus
     ownership_status: OwnershipStatus
     created_by_user_id: CompanyUserId
-    workflow_id: Optional[CompanyWorkflowId]
+    workflow_id: Optional[WorkflowId]
     current_stage_id: Optional[WorkflowStageId]
     phase_id: Optional[str]  # Current recruitment phase
     invited_at: datetime
@@ -432,7 +432,7 @@ class CompanyCandidate:
             updated_at=datetime.utcnow(),
         )
 
-    def assign_workflow(self, workflow_id: CompanyWorkflowId, initial_stage_id: WorkflowStageId, phase_id: Optional[str] = None) -> "CompanyCandidate":
+    def assign_workflow(self, workflow_id: WorkflowId, initial_stage_id: WorkflowStageId, phase_id: Optional[str] = None) -> "CompanyCandidate":
         """
         Assigns a workflow and initial stage to this candidate
 

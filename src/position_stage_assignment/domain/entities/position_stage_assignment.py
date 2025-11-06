@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
+from src.company.domain.value_objects import CompanyUserId
+from src.job_position.domain.value_objects import JobPositionId, StageId
 from src.position_stage_assignment.domain.value_objects import PositionStageAssignmentId
 from src.position_stage_assignment.domain.exceptions import PositionStageAssignmentValidationError
 
@@ -11,9 +13,9 @@ from src.position_stage_assignment.domain.exceptions import PositionStageAssignm
 class PositionStageAssignment:
     """Position stage assignment entity - assigns users to specific stages for a position"""
     id: PositionStageAssignmentId
-    position_id: str
-    stage_id: str
-    assigned_user_ids: List[str]
+    position_id: JobPositionId
+    stage_id: StageId
+    assigned_user_ids: List[CompanyUserId]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 

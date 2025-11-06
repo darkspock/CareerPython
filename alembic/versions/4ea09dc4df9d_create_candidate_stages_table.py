@@ -39,7 +39,7 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id'),
         sa.ForeignKeyConstraint(['candidate_application_id'], ['candidate_applications.id'], ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['phase_id'], ['company_phases.id'], ondelete='SET NULL'),
-        sa.ForeignKeyConstraint(['workflow_id'], ['company_workflows.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['workflow_id'], ['candidate_application_workflows.id'], ondelete='SET NULL'),
         sa.ForeignKeyConstraint(['stage_id'], ['workflow_stages.id'], ondelete='SET NULL'),
     )
     op.create_index('ix_candidate_stages_candidate_application_id', 'candidate_stages', ['candidate_application_id'])

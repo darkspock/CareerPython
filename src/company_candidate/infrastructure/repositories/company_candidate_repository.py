@@ -25,8 +25,8 @@ from src.job_position.infrastructure.models.job_position_model import JobPositio
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from core.database import SQLAlchemyDatabase
 
 
@@ -49,7 +49,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             status=CompanyCandidateStatus(model.status),
             ownership_status=OwnershipStatus(model.ownership_status),
             created_by_user_id=CompanyUserId.from_string(model.created_by_user_id),
-            workflow_id=CompanyWorkflowId.from_string(model.workflow_id) if model.workflow_id else None,
+            workflow_id=WorkflowId.from_string(model.workflow_id) if model.workflow_id else None,
             current_stage_id=WorkflowStageId.from_string(model.current_stage_id) if model.current_stage_id else None,
             phase_id=model.phase_id,
             invited_at=model.invited_at,
@@ -153,8 +153,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         session = self._get_session()
 
         # Import models for JOIN
-        from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
-        from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+        from src.workflow.infrastructure.models.workflow_model import CandidateApplicationWorkflowModel
+        from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
         # from src.phase.infrastructure.models.phase_model import PhaseModel  # Temporarily disabled
         
         # Perform JOINs between company_candidates, candidates, candidate_applications, job_positions, workflows, and stages
@@ -166,7 +166,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             CandidateApplicationModel.job_position_id,
             CandidateApplicationModel.application_status,
             JobPositionModel.title,
-            CompanyWorkflowModel.name.label('workflow_name'),
+            CandidateApplicationWorkflowModel.name.label('workflow_name'),
             WorkflowStageModel.name.label('stage_name')
         ).join(
             CandidateModel,
@@ -178,8 +178,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             JobPositionModel,
             CandidateApplicationModel.job_position_id == JobPositionModel.id
         ).outerjoin(
-            CompanyWorkflowModel,
-            CompanyCandidateModel.workflow_id == CompanyWorkflowModel.id
+            CandidateApplicationWorkflowModel,
+            CompanyCandidateModel.workflow_id == CandidateApplicationWorkflowModel.id
         ).outerjoin(
             WorkflowStageModel,
             CompanyCandidateModel.current_stage_id == WorkflowStageModel.id
@@ -286,8 +286,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         session = self._get_session()
 
         # Import models for JOIN
-        from src.company_workflow.infrastructure.models.company_workflow_model import CompanyWorkflowModel
-        from src.company_workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+        from src.workflow.infrastructure.models.workflow_model import CandidateApplicationWorkflowModel
+        from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
         from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
         from src.company_candidate.domain.enums.comment_review_status import CommentReviewStatus
         from sqlalchemy import func
@@ -310,7 +310,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             CandidateApplicationModel.job_position_id,
             CandidateApplicationModel.application_status,
             JobPositionModel.title,
-            CompanyWorkflowModel.name.label('workflow_name'),
+            CandidateApplicationWorkflowModel.name.label('workflow_name'),
             WorkflowStageModel.name.label('stage_name'),
             func.coalesce(pending_comments_subquery.c.pending_count, 0).label('pending_comments_count')
         ).join(
@@ -323,8 +323,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             JobPositionModel,
             CandidateApplicationModel.job_position_id == JobPositionModel.id
         ).outerjoin(
-            CompanyWorkflowModel,
-            CompanyCandidateModel.workflow_id == CompanyWorkflowModel.id
+            CandidateApplicationWorkflowModel,
+            CompanyCandidateModel.workflow_id == CandidateApplicationWorkflowModel.id
         ).outerjoin(
             WorkflowStageModel,
             CompanyCandidateModel.current_stage_id == WorkflowStageModel.id

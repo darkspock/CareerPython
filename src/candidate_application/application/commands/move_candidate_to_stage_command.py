@@ -8,13 +8,13 @@ from typing import Optional
 
 from src.candidate_application.domain.repositories.candidate_application_repository_interface import CandidateApplicationRepositoryInterface
 from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.candidate_stage.domain.entities.candidate_stage import CandidateStage
-from src.candidate_stage.domain.infrastructure.candidate_stage_repository_interface import CandidateStageRepositoryInterface
-from src.candidate_stage.domain.value_objects.candidate_stage_id import CandidateStageId
-from src.company_workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.company_workflow.domain.enums.stage_type import StageType
-from src.company_workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_workflow.domain.value_objects.company_workflow_id import CompanyWorkflowId
+from src.candidate_application_stage.domain.entities.candidate_application_stage import CandidateApplicationStage
+from src.candidate_application_stage.domain.infrastructure.candidate_application_stage_repository_interface import CandidateStageRepositoryInterface
+from src.candidate_application_stage.domain.value_objects.candidate_application_stage_id import CandidateApplicationStageId
+from src.workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.workflow.domain.enums.stage_type import StageType
+from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.phase.domain.value_objects.phase_id import PhaseId
 from src.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
 from src.shared.application.command_bus import Command, CommandHandler
@@ -85,11 +85,11 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
         )
 
         # 5. Create new candidate_stage record for the new stage
-        new_stage_record = CandidateStage.create(
-            id=CandidateStageId.generate(),
+        new_stage_record = CandidateApplicationStage.create(
+            id=CandidateApplicationStageId.generate(),
             candidate_application_id=application.id,
             phase_id=PhaseId.from_string(application.current_phase_id) if application.current_phase_id else None,
-            workflow_id=CompanyWorkflowId.from_string(target_stage.workflow_id.value),
+            workflow_id=WorkflowId.from_string(target_stage.workflow_id.value),
             stage_id=WorkflowStageId.from_string(command.new_stage_id),
             deadline=application.stage_deadline,
             estimated_cost=target_stage.estimated_cost,
@@ -114,7 +114,7 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
 
             # Get the initial stage of the next phase's workflow
             next_workflow_stages = self.workflow_stage_repository.list_by_workflow(
-                CompanyWorkflowId.from_string(next_phase_workflow_id)
+                WorkflowId.from_string(next_phase_workflow_id)
             )
             initial_stage = next((s for s in next_workflow_stages if s.stage_type == StageType.INITIAL), None)
             if not initial_stage:
@@ -128,11 +128,11 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
             )
 
             # Create candidate_stage record for the new phase's initial stage
-            next_phase_stage_record = CandidateStage.create(
-                id=CandidateStageId.generate(),
+            next_phase_stage_record = CandidateApplicationStage.create(
+                id=CandidateApplicationStageId.generate(),
                 candidate_application_id=application.id,
                 phase_id=PhaseId.from_string(target_stage.next_phase_id),
-                workflow_id=CompanyWorkflowId.from_string(next_phase_workflow_id),
+                workflow_id=WorkflowId.from_string(next_phase_workflow_id),
                 stage_id=initial_stage.id,
                 deadline=application.stage_deadline,
                 estimated_cost=initial_stage.estimated_cost,

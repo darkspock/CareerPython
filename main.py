@@ -28,10 +28,10 @@ from adapters.http.company.routers.email_template_router import router as email_
 from src.talent_pool.presentation.routers.talent_pool_router import router as talent_pool_router
 from src.workflow_analytics.presentation.routers.workflow_analytics_router import router as workflow_analytics_router
 from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
-from adapters.http.company_workflow.routers.company_workflow_router import router as company_workflow_router
-from adapters.http.company_workflow.routers.workflow_stage_router import router as workflow_stage_router
-from adapters.http.company_workflow.routers.custom_field_router import router as custom_field_router
-from adapters.http.company_workflow.routers.custom_field_value_router import router as custom_field_value_router
+from adapters.http.candidate_application_workflow.routers.candidate_application_workflow_router import router as candidate_application_workflow_router
+from adapters.http.candidate_application_workflow.routers.workflow_stage_router import router as workflow_stage_router
+from adapters.http.candidate_application_workflow.routers.custom_field_router import router as custom_field_router
+from adapters.http.candidate_application_workflow.routers.custom_field_value_router import router as custom_field_value_router
 from adapters.http.company.routers.candidate_comment_router import router as candidate_comment_router
 from src.field_validation.presentation.routers.validation_rule_router import router as validation_rule_router
 from src.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
@@ -91,7 +91,7 @@ app.include_router(email_template_router)  # Phase 7: Email Template Management
 app.include_router(talent_pool_router)  # Phase 8: Talent Pool Management
 app.include_router(workflow_analytics_router)  # Phase 9: Workflow Analytics
 app.include_router(company_candidate_router)  # Company candidate management
-app.include_router(company_workflow_router)  # Company workflow management
+app.include_router(candidate_application_workflow_router)  # Company workflow management
 app.include_router(workflow_stage_router)  # Workflow stage management
 app.include_router(custom_field_router)  # Custom field management
 app.include_router(custom_field_value_router)  # Custom field value management
@@ -150,10 +150,10 @@ container.wire(modules=[
     "adapters.http.company.routers.company_role_router",
     "adapters.http.company.routers.company_candidate_application_router",
     "adapters.http.company_candidate.routers.company_candidate_router",
-    "adapters.http.company_workflow.routers.company_workflow_router",
-    "adapters.http.company_workflow.routers.workflow_stage_router",
-    "adapters.http.company_workflow.routers.custom_field_router",
-    "adapters.http.company_workflow.routers.custom_field_value_router",
+    "adapters.http.candidate_application_workflow.routers.candidate_application_workflow_router",
+    "adapters.http.candidate_application_workflow.routers.workflow_stage_router",
+    "adapters.http.candidate_application_workflow.routers.custom_field_router",
+    "adapters.http.candidate_application_workflow.routers.custom_field_value_router",
     "adapters.http.company.routers.candidate_comment_router",
     "src.field_validation.presentation.routers.validation_rule_router",
     "src.position_stage_assignment.presentation.routers.position_stage_assignment_router",

@@ -131,7 +131,7 @@ class Company:
         name: str,
         domain: str,
         logo_url: Optional[str],
-    ) -> "Company":
+    ) -> None:
         """Actualiza la empresa con nuevos valores"""
         # Validaciones
         if not name or len(name) < 3:
@@ -171,7 +171,7 @@ class Company:
 3. **Factory method `create()`**: Con valores por defecto y validaciones
 4. **Factory method `update()`**: Recibe TODOS los atributos actualizables
 5. **Métodos específicos para status**: Un método por cada transición de estado
-6. **Mutabilidad**: Los métodos modifican la instancia directamente (NO retornan nuevas instancias)
+6. **⚠️ REGLA CRÍTICA - MUTABILIDAD**: Las entidades SIEMPRE son mutables. Los métodos modifican la instancia directamente (NO retornan nuevas instancias). Los métodos de actualización y cambio de estado retornan `None`, no nuevas instancias.
 7. **Validaciones en métodos**: Lógica de negocio encapsulada
 
 **❌ NO HACER**:
@@ -194,14 +194,18 @@ def __init__(self, id, name, status=CompanyStatus.ACTIVE):
 
 **✅ HACER**:
 ```python
-# Bien: Método específico para cambio de status (modifica la instancia)
-company.suspend()
+# Bien: Método específico para cambio de status (modifica la instancia directamente)
+company.suspend()  # Modifica company, no retorna nueva instancia
 
 # Bien: Propiedades públicas
 print(company.name)
 
 # Bien: Factory method con valores por defecto
 company = Company.create(name="Acme", domain="acme.com")
+
+# Bien: Métodos de actualización modifican la instancia y retornan None
+company.update(name="New Name", domain="newdomain.com", logo_url=None)
+# company ahora tiene los nuevos valores, no se crea una nueva instancia
 ```
 
 #### Eventos de Dominio (Opcional)
@@ -860,14 +864,14 @@ def test_company_create():
 
 def test_company_suspend():
     company = Company.create(name="Acme", domain="acme.com")
-    suspended = company.suspend()
-    assert suspended.status == CompanyStatus.SUSPENDED
+    company.suspend()  # Modifica la instancia directamente
+    assert company.status == CompanyStatus.SUSPENDED
 
 def test_cannot_suspend_deleted_company():
     company = Company.create(name="Acme", domain="acme.com")
-    deleted = company.delete()
+    company.delete()  # Modifica la instancia directamente
     with pytest.raises(ValueError):
-        deleted.suspend()
+        company.suspend()  # Intenta suspender la misma instancia ya eliminada
 ```
 
 ### Tests de Repositorio (Fase 2)

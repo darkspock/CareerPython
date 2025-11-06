@@ -27,7 +27,7 @@ class CandidateCommentModel(Base):
     comment: Mapped[str] = mapped_column(Text, nullable=False)
     workflow_id: Mapped[Optional[str]] = mapped_column(
         String,
-        ForeignKey("company_workflows.id", ondelete="SET NULL"),
+        ForeignKey("candidate_application_workflows.id", ondelete="SET NULL"),
         nullable=True,
         index=True
     )

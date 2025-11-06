@@ -175,60 +175,60 @@ from src.company_candidate.infrastructure.repositories.candidate_comment_reposit
 from src.company_candidate.presentation.controllers.company_candidate_controller import CompanyCandidateController
 from src.company_candidate.presentation.controllers.candidate_comment_controller import CandidateCommentController
 
-# CompanyWorkflow Application Layer - Commands
-from src.company_workflow.application.commands.create_workflow_command import CreateWorkflowCommandHandler
-from src.company_workflow.application.commands.update_workflow_command import UpdateWorkflowCommandHandler
-from src.company_workflow.application.commands.activate_workflow_command import ActivateWorkflowCommandHandler
-from src.company_workflow.application.commands.deactivate_workflow_command import DeactivateWorkflowCommandHandler
-from src.company_workflow.application.commands.archive_workflow_command import ArchiveWorkflowCommandHandler
-from src.company_workflow.application.commands.delete_workflow_command import DeleteWorkflowCommandHandler
-from src.company_workflow.application.commands.set_as_default_workflow_command import SetAsDefaultWorkflowCommandHandler
-from src.company_workflow.application.commands.unset_as_default_workflow_command import UnsetAsDefaultWorkflowCommandHandler
-from src.company_workflow.application.commands.create_stage_command import CreateStageCommandHandler
-from src.company_workflow.application.commands.update_stage_command import UpdateStageCommandHandler
-from src.company_workflow.application.commands.delete_stage_command import DeleteStageCommandHandler
-from src.company_workflow.application.commands.reorder_stages_command import ReorderStagesCommandHandler
-from src.company_workflow.application.commands.activate_stage_command import ActivateStageCommandHandler
-from src.company_workflow.application.commands.deactivate_stage_command import DeactivateStageCommandHandler
-from src.company_workflow.application.commands.create_custom_field_command import CreateCustomFieldCommandHandler
-from src.company_workflow.application.commands.update_custom_field_command import UpdateCustomFieldCommandHandler
-from src.company_workflow.application.commands.delete_custom_field_command import DeleteCustomFieldCommandHandler
-from src.company_workflow.application.commands.reorder_custom_field_command import ReorderCustomFieldCommandHandler
-from src.company_workflow.application.commands.configure_stage_field_command import ConfigureStageFieldCommandHandler
-from src.company_workflow.application.commands.update_field_visibility_command import UpdateFieldVisibilityCommandHandler
+# CandidateApplicationWorkflow Application Layer - Commands
+from src.workflow.application.commands.workflow.create_workflow_command import CreateWorkflowCommandHandler
+from src.workflow.application.commands.workflow.update_workflow_command import UpdateWorkflowCommandHandler
+from src.workflow.application.commands.workflow.activate_workflow_command import ActivateWorkflowCommandHandler
+from src.workflow.application.commands.workflow.deactivate_workflow_command import DeactivateWorkflowCommandHandler
+from src.workflow.application.commands.workflow.archive_workflow_command import ArchiveWorkflowCommandHandler
+from src.workflow.application.commands.workflow.delete_workflow_command import DeleteWorkflowCommandHandler
+from src.workflow.application.commands.workflow.set_as_default_workflow_command import SetAsDefaultWorkflowCommandHandler
+from src.workflow.application.commands.workflow.unset_as_default_workflow_command import UnsetAsDefaultWorkflowCommandHandler
+from src.workflow.application.commands.stage.create_stage_command import CreateStageCommandHandler
+from src.workflow.application.commands.stage.update_stage_command import UpdateStageCommandHandler
+from src.workflow.application.commands.stage.delete_stage_command import DeleteStageCommandHandler
+from src.workflow.application.commands.stage.reorder_stages_command import ReorderStagesCommandHandler
+from src.workflow.application.commands.stage.activate_stage_command import ActivateStageCommandHandler
+from src.workflow.application.commands.stage.deactivate_stage_command import DeactivateStageCommandHandler
+from src.customization.applicatoin.create_custom_field_command import CreateCustomFieldCommandHandler
+from src.customization.application.update_custom_field_command import UpdateCustomFieldCommandHandler
+from src.customization.application.delete_custom_field_command import DeleteCustomFieldCommandHandler
+from src.customization.application.reorder_custom_field_command import ReorderCustomFieldCommandHandler
+from src.customization.applicatoin.configure_stage_field_command import ConfigureStageFieldCommandHandler
+from src.customization.application.update_field_visibility_command import UpdateFieldVisibilityCommandHandler
 
-# CompanyWorkflow Application Layer - Queries
-from src.company_workflow.application.queries.get_workflow_by_id import GetWorkflowByIdQueryHandler
-from src.company_workflow.application.queries.list_workflows_by_company import ListWorkflowsByCompanyQueryHandler
-from src.company_workflow.application.queries.list_workflows_by_phase import ListWorkflowsByPhaseQueryHandler
-from src.company_workflow.application.queries.get_stage_by_id import GetStageByIdQueryHandler
-from src.company_workflow.application.queries.list_stages_by_workflow import ListStagesByWorkflowQueryHandler
-from src.company_workflow.application.queries.list_stages_by_phase import ListStagesByPhaseQueryHandler
-from src.company_workflow.application.queries.get_initial_stage import GetInitialStageQueryHandler
-from src.company_workflow.application.queries.get_final_stages import GetFinalStagesQueryHandler
-from src.company_workflow.application.queries.get_custom_field_by_id import GetCustomFieldByIdQueryHandler
-from src.company_workflow.application.queries.list_custom_fields_by_workflow import ListCustomFieldsByWorkflowQueryHandler
-from src.company_workflow.application.queries.list_field_configurations_by_stage import ListFieldConfigurationsByStageQueryHandler
-from src.company_workflow.application.queries.get_field_configuration_by_id import GetFieldConfigurationByIdQueryHandler
-from src.company_workflow.application.queries.get_custom_field_values_by_company_candidate import GetCustomFieldValuesByCompanyCandidateQueryHandler
-from src.company_workflow.application.queries.get_all_custom_field_values_by_company_candidate import GetAllCustomFieldValuesByCompanyCandidateQueryHandler
-from src.company_workflow.application.commands.create_custom_field_value_command import CreateCustomFieldValueCommandHandler
-from src.company_workflow.application.commands.update_custom_field_value_command import UpdateCustomFieldValueCommandHandler
-from src.company_workflow.application.commands.delete_custom_field_value_command import DeleteCustomFieldValueCommandHandler
-from src.company_workflow.application.queries.get_custom_field_value_by_id import GetCustomFieldValueByIdQueryHandler
+# CandidateApplicationWorkflow Application Layer - Queries
+from src.workflow.application.queries.workflow.get_workflow_by_id import GetWorkflowByIdQueryHandler
+from src.workflow.application.queries.workflow.list_workflows_by_company import ListWorkflowsByCompanyQueryHandler
+from src.workflow.application.queries.workflow.list_workflows_by_phase import ListWorkflowsByPhaseQueryHandler
+from src.workflow.application.queries.stage.get_stage_by_id import GetStageByIdQueryHandler
+from src.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQueryHandler
+from src.workflow.application.queries.stage.list_stages_by_phase import ListStagesByPhaseQueryHandler
+from src.workflow.application.queries.stage.get_initial_stage import GetInitialStageQueryHandler
+from src.workflow.application.queries.stage.get_final_stages import GetFinalStagesQueryHandler
+from src.customization.application.get_custom_field_by_id import GetCustomFieldByIdQueryHandler
+from src.customization.application.list_custom_fields_by_workflow import ListCustomFieldsByWorkflowQueryHandler
+from src.customization.application.list_field_configurations_by_stage import ListFieldConfigurationsByStageQueryHandler
+from src.customization.application.get_field_configuration_by_id import GetFieldConfigurationByIdQueryHandler
+from src.customization.application.get_custom_field_values_by_company_candidate import GetCustomFieldValuesByCompanyCandidateQueryHandler
+from src.customization.application.get_all_custom_field_values_by_company_candidate import GetAllCustomFieldValuesByCompanyCandidateQueryHandler
+from src.customization.applicatoin.create_custom_field_value_command import CreateCustomFieldValueCommandHandler
+from src.customization.application.update_custom_field_value_command import UpdateCustomFieldValueCommandHandler
+from src.customization.application.delete_custom_field_value_command import DeleteCustomFieldValueCommandHandler
+from src.customization.application.get_custom_field_value_by_id import GetCustomFieldValueByIdQueryHandler
 
-# CompanyWorkflow Infrastructure
-from src.company_workflow.infrastructure.repositories.company_workflow_repository import CompanyWorkflowRepository
-from src.company_workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
-from src.company_workflow.infrastructure.repositories.custom_field_repository import CustomFieldRepository
-from src.company_workflow.infrastructure.repositories.custom_field_value_repository import CustomFieldValueRepository
-from src.company_workflow.infrastructure.repositories.field_configuration_repository import FieldConfigurationRepository
+# CandidateApplicationWorkflow Infrastructure
+from src.workflow.infrastructure.repositories.workflow_repository import CandidateApplicationWorkflowRepository
+from src.workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
+from src.customization.infrastructure.repositories.custom_field_repository import CustomFieldRepository
+from src.customization.infrastructure.repositories.custom_field_value_repository import CustomFieldValueRepository
+from src.customization.infrastructure.repositories.field_configuration_repository import FieldConfigurationRepository
 
-# CompanyWorkflow Presentation Controllers
-from src.company_workflow.presentation.controllers.company_workflow_controller import CompanyWorkflowController
-from src.company_workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
-from src.company_workflow.presentation.controllers.custom_field_value_controller import CustomFieldValueController
-from src.company_workflow.presentation.controllers.custom_field_controller import CustomFieldController
+# CandidateApplicationWorkflow Presentation Controllers
+from src.workflow.presentation.controllers.candidate_application_workflow_controller import CandidateApplicationWorkflowController
+from src.workflow.presentation.controllers.workflow_stage_controller import WorkflowStageController
+from src.workflow.presentation.controllers.custom_field_value_controller import CustomFieldValueController
+from src.workflow.presentation.controllers.custom_field_controller import CustomFieldController
 
 # FieldValidation Application Layer - Commands
 from src.field_validation.application.commands.create_validation_rule_command import CreateValidationRuleCommandHandler
@@ -374,7 +374,7 @@ from src.candidate_application.infrastructure.repositories.candidate_application
 
 # Phase 12: Candidate Stage Tracking and Phase Transitions
 from src.candidate_application.application.commands.move_candidate_to_stage_command import MoveCandidateToStageCommandHandler
-from src.candidate_stage.infrastructure.repositories.candidate_stage_repository import CandidateStageRepository
+from src.candidate_application_stage.infrastructure.repositories.candidate_application_stage_repository import CandidateApplicationStageRepository
 
 # Phase 7: Email Template Management
 from src.email_template.application.commands.create_email_template_command import CreateEmailTemplateCommandHandler
@@ -540,9 +540,9 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
-    # CompanyWorkflow Repositories
-    company_workflow_repository = providers.Factory(
-        CompanyWorkflowRepository,
+    # CandidateApplicationWorkflow Repositories
+    candidate_application_workflow_repository = providers.Factory(
+        CandidateApplicationWorkflowRepository,
         database=database
     )
 
@@ -661,7 +661,7 @@ class Container(containers.DeclarativeContainer):
 
     # Phase 12: Candidate Stage Repository
     candidate_stage_repository = providers.Factory(
-        CandidateStageRepository,
+        CandidateApplicationStageRepository,
         session=database.provided.session
     )
 
@@ -875,20 +875,20 @@ class Container(containers.DeclarativeContainer):
         repository=company_candidate_repository
     )
 
-    # CompanyWorkflow Query Handlers
+    # CandidateApplicationWorkflow Query Handlers
     get_workflow_by_id_query_handler = providers.Factory(
         GetWorkflowByIdQueryHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     list_workflows_by_company_query_handler = providers.Factory(
         ListWorkflowsByCompanyQueryHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     list_workflows_by_phase_query_handler = providers.Factory(
         ListWorkflowsByPhaseQueryHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     # WorkflowStage Query Handlers
@@ -1316,7 +1316,7 @@ class Container(containers.DeclarativeContainer):
     create_company_candidate_command_handler = providers.Factory(
         CreateCompanyCandidateCommandHandler,
         repository=company_candidate_repository,
-        workflow_repository=company_workflow_repository,
+        workflow_repository=candidate_application_workflow_repository,
         stage_repository=workflow_stage_repository
     )
 
@@ -1408,45 +1408,45 @@ class Container(containers.DeclarativeContainer):
         repository=candidate_comment_repository
     )
 
-    # CompanyWorkflow Command Handlers
+    # CandidateApplicationWorkflow Command Handlers
     create_workflow_command_handler = providers.Factory(
         CreateWorkflowCommandHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     update_workflow_command_handler = providers.Factory(
         UpdateWorkflowCommandHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     activate_workflow_command_handler = providers.Factory(
         ActivateWorkflowCommandHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     deactivate_workflow_command_handler = providers.Factory(
         DeactivateWorkflowCommandHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     archive_workflow_command_handler = providers.Factory(
         ArchiveWorkflowCommandHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     delete_workflow_command_handler = providers.Factory(
         DeleteWorkflowCommandHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     set_as_default_workflow_command_handler = providers.Factory(
         SetAsDefaultWorkflowCommandHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     unset_as_default_workflow_command_handler = providers.Factory(
         UnsetAsDefaultWorkflowCommandHandler,
-        repository=company_workflow_repository
+        repository=candidate_application_workflow_repository
     )
 
     # WorkflowStage Command Handlers
@@ -1556,7 +1556,7 @@ class Container(containers.DeclarativeContainer):
         CandidateStageTransitionHandler,
         application_repository=candidate_application_repository,
         stage_repository=workflow_stage_repository,
-        workflow_repository=company_workflow_repository
+        workflow_repository=candidate_application_workflow_repository
     )
 
     # Job Position Command Handlers
@@ -1683,7 +1683,7 @@ class Container(containers.DeclarativeContainer):
     initialize_company_phases_command_handler = providers.Factory(
         InitializeCompanyPhasesCommandHandler,
         phase_repository=phase_repository,
-        workflow_repository=company_workflow_repository,
+        workflow_repository=candidate_application_workflow_repository,
         stage_repository=workflow_stage_repository
     )
 
@@ -2042,14 +2042,14 @@ class Container(containers.DeclarativeContainer):
     get_workflow_analytics_query_handler = providers.Factory(
         GetWorkflowAnalyticsQueryHandler,
         database=database,
-        workflow_repository=company_workflow_repository,
+        workflow_repository=candidate_application_workflow_repository,
         stage_repository=workflow_stage_repository
     )
 
     get_stage_bottlenecks_query_handler = providers.Factory(
         GetStageBottlenecksQueryHandler,
         database=database,
-        workflow_repository=company_workflow_repository,
+        workflow_repository=candidate_application_workflow_repository,
         stage_repository=workflow_stage_repository
     )
 
@@ -2112,8 +2112,8 @@ class Container(containers.DeclarativeContainer):
         query_bus=query_bus
     )
 
-    company_workflow_controller = providers.Factory(
-        CompanyWorkflowController,
+    candidate_application_workflow_controller = providers.Factory(
+        CandidateApplicationWorkflowController,
         command_bus=command_bus,
         query_bus=query_bus,
         database=database

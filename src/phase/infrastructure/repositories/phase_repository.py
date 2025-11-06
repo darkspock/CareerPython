@@ -83,7 +83,7 @@ class PhaseRepository(PhaseRepositoryInterface):
 
     def _to_domain(self, model: PhaseModel) -> Phase:
         """Convert model to domain entity"""
-        return Phase._from_repository(
+        return Phase(
             id=PhaseId.from_string(model.id),
             company_id=CompanyId.from_string(model.company_id),
             name=model.name,

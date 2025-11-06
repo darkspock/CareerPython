@@ -51,11 +51,11 @@ def upgrade() -> None:
         ['workflow_id', 'stage_id', 'trigger_event']
     )
 
-    # Add foreign key to company_workflows
+    # Add foreign key to candidate_application_workflows
     op.create_foreign_key(
         'fk_email_templates_workflow_id',
         'email_templates',
-        'company_workflows',
+        'candidate_application_workflows',
         ['workflow_id'],
         ['id'],
         ondelete='CASCADE'

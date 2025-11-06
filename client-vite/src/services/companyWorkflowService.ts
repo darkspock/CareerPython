@@ -1,6 +1,6 @@
 import { ApiClient } from '../lib/api';
 import type {
-  CompanyWorkflow,
+  CandidateApplicationWorkflow,
   WorkflowStage,
   CreateWorkflowRequest,
   UpdateWorkflowRequest,
@@ -23,7 +23,7 @@ export const companyWorkflowService = {
   /**
    * Create a new workflow
    */
-  createWorkflow: async (data: CreateWorkflowRequest): Promise<CompanyWorkflow> => {
+  createWorkflow: async (data: CreateWorkflowRequest): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post('/api/company-workflows', data, {
       headers: getAuthHeaders(),
     });
@@ -32,7 +32,7 @@ export const companyWorkflowService = {
   /**
    * Get workflow by ID
    */
-  getWorkflow: async (workflowId: string): Promise<CompanyWorkflow> => {
+  getWorkflow: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.get(`/api/company-workflows/${workflowId}`, {
       headers: getAuthHeaders(),
     });
@@ -41,7 +41,7 @@ export const companyWorkflowService = {
   /**
    * List workflows for a specific company
    */
-  listWorkflowsByCompany: async (companyId: string): Promise<CompanyWorkflow[]> => {
+  listWorkflowsByCompany: async (companyId: string): Promise<CandidateApplicationWorkflow[]> => {
     return ApiClient.get(`/api/company-workflows/company/${companyId}`, {
       headers: getAuthHeaders(),
     });
@@ -53,7 +53,7 @@ export const companyWorkflowService = {
   updateWorkflow: async (
     workflowId: string,
     data: UpdateWorkflowRequest
-  ): Promise<CompanyWorkflow> => {
+  ): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.request(`/api/company-workflows/${workflowId}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
@@ -64,7 +64,7 @@ export const companyWorkflowService = {
   /**
    * Deactivate workflow
    */
-  deactivateWorkflow: async (workflowId: string): Promise<CompanyWorkflow> => {
+  deactivateWorkflow: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post(
       `/api/company-workflows/${workflowId}/deactivate`,
       {},
@@ -77,7 +77,7 @@ export const companyWorkflowService = {
   /**
    * Archive workflow
    */
-  archiveWorkflow: async (workflowId: string): Promise<CompanyWorkflow> => {
+  archiveWorkflow: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post(
       `/api/company-workflows/${workflowId}/archive`,
       {},
@@ -90,7 +90,7 @@ export const companyWorkflowService = {
   /**
    * Set workflow as default
    */
-  setAsDefault: async (workflowId: string): Promise<CompanyWorkflow> => {
+  setAsDefault: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post(
       `/api/company-workflows/${workflowId}/set-default`,
       {},
@@ -103,7 +103,7 @@ export const companyWorkflowService = {
   /**
    * Unset workflow as default
    */
-  unsetDefault: async (workflowId: string): Promise<CompanyWorkflow> => {
+  unsetDefault: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post(
       `/api/company-workflows/${workflowId}/unset-default`,
       {},

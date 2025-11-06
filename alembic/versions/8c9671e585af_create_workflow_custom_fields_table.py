@@ -32,7 +32,7 @@ def upgrade() -> None:
         sa.Column('order_index', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['workflow_id'], ['company_workflows.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['workflow_id'], ['candidate_application_workflows.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('workflow_id', 'field_key', name='uq_workflow_custom_fields_workflow_field_key')
     )
