@@ -5,13 +5,13 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from core.container import Container
-from src.customization.custom_field_controller import CustomFieldController
-from src.customization.create_custom_field_request import CreateCustomFieldRequest
-from src.customization.update_custom_field_request import UpdateCustomFieldRequest
-from src.customization.reorder_custom_field_request import ReorderCustomFieldRequest
-from src.customization.configure_stage_field_request import ConfigureStageFieldRequest
-from src.customization.custom_field_response import CustomFieldResponse
-from src.customization.field_configuration_response import FieldConfigurationResponse
+from src.customization.old.custom_field_controller import CustomFieldController
+from src.customization.old.create_custom_field_request import CreateCustomFieldRequest
+from src.customization.old.update_custom_field_request import UpdateCustomFieldRequest
+from src.customization.old.reorder_custom_field_request import ReorderCustomFieldRequest
+from src.customization.old.configure_stage_field_request import ConfigureStageFieldRequest
+from src.customization.old.custom_field_response import CustomFieldResponse
+from src.customization.old.field_configuration_response import FieldConfigurationResponse
 
 router = APIRouter(
     prefix="/api/custom-fields",

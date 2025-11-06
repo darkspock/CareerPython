@@ -1,5 +1,5 @@
-from src.customization.application.field_configuration_dto import FieldConfigurationDto
-from src.customization.field_configuration_response import FieldConfigurationResponse
+from src.customization.old.application.field_configuration_dto import FieldConfigurationDto
+from src.customization.old.field_configuration_response import FieldConfigurationResponse
 
 
 class FieldConfigurationResponseMapper:

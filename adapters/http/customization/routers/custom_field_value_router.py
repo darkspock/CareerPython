@@ -5,10 +5,10 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from core.container import Container
-from src.customization.custom_field_value_controller import CustomFieldValueController
-from src.customization.create_custom_field_value_request import CreateCustomFieldValueRequest
-from src.customization.update_custom_field_value_request import UpdateCustomFieldValueRequest
-from src.customization.custom_field_value_response import CustomFieldValueResponse
+from src.customization.old.custom_field_value_controller import CustomFieldValueController
+from src.customization.old.create_custom_field_value_request import CreateCustomFieldValueRequest
+from src.customization.old.update_custom_field_value_request import UpdateCustomFieldValueRequest
+from src.customization.old.custom_field_value_response import CustomFieldValueResponse
 
 router = APIRouter(prefix="/api/company-workflow/custom-field-values", tags=["Custom Field Values"])
 

@@ -434,11 +434,11 @@ class CompanyMapper:
 
 **Presentation Mapper** (DTO → Response)
 
-Ubicación: `src/{module}/presentation/mappers/{entity}_mapper.py`
+Ubicación: `adapters/http/{module}/mappers/{entity}_mapper.py`
 
 ```python
-from ..schemas.company_response import CompanyResponse
-from ...application.dtos.company_dto import CompanyDto
+from adapters.http.company.schemas.company_response import CompanyResponse
+from src.company.application.dtos.company_dto import CompanyDto
 
 class CompanyResponseMapper:
     """Mapper para convertir DTOs a Responses"""
@@ -608,7 +608,7 @@ class GetCompanyByIdQueryHandler(QueryHandler[GetCompanyByIdQuery, Optional[Comp
 
 #### 3.4. Request Schemas
 
-Ubicación: `src/{module}/presentation/schemas/{entity}_request.py`
+Ubicación: `adapters/http/{module}/schemas/{entity}_request.py`
 
 ```python
 from pydantic import BaseModel, Field, validator
@@ -634,7 +634,7 @@ class UpdateCompanyRequest(BaseModel):
 
 #### 3.5. Response Schemas
 
-Ubicación: `src/{module}/presentation/schemas/{entity}_response.py`
+Ubicación: `adapters/http/{module}/schemas/{entity}_response.py`
 
 ```python
 from pydantic import BaseModel
@@ -656,17 +656,17 @@ class CompanyResponse(BaseModel):
 
 #### 3.6. Controller
 
-Ubicación: `src/{module}/presentation/controllers/{entity}_controller.py`
+Ubicación: `adapters/http/{module}/controllers/{entity}_controller.py`
 
 ```python
 from typing import Optional
 from core.command_bus import CommandBus
 from core.query_bus import QueryBus
-from ...application.commands.create_company_command import CreateCompanyCommand
-from ...application.queries.get_company_by_id_query import GetCompanyByIdQuery
-from ..schemas.company_request import CreateCompanyRequest
-from ..schemas.company_response import CompanyResponse
-from ..mappers.company_mapper import CompanyResponseMapper
+from src.company.application.commands.create_company_command import CreateCompanyCommand
+from src.company.application.queries.get_company_by_id_query import GetCompanyByIdQuery
+from adapters.http.company.schemas.company_request import CreateCompanyRequest
+from adapters.http.company.schemas.company_response import CompanyResponse
+from adapters.http.company.mappers.company_mapper import CompanyResponseMapper
 
 class CompanyController:
     """Controller de empresas"""
@@ -702,7 +702,7 @@ class CompanyController:
     def get_company(self, company_id: str) -> Optional[CompanyResponse]:
         """Obtiene una empresa por ID"""
         # ⚠️ IMPORTANTE: Conversión de strings a value objects en Controller
-        from ...domain.value_objects.company_id import CompanyId
+        from src.company.domain.value_objects.company_id import CompanyId
         query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
         dto = self.query_bus.query(query)
 
@@ -720,14 +720,14 @@ class CompanyController:
 
 #### 3.7. Router
 
-Ubicación: `src/{module}/presentation/routers/{entity}_router.py`
+Ubicación: `adapters/http/{module}/routers/{entity}_router.py`
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional
-from ..controllers.company_controller import CompanyController
-from ..schemas.company_request import CreateCompanyRequest, UpdateCompanyRequest
-from ..schemas.company_response import CompanyResponse
+from adapters.http.company.controllers.company_controller import CompanyController
+from adapters.http.company.schemas.company_request import CreateCompanyRequest, UpdateCompanyRequest
+from adapters.http.company.schemas.company_response import CompanyResponse
 from core.dependencies import get_company_controller
 
 router = APIRouter(prefix="/companies", tags=["companies"])
@@ -777,10 +777,10 @@ Ubicación: `core/container.py`
 
 ```python
 from dependency_injector import containers, providers
-from company.infrastructure.repositories.company_repository import CompanyRepository
-from company.application.commands.create_company_command import CreateCompanyCommandHandler
-from company.application.queries.get_company_by_id_query import GetCompanyByIdQueryHandler
-from company.presentation.controllers.company_controller import CompanyController
+from src.company.infrastructure.repositories.company_repository import CompanyRepository
+from src.company.application.commands.create_company_command import CreateCompanyCommandHandler
+from src.company.application.queries.get_company_by_id_query import GetCompanyByIdQueryHandler
+from adapters.http.company.controllers.company_controller import CompanyController
 
 class Container(containers.DeclarativeContainer):
     # ... existing code ...
@@ -893,7 +893,7 @@ def test_save_and_get_company(db_session):
 ### Tests de API (Fase 3)
 
 ```python
-# tests/integration/company/presentation/test_company_router.py
+# tests/integration/company/adapters/http/test_company_router.py
 
 def test_create_company(client):
     response = client.post("/companies", json={
@@ -939,10 +939,10 @@ def test_create_company(client):
 - [ ] Crear Queries en `application/queries/`
   - [ ] Query dataclass
   - [ ] QueryHandler (retorna DTO)
-- [ ] Crear Request schemas en `presentation/schemas/`
-- [ ] Crear Response schemas en `presentation/schemas/`
-- [ ] Crear Controller en `presentation/controllers/`
-- [ ] Crear Router en `presentation/routers/`
+- [ ] Crear Request schemas en `adapters/http/{module}/schemas/`
+- [ ] Crear Response schemas en `adapters/http/{module}/schemas/`
+- [ ] Crear Controller en `adapters/http/{module}/controllers/`
+- [ ] Crear Router en `adapters/http/{module}/routers/`
 - [ ] Registrar en `core/container.py`
   - [ ] Repository
   - [ ] Handlers
@@ -967,15 +967,15 @@ def test_create_company(client):
 │   ├── 📂 dtos/              ← Fase 3
 │   └── 📂 mappers/           ← Fase 2
 │
-├── 📂 infrastructure/
-│   ├── 📂 models/            ← Fase 2
-│   └── 📂 repositories/      ← Fase 2
-│
-└── 📂 presentation/
-    ├── 📂 controllers/       ← Fase 3
-    ├── 📂 routers/           ← Fase 3
-    ├── 📂 schemas/           ← Fase 3
-    └── 📂 mappers/           ← Fase 2
+└── 📂 infrastructure/
+    ├── 📂 models/            ← Fase 2
+    └── 📂 repositories/      ← Fase 2
+
+📁 adapters/http/{module}/
+├── 📂 controllers/           ← Fase 3
+├── 📂 routers/               ← Fase 3
+├── 📂 schemas/               ← Fase 3
+└── 📂 mappers/               ← Fase 2
 ```
 
 ---

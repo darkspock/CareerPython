@@ -31,6 +31,7 @@ from adapters.http.workflow.routers.workflow_router import router as candidate_a
 from adapters.http.workflow.routers.workflow_stage_router import router as workflow_stage_router
 from adapters.http.customization.routers.custom_field_router import router as custom_field_router
 from adapters.http.customization.routers.custom_field_value_router import router as custom_field_value_router
+from adapters.http.customization.routers.entity_customization_router import router as entity_customization_router
 from adapters.http.company.routers.candidate_comment_router import router as candidate_comment_router
 from src.field_validation.presentation.routers.validation_rule_router import router as validation_rule_router
 from src.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
@@ -94,6 +95,7 @@ app.include_router(candidate_application_workflow_router)  # Company workflow ma
 app.include_router(workflow_stage_router)  # Workflow stage management
 app.include_router(custom_field_router)  # Custom field management
 app.include_router(custom_field_value_router)  # Custom field value management
+app.include_router(entity_customization_router)  # Entity customization management
 app.include_router(candidate_comment_router)  # Candidate comment management
 app.include_router(validation_rule_router)  # Field validation rules
 app.include_router(position_stage_assignment_router)  # Position stage assignment management
@@ -149,10 +151,11 @@ container.wire(modules=[
     "adapters.http.company.routers.company_role_router",
     "adapters.http.company.routers.company_candidate_application_router",
     "adapters.http.company_candidate.routers.company_candidate_router",
-    "adapters.http.candidate_application_workflow.routers.candidate_application_workflow_router",
-    "adapters.http.candidate_application_workflow.routers.workflow_stage_router",
-    "adapters.http.candidate_application_workflow.routers.custom_field_router",
-    "adapters.http.candidate_application_workflow.routers.custom_field_value_router",
+    "adapters.http.workflow.routers.workflow_router",
+    "adapters.http.workflow.routers.workflow_stage_router",
+    "adapters.http.customization.routers.custom_field_router",
+    "adapters.http.customization.routers.custom_field_value_router",
+    "adapters.http.customization.routers.entity_customization_router",
     "adapters.http.company.routers.candidate_comment_router",
     "src.field_validation.presentation.routers.validation_rule_router",
     "src.position_stage_assignment.presentation.routers.position_stage_assignment_router",

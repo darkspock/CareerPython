@@ -129,7 +129,7 @@ class CompanyCandidateController:
         from src.company_candidate.application.queries.get_company_candidate_by_id_with_candidate_info import (
             GetCompanyCandidateByIdWithCandidateInfoQuery
         )
-        from src.customization.application.get_custom_field_values_by_company_candidate import (
+        from src.customization.old.application import (
             GetCustomFieldValuesByCompanyCandidateQuery
         )
         

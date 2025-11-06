@@ -190,12 +190,12 @@ from src.workflow.application.commands.stage.delete_stage_command import DeleteS
 from src.workflow.application.commands.stage.reorder_stages_command import ReorderStagesCommandHandler
 from src.workflow.application.commands.stage.activate_stage_command import ActivateStageCommandHandler
 from src.workflow.application.commands.stage.deactivate_stage_command import DeactivateStageCommandHandler
-from src.customization.application.create_custom_field_command import CreateCustomFieldCommandHandler
-from src.customization.application.update_custom_field_command import UpdateCustomFieldCommandHandler
-from src.customization.application.delete_custom_field_command import DeleteCustomFieldCommandHandler
-from src.customization.application.reorder_custom_field_command import ReorderCustomFieldCommandHandler
-from src.customization.application.configure_stage_field_command import ConfigureStageFieldCommandHandler
-from src.customization.application.update_field_visibility_command import UpdateFieldVisibilityCommandHandler
+from src.customization import CreateCustomFieldCommandHandler
+from src.customization import UpdateCustomFieldCommandHandler
+from src.customization import DeleteCustomFieldCommandHandler
+from src.customization import ReorderCustomFieldCommandHandler
+from src.customization import ConfigureStageFieldCommandHandler
+from src.customization import UpdateFieldVisibilityCommandHandler
 
 # CandidateApplicationWorkflow Application Layer - Queries
 from src.workflow.application.queries.workflow.get_workflow_by_id import GetWorkflowByIdQueryHandler
@@ -206,28 +206,46 @@ from src.workflow.application.queries.stage.list_stages_by_workflow import ListS
 from src.workflow.application.queries.stage.list_stages_by_phase import ListStagesByPhaseQueryHandler
 from src.workflow.application.queries.stage.get_initial_stage import GetInitialStageQueryHandler
 from src.workflow.application.queries.stage.get_final_stages import GetFinalStagesQueryHandler
-from src.customization.application.get_custom_field_by_id import GetCustomFieldByIdQueryHandler
-from src.customization.application.list_custom_fields_by_workflow import ListCustomFieldsByWorkflowQueryHandler
-from src.customization.application.list_field_configurations_by_stage import ListFieldConfigurationsByStageQueryHandler
-from src.customization.application.get_field_configuration_by_id import GetFieldConfigurationByIdQueryHandler
-from src.customization.application.get_custom_field_values_by_company_candidate import GetCustomFieldValuesByCompanyCandidateQueryHandler
-from src.customization.application.get_all_custom_field_values_by_company_candidate import GetAllCustomFieldValuesByCompanyCandidateQueryHandler
-from src.customization.application.create_custom_field_value_command import CreateCustomFieldValueCommandHandler
-from src.customization.application.update_custom_field_value_command import UpdateCustomFieldValueCommandHandler
-from src.customization.application.delete_custom_field_value_command import DeleteCustomFieldValueCommandHandler
-from src.customization.application.get_custom_field_value_by_id import GetCustomFieldValueByIdQueryHandler
+from src.customization import GetCustomFieldByIdQueryHandler
+from src.customization import ListCustomFieldsByWorkflowQueryHandler
+from src.customization import ListFieldConfigurationsByStageQueryHandler
+from src.customization import GetFieldConfigurationByIdQueryHandler
+from src.customization import GetCustomFieldValuesByCompanyCandidateQueryHandler
+from src.customization import GetAllCustomFieldValuesByCompanyCandidateQueryHandler
+from src.customization import CreateCustomFieldValueCommandHandler
+from src.customization import UpdateCustomFieldValueCommandHandler
+from src.customization import DeleteCustomFieldValueCommandHandler
+from src.customization import GetCustomFieldValueByIdQueryHandler
+
+# New Customization Application Layer - Commands
+from src.customization.application.commands.create_entity_customization_command import CreateEntityCustomizationCommandHandler
+from src.customization.application.commands.update_entity_customization_command import UpdateEntityCustomizationCommandHandler
+from src.customization.application.commands.delete_entity_customization_command import DeleteEntityCustomizationCommandHandler
+from src.customization.application.commands.add_custom_field_to_entity_command import AddCustomFieldToEntityCommandHandler
+
+# New Customization Application Layer - Queries
+from src.customization.application.queries.get_entity_customization_query import GetEntityCustomizationQueryHandler
+from src.customization.application.queries.get_entity_customization_by_id_query import GetEntityCustomizationByIdQueryHandler
+from src.customization.application.queries.list_custom_fields_by_entity_query import ListCustomFieldsByEntityQueryHandler
 
 # CandidateApplicationWorkflow Infrastructure
 from src.workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
-from src.customization.infrastructure.repositories.custom_field_repository import CustomFieldRepository
-from src.customization.infrastructure.repositories.custom_field_value_repository import CustomFieldValueRepository
-from src.customization.infrastructure.repositories.field_configuration_repository import FieldConfigurationRepository
+from src.customization import CustomFieldRepository
+from src.customization import CustomFieldValueRepository
+from src.customization import FieldConfigurationRepository
+
+# New Customization Infrastructure
+from src.customization.infrastructure.repositories.entity_customization_repository import EntityCustomizationRepository
+from src.customization.infrastructure.repositories.custom_field_repository import CustomFieldRepository as NewCustomFieldRepository
 
 # CandidateApplicationWorkflow Presentation Controllers
 from adapters.http.workflow.controllers import WorkflowController
 from adapters.http.workflow.controllers import WorkflowStageController
-from src.customization.custom_field_value_controller import CustomFieldValueController
-from src.customization.custom_field_controller import CustomFieldController
+from src.customization import CustomFieldValueController
+from src.customization import CustomFieldController
+
+# New Customization Presentation Controllers
+from adapters.http.customization.controllers.entity_customization_controller import EntityCustomizationController
 
 # FieldValidation Application Layer - Commands
 from src.field_validation.application.commands.create_validation_rule_command import CreateValidationRuleCommandHandler
@@ -562,6 +580,17 @@ class Container(containers.DeclarativeContainer):
 
     field_configuration_repository = providers.Factory(
         FieldConfigurationRepository,
+        database=database
+    )
+
+    # New Customization Repositories
+    entity_customization_repository = providers.Factory(
+        EntityCustomizationRepository,
+        database=database
+    )
+
+    new_custom_field_repository = providers.Factory(
+        NewCustomFieldRepository,
         database=database
     )
 
@@ -971,6 +1000,22 @@ class Container(containers.DeclarativeContainer):
     get_custom_field_value_by_id_query_handler = providers.Factory(
         GetCustomFieldValueByIdQueryHandler,
         repository=custom_field_value_repository
+    )
+
+    # New Customization Query Handlers
+    get_entity_customization_query_handler = providers.Factory(
+        GetEntityCustomizationQueryHandler,
+        repository=entity_customization_repository
+    )
+
+    get_entity_customization_by_id_query_handler = providers.Factory(
+        GetEntityCustomizationByIdQueryHandler,
+        repository=entity_customization_repository
+    )
+
+    list_custom_fields_by_entity_query_handler = providers.Factory(
+        ListCustomFieldsByEntityQueryHandler,
+        repository=new_custom_field_repository
     )
 
     # FieldValidation Query Handlers
@@ -2135,6 +2180,13 @@ class Container(containers.DeclarativeContainer):
         command_bus=command_bus,
         query_bus=query_bus,
         custom_field_value_repository=custom_field_value_repository
+    )
+
+    # New Customization Controller
+    entity_customization_controller = providers.Factory(
+        EntityCustomizationController,
+        command_bus=command_bus,
+        query_bus=query_bus
     )
 
     validation_rule_controller = providers.Factory(
