@@ -64,14 +64,23 @@ def get_entity_customization(
     entity_id: str,
     controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
 ) -> EntityCustomizationResponse:
-    """Get an entity customization by entity type and entity ID"""
-    result = controller.get_entity_customization(entity_type, entity_id)
-    if not result:
+    """Get an entity customization by entity type and entity ID
+    
+    Valid entity_type values: JobPosition, CandidateApplication, Candidate, Workflow
+    """
+    try:
+        result = controller.get_entity_customization(entity_type, entity_id)
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Entity customization not found"
+            )
+        return result
+    except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Entity customization not found"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
-    return result
 
 
 @router.put(

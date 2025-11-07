@@ -8,6 +8,7 @@ from src.candidate_application.domain.enums.task_status import TaskStatus
 from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.candidate_application.domain.value_objects.task_priority import TaskPriority
 from src.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.phase.domain.value_objects.phase_id import PhaseId
 
 
 @dataclass
@@ -81,7 +82,7 @@ class CandidateApplication:
         # Reset task status when moving to new stage
         self.task_status = TaskStatus.PENDING
 
-    def move_to_next_phase(self, next_phase_id: str, initial_stage_id: Optional[str] = None, time_limit_hours: Optional[int] = None) -> None:
+    def move_to_next_phase(self, next_phase_id: PhaseId, initial_stage_id: Optional[str] = None, time_limit_hours: Optional[int] = None) -> None:
         """Move application to the next phase in the recruitment process
 
         Phase 12: This method is called when a candidate completes a terminal stage
@@ -92,7 +93,7 @@ class CandidateApplication:
             initial_stage_id: Optional ID of the initial stage in the new phase
             time_limit_hours: Optional time limit for the initial stage in hours
         """
-        self.current_phase_id = next_phase_id
+        self.current_phase_id = next_phase_id.value
         self.updated_at = datetime.utcnow()
 
         # If initial stage is provided, move to it

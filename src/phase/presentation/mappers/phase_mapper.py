@@ -19,6 +19,7 @@ class PhaseMapper:
         return PhaseResponse(
             id=dto.id,
             company_id=dto.company_id,
+            workflow_type=dto.workflow_type,
             name=dto.name,
             sort_order=dto.sort_order,
             default_view=dto.default_view,

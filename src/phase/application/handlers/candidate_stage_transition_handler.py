@@ -9,12 +9,11 @@ from typing import Optional
 from src.candidate_application.domain.repositories.candidate_application_repository_interface import \
     CandidateApplicationRepositoryInterface
 from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
-    WorkflowStageRepositoryInterface
-from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
-    CandidateApplicationWorkflowRepositoryInterface
+from src.phase.domain.value_objects.phase_id import PhaseId
+from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.workflow.domain.enums.stage_type import StageType
 from src.workflow.domain.entities.workflow_stage import WorkflowStage
 
 
@@ -30,7 +29,7 @@ class CandidateStageTransitionHandler:
         self,
         application_repository: CandidateApplicationRepositoryInterface,
         stage_repository: WorkflowStageRepositoryInterface,
-        workflow_repository: CandidateApplicationWorkflowRepositoryInterface
+        workflow_repository: WorkflowRepositoryInterface
     ):
         self.application_repository = application_repository
         self.stage_repository = stage_repository
@@ -58,7 +57,7 @@ class CandidateStageTransitionHandler:
             return
 
         # Check if this is a terminal stage with next_phase_id
-        if stage.stage_type not in [StageType.SUCCESS, StageType.FAIL]:
+        if stage.stage_type not in [WorkflowStageTypeEnum.SUCCESS, WorkflowStageTypeEnum.FAIL]:
             return
 
         if not stage.next_phase_id:
@@ -90,7 +89,7 @@ class CandidateStageTransitionHandler:
         # Save the updated application
         self.application_repository.save(application)
 
-    def _get_phase_initial_stage(self, phase_id: str) -> Optional[WorkflowStage]:
+    def _get_phase_initial_stage(self, phase_id: PhaseId) -> Optional[WorkflowStage]:
         """Get the initial stage of the default workflow for a phase
 
         Args:

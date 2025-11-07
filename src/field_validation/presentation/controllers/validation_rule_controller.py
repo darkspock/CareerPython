@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from src.customization.domain.value_objects.custom_field_id import CustomFieldId
 from src.shared.application.command_bus import CommandBus
 from src.shared.application.query_bus import QueryBus
 from src.field_validation.application.dtos.validation_rule_dto import ValidationRuleDto
@@ -7,7 +8,6 @@ from src.field_validation.domain.value_objects.validation_rule_id import Validat
 from src.field_validation.domain.enums.validation_rule_type import ValidationRuleType
 from src.field_validation.domain.enums.comparison_operator import ComparisonOperator
 from src.field_validation.domain.enums.validation_severity import ValidationSeverity
-from src.workflow.domain.value_objects.custom_field_id import CustomFieldId
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.field_validation.application.commands.create_validation_rule_command import CreateValidationRuleCommand
 from src.field_validation.application.commands.update_validation_rule_command import UpdateValidationRuleCommand

@@ -11,10 +11,11 @@ from src.company.infrastructure.models.company_model import CompanyModel
 from src.company.infrastructure.models.company_user_model import CompanyUserModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
-from src.workflow.infrastructure.models.workflow_model import CandidateApplicationWorkflowModel
+from src.workflow.infrastructure.models.workflow_model import WorkflowModel
 from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
-from src.workflow.infrastructure.models.custom_field_model import CustomFieldModel
-from src.workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
+from src.customization.infrastructure.models.custom_field_model import CustomFieldModel
+from src.customization.infrastructure.models.field_configuration_model import FieldConfigurationModel
+from src.customization.infrastructure.models.entity_customization_model import EntityCustomizationModel
 from src.field_validation.infrastructure.models.validation_rule_model import ValidationRuleModel
 from src.user.infrastructure.models.user_model import UserModel
 from src.user.infrastructure.models.user_asset_model import UserAssetModel
@@ -22,6 +23,7 @@ from src.candidate.infrastructure.models.candidate_model import CandidateModel
 from src.candidate.infrastructure.models.candidate_education import CandidateEducationModel
 from src.candidate.infrastructure.models.candidate_experience import CandidateExperienceModel
 from src.candidate.infrastructure.models.candidate_project import CandidateProjectModel
+from src.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
 from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
 from src.resume.infrastructure.models.resume_model import ResumeModel
 
@@ -39,10 +41,11 @@ __all__ = [
     "CompanyUserModel",
     "CompanyCandidateModel",
     "CandidateCommentModel",
-    "CandidateApplicationWorkflowModel",
+    "WorkflowModel",
     "WorkflowStageModel",
     "CustomFieldModel",
     "FieldConfigurationModel",
+    "EntityCustomizationModel",
     "ValidationRuleModel",
     "UserModel",
     "UserAssetModel",
@@ -50,6 +53,7 @@ __all__ = [
     "CandidateEducationModel",
     "CandidateExperienceModel",
     "CandidateProjectModel",
+    "FileAttachmentModel",
     "CandidateApplicationModel",
     "ResumeModel",
 ]

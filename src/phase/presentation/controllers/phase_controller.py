@@ -59,8 +59,11 @@ class PhaseController:
             Created phase response
         """
         # Execute command
+        from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+        
         command = CreatePhaseCommand(
             company_id=CompanyId.from_string(company_id),
+            workflow_type=WorkflowTypeEnum(request.workflow_type),
             name=request.name,
             sort_order=request.sort_order,
             default_view=request.default_view,

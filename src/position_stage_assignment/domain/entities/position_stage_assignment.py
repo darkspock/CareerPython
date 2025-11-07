@@ -24,15 +24,16 @@ class PositionStageAssignment:
         if not user_id or not user_id.strip():
             raise PositionStageAssignmentValidationError("User ID cannot be empty")
 
-        user_id_clean = user_id.strip()
-        if user_id_clean not in self.assigned_user_ids:
-            self.assigned_user_ids.append(user_id_clean)
+        user_id_vo = CompanyUserId.from_string(user_id.strip())
+        if user_id_vo not in self.assigned_user_ids:
+            self.assigned_user_ids.append(user_id_vo)
             self.updated_at = datetime.utcnow()
 
     def remove_user(self, user_id: str) -> None:
         """Remove a user from this stage assignment"""
-        if user_id in self.assigned_user_ids:
-            self.assigned_user_ids.remove(user_id)
+        user_id_vo = CompanyUserId.from_string(user_id)
+        if user_id_vo in self.assigned_user_ids:
+            self.assigned_user_ids.remove(user_id_vo)
             self.updated_at = datetime.utcnow()
 
     def replace_users(self, user_ids: List[str]) -> None:
@@ -42,7 +43,7 @@ class PositionStageAssignment:
         for user_id in user_ids:
             if not user_id or not user_id.strip():
                 raise PositionStageAssignmentValidationError("User ID cannot be empty")
-            cleaned_id = user_id.strip()
+            cleaned_id = CompanyUserId.from_string(user_id.strip())
             if cleaned_id not in cleaned_ids:  # Remove duplicates
                 cleaned_ids.append(cleaned_id)
 
@@ -51,7 +52,8 @@ class PositionStageAssignment:
 
     def has_user(self, user_id: str) -> bool:
         """Check if a user is assigned to this stage"""
-        return user_id in self.assigned_user_ids
+        user_id_vo = CompanyUserId.from_string(user_id)
+        return user_id_vo in self.assigned_user_ids
 
     def get_user_count(self) -> int:
         """Get the number of assigned users"""
@@ -85,9 +87,9 @@ class PositionStageAssignment:
 
         return PositionStageAssignment(
             id=id,
-            position_id=position_id.strip(),
-            stage_id=stage_id.strip(),
-            assigned_user_ids=cleaned_user_ids,
+            position_id=JobPositionId.from_string(position_id.strip()),
+            stage_id=StageId.from_string(stage_id.strip()),
+            assigned_user_ids=[CompanyUserId.from_string(uid) for uid in cleaned_user_ids],
             created_at=now,
             updated_at=now
         )
@@ -105,9 +107,9 @@ class PositionStageAssignment:
         """Create from repository - only for repositories to use"""
         return cls(
             id=id,
-            position_id=position_id,
-            stage_id=stage_id,
-            assigned_user_ids=assigned_user_ids or [],
+            position_id=JobPositionId.from_string(position_id),
+            stage_id=StageId.from_string(stage_id),
+            assigned_user_ids=[CompanyUserId.from_string(uid) for uid in (assigned_user_ids or [])],
             created_at=created_at,
             updated_at=updated_at
         )

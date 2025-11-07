@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Type
 
 from pydantic import BaseModel
 
-from src.workflow.domain.enums.stage_type import StageType
+from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 
 
 class EnumOption(BaseModel):
@@ -48,5 +48,5 @@ class CompanyEnumController:
         }
 
         return CompanyEnumMetadataResponse(
-            stage_types=enum_to_options(StageType, stage_type_labels)
+            stage_types=enum_to_options(WorkflowStageTypeEnum, stage_type_labels)
         )

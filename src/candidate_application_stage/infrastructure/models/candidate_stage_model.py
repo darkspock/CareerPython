@@ -31,7 +31,7 @@ class CandidateApplicationStageModel(Base):
     )
     workflow_id: Mapped[Optional[str]] = mapped_column(
         String(26),
-        ForeignKey('candidate_application_workflows.id', ondelete='SET NULL'),
+        ForeignKey('workflows.id', ondelete='SET NULL'),
         nullable=True,
         index=True
     )

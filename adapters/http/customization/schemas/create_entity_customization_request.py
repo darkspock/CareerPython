@@ -13,7 +13,7 @@ class CreateEntityCustomizationRequest(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Additional metadata")
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: Dict[str, Any] = {
             "example": {
                 "entity_type": "JobPosition",
                 "entity_id": "01HXXXXXXXXXXXXXXXXXXX",

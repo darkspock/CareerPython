@@ -83,7 +83,7 @@ class PositionStageAssignmentRepository(PositionStageAssignmentRepositoryInterfa
         """Get assigned user IDs for a position-stage combination"""
         assignment = self.get_by_position_and_stage(position_id, stage_id)
         if assignment:
-            return assignment.assigned_user_ids
+            return [uid.value for uid in assignment.assigned_user_ids]
         return []
 
     def list_by_user(self, user_id: str) -> List[PositionStageAssignment]:
@@ -144,14 +144,14 @@ class PositionStageAssignmentRepository(PositionStageAssignmentRepositoryInterfa
         """Create model from entity"""
         return PositionStageAssignmentModel(
             id=assignment.id.value,
-            position_id=assignment.position_id,
-            stage_id=assignment.stage_id,
-            assigned_user_ids=assignment.assigned_user_ids,
+            position_id=assignment.position_id.value,
+            stage_id=assignment.stage_id.value,
+            assigned_user_ids=[uid.value for uid in assignment.assigned_user_ids],
             created_at=assignment.created_at,
             updated_at=assignment.updated_at
         )
 
     def _update_model_from_entity(self, model: PositionStageAssignmentModel, assignment: PositionStageAssignment) -> None:
         """Update model with entity data"""
-        model.assigned_user_ids = assignment.assigned_user_ids
+        model.assigned_user_ids = [uid.value for uid in assignment.assigned_user_ids]
         model.updated_at = assignment.updated_at

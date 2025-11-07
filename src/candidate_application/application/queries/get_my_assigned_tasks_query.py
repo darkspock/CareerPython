@@ -106,8 +106,8 @@ class GetMyAssignedTasksQueryHandler(QueryHandler[GetMyAssignedTasksQuery, List[
             stage_id = assignment.stage_id
 
             if position_id not in user_stages:
-                user_stages[position_id] = []
+                user_stages[position_id.value] = []
 
-            user_stages[position_id].append(stage_id)
+            user_stages[position_id.value].append(stage_id.value)
 
         return user_stages

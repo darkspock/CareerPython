@@ -129,10 +129,7 @@ class CompanyCandidateController:
         from src.company_candidate.application.queries.get_company_candidate_by_id_with_candidate_info import (
             GetCompanyCandidateByIdWithCandidateInfoQuery
         )
-        from src.customization.old.application import (
-            GetCustomFieldValuesByCompanyCandidateQuery
-        )
-        
+
         query = GetCompanyCandidateByIdWithCandidateInfoQuery(id=CompanyCandidateId(company_candidate_id))
         read_model: Optional[CompanyCandidateWithCandidateReadModel] = self._query_bus.query(query)
 
@@ -141,10 +138,14 @@ class CompanyCandidateController:
 
         # Get custom field values
         from typing import Dict, Any
-        custom_field_values_query = GetCustomFieldValuesByCompanyCandidateQuery(
-            company_candidate_id=CompanyCandidateId(company_candidate_id)
+        from src.customization.application.queries.get_custom_field_values_by_entity_query import GetCustomFieldValuesByEntityQuery
+        from src.customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
+        
+        custom_field_values_query = GetCustomFieldValuesByEntityQuery(
+            entity_type=EntityCustomizationTypeEnum.CANDIDATE_APPLICATION,
+            entity_id=company_candidate_id
         )
-        custom_field_values: Dict[str, Any] = self._query_bus.query(custom_field_values_query)
+        custom_field_values: Dict[str, Any] = self._query_bus.query(custom_field_values_query) or {}
 
         # Map read model directly to response
         response = CompanyCandidateResponse(

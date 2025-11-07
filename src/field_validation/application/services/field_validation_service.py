@@ -1,9 +1,9 @@
 from typing import Dict, Any, Optional, List
 
+from src.customization.domain.interfaces import CustomFieldRepositoryInterface
 from src.field_validation.domain.infrastructure.validation_rule_repository_interface import ValidationRuleRepositoryInterface
 from src.field_validation.application.dtos.stage_validation_result_dto import StageValidationResultDto, ValidationIssueDto
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.workflow.domain.infrastructure.custom_field_repository_interface import CustomFieldRepositoryInterface
 
 
 class FieldValidationService:

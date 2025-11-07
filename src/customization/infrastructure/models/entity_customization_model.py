@@ -22,7 +22,7 @@ class EntityCustomizationModel(Base):
     )
     entity_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     validation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON-Logic
-    metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True, default=dict)
+    metadata_json: Mapped[Optional[Dict[str, Any]]] = mapped_column('metadata', JSON, nullable=True, default=dict)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 

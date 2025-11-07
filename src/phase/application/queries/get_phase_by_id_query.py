@@ -16,6 +16,7 @@ class PhaseDto:
     """Phase data transfer object"""
     id: str
     company_id: str
+    workflow_type: str  # WorkflowTypeEnum value as string
     name: str
     sort_order: int
     default_view: DefaultView
@@ -30,6 +31,7 @@ class PhaseDto:
         return PhaseDto(
             id=phase.id.value,
             company_id=phase.company_id.value,
+            workflow_type=phase.workflow_type.value,
             name=phase.name,
             sort_order=phase.sort_order,
             default_view=phase.default_view,

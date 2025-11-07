@@ -11,8 +11,8 @@ from src.candidate_application.domain.value_objects.candidate_application_id imp
 from src.candidate_application_stage.domain.entities.candidate_application_stage import CandidateApplicationStage
 from src.candidate_application_stage.domain.infrastructure.candidate_application_stage_repository_interface import CandidateStageRepositoryInterface
 from src.candidate_application_stage.domain.value_objects.candidate_application_stage_id import CandidateApplicationStageId
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.workflow.domain.enums.stage_type import StageType
+from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.phase.domain.value_objects.phase_id import PhaseId
@@ -98,7 +98,7 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
         self.candidate_stage_repository.save(new_stage_record)
 
         # 6. Phase 12.12: Check if this is a SUCCESS stage with next_phase_id
-        if target_stage.stage_type == StageType.SUCCESS and target_stage.next_phase_id:
+        if target_stage.stage_type == WorkflowStageTypeEnum.SUCCESS and target_stage.next_phase_id:
             # Get the job position to determine the workflow for the next phase
             job_position = self.job_position_repository.get_by_id(application.job_position_id)
             if not job_position:
@@ -116,7 +116,7 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
             next_workflow_stages = self.workflow_stage_repository.list_by_workflow(
                 WorkflowId.from_string(next_phase_workflow_id)
             )
-            initial_stage = next((s for s in next_workflow_stages if s.stage_type == StageType.INITIAL), None)
+            initial_stage = next((s for s in next_workflow_stages if s.stage_type == WorkflowStageTypeEnum.INITIAL), None)
             if not initial_stage:
                 raise ValueError(f"No INITIAL stage found in workflow {next_phase_workflow_id}")
 
@@ -131,7 +131,7 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
             next_phase_stage_record = CandidateApplicationStage.create(
                 id=CandidateApplicationStageId.generate(),
                 candidate_application_id=application.id,
-                phase_id=PhaseId.from_string(target_stage.next_phase_id),
+                phase_id=target_stage.next_phase_id,
                 workflow_id=WorkflowId.from_string(next_phase_workflow_id),
                 stage_id=initial_stage.id,
                 deadline=application.stage_deadline,

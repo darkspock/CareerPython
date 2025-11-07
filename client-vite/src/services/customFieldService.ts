@@ -1,3 +1,14 @@
+/**
+ * @deprecated This service is deprecated. Use EntityCustomizationService from './entityCustomizationService' instead.
+ * This service will be removed in a future version.
+ * 
+ * Migration guide:
+ * - Replace CustomFieldService.listCustomFieldsByWorkflow(workflowId) 
+ *   with EntityCustomizationService.listFieldsByEntity('Workflow', workflowId)
+ * - Replace CustomFieldService.createCustomField(request) 
+ *   with EntityCustomizationService.updateCustomization(id, { fields: [field] })
+ * - And so on...
+ */
 // Custom Field API service
 import { api } from '../lib/api';
 import type {
@@ -10,6 +21,9 @@ import type {
   UpdateFieldVisibilityRequest
 } from '../types/workflow';
 
+/**
+ * @deprecated Use EntityCustomizationService instead.
+ */
 export class CustomFieldService {
   private static readonly BASE_PATH = '/api/custom-fields';
 

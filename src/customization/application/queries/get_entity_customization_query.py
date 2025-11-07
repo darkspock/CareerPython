@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from src.customization.domain.entities.entity_customization import EntityCustomization
 from src.customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
@@ -15,14 +16,17 @@ class GetEntityCustomizationQuery(Query):
     entity_id: str
 
 
-class GetEntityCustomizationQueryHandler(QueryHandler[GetEntityCustomizationQuery, EntityCustomizationDto]):
+class GetEntityCustomizationQueryHandler(QueryHandler[GetEntityCustomizationQuery, Optional[EntityCustomizationDto]]):
     """Handler for getting an entity customization"""
 
     def __init__(self, repository: EntityCustomizationRepositoryInterface):
         self._repository = repository
 
-    def handle(self, query: GetEntityCustomizationQuery) -> EntityCustomizationDto:
-        """Handle the get entity customization query"""
+    def handle(self, query: GetEntityCustomizationQuery) -> Optional[EntityCustomizationDto]:
+        """Handle the get entity customization query
+        
+        Returns None if entity customization is not found (instead of raising an exception)
+        """
         entity_customization = self._repository.get_by_entity(
             entity_type=query.entity_type,
             entity_id=query.entity_id

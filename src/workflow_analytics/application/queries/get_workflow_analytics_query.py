@@ -8,10 +8,8 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from typing import TYPE_CHECKING
 
-from src.workflow.domain.infrastructure.candidate_application_workflow_repository_interface import \
-    CandidateApplicationWorkflowRepositoryInterface
-from src.workflow.domain.infrastructure.workflow_stage_repository_interface import \
-    WorkflowStageRepositoryInterface
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
+from src.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared.application.query_bus import Query, QueryHandler
 from src.workflow_analytics.application.dtos import (
@@ -44,7 +42,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
     def __init__(
             self,
             database: "SQLAlchemyDatabase",
-            workflow_repository: CandidateApplicationWorkflowRepositoryInterface,
+            workflow_repository: WorkflowRepositoryInterface,
             stage_repository: WorkflowStageRepositoryInterface
     ):
         self._database = database

@@ -27,15 +27,34 @@ class CreateEntityCustomizationCommandHandler(CommandHandler[CreateEntityCustomi
         self._repository = repository
 
     def execute(self, command: CreateEntityCustomizationCommand) -> None:
-        """Handle the create entity customization command"""
-        entity_customization = EntityCustomization.create(
+        """Handle the create entity customization command
+        
+        If a customization already exists for this (entity_type, entity_id),
+        it will be updated instead of creating a new one.
+        """
+        # Check if customization already exists
+        existing = self._repository.get_by_entity(
             entity_type=command.entity_type,
-            entity_id=command.entity_id,
-            fields=command.fields,
-            id=command.id,
-            validation=command.validation,
-            metadata=command.metadata
+            entity_id=command.entity_id
         )
-
-        self._repository.save(entity_customization)
+        
+        if existing:
+            # Update existing customization
+            existing.update(
+                fields=command.fields if command.fields else existing.fields,
+                validation=command.validation if command.validation is not None else existing.validation,
+                metadata=command.metadata if command.metadata is not None else existing.metadata
+            )
+            self._repository.save(existing)
+        else:
+            # Create new customization
+            entity_customization = EntityCustomization.create(
+                entity_type=command.entity_type,
+                entity_id=command.entity_id,
+                fields=command.fields,
+                id=command.id,
+                validation=command.validation,
+                metadata=command.metadata
+            )
+            self._repository.save(entity_customization)
 

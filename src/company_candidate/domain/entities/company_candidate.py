@@ -18,6 +18,7 @@ from src.company_candidate.domain.exceptions import (
 from src.company.domain.value_objects import CompanyId
 from src.company.domain.value_objects.company_user_id import CompanyUserId
 from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.phase.domain.value_objects.phase_id import PhaseId
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
@@ -74,7 +75,7 @@ class CompanyCandidate:
         lead_id: Optional[str] = None,
         resume_url: Optional[str] = None,
         resume_uploaded_by: Optional[CompanyUserId] = None,
-        phase_id: Optional[str] = None,
+        phase_id: Optional[PhaseId] = None,
     ) -> "CompanyCandidate":
         """
         Factory method to create a new company-candidate relationship
@@ -144,7 +145,7 @@ class CompanyCandidate:
             created_by_user_id=created_by_user_id,
             workflow_id=None,
             current_stage_id=None,
-            phase_id=phase_id,
+            phase_id=phase_id.value if phase_id else None,
             invited_at=now,
             confirmed_at=None,
             rejected_at=None,
@@ -432,7 +433,7 @@ class CompanyCandidate:
             updated_at=datetime.utcnow(),
         )
 
-    def assign_workflow(self, workflow_id: WorkflowId, initial_stage_id: WorkflowStageId, phase_id: Optional[str] = None) -> "CompanyCandidate":
+    def assign_workflow(self, workflow_id: WorkflowId, initial_stage_id: WorkflowStageId, phase_id: Optional[PhaseId] = None) -> "CompanyCandidate":
         """
         Assigns a workflow and initial stage to this candidate
 
@@ -453,7 +454,7 @@ class CompanyCandidate:
             created_by_user_id=self.created_by_user_id,
             workflow_id=workflow_id,
             current_stage_id=initial_stage_id,
-            phase_id=phase_id or self.phase_id,
+            phase_id=(phase_id.value if phase_id else None) or self.phase_id,
             invited_at=self.invited_at,
             confirmed_at=self.confirmed_at,
             rejected_at=self.rejected_at,

@@ -10,9 +10,7 @@ from src.workflow.domain.enums.workflow_status_enum import WorkflowStatusEnum
 from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.workflow.domain.exceptions.invalid_workflow_operation import InvalidWorkFlowOperation
 from src.workflow.domain.value_objects.workflow_id import WorkflowId
-
-if TYPE_CHECKING:
-    from src.phase.domain.value_objects.phase_id import PhaseId
+from src.phase.domain.value_objects.phase_id import PhaseId
 
 
 @dataclass

@@ -18,37 +18,55 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
 
     def save(self, entity_customization: EntityCustomization) -> None:
         """Save or update an entity customization"""
-        model = self._to_model(entity_customization)
         with self._database.get_session() as session:
+            # First, try to find by ID
             existing = session.query(EntityCustomizationModel).filter_by(id=str(entity_customization.id)).first()
+            
+            # If not found by ID, try to find by (entity_type, entity_id) to handle updates
+            if not existing:
+                existing = session.query(EntityCustomizationModel).filter_by(
+                    entity_type=entity_customization.entity_type.value,
+                    entity_id=entity_customization.entity_id
+                ).first()
+            
+            # Use the existing ID if found, otherwise use the entity's ID
+            customization_id = existing.id if existing else str(entity_customization.id)
+            
             if existing:
-                # Update existing
-                for key, value in model.__dict__.items():
-                    if not key.startswith('_') and key != 'id':
-                        setattr(existing, key, value)
+                # Update existing - use the existing ID from the database
+                # Update all fields
+                existing.entity_type = entity_customization.entity_type.value
+                existing.entity_id = entity_customization.entity_id
+                existing.validation = entity_customization.validation
+                existing.metadata_json = entity_customization.metadata
+                existing.updated_at = entity_customization.updated_at
+                # Don't update created_at - preserve original creation time
                 session.merge(existing)
             else:
+                # Create new
+                model = self._to_model(entity_customization)
                 session.add(model)
             
             # Save/update custom fields
+            # Use the correct customization_id (existing or new)
             # First, delete fields that are no longer in the entity
             if entity_customization.fields:
                 existing_field_ids = {str(f.id) for f in entity_customization.fields}
                 from sqlalchemy import not_
                 session.query(CustomFieldModel).filter_by(
-                    entity_customization_id=str(entity_customization.id)
+                    entity_customization_id=customization_id
                 ).filter(not_(CustomFieldModel.id.in_(existing_field_ids))).delete(synchronize_session=False)
             else:
                 # If no fields, delete all existing fields
                 session.query(CustomFieldModel).filter_by(
-                    entity_customization_id=str(entity_customization.id)
+                    entity_customization_id=customization_id
                 ).delete(synchronize_session=False)
             
             # Then, save/update each field
             for field in entity_customization.fields:
                 field_model = CustomFieldModel(
                     id=str(field.id),
-                    entity_customization_id=str(entity_customization.id),
+                    entity_customization_id=customization_id,
                     field_key=field.field_key,
                     field_name=field.field_name,
                     field_type=field.field_type,
@@ -130,7 +148,7 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
             validation=model.validation,
             created_at=model.created_at,
             updated_at=model.updated_at,
-            metadata=model.metadata or {}
+            metadata=model.metadata_json or {}
         )
 
     def _to_model(self, entity: EntityCustomization) -> EntityCustomizationModel:
@@ -140,7 +158,7 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
             entity_type=entity.entity_type.value,
             entity_id=entity.entity_id,
             validation=entity.validation,
-            metadata=entity.metadata,
+            metadata_json=entity.metadata,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

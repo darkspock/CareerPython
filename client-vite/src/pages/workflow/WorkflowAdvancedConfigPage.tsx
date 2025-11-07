@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
-import type { CompanyWorkflow, CustomField, FieldConfiguration, WorkflowStage } from '../../types/workflow.ts';
-import { CustomFieldEditor, FieldVisibilityMatrix } from '../../components/workflow';
+import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow.ts';
+import type { CustomField, FieldConfiguration } from '../../types/customization.ts';
+import { EntityCustomFieldEditor, FieldVisibilityMatrix } from '../../components/customization';
 import { ValidationRuleEditor } from '../../components/workflow/ValidationRuleEditor.tsx';
 
 export default function WorkflowAdvancedConfigPage() {
@@ -151,8 +152,9 @@ export default function WorkflowAdvancedConfigPage() {
       <div className="space-y-6">
         {/* Custom Fields */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <CustomFieldEditor
-            workflowId={workflowId!}
+          <EntityCustomFieldEditor
+            entityType="Workflow"
+            entityId={workflowId!}
             onFieldsChange={setCustomFields}
           />
         </div>
@@ -161,8 +163,10 @@ export default function WorkflowAdvancedConfigPage() {
         {customFields.length > 0 && stages.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <FieldVisibilityMatrix
-              workflowId={workflowId!}
-              stages={stages}
+              entityType="Workflow"
+              entityId={workflowId!}
+              contextType="Workflow"
+              contexts={stages.map(s => ({ id: s.id, name: s.name }))}
               fields={customFields}
               onConfigurationsChange={setFieldConfigurations}
             />

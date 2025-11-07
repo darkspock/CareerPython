@@ -1,3 +1,7 @@
+/**
+ * @deprecated This component is deprecated. Use EntityCustomFieldEditor from '../../components/customization' instead.
+ * This component will be removed in a future version.
+ */
 import React, { useState, useEffect } from 'react';
 import type {
   CustomField,
@@ -9,6 +13,9 @@ import { getFieldTypeLabel } from '../../types/workflow';
 import { CustomFieldService } from '../../services/customFieldService';
 import { FieldConfigEditor } from './FieldConfigEditor';
 
+/**
+ * @deprecated Use EntityCustomFieldEditor from '../../components/customization' instead.
+ */
 interface CustomFieldEditorProps {
   workflowId: string;
   onFieldsChange?: (fields: CustomField[]) => void;

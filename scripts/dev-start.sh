@@ -67,9 +67,9 @@ for i in {1..30}; do
     sleep 1
 done
 
-# Wait for web service
+# Wait for web service (if running)
 echo -n "  Backend API: "
-for i in {1..60}; do
+for i in {1..30}; do
     if curl -f http://localhost:8000/health > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Ready${NC}"
         break
@@ -78,8 +78,32 @@ for i in {1..60}; do
     sleep 1
 done
 
+# If backend is not running, inform user
+if ! curl -f http://localhost:8000/health > /dev/null 2>&1; then
+    echo -e "${YELLOW}⚠️  Backend API not running${NC}"
+    echo -e "${YELLOW}   Start it manually with: ${NC}make run${NC} or ${NC}uvicorn main:app --reload${NC}"
+fi
+
 echo ""
 echo -e "${GREEN}🎉 Development environment is ready!${NC}"
+echo ""
+
+# Seed database with sample data (run directly, not in Docker)
+echo -e "${BLUE}🌱 Seeding database with sample data...${NC}"
+if [ -d ".venv" ]; then
+    # Activate virtual environment and run seed script
+    if source .venv/bin/activate && python scripts/seed_dev_data.py 2>/dev/null; then
+        echo -e "${GREEN}✅ Sample data created successfully${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Could not seed database (may already have data)${NC}"
+        echo -e "${YELLOW}   You can run manually: ${NC}source .venv/bin/activate && python scripts/seed_dev_data.py"
+    fi
+else
+    echo -e "${YELLOW}⚠️  Virtual environment not found${NC}"
+    echo -e "${YELLOW}   Create it with: ${NC}python -m venv .venv${NC}"
+    echo -e "${YELLOW}   Then run: ${NC}source .venv/bin/activate && python scripts/seed_dev_data.py"
+fi
+
 echo ""
 echo -e "${BLUE}📋 Available Services:${NC}"
 echo -e "  🌐 Backend API:     ${GREEN}http://localhost:8000${NC}"
@@ -98,5 +122,6 @@ echo ""
 echo -e "${BLUE}📝 Next Steps:${NC}"
 echo -e "  1. Update your .env file with proper API keys"
 echo -e "  2. Visit ${GREEN}http://localhost:8000/docs${NC} to explore the API"
-echo -e "  3. Check logs with ${YELLOW}make logs${NC} if you encounter issues"
+echo -e "  3. Login with: ${GREEN}admin@company.com${NC} / ${GREEN}Admin123!${NC}"
+echo -e "  4. Check logs with ${YELLOW}make logs${NC} if you encounter issues"
 echo ""

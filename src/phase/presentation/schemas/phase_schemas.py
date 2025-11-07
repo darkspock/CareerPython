@@ -10,6 +10,7 @@ from src.phase.domain.enums.phase_status_enum import PhaseStatus
 
 class CreatePhaseRequest(BaseModel):
     """Request schema for creating a phase"""
+    workflow_type: str = Field(..., description="Workflow type (PO, CA, CO)")
     name: str = Field(..., min_length=1, max_length=100, description="Phase name")
     sort_order: int = Field(..., ge=0, description="Sort order for the phase")
     default_view: DefaultView = Field(..., description="Default view type (KANBAN or LIST)")
@@ -18,6 +19,7 @@ class CreatePhaseRequest(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
+                "workflow_type": "CA",
                 "name": "Interview",
                 "sort_order": 1,
                 "default_view": "KANBAN",
@@ -48,6 +50,7 @@ class PhaseResponse(BaseModel):
     """Response schema for phase"""
     id: str
     company_id: str
+    workflow_type: str = Field(..., description="Workflow type (CA, PO, CO)")
     name: str
     sort_order: int
     default_view: DefaultView
@@ -62,6 +65,7 @@ class PhaseResponse(BaseModel):
             "example": {
                 "id": "01HZXYZ123ABC",
                 "company_id": "01HZABC789XYZ",
+                "workflow_type": "CA",
                 "name": "Interview",
                 "sort_order": 1,
                 "default_view": "KANBAN",

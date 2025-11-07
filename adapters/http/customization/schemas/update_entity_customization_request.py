@@ -11,7 +11,7 @@ class UpdateEntityCustomizationRequest(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: Dict[str, Any] = {
             "example": {
                 "fields": [
                     {

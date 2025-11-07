@@ -10,6 +10,7 @@ from core.base import Base
 from src.phase.domain.enums.default_view_enum import DefaultView
 from src.phase.domain.enums.phase_status_enum import PhaseStatus
 from src.shared.domain.entities.base import generate_id
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 
 
 @dataclass
@@ -19,6 +20,7 @@ class PhaseModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     company_id: Mapped[str] = mapped_column(String, index=True, nullable=False)
+    workflow_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     default_view: Mapped[DefaultView] = mapped_column(Enum(DefaultView, name='defaultview', create_type=False), nullable=False)

@@ -153,7 +153,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         session = self._get_session()
 
         # Import models for JOIN
-        from src.workflow.infrastructure.models.workflow_model import CandidateApplicationWorkflowModel
+        from src.workflow.infrastructure.models.workflow_model import WorkflowModel
         from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
         # from src.phase.infrastructure.models.phase_model import PhaseModel  # Temporarily disabled
         
@@ -166,7 +166,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             CandidateApplicationModel.job_position_id,
             CandidateApplicationModel.application_status,
             JobPositionModel.title,
-            CandidateApplicationWorkflowModel.name.label('workflow_name'),
+            WorkflowModel.name.label('workflow_name'),
             WorkflowStageModel.name.label('stage_name')
         ).join(
             CandidateModel,
@@ -178,8 +178,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             JobPositionModel,
             CandidateApplicationModel.job_position_id == JobPositionModel.id
         ).outerjoin(
-            CandidateApplicationWorkflowModel,
-            CompanyCandidateModel.workflow_id == CandidateApplicationWorkflowModel.id
+            WorkflowModel,
+            CompanyCandidateModel.workflow_id == WorkflowModel.id
         ).outerjoin(
             WorkflowStageModel,
             CompanyCandidateModel.current_stage_id == WorkflowStageModel.id
@@ -286,7 +286,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         session = self._get_session()
 
         # Import models for JOIN
-        from src.workflow.infrastructure.models.workflow_model import CandidateApplicationWorkflowModel
+        from src.workflow.infrastructure.models.workflow_model import WorkflowModel
         from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
         from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
         from src.company_candidate.domain.enums.comment_review_status import CommentReviewStatus
@@ -310,7 +310,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             CandidateApplicationModel.job_position_id,
             CandidateApplicationModel.application_status,
             JobPositionModel.title,
-            CandidateApplicationWorkflowModel.name.label('workflow_name'),
+            WorkflowModel.name.label('workflow_name'),
             WorkflowStageModel.name.label('stage_name'),
             func.coalesce(pending_comments_subquery.c.pending_count, 0).label('pending_comments_count')
         ).join(
@@ -323,8 +323,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             JobPositionModel,
             CandidateApplicationModel.job_position_id == JobPositionModel.id
         ).outerjoin(
-            CandidateApplicationWorkflowModel,
-            CompanyCandidateModel.workflow_id == CandidateApplicationWorkflowModel.id
+            WorkflowModel,
+            CompanyCandidateModel.workflow_id == WorkflowModel.id
         ).outerjoin(
             WorkflowStageModel,
             CompanyCandidateModel.current_stage_id == WorkflowStageModel.id

@@ -21,9 +21,9 @@ class PositionStageAssignmentDto:
         """Create DTO from entity"""
         return PositionStageAssignmentDto(
             id=entity.id.value,
-            position_id=entity.position_id,
-            stage_id=entity.stage_id,
-            assigned_user_ids=entity.assigned_user_ids,
+            position_id=entity.position_id.value,
+            stage_id=entity.stage_id.value,
+            assigned_user_ids=[uid.value for uid in entity.assigned_user_ids],
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

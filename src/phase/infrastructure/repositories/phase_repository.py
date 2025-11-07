@@ -8,6 +8,7 @@ from src.phase.domain.enums.phase_status_enum import PhaseStatus
 from src.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.phase.domain.value_objects.phase_id import PhaseId
 from src.phase.infrastructure.models.phase_model import PhaseModel
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 
 
 class PhaseRepository(PhaseRepositoryInterface):
@@ -24,6 +25,7 @@ class PhaseRepository(PhaseRepositoryInterface):
             if model:
                 # Update existing
                 model.company_id = phase.company_id.value
+                model.workflow_type = phase.workflow_type.value
                 model.name = phase.name
                 model.sort_order = phase.sort_order
                 model.default_view = phase.default_view
@@ -35,6 +37,7 @@ class PhaseRepository(PhaseRepositoryInterface):
                 model = PhaseModel(
                     id=phase.id.value,
                     company_id=phase.company_id.value,
+                    workflow_type=phase.workflow_type.value,
                     name=phase.name,
                     sort_order=phase.sort_order,
                     default_view=phase.default_view,
@@ -83,14 +86,13 @@ class PhaseRepository(PhaseRepositoryInterface):
 
     def _to_domain(self, model: PhaseModel) -> Phase:
         """Convert model to domain entity"""
-        return Phase(
+        return Phase.create(
             id=PhaseId.from_string(model.id),
+            workflow_type=WorkflowTypeEnum(model.workflow_type),
             company_id=CompanyId.from_string(model.company_id),
             name=model.name,
             sort_order=model.sort_order,
             default_view=model.default_view,
-            status=model.status,
             objective=model.objective,
-            created_at=model.created_at,
-            updated_at=model.updated_at
+            status=model.status
         )

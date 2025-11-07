@@ -90,6 +90,7 @@ from src.company.application.commands.create_company_command import CreateCompan
 from src.company.application.commands.register_company_with_user_command import RegisterCompanyWithUserCommandHandler
 from src.company.application.commands.link_user_to_company_command import LinkUserToCompanyCommandHandler
 from src.company.application.commands.update_company_command import UpdateCompanyCommandHandler
+from src.company.application.commands.initialize_sample_data_command import InitializeSampleDataCommandHandler
 from src.company.application.commands.upload_company_logo_command import UploadCompanyLogoCommandHandler
 from src.company.application.commands.suspend_company_command import SuspendCompanyCommandHandler
 from src.company.application.commands.activate_company_command import ActivateCompanyCommandHandler
@@ -190,13 +191,6 @@ from src.workflow.application.commands.stage.delete_stage_command import DeleteS
 from src.workflow.application.commands.stage.reorder_stages_command import ReorderStagesCommandHandler
 from src.workflow.application.commands.stage.activate_stage_command import ActivateStageCommandHandler
 from src.workflow.application.commands.stage.deactivate_stage_command import DeactivateStageCommandHandler
-from src.customization import CreateCustomFieldCommandHandler
-from src.customization import UpdateCustomFieldCommandHandler
-from src.customization import DeleteCustomFieldCommandHandler
-from src.customization import ReorderCustomFieldCommandHandler
-from src.customization import ConfigureStageFieldCommandHandler
-from src.customization import UpdateFieldVisibilityCommandHandler
-
 # CandidateApplicationWorkflow Application Layer - Queries
 from src.workflow.application.queries.workflow.get_workflow_by_id import GetWorkflowByIdQueryHandler
 from src.workflow.application.queries.workflow.list_workflows_by_company import ListWorkflowsByCompanyQueryHandler
@@ -206,16 +200,6 @@ from src.workflow.application.queries.stage.list_stages_by_workflow import ListS
 from src.workflow.application.queries.stage.list_stages_by_phase import ListStagesByPhaseQueryHandler
 from src.workflow.application.queries.stage.get_initial_stage import GetInitialStageQueryHandler
 from src.workflow.application.queries.stage.get_final_stages import GetFinalStagesQueryHandler
-from src.customization import GetCustomFieldByIdQueryHandler
-from src.customization import ListCustomFieldsByWorkflowQueryHandler
-from src.customization import ListFieldConfigurationsByStageQueryHandler
-from src.customization import GetFieldConfigurationByIdQueryHandler
-from src.customization import GetCustomFieldValuesByCompanyCandidateQueryHandler
-from src.customization import GetAllCustomFieldValuesByCompanyCandidateQueryHandler
-from src.customization import CreateCustomFieldValueCommandHandler
-from src.customization import UpdateCustomFieldValueCommandHandler
-from src.customization import DeleteCustomFieldValueCommandHandler
-from src.customization import GetCustomFieldValueByIdQueryHandler
 
 # New Customization Application Layer - Commands
 from src.customization.application.commands.create_entity_customization_command import CreateEntityCustomizationCommandHandler
@@ -227,12 +211,11 @@ from src.customization.application.commands.add_custom_field_to_entity_command i
 from src.customization.application.queries.get_entity_customization_query import GetEntityCustomizationQueryHandler
 from src.customization.application.queries.get_entity_customization_by_id_query import GetEntityCustomizationByIdQueryHandler
 from src.customization.application.queries.list_custom_fields_by_entity_query import ListCustomFieldsByEntityQueryHandler
+from src.customization.application.queries.get_custom_field_values_by_entity_query import GetCustomFieldValuesByEntityQueryHandler
+from src.workflow.infrastructure.repositories import WorkflowRepository
 
 # CandidateApplicationWorkflow Infrastructure
 from src.workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
-from src.customization import CustomFieldRepository
-from src.customization import CustomFieldValueRepository
-from src.customization import FieldConfigurationRepository
 
 # New Customization Infrastructure
 from src.customization.infrastructure.repositories.entity_customization_repository import EntityCustomizationRepository
@@ -241,8 +224,6 @@ from src.customization.infrastructure.repositories.custom_field_repository impor
 # CandidateApplicationWorkflow Presentation Controllers
 from adapters.http.workflow.controllers import WorkflowController
 from adapters.http.workflow.controllers import WorkflowStageController
-from src.customization import CustomFieldValueController
-from src.customization import CustomFieldController
 
 # New Customization Presentation Controllers
 from adapters.http.customization.controllers.entity_customization_controller import EntityCustomizationController
@@ -557,29 +538,13 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
-    # CandidateApplicationWorkflow Repositories
-    candidate_application_workflow_repository = providers.Factory(
-        CandidateApplicationWorkflowRepository,
+    workflow_repository = providers.Factory(
+        WorkflowRepository,
         database=database
     )
 
     workflow_stage_repository = providers.Factory(
         WorkflowStageRepository,
-        database=database
-    )
-
-    custom_field_repository = providers.Factory(
-        CustomFieldRepository,
-        database=database
-    )
-
-    custom_field_value_repository = providers.Factory(
-        CustomFieldValueRepository,
-        database=database
-    )
-
-    field_configuration_repository = providers.Factory(
-        FieldConfigurationRepository,
         database=database
     )
 
@@ -906,17 +871,17 @@ class Container(containers.DeclarativeContainer):
     # CandidateApplicationWorkflow Query Handlers
     get_workflow_by_id_query_handler = providers.Factory(
         GetWorkflowByIdQueryHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     list_workflows_by_company_query_handler = providers.Factory(
         ListWorkflowsByCompanyQueryHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     list_workflows_by_phase_query_handler = providers.Factory(
         ListWorkflowsByPhaseQueryHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     # WorkflowStage Query Handlers
@@ -945,63 +910,6 @@ class Container(containers.DeclarativeContainer):
         repository=workflow_stage_repository
     )
 
-    # CustomField Query Handlers
-    get_custom_field_by_id_query_handler = providers.Factory(
-        GetCustomFieldByIdQueryHandler,
-        repository=custom_field_repository
-    )
-
-    list_custom_fields_by_workflow_query_handler = providers.Factory(
-        ListCustomFieldsByWorkflowQueryHandler,
-        repository=custom_field_repository
-    )
-
-    # FieldConfiguration Query Handlers
-    list_field_configurations_by_stage_query_handler = providers.Factory(
-        ListFieldConfigurationsByStageQueryHandler,
-        repository=field_configuration_repository
-    )
-
-    get_field_configuration_by_id_query_handler = providers.Factory(
-        GetFieldConfigurationByIdQueryHandler,
-        repository=field_configuration_repository
-    )
-
-    get_custom_field_values_by_company_candidate_query_handler = providers.Factory(
-        GetCustomFieldValuesByCompanyCandidateQueryHandler,
-        custom_field_value_repository=custom_field_value_repository,
-        custom_field_repository=custom_field_repository,
-        company_candidate_repository=company_candidate_repository
-    )
-
-    get_all_custom_field_values_by_company_candidate_query_handler = providers.Factory(
-        GetAllCustomFieldValuesByCompanyCandidateQueryHandler,
-        custom_field_value_repository=custom_field_value_repository,
-        custom_field_repository=custom_field_repository
-    )
-
-    # Custom Field Value Command Handlers
-    create_custom_field_value_command_handler = providers.Factory(
-        CreateCustomFieldValueCommandHandler,
-        repository=custom_field_value_repository
-    )
-
-    update_custom_field_value_command_handler = providers.Factory(
-        UpdateCustomFieldValueCommandHandler,
-        repository=custom_field_value_repository
-    )
-
-    delete_custom_field_value_command_handler = providers.Factory(
-        DeleteCustomFieldValueCommandHandler,
-        repository=custom_field_value_repository
-    )
-
-    # Custom Field Value Query Handlers
-    get_custom_field_value_by_id_query_handler = providers.Factory(
-        GetCustomFieldValueByIdQueryHandler,
-        repository=custom_field_value_repository
-    )
-
     # New Customization Query Handlers
     get_entity_customization_query_handler = providers.Factory(
         GetEntityCustomizationQueryHandler,
@@ -1016,6 +924,32 @@ class Container(containers.DeclarativeContainer):
     list_custom_fields_by_entity_query_handler = providers.Factory(
         ListCustomFieldsByEntityQueryHandler,
         repository=new_custom_field_repository
+    )
+
+    get_custom_field_values_by_entity_query_handler = providers.Factory(
+        GetCustomFieldValuesByEntityQueryHandler,
+        database=database
+    )
+
+    # New Customization Command Handlers
+    create_entity_customization_command_handler = providers.Factory(
+        CreateEntityCustomizationCommandHandler,
+        repository=entity_customization_repository
+    )
+
+    update_entity_customization_command_handler = providers.Factory(
+        UpdateEntityCustomizationCommandHandler,
+        repository=entity_customization_repository
+    )
+
+    delete_entity_customization_command_handler = providers.Factory(
+        DeleteEntityCustomizationCommandHandler,
+        repository=entity_customization_repository
+    )
+
+    add_custom_field_to_entity_command_handler = providers.Factory(
+        AddCustomFieldToEntityCommandHandler,
+        repository=entity_customization_repository
     )
 
     # FieldValidation Query Handlers
@@ -1360,7 +1294,7 @@ class Container(containers.DeclarativeContainer):
     create_company_candidate_command_handler = providers.Factory(
         CreateCompanyCandidateCommandHandler,
         repository=company_candidate_repository,
-        workflow_repository=candidate_application_workflow_repository,
+        workflow_repository=workflow_repository,
         stage_repository=workflow_stage_repository
     )
 
@@ -1455,42 +1389,42 @@ class Container(containers.DeclarativeContainer):
     # CandidateApplicationWorkflow Command Handlers
     create_workflow_command_handler = providers.Factory(
         CreateWorkflowCommandHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     update_workflow_command_handler = providers.Factory(
         UpdateWorkflowCommandHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     activate_workflow_command_handler = providers.Factory(
         ActivateWorkflowCommandHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     deactivate_workflow_command_handler = providers.Factory(
         DeactivateWorkflowCommandHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     archive_workflow_command_handler = providers.Factory(
         ArchiveWorkflowCommandHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     delete_workflow_command_handler = providers.Factory(
         DeleteWorkflowCommandHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     set_as_default_workflow_command_handler = providers.Factory(
         SetAsDefaultWorkflowCommandHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     unset_as_default_workflow_command_handler = providers.Factory(
         UnsetAsDefaultWorkflowCommandHandler,
-        repository=candidate_application_workflow_repository
+        repository=workflow_repository
     )
 
     # WorkflowStage Command Handlers
@@ -1524,37 +1458,6 @@ class Container(containers.DeclarativeContainer):
         repository=workflow_stage_repository
     )
 
-    # CustomField Command Handlers
-    create_custom_field_command_handler = providers.Factory(
-        CreateCustomFieldCommandHandler,
-        repository=custom_field_repository
-    )
-
-    update_custom_field_command_handler = providers.Factory(
-        UpdateCustomFieldCommandHandler,
-        repository=custom_field_repository
-    )
-
-    delete_custom_field_command_handler = providers.Factory(
-        DeleteCustomFieldCommandHandler,
-        repository=custom_field_repository
-    )
-
-    reorder_custom_field_command_handler = providers.Factory(
-        ReorderCustomFieldCommandHandler,
-        repository=custom_field_repository
-    )
-
-    # FieldConfiguration Command Handlers
-    configure_stage_field_command_handler = providers.Factory(
-        ConfigureStageFieldCommandHandler,
-        repository=field_configuration_repository
-    )
-
-    update_field_visibility_command_handler = providers.Factory(
-        UpdateFieldVisibilityCommandHandler,
-        repository=field_configuration_repository
-    )
 
     # FieldValidation Command Handlers
     create_validation_rule_command_handler = providers.Factory(
@@ -1583,10 +1486,12 @@ class Container(containers.DeclarativeContainer):
     )
 
     # FieldValidation Service
+    # TODO: Update FieldValidationService to use new customization repository
+    # For now, using new_custom_field_repository as a temporary workaround
     field_validation_service = providers.Factory(
         FieldValidationService,
         validation_rule_repository=validation_rule_repository,
-        custom_field_repository=custom_field_repository
+        custom_field_repository=new_custom_field_repository
     )
 
     # StagePermission Service (Phase 5)
@@ -1600,7 +1505,7 @@ class Container(containers.DeclarativeContainer):
         CandidateStageTransitionHandler,
         application_repository=candidate_application_repository,
         stage_repository=workflow_stage_repository,
-        workflow_repository=candidate_application_workflow_repository
+        workflow_repository=workflow_repository
     )
 
     # Job Position Command Handlers
@@ -1727,7 +1632,7 @@ class Container(containers.DeclarativeContainer):
     initialize_company_phases_command_handler = providers.Factory(
         InitializeCompanyPhasesCommandHandler,
         phase_repository=phase_repository,
-        workflow_repository=candidate_application_workflow_repository,
+        workflow_repository=workflow_repository,
         stage_repository=workflow_stage_repository
     )
 
@@ -1761,6 +1666,12 @@ class Container(containers.DeclarativeContainer):
         company_repository=company_repository,
         company_user_repository=company_user_repository,
         command_bus=command_bus
+    )
+
+    initialize_sample_data_command_handler = providers.Factory(
+        InitializeSampleDataCommandHandler,
+        command_bus=command_bus,
+        database=database
     )
 
     # Onboarding Command Handlers - SIMPLIFIED
@@ -2086,14 +1997,14 @@ class Container(containers.DeclarativeContainer):
     get_workflow_analytics_query_handler = providers.Factory(
         GetWorkflowAnalyticsQueryHandler,
         database=database,
-        workflow_repository=candidate_application_workflow_repository,
+        workflow_repository=workflow_repository,
         stage_repository=workflow_stage_repository
     )
 
     get_stage_bottlenecks_query_handler = providers.Factory(
         GetStageBottlenecksQueryHandler,
         database=database,
-        workflow_repository=candidate_application_workflow_repository,
+        workflow_repository=workflow_repository,
         stage_repository=workflow_stage_repository
     )
 
@@ -2167,19 +2078,6 @@ class Container(containers.DeclarativeContainer):
         WorkflowStageController,
         command_bus=command_bus,
         query_bus=query_bus
-    )
-
-    custom_field_controller = providers.Factory(
-        CustomFieldController,
-        command_bus=command_bus,
-        query_bus=query_bus
-    )
-
-    custom_field_value_controller = providers.Factory(
-        CustomFieldValueController,
-        command_bus=command_bus,
-        query_bus=query_bus,
-        custom_field_value_repository=custom_field_value_repository
     )
 
     # New Customization Controller

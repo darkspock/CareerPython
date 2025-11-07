@@ -140,6 +140,14 @@ export const getStageTypeColor = (type: StageType): string => {
 };
 
 // Custom Fields Types
+/**
+ * @deprecated These types are deprecated. Use types from '../../types/customization' instead.
+ * The new types are generic and work with any entity, not just workflows.
+ * 
+ * Migration:
+ * - CustomField (old) -> CustomField (from customization.ts, no workflow_id)
+ * - FieldConfiguration (old) -> FieldConfiguration (from customization.ts, with context_type/context_id)
+ */
 
 export type FieldType =
   | 'TEXT'
@@ -162,6 +170,9 @@ export type FieldVisibility =
   | 'READ_ONLY'
   | 'REQUIRED';
 
+/**
+ * @deprecated Use CustomField from '../../types/customization' instead (no workflow_id field).
+ */
 export interface CustomField {
   id: string;
   workflow_id: string;
@@ -174,6 +185,9 @@ export interface CustomField {
   updated_at: string;
 }
 
+/**
+ * @deprecated Use FieldConfiguration from '../../types/customization' instead (uses context_type/context_id).
+ */
 export interface FieldConfiguration {
   id: string;
   stage_id: string;

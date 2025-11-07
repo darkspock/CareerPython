@@ -72,7 +72,7 @@ class StagePermissionService:
             return []
 
         # Return a copy to avoid mutability issues
-        return list(assignment.assigned_user_ids)
+        return [uid.value for uid in assignment.assigned_user_ids]
 
     def is_user_company_admin(self, user_id: str, company_id: str) -> bool:
         """Check if user is an admin of the company

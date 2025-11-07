@@ -44,12 +44,15 @@ export default function WorkflowsSettingsPage() {
       if (!companyId) return;
 
       const phasesData = await phaseService.listPhases(companyId);
-      const sortedPhases = phasesData.sort((a, b) => a.sort_order - b.sort_order);
-      setPhases(sortedPhases);
+      // Filter only CANDIDATE_APPLICATION phases (workflow_type === 'CA')
+      const candidatePhases = phasesData
+        .filter(phase => phase.workflow_type === 'CA')
+        .sort((a, b) => a.sort_order - b.sort_order);
+      setPhases(candidatePhases);
 
       // Auto-select first phase if none selected
-      if (sortedPhases.length > 0 && !selectedPhaseId) {
-        setSelectedPhaseId(sortedPhases[0].id);
+      if (candidatePhases.length > 0 && !selectedPhaseId) {
+        setSelectedPhaseId(candidatePhases[0].id);
       }
     } catch (err) {
       console.error('Failed to load phases:', err);

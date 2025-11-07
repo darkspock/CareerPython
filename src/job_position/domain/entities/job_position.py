@@ -9,6 +9,7 @@ from src.job_position.domain.exceptions.job_position_exceptions import JobPositi
 from src.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.job_position.domain.value_objects.stage_id import StageId
+from src.phase.domain.value_objects.phase_id import PhaseId
 from src.shared.domain.enums.job_category import JobCategoryEnum
 
 
@@ -75,14 +76,14 @@ class JobPosition:
         # Check if current stage's status_mapping is ACTIVE
         return False
 
-    def get_workflow_for_phase(self, phase_id: str) -> Optional[str]:
+    def get_workflow_for_phase(self, phase_id: PhaseId) -> Optional[str]:
         """Get the workflow ID configured for a specific phase
 
         Phase 12.8: Returns the workflow_id configured for the given phase.
         If no phase-specific workflow is configured, returns None.
         """
-        if self.phase_workflows and phase_id in self.phase_workflows:
-            return self.phase_workflows[phase_id]
+        if self.phase_workflows and phase_id.value in self.phase_workflows:
+            return self.phase_workflows[phase_id.value]
         return None
 
     def get_visible_custom_fields_for_candidate(

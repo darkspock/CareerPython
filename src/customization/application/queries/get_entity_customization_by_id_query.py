@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from src.customization.domain.entities.entity_customization import EntityCustomization
+from src.customization.domain.exceptions import CustomFieldNotFound
 from src.customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
 from src.customization.domain.value_objects.entity_customization_id import EntityCustomizationId
 from src.customization.application.dtos.entity_customization_dto import EntityCustomizationDto
@@ -25,7 +26,7 @@ class GetEntityCustomizationByIdQueryHandler(QueryHandler[GetEntityCustomization
         entity_customization = self._repository.get_by_id(query.id)
         
         if not entity_customization:
-            return None
+            raise CustomFieldNotFound(f"Entity customization with ID {query.id} not found")
         
         return EntityCustomizationMapper.entity_to_dto(entity_customization)
 

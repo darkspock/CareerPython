@@ -4,7 +4,7 @@ from .job_position_workflow_status import JobPositionWorkflowStatusEnum
 from .work_location_type import WorkLocationTypeEnum
 from .view_type import ViewTypeEnum
 from .kanban_display import KanbanDisplayEnum
-from .workflow_type import WorkflowTypeEnum
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from .comment_review_status import CommentReviewStatusEnum
 from .comment_visibility import CommentVisibilityEnum
 from .job_position_visibility import JobPositionVisibilityEnum

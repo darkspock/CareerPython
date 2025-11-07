@@ -27,6 +27,15 @@ class EntityCustomizationController:
 
     def create_entity_customization(self, request: CreateEntityCustomizationRequest) -> EntityCustomizationResponse:
         """Create a new entity customization"""
+        # Validate entity_type
+        try:
+            entity_type_enum = EntityCustomizationTypeEnum(request.entity_type)
+        except ValueError:
+            raise ValueError(
+                f"Invalid entity_type: '{request.entity_type}'. "
+                f"Valid values are: {', '.join([e.value for e in EntityCustomizationTypeEnum])}"
+            )
+        
         # Convert request fields to CustomField value objects
         fields = [
             CustomField.create(
@@ -43,7 +52,7 @@ class EntityCustomizationController:
 
         command = CreateEntityCustomizationCommand(
             id=customization_id,
-            entity_type=EntityCustomizationTypeEnum(request.entity_type),
+            entity_type=entity_type_enum,
             entity_id=request.entity_id,
             fields=fields,
             validation=request.validation,
@@ -62,8 +71,16 @@ class EntityCustomizationController:
 
     def get_entity_customization(self, entity_type: str, entity_id: str) -> Optional[EntityCustomizationResponse]:
         """Get an entity customization by entity type and entity ID"""
+        try:
+            entity_type_enum = EntityCustomizationTypeEnum(entity_type)
+        except ValueError:
+            raise ValueError(
+                f"Invalid entity_type: '{entity_type}'. "
+                f"Valid values are: {', '.join([e.value for e in EntityCustomizationTypeEnum])}"
+            )
+        
         query = GetEntityCustomizationQuery(
-            entity_type=EntityCustomizationTypeEnum(entity_type),
+            entity_type=entity_type_enum,
             entity_id=entity_id
         )
         dto: Optional[EntityCustomizationDto] = self._query_bus.query(query)

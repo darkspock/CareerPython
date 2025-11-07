@@ -3,12 +3,12 @@ from datetime import datetime
 from typing import Optional, Any, Dict
 import re
 
+from src.customization.domain.value_objects.custom_field_id import CustomFieldId
 from ..value_objects.validation_rule_id import ValidationRuleId
 from ..value_objects.validation_result import ValidationResult
 from ..enums.validation_rule_type import ValidationRuleType
 from ..enums.comparison_operator import ComparisonOperator
 from ..enums.validation_severity import ValidationSeverity
-from src.workflow.domain.value_objects.custom_field_id import CustomFieldId
 from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 

@@ -7,12 +7,14 @@ from src.phase.domain.enums.default_view_enum import DefaultView
 from src.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.phase.domain.value_objects.phase_id import PhaseId
 from src.shared.application.command_bus import Command, CommandHandler
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 
 
 @dataclass
 class CreatePhaseCommand(Command):
     """Command to create a new phase"""
     company_id: CompanyId
+    workflow_type: WorkflowTypeEnum
     name: str
     sort_order: int
     default_view: DefaultView
@@ -31,6 +33,7 @@ class CreatePhaseCommandHandler(CommandHandler[CreatePhaseCommand]):
 
         phase = Phase.create(
             id=phase_id,
+            workflow_type=command.workflow_type,
             company_id=command.company_id,
             name=command.name,
             sort_order=command.sort_order,

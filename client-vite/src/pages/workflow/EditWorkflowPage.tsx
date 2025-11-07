@@ -4,11 +4,13 @@ import { ArrowLeft, Save, Plus, X, Trash2, ArrowUp, ArrowDown, Settings } from '
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { phaseService } from '../../services/phaseService.ts';
 import { api } from '../../lib/api.ts';
-import type { CompanyWorkflow, WorkflowStage, CustomField, FieldConfiguration, StageType } from '../../types/workflow.ts';
+import type { CompanyWorkflow, WorkflowStage, StageType } from '../../types/workflow.ts';
+import type { CustomField, FieldConfiguration } from '../../types/customization.ts';
 import type { CompanyRole } from '../../types/company.ts';
 import type { Phase } from '../../types/phase.ts';
 import type { UpdateStageStyleRequest } from '../../types/stageStyle.ts';
-import { CustomFieldEditor, FieldVisibilityMatrix, ValidationRuleEditor, PhaseTransitionIndicator } from '../../components/workflow';
+import { EntityCustomFieldEditor, FieldVisibilityMatrix } from '../../components/customization';
+import { ValidationRuleEditor, PhaseTransitionIndicator } from '../../components/workflow';
 import { StageStyleEditor } from '../../components/workflow/StageStyleEditor.tsx';
 
 interface StageFormData {
@@ -687,8 +689,9 @@ export default function EditWorkflowPage() {
 
         {/* Custom Fields */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <CustomFieldEditor
-            workflowId={workflowId!}
+          <EntityCustomFieldEditor
+            entityType="Workflow"
+            entityId={workflowId!}
             onFieldsChange={setCustomFields}
           />
         </div>
@@ -697,24 +700,13 @@ export default function EditWorkflowPage() {
         {customFields.length > 0 && stages.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <FieldVisibilityMatrix
-              workflowId={workflowId!}
-              stages={stages.map((s, idx) => ({
-                ...s,
+              entityType="Workflow"
+              entityId={workflowId!}
+              contextType="Workflow"
+              contexts={stages.map((s, idx) => ({
                 id: s.id || `temp-${idx}`,
-                workflow_id: workflowId!,
-                description: s.description || null,
-                is_active: s.is_active ?? true,
-                allow_skip: s.allow_skip ?? false,
-                estimated_duration_days: s.estimated_duration_days ?? null,
-                default_role_ids: s.default_role_ids ?? null,
-                default_assigned_users: s.default_assigned_users ?? null,
-                email_template_id: s.email_template_id ?? null,
-                custom_email_text: s.custom_email_text ?? null,
-                deadline_days: s.deadline_days ?? null,
-                estimated_cost: s.estimated_cost ?? null,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              } as WorkflowStage))}
+                name: s.name
+              }))}
               fields={customFields}
               onConfigurationsChange={setFieldConfigurations}
             />
