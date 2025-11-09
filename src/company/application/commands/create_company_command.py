@@ -22,16 +22,21 @@ class CreateCompanyCommand(Command):
 class CreateCompanyCommandHandler(CommandHandler):
     """Handler for creating a company"""
 
-    def __init__(self, repository: CompanyRepositoryInterface, command_bus: CommandBus):
+    def __init__(self, repository: CompanyRepositoryInterface):
         self.repository = repository
-        self.command_bus = command_bus
 
     def execute(self, command: CreateCompanyCommand) -> None:
-        """Execute the command - NO return value"""
+        """Execute the command - NO return value
+        
+        Note: This command ONLY creates the company entity.
+        Workflow initialization should be called explicitly by the caller
+        using InitializeOnboardingCommand and InitializeCompanyPhasesCommand.
+        """
+        # TODO: Re-enable domain uniqueness check when needed
         # Check if domain already exists
-        existing = self.repository.get_by_domain(command.domain)
-        if existing:
-            raise CompanyValidationError(f"Company with domain {command.domain} already exists")
+        # existing = self.repository.get_by_domain(command.domain)
+        # if existing:
+        #     raise CompanyValidationError(f"Company with domain {command.domain} already exists")
 
         # Create entity using factory method
         company = Company.create(
@@ -44,9 +49,3 @@ class CreateCompanyCommandHandler(CommandHandler):
 
         # Persist
         self.repository.save(company)
-
-        # Phase 12: Initialize default phases for the new company
-        initialize_phases_command = InitializeCompanyPhasesCommand(
-            company_id=CompanyId.from_string(command.id)
-        )
-        self.command_bus.dispatch(initialize_phases_command)

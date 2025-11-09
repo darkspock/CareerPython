@@ -24,7 +24,6 @@ class CompanyCandidateMapper:
             archived_at=entity.archived_at,
             visibility_settings=entity.visibility_settings.to_dict(),
             tags=entity.tags,
-            internal_notes=entity.internal_notes,
             position=entity.position,
             department=entity.department,
             priority=entity.priority.value,

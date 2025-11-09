@@ -7,6 +7,7 @@ from .stage_id import StageId
 from .workflow_stage import WorkflowStage
 from .job_position_comment_id import JobPositionCommentId
 from .job_position_activity_id import JobPositionActivityId
+from .job_position_stage_id import JobPositionStageId
 
 __all__ = [
     "JobPositionId",
@@ -16,4 +17,5 @@ __all__ = [
     "WorkflowStage",
     "JobPositionCommentId",
     "JobPositionActivityId",
+    "JobPositionStageId",
 ]

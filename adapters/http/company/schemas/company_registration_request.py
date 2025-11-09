@@ -19,7 +19,8 @@ class CompanyRegistrationRequest(BaseModel):
     address: Optional[str] = None
     
     # Options
-    include_example_data: bool = False
+    initialize_workflows: bool = True   # Whether to initialize default workflows
+    include_example_data: bool = False  # Whether to include sample data
     accept_terms: bool
     accept_privacy: bool
     
@@ -99,7 +100,8 @@ class LinkUserRequest(BaseModel):
     address: Optional[str] = None
     
     # Options
-    include_example_data: bool = False
+    initialize_workflows: bool = True   # Whether to initialize default workflows
+    include_example_data: bool = False  # Whether to include sample data
     accept_terms: bool
     accept_privacy: bool
     

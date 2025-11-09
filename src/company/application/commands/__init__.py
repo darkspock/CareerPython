@@ -14,6 +14,8 @@ from .invite_company_user_command import InviteCompanyUserCommand, InviteCompany
 from .accept_user_invitation_command import AcceptUserInvitationCommand, AcceptUserInvitationCommandHandler
 from .assign_role_to_user_command import AssignRoleToUserCommand, AssignRoleToUserCommandHandler
 from .initialize_sample_data_command import InitializeSampleDataCommand, InitializeSampleDataCommandHandler
+from .initialize_onboarding_command import InitializeOnboardingCommand, InitializeOnboardingCommandHandler
+from .delete_company_with_all_data_command import DeleteCompanyWithAllDataCommand, DeleteCompanyWithAllDataCommandHandler
 
 __all__ = [
     "CreateCompanyCommand",
@@ -46,4 +48,8 @@ __all__ = [
     "AssignRoleToUserCommandHandler",
     "InitializeSampleDataCommand",
     "InitializeSampleDataCommandHandler",
+    "InitializeOnboardingCommand",
+    "InitializeOnboardingCommandHandler",
+    "DeleteCompanyWithAllDataCommand",
+    "DeleteCompanyWithAllDataCommandHandler",
 ]

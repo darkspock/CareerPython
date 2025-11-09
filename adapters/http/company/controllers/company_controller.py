@@ -125,6 +125,23 @@ class CompanyController:
                 detail=f"Failed to retrieve company: {str(e)}"
             )
 
+    def check_domain_available(self, domain: str) -> dict:
+        """Check if a domain is available for registration"""
+        try:
+            query = GetCompanyByDomainQuery(domain=domain)
+            dto: Optional[CompanyDto] = self.query_bus.query(query)
+            
+            return {
+                "available": dto is None,
+                "domain": domain
+            }
+        except Exception as e:
+            # On error, assume domain is available (let registration handle validation)
+            return {
+                "available": True,
+                "domain": domain
+            }
+
     def get_company_by_domain(self, domain: str) -> CompanyResponse:
         """Get a company by domain"""
         try:
@@ -383,6 +400,7 @@ class CompanyController:
                 company_logo_url=request.logo_url,
                 company_contact_phone=request.contact_phone,
                 company_address=request.address,
+                initialize_workflows=request.initialize_workflows,
                 include_example_data=request.include_example_data,
             )
             self.command_bus.dispatch(command)
@@ -431,6 +449,7 @@ class CompanyController:
                 company_logo_url=request.logo_url,
                 company_contact_phone=request.contact_phone,
                 company_address=request.address,
+                initialize_workflows=request.initialize_workflows,
                 include_example_data=request.include_example_data,
             )
             self.command_bus.dispatch(command)

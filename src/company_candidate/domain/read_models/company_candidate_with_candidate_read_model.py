@@ -26,7 +26,6 @@ class CompanyCandidateWithCandidateReadModel:
     archived_at: Optional[datetime]
     visibility_settings: Dict[str, bool]
     tags: List[str]
-    internal_notes: str
     position: Optional[str]
     department: Optional[str]
     priority: str

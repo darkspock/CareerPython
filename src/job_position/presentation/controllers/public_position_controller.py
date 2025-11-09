@@ -13,9 +13,10 @@ from src.job_position.application.queries.job_position_dto import JobPositionDto
 from src.job_position.application.queries.list_public_job_positions import (
     ListPublicJobPositionsQuery
 )
-from src.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQuery
 from src.job_position.domain.exceptions import JobPositionNotFoundError
-from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.workflow.application.queries.workflow.get_workflow_by_id import GetWorkflowByIdQuery
+from src.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQuery
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.job_position.presentation.schemas.public_position_schemas import (
     PublicPositionResponse,
     PublicPositionListResponse,
@@ -65,20 +66,28 @@ class PublicPositionController:
         # Convert to response - get workflow for each position to filter visible fields
         positions = []
         for dto in position_dtos:
-            # Try to get workflow if available
+            # Try to get workflow and stages if available
             workflow_dto = None
+            stages = None
             if dto.job_position_workflow_id:
                 try:
-                    workflow_query = GetJobPositionWorkflowQuery(
-                        workflow_id=JobPositionWorkflowId.from_string(dto.job_position_workflow_id)
+                    workflow_query = GetWorkflowByIdQuery(
+                        id=WorkflowId.from_string(dto.job_position_workflow_id)
                     )
                     workflow_dto = self.query_bus.query(workflow_query)
+                    
+                    # Get stages for the workflow
+                    if workflow_dto:
+                        stages_query = ListStagesByWorkflowQuery(
+                            workflow_id=WorkflowId.from_string(workflow_dto.id)
+                        )
+                        stages = self.query_bus.query(stages_query)
                 except Exception:
                     # If workflow not found, continue without it
                     pass
             
             # Use mapper to get only visible fields for candidates
-            public_response = JobPositionMapper.dto_to_public_response(dto, workflow_dto)
+            public_response = JobPositionMapper.dto_to_public_response(dto, workflow_dto, stages)
             positions.append(PublicPositionResponse.from_public_response(public_response))
 
         # Calculate total pages (simplified - in production, do a count query)
@@ -113,20 +122,28 @@ class PublicPositionController:
         if not position_dto:
             raise JobPositionNotFoundError(f"Public position not found: {slug_or_id}")
 
-        # Get workflow if available to filter visible fields
+        # Get workflow and stages if available to filter visible fields
         workflow_dto = None
+        stages = None
         if position_dto.job_position_workflow_id:
             try:
-                workflow_query = GetJobPositionWorkflowQuery(
-                    workflow_id=JobPositionWorkflowId.from_string(position_dto.job_position_workflow_id)
+                workflow_query = GetWorkflowByIdQuery(
+                    id=WorkflowId.from_string(position_dto.job_position_workflow_id)
                 )
                 workflow_dto = self.query_bus.query(workflow_query)
+                
+                # Get stages for the workflow
+                if workflow_dto:
+                    stages_query = ListStagesByWorkflowQuery(
+                        workflow_id=WorkflowId.from_string(workflow_dto.id)
+                    )
+                    stages = self.query_bus.query(stages_query)
             except Exception:
                 # If workflow not found, continue without it
                 pass
 
         # Use mapper to get only visible fields for candidates
-        public_response = JobPositionMapper.dto_to_public_response(position_dto, workflow_dto)
+        public_response = JobPositionMapper.dto_to_public_response(position_dto, workflow_dto, stages)
         return PublicPositionResponse.from_public_response(public_response)
 
     def submit_application(

@@ -62,14 +62,22 @@ class WorkflowController:
         return WorkflowResponseMapper.dto_to_response(dto)
 
     def get_workflow_by_id(self, workflow_id: str) -> Optional[WorkflowResponse]:
-        """Get a workflow by ID"""
+        """Get a workflow by ID with enriched stages"""
         query = GetWorkflowByIdQuery(id=WorkflowId.from_string(workflow_id))
         dto: Optional[WorkflowDto] = self._query_bus.query(query)
 
         if not dto:
             return None
 
-        return WorkflowResponseMapper.dto_to_response(dto)
+        response = WorkflowResponseMapper.dto_to_response(dto)
+
+        # Enrich with stages
+        from src.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
+        stages_query = ListStagesByWorkflowQuery(workflow_id=WorkflowId.from_string(dto.id))
+        stage_dtos: List[WorkflowStageDto] = self._query_bus.query(stages_query)
+        response.stages = [WorkflowStageResponseMapper.dto_to_response(stage_dto).model_dump() for stage_dto in stage_dtos]
+
+        return response
 
     def list_workflows_by_company(self, company_id: str, workflow_type: Optional[str] = None) -> List[WorkflowResponse]:
         """List all workflows for a company with enriched data"""
@@ -99,12 +107,12 @@ class WorkflowController:
 
         return responses
 
-    def list_workflows_by_phase(self, phase_id: str, workflow_type: str, status: Optional[str] = None) -> List[WorkflowResponse]:
-        """List workflows filtered by phase and optionally by status
+    def list_workflows_by_phase(self, phase_id: str, workflow_type: Optional[str] = None, status: Optional[str] = None) -> List[WorkflowResponse]:
+        """List workflows filtered by phase and optionally by workflow_type and status
 
         Args:
             phase_id: Phase ID to filter workflows
-            workflow_type: Workflow type ('PO', 'CA', 'CO')
+            workflow_type: Optional workflow type ('PO', 'CA', 'CO'). If None, returns all types.
             status: Optional status filter (active, draft, archived)
 
         Returns:
@@ -115,9 +123,11 @@ class WorkflowController:
         from src.phase.domain.value_objects.phase_id import PhaseId
         
         status_enum = WorkflowStatusEnum(status) if status else None
+        workflow_type_enum = WorkflowTypeEnum(workflow_type) if workflow_type else None
+        
         query = ListWorkflowsByPhaseQuery(
             phase_id=PhaseId.from_string(phase_id),
-            workflow_type=WorkflowTypeEnum(workflow_type),
+            workflow_type=workflow_type_enum,
             status=status_enum
         )
         dtos: List[WorkflowDto] = self._query_bus.query(query)

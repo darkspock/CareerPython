@@ -13,7 +13,8 @@ export interface CompanyRegistrationRequest {
   address?: string;
   
   // Options
-  include_example_data: boolean;
+  initialize_workflows: boolean;      // Whether to initialize default workflows
+  include_example_data: boolean;       // Whether to include sample data
   accept_terms: boolean;
   accept_privacy: boolean;
 }
@@ -36,7 +37,8 @@ export interface LinkUserRequest {
   address?: string;
   
   // Options
-  include_example_data: boolean;
+  initialize_workflows: boolean;      // Whether to initialize default workflows
+  include_example_data: boolean;       // Whether to include sample data
   accept_terms: boolean;
   accept_privacy: boolean;
 }

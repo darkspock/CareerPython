@@ -44,7 +44,6 @@ class CompanyCandidate:
     archived_at: Optional[datetime]
     visibility_settings: VisibilitySettings
     tags: List[str]
-    internal_notes: str
     position: Optional[str]
     department: Optional[str]
     priority: CandidatePriority
@@ -70,7 +69,6 @@ class CompanyCandidate:
         priority: CandidatePriority = CandidatePriority.MEDIUM,
         visibility_settings: Optional[VisibilitySettings] = None,
         tags: Optional[List[str]] = None,
-        internal_notes: str = "",
         ownership_status: OwnershipStatus = OwnershipStatus.COMPANY_OWNED,
         lead_id: Optional[str] = None,
         resume_url: Optional[str] = None,
@@ -91,7 +89,6 @@ class CompanyCandidate:
             priority: Priority level (LOW, MEDIUM, HIGH)
             visibility_settings: What data the company can see
             tags: Internal tags for organization
-            internal_notes: Internal notes about the candidate
             ownership_status: Who owns the data (company or user)
             lead_id: Optional Lead ID that originated this candidate
             resume_url: Optional resume file URL/path
@@ -152,7 +149,6 @@ class CompanyCandidate:
             archived_at=None,
             visibility_settings=visibility_settings,
             tags=tags,
-            internal_notes=internal_notes,
             position=position,
             department=department,
             priority=priority,
@@ -172,7 +168,6 @@ class CompanyCandidate:
         priority: CandidatePriority,
         visibility_settings: VisibilitySettings,
         tags: List[str],
-        internal_notes: str,
     ) -> "CompanyCandidate":
         """
         Updates the company-candidate relationship with new values
@@ -184,7 +179,6 @@ class CompanyCandidate:
             priority: New priority
             visibility_settings: New visibility settings
             tags: New tags
-            internal_notes: New internal notes
 
         Returns:
             CompanyCandidate: New instance with updated data
@@ -205,7 +199,6 @@ class CompanyCandidate:
             archived_at=self.archived_at,
             visibility_settings=visibility_settings,
             tags=tags,
-            internal_notes=internal_notes,
             position=position,
             department=department,
             priority=priority,
@@ -250,7 +243,6 @@ class CompanyCandidate:
             archived_at=self.archived_at,
             visibility_settings=self.visibility_settings,
             tags=self.tags,
-            internal_notes=self.internal_notes,
             position=self.position,
             department=self.department,
             priority=self.priority,
@@ -297,7 +289,6 @@ class CompanyCandidate:
             archived_at=self.archived_at,
             visibility_settings=self.visibility_settings,
             tags=self.tags,
-            internal_notes=self.internal_notes,
             position=self.position,
             department=self.department,
             priority=self.priority,
@@ -336,7 +327,6 @@ class CompanyCandidate:
             archived_at=self.archived_at,
             visibility_settings=self.visibility_settings,
             tags=self.tags,
-            internal_notes=self.internal_notes,
             position=self.position,
             department=self.department,
             priority=self.priority,
@@ -375,7 +365,6 @@ class CompanyCandidate:
             archived_at=datetime.utcnow(),
             visibility_settings=self.visibility_settings,
             tags=self.tags,
-            internal_notes=self.internal_notes,
             position=self.position,
             department=self.department,
             priority=self.priority,
@@ -420,7 +409,6 @@ class CompanyCandidate:
             archived_at=self.archived_at,
             visibility_settings=self.visibility_settings,
             tags=self.tags,
-            internal_notes=self.internal_notes,
             position=self.position,
             department=self.department,
             priority=self.priority,
@@ -461,7 +449,6 @@ class CompanyCandidate:
             archived_at=self.archived_at,
             visibility_settings=self.visibility_settings,
             tags=self.tags,
-            internal_notes=self.internal_notes,
             position=self.position,
             department=self.department,
             priority=self.priority,
@@ -508,7 +495,6 @@ class CompanyCandidate:
             archived_at=self.archived_at,
             visibility_settings=self.visibility_settings,
             tags=self.tags,
-            internal_notes=self.internal_notes,
             position=self.position,
             department=self.department,
             priority=self.priority,

@@ -37,6 +37,12 @@ class JobPositionCommentModel(Base):
         nullable=True,
         index=True
     )
+    job_position_stage_id: Mapped[Optional[str]] = mapped_column(
+        String(26),
+        ForeignKey("job_position_stages.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True
+    )
     created_by_user_id: Mapped[str] = mapped_column(
         String,
         ForeignKey("company_users.id", ondelete="SET NULL"),

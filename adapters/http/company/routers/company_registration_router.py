@@ -96,3 +96,24 @@ async def check_email_exists(
         # Return default response on error
         return {"exists": False, "can_link": False}
 
+
+@router.get("/check-domain")
+@inject
+async def check_domain_available(
+    controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
+    domain: str = Query(..., description="Domain to check"),
+) -> dict:
+    """
+    Check if a domain is available for registration (public endpoint)
+    
+    Returns:
+    - available: Whether the domain is available
+    - domain: The checked domain
+    """
+    try:
+        return controller.check_domain_available(domain)
+    except Exception as e:
+        log.error(f"Error checking domain availability: {str(e)}")
+        # Return default response on error
+        return {"available": True, "domain": domain}
+

@@ -13,6 +13,7 @@ from src.job_position.domain.value_objects import (
     JobPositionCommentId,
     JobPositionId,
     JobPositionWorkflowId,
+    JobPositionStageId,
 )
 from src.job_position.domain.infrastructure.job_position_comment_repository_interface import (
     JobPositionCommentRepositoryInterface
@@ -40,6 +41,7 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
             comment=model.comment,
             workflow_id=JobPositionWorkflowId.from_string(model.workflow_id) if model.workflow_id else None,
             stage_id=model.stage_id,  # Keep as string (can be None for global comments)
+            job_position_stage_id=JobPositionStageId.from_string(model.job_position_stage_id) if model.job_position_stage_id else None,
             created_by_user_id=CompanyUserId.from_string(model.created_by_user_id),
             review_status=CommentReviewStatusEnum(model.review_status),
             visibility=CommentVisibilityEnum(model.visibility),
@@ -55,6 +57,7 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
             comment=entity.comment,
             workflow_id=str(entity.workflow_id) if entity.workflow_id else None,
             stage_id=entity.stage_id,  # Already a string (or None for global comments)
+            job_position_stage_id=str(entity.job_position_stage_id) if entity.job_position_stage_id else None,
             created_by_user_id=str(entity.created_by_user_id),
             review_status=entity.review_status.value,
             visibility=entity.visibility.value,

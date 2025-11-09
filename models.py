@@ -9,8 +9,11 @@ from src.job_position.infrastructure.models.job_position_activity_model import J
 from src.phase.infrastructure.models.phase_model import PhaseModel
 from src.company.infrastructure.models.company_model import CompanyModel
 from src.company.infrastructure.models.company_user_model import CompanyUserModel
+from src.company.infrastructure.models.company_user_invitation_model import CompanyUserInvitationModel
+from src.company_page.infrastructure.models.company_page_model import CompanyPageModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
+from src.candidate_review.infrastructure.models.candidate_review_model import CandidateReviewModel
 from src.workflow.infrastructure.models.workflow_model import WorkflowModel
 from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 from src.customization.infrastructure.models.custom_field_model import CustomFieldModel
@@ -26,6 +29,7 @@ from src.candidate.infrastructure.models.candidate_project import CandidateProje
 from src.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
 from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
 from src.resume.infrastructure.models.resume_model import ResumeModel
+from src.talent_pool.infrastructure.models.talent_pool_entry_model import TalentPoolEntryModel
 
 # Make sure models are available for Alembic
 __all__ = [
@@ -39,8 +43,11 @@ __all__ = [
     "PhaseModel",
     "CompanyModel",
     "CompanyUserModel",
+    "CompanyUserInvitationModel",
+    "CompanyPageModel",
     "CompanyCandidateModel",
     "CandidateCommentModel",
+    "CandidateReviewModel",
     "WorkflowModel",
     "WorkflowStageModel",
     "CustomFieldModel",
@@ -56,4 +63,5 @@ __all__ = [
     "FileAttachmentModel",
     "CandidateApplicationModel",
     "ResumeModel",
+    "TalentPoolEntryModel",
 ]

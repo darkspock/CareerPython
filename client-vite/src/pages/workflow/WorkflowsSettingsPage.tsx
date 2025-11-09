@@ -8,7 +8,23 @@ import type { CompanyWorkflow } from '../../types/workflow.ts';
 import type { Phase } from '../../types/phase.ts';
 import { getWorkflowStatusColor } from '../../types/workflow.ts';
 
-export default function WorkflowsSettingsPage() {
+interface WorkflowsSettingsPageProps {
+  workflowType?: 'CA' | 'PO' | 'CO'; // Default: 'CA' for Candidate Application
+  title?: string;
+  subtitle?: string;
+  createRoute?: string;
+  editRoute?: (id: string) => string;
+  advancedConfigRoute?: (id: string) => string;
+}
+
+export default function WorkflowsSettingsPage({
+  workflowType = 'CA',
+  title,
+  subtitle,
+  createRoute,
+  editRoute,
+  advancedConfigRoute,
+}: WorkflowsSettingsPageProps = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<CompanyWorkflow[]>([]);
@@ -44,15 +60,15 @@ export default function WorkflowsSettingsPage() {
       if (!companyId) return;
 
       const phasesData = await phaseService.listPhases(companyId);
-      // Filter only CANDIDATE_APPLICATION phases (workflow_type === 'CA')
-      const candidatePhases = phasesData
-        .filter(phase => phase.workflow_type === 'CA')
+      // Filter phases by workflow type
+      const filteredPhases = phasesData
+        .filter(phase => phase.workflow_type === workflowType)
         .sort((a, b) => a.sort_order - b.sort_order);
-      setPhases(candidatePhases);
+      setPhases(filteredPhases);
 
       // Auto-select first phase if none selected
-      if (candidatePhases.length > 0 && !selectedPhaseId) {
-        setSelectedPhaseId(candidatePhases[0].id);
+      if (filteredPhases.length > 0 && !selectedPhaseId) {
+        setSelectedPhaseId(filteredPhases[0].id);
       }
     } catch (err) {
       console.error('Failed to load phases:', err);
@@ -68,7 +84,7 @@ export default function WorkflowsSettingsPage() {
         return;
       }
 
-      const data = await companyWorkflowService.listWorkflowsByCompany(companyId);
+      const data = await companyWorkflowService.listWorkflowsByCompany(companyId, workflowType);
       setAllWorkflows(data);
       setWorkflows(data);
       setError(null);
@@ -107,15 +123,27 @@ export default function WorkflowsSettingsPage() {
   };
 
   const handleCreateWorkflow = () => {
-    navigate('/company/workflows/create');
+    if (createRoute) {
+      navigate(createRoute);
+    } else {
+      navigate('/company/workflows/create');
+    }
   };
 
   const handleEditWorkflow = (workflowId: string) => {
-    navigate(`/company/workflows/${workflowId}/edit`);
+    if (editRoute) {
+      navigate(editRoute(workflowId));
+    } else {
+      navigate(`/company/workflows/${workflowId}/edit`);
+    }
   };
 
   const handleAdvancedConfig = (workflowId: string) => {
-    navigate(`/company/workflows/${workflowId}/advanced-config`);
+    if (advancedConfigRoute) {
+      navigate(advancedConfigRoute(workflowId));
+    } else {
+      navigate(`/company/workflows/${workflowId}/advanced-config`);
+    }
   };
 
   if (loading) {
@@ -131,8 +159,12 @@ export default function WorkflowsSettingsPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('company.workflows.title')}</h1>
-          <p className="text-gray-600 mt-1">{t('company.workflows.subtitle')}</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {title || t('company.workflows.title')}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {subtitle || t('company.workflows.subtitle')}
+          </p>
         </div>
         <button
           onClick={handleCreateWorkflow}

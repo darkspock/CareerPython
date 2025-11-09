@@ -12,7 +12,7 @@ import {
   getSkills
 } from '../../types/position';
 import { DynamicCustomFields } from '../../components/jobPosition/DynamicCustomFields';
-import { JobPositionCommentsSection } from '../../components/jobPosition/JobPositionCommentsSection';
+import { PositionCommentsSection } from '../../components/jobPosition/PositionCommentsSection';
 import { JobPositionActivityTimeline } from '../../components/jobPosition/JobPositionActivityTimeline';
 import JobPositionActivityService from '../../services/JobPositionActivityService';
 import JobPositionCommentService from '../../services/JobPositionCommentService';
@@ -443,15 +443,12 @@ export default function PositionDetailPage() {
 
       {/* Comments Tab */}
       {activeTab === 'comments' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Position Comments</h2>
-          <JobPositionCommentsSection
-            positionId={id!}
-            workflowId={position.job_position_workflow_id || undefined}
-            currentStageId={position.stage_id || undefined}
-            onCommentsChange={loadPendingCommentsCount}
-          />
-        </div>
+        <PositionCommentsSection
+          positionId={id!}
+          workflowId={position.job_position_workflow_id || undefined}
+          currentStageId={position.stage_id || undefined}
+          onCommentsChange={loadPendingCommentsCount}
+        />
       )}
 
       {/* History Tab */}

@@ -51,6 +51,52 @@ class JobPositionRepository(JobPositionRepositoryInterface):
 
             return self._create_entity_from_model(job_position_model)
 
+    def _build_base_query(self, session, company_id: Optional[str] = None,
+                          status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
+                          job_category: Optional[JobCategoryEnum] = None,
+                          search_term: Optional[str] = None,
+                          visibility: Optional[JobPositionVisibilityEnum] = None):
+        """Build base query with filters (without pagination)"""
+        query = session.query(JobPositionModel)
+
+        # Apply filters
+        if company_id:
+            query = query.filter(JobPositionModel.company_id == company_id)
+
+        # TODO: Filtering by status now requires access to workflow repository
+        # to get the stage's status_mapping. This will be implemented in Phase 3.
+        # if status:
+        #     # Filter by status would require joining with workflow_stages table
+        #     # or filtering by stage_id and checking stage.status_mapping
+        #     pass
+
+        if job_category:
+            query = query.filter(JobPositionModel.job_category == job_category)
+
+        if search_term:
+            query = query.filter(
+                or_(
+                    JobPositionModel.title.ilike(f"%{search_term}%"),
+                    JobPositionModel.description.ilike(f"%{search_term}%")
+                )
+            )
+
+        # Filter by visibility
+        if visibility is not None:
+            query = query.filter(JobPositionModel.visibility == visibility)
+
+        return query
+
+    def count_by_filters(self, company_id: Optional[str] = None,
+                        status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
+                        job_category: Optional[JobCategoryEnum] = None,
+                        search_term: Optional[str] = None,
+                        visibility: Optional[JobPositionVisibilityEnum] = None) -> int:
+        """Count job positions matching the filters"""
+        with self.database.get_session() as session:
+            query = self._build_base_query(session, company_id, status, job_category, search_term, visibility)
+            return query.count()
+
     def find_by_filters(self, company_id: Optional[str] = None,
                         status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
                         job_category: Optional[JobCategoryEnum] = None,
@@ -63,33 +109,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             status: Single status or list of statuses to filter by
         """
         with self.database.get_session() as session:
-            query = session.query(JobPositionModel)
-
-            # Apply filters
-            if company_id:
-                query = query.filter(JobPositionModel.company_id == company_id)
-
-            # TODO: Filtering by status now requires access to workflow repository
-            # to get the stage's status_mapping. This will be implemented in Phase 3.
-            # if status:
-            #     # Filter by status would require joining with workflow_stages table
-            #     # or filtering by stage_id and checking stage.status_mapping
-            #     pass
-
-            if job_category:
-                query = query.filter(JobPositionModel.job_category == job_category)
-
-            if search_term:
-                query = query.filter(
-                    or_(
-                        JobPositionModel.title.ilike(f"%{search_term}%"),
-                        JobPositionModel.description.ilike(f"%{search_term}%")
-                    )
-                )
-
-            # Filter by visibility
-            if visibility is not None:
-                query = query.filter(JobPositionModel.visibility == visibility)
+            query = self._build_base_query(session, company_id, status, job_category, search_term, visibility)
 
             # Order by created_at desc (before pagination)
             query = query.order_by(JobPositionModel.created_at.desc())

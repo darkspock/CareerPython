@@ -15,7 +15,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, ExternalLink, Kanban, List, MessageCircle } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
+import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import type { Position, JobPositionWorkflow, JobPositionWorkflowStage } from '../../types/position';
+import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow.ts';
 import { getVisibilityLabel, getVisibilityColor, getStatusLabelFromStage, getStatusColorFromStage } from '../../types/position';
 import {
   Tooltip,
@@ -407,23 +409,119 @@ function PositionsListPageContent() {
 
   const loadWorkflows = async () => {
     try {
+      setLoading(true);
       const companyId = getCompanyId();
-      if (!companyId) return;
+      if (!companyId) {
+        setLoading(false);
+        return;
+      }
 
-      const workflowsList = await PositionService.getWorkflows(companyId);
-      setWorkflows(workflowsList);
+      // Use new system: get workflows filtered by type 'PO' (Job Position Opening)
+      const workflowsList = await companyWorkflowService.listWorkflowsByCompany(companyId, 'PO');
+      
+      // Convert CompanyWorkflow to JobPositionWorkflow format
+      const convertedWorkflows: JobPositionWorkflow[] = await Promise.all(
+        workflowsList.map(async (workflow: CompanyWorkflow) => {
+          // Load stages for this workflow
+          let stages: JobPositionWorkflowStage[] = [];
+          try {
+            const workflowStages = await companyWorkflowService.listStagesByWorkflow(workflow.id);
+            stages = workflowStages.map((stage: WorkflowStage) => ({
+              id: stage.id,
+              name: stage.name,
+              icon: stage.style?.icon || '📋',
+              background_color: stage.style?.background_color || '#f3f4f6',
+              text_color: stage.style?.color || '#374151', // StageStyle uses 'color' not 'text_color'
+              role: null,
+              status_mapping: mapStageTypeToStatus(stage.stage_type),
+              kanban_display: mapKanbanDisplay(typeof stage.kanban_display === 'string' ? stage.kanban_display : (stage.kanban_display || 'column')),
+              field_visibility: {},
+              field_validation: {},
+              field_candidate_visibility: {},
+            }));
+          } catch (err) {
+            console.error(`Error loading stages for workflow ${workflow.id}:`, err);
+          }
+
+          return {
+            id: workflow.id,
+            company_id: workflow.company_id,
+            name: workflow.name,
+            default_view: 'kanban', // Default for job positions
+            status: mapWorkflowStatus(workflow.status),
+            stages: stages,
+            custom_fields_config: {},
+            created_at: workflow.created_at,
+            updated_at: workflow.updated_at,
+          };
+        })
+      );
+
+      setWorkflows(convertedWorkflows);
 
       // Load full workflow details if positions need them
-      if (workflowsList.length > 0) {
-        const defaultWorkflow = workflowsList[0]; // Use the first workflow as default
+      if (convertedWorkflows.length > 0) {
+        const defaultWorkflow = convertedWorkflows[0]; // Use the first workflow as default
         if (defaultWorkflow) {
-          const fullWorkflow = await PositionService.getWorkflow(defaultWorkflow.id);
-          setCurrentWorkflow(fullWorkflow);
+          setCurrentWorkflow(defaultWorkflow);
           setSelectedWorkflowId(defaultWorkflow.id);
         }
       }
     } catch (err) {
       console.error('Error loading workflows:', err);
+      setError('Failed to load workflows');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper to map WorkflowStatus to old status format
+  const mapWorkflowStatus = (status: string): string => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'published';
+      case 'DRAFT':
+        return 'draft';
+      case 'ARCHIVED':
+        return 'deprecated';
+      default:
+        return status.toLowerCase();
+    }
+  };
+
+  // Helper to map StageType to status_mapping
+  const mapStageTypeToStatus = (stageType: string): string => {
+    // Map stage types to job position statuses
+    // This is a simplified mapping - adjust based on your business logic
+    switch (stageType) {
+      case 'initial':
+        return 'draft';
+      case 'standard':
+      case 'progress':
+        return 'active';
+      case 'success':
+        return 'closed';
+      case 'fail':
+        return 'archived';
+      default:
+        return 'draft';
+    }
+  };
+
+  // Helper to map KanbanDisplay to old format
+  const mapKanbanDisplay = (kanbanDisplay: string | undefined): string => {
+    if (!kanbanDisplay) return 'column';
+    // Map new system values to old format
+    switch (kanbanDisplay) {
+      case 'column':
+        return 'vertical';
+      case 'row':
+        return 'horizontal_bottom';
+      case 'none':
+        return 'none';
+      default:
+        // If already in old format, return as is
+        return kanbanDisplay;
     }
   };
 
@@ -546,10 +644,38 @@ function PositionsListPageContent() {
     setSearchParams({ workflow_id: workflowId }); // Update URL
     setLoading(true); // Show loading state immediately
     try {
-      const workflow = await PositionService.getWorkflow(workflowId);
-      setCurrentWorkflow(workflow);
+      // Use new system: get workflow and stages
+      const workflow = await companyWorkflowService.getWorkflow(workflowId);
+      const workflowStages = await companyWorkflowService.listStagesByWorkflow(workflowId);
+      
+      // Convert to JobPositionWorkflow format
+      const convertedWorkflow: JobPositionWorkflow = {
+        id: workflow.id,
+        company_id: workflow.company_id,
+        name: workflow.name,
+        default_view: 'kanban',
+        status: mapWorkflowStatus(workflow.status),
+        stages: workflowStages.map((stage: WorkflowStage) => ({
+          id: stage.id,
+          name: stage.name,
+          icon: stage.style?.icon || '📋',
+          background_color: stage.style?.background_color || '#f3f4f6',
+          text_color: stage.style?.text_color || '#374151',
+          role: null,
+          status_mapping: mapStageTypeToStatus(stage.stage_type),
+          kanban_display: stage.kanban_display || 'column',
+          field_visibility: {},
+          field_validation: {},
+          field_candidate_visibility: {},
+        })),
+        custom_fields_config: {},
+        created_at: workflow.created_at,
+        updated_at: workflow.updated_at,
+      };
+      
+      setCurrentWorkflow(convertedWorkflow);
       // Reload positions when workflow changes - use the newly loaded workflow
-      await loadPositionsWithWorkflow(workflow);
+      await loadPositionsWithWorkflow(convertedWorkflow);
     } catch (err) {
       console.error('Error loading workflow:', err);
       setError('Failed to load workflow');
@@ -582,7 +708,34 @@ function PositionsListPageContent() {
             let workflow = workflowToUse;
             if (!workflow || workflow.id !== position.job_position_workflow_id) {
               try {
-                workflow = await PositionService.getWorkflow(position.job_position_workflow_id);
+                // Use new system: get workflow and stages
+                const newWorkflow = await companyWorkflowService.getWorkflow(position.job_position_workflow_id);
+                const workflowStages = await companyWorkflowService.listStagesByWorkflow(position.job_position_workflow_id);
+                
+                // Convert to JobPositionWorkflow format
+                workflow = {
+                  id: newWorkflow.id,
+                  company_id: newWorkflow.company_id,
+                  name: newWorkflow.name,
+                  default_view: 'kanban',
+                  status: mapWorkflowStatus(newWorkflow.status),
+                  stages: workflowStages.map((stage: WorkflowStage) => ({
+                    id: stage.id,
+                    name: stage.name,
+                    icon: stage.style?.icon || '📋',
+                    background_color: stage.style?.background_color || '#f3f4f6',
+                    text_color: stage.style?.text_color || '#374151',
+                    role: null,
+                    status_mapping: mapStageTypeToStatus(stage.stage_type),
+                    kanban_display: stage.kanban_display || 'column',
+                    field_visibility: {},
+                    field_validation: {},
+                    field_candidate_visibility: {},
+                  })),
+                  custom_fields_config: {},
+                  created_at: newWorkflow.created_at,
+                  updated_at: newWorkflow.updated_at,
+                };
               } catch (err) {
                 console.error(`Error loading workflow ${position.job_position_workflow_id}:`, err);
                 // Continue without workflow data if it fails

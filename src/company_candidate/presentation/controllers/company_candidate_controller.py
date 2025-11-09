@@ -110,8 +110,7 @@ class CompanyCandidateController:
             department=request.department,
             priority=CandidatePriority(request.priority),
             visibility_settings=request.visibility_settings,
-            tags=request.tags,
-            internal_notes=request.internal_notes
+            tags=request.tags
         )
 
         self._command_bus.dispatch(command)
@@ -164,7 +163,6 @@ class CompanyCandidateController:
             archived_at=read_model.archived_at,
             visibility_settings=read_model.visibility_settings,
             tags=read_model.tags,
-            internal_notes=read_model.internal_notes,
             position=read_model.position,
             department=read_model.department,
             priority=read_model.priority,
@@ -232,7 +230,6 @@ class CompanyCandidateController:
                 archived_at=read_model.archived_at,
                 visibility_settings=read_model.visibility_settings,
                 tags=read_model.tags,
-                internal_notes=read_model.internal_notes,
                 position=read_model.position,
                 department=read_model.department,
                 priority=read_model.priority,
@@ -274,8 +271,7 @@ class CompanyCandidateController:
             department=request.department,
             priority=CandidatePriority(request.priority) if request.priority else None,
             visibility_settings=request.visibility_settings,
-            tags=request.tags,
-            internal_notes=request.internal_notes
+            tags=request.tags
         )
 
         self._command_bus.dispatch(command)

@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from src.shared.application.query_bus import Query, QueryHandler
-from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
+from src.workflow.application.dtos.workflow_dto import WorkflowDto
+from src.workflow.application.mappers.workflow_mapper import WorkflowMapper
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
+from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.company.domain.value_objects.company_id import CompanyId
-from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
 
 
 @dataclass
@@ -13,14 +15,17 @@ class ListJobPositionWorkflowsQuery(Query):
     company_id: CompanyId
 
 
-class ListJobPositionWorkflowsQueryHandler(QueryHandler[ListJobPositionWorkflowsQuery, List[JobPositionWorkflowDto]]):
+class ListJobPositionWorkflowsQueryHandler(QueryHandler[ListJobPositionWorkflowsQuery, List[WorkflowDto]]):
     """Handler for listing job position workflows"""
 
-    def __init__(self, workflow_repository: JobPositionWorkflowRepositoryInterface):
+    def __init__(self, workflow_repository: WorkflowRepositoryInterface):
         self.workflow_repository = workflow_repository
 
-    def handle(self, query: ListJobPositionWorkflowsQuery) -> List[JobPositionWorkflowDto]:
+    def handle(self, query: ListJobPositionWorkflowsQuery) -> List[WorkflowDto]:
         """Handle the query - returns list of workflow DTOs"""
-        workflows = self.workflow_repository.get_by_company_id(query.company_id)
-        return [JobPositionWorkflowDto.from_entity(workflow) for workflow in workflows]
-
+        # Get workflows filtered by JOB_POSITION_OPENING type
+        workflows = self.workflow_repository.list_by_company(
+            company_id=query.company_id,
+            workflow_type=WorkflowTypeEnum.JOB_POSITION_OPENING
+        )
+        return [WorkflowMapper.entity_to_dto(workflow) for workflow in workflows]

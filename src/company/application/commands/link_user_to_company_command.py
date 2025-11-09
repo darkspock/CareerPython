@@ -17,6 +17,9 @@ from src.company.domain.entities.company_user import CompanyUser
 from src.company.domain.value_objects import CompanyUserId
 from src.company.domain.enums import CompanyUserRole
 from src.company.application.commands.create_company_command import CreateCompanyCommand
+from src.company.application.commands.initialize_onboarding_command import InitializeOnboardingCommand
+from src.company.application.commands.initialize_sample_data_command import InitializeSampleDataCommand
+from src.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommand
 
 import logging
 
@@ -40,7 +43,8 @@ class LinkUserToCompanyCommand(Command):
     company_address: Optional[str] = None
     
     # Options
-    include_example_data: bool = False
+    initialize_workflows: bool = True   # Whether to initialize default workflows
+    include_example_data: bool = False  # Whether to include sample data
 
 
 class LinkUserToCompanyCommandHandler(CommandHandler[LinkUserToCompanyCommand]):
@@ -64,8 +68,11 @@ class LinkUserToCompanyCommandHandler(CommandHandler[LinkUserToCompanyCommand]):
         
         Steps:
         1. Authenticate user (validate email and password)
-        2. Create new company (this automatically initializes phases and workflows)
+        2. Create new company
         3. Link user to company with ADMIN role
+        4. Initialize onboarding (roles + pages) - ALWAYS
+        5. Initialize workflows - CONDITIONAL (if initialize_workflows=True)
+        6. Initialize sample data - CONDITIONAL (if include_example_data=True)
         """
         log.info(f"LinkUserToCompanyCommand called with email: {command.user_email}, domain: {command.company_domain}")
         
@@ -82,9 +89,10 @@ class LinkUserToCompanyCommandHandler(CommandHandler[LinkUserToCompanyCommand]):
             log.info(f"User authenticated successfully: {command.user_email}")
             
             # Step 2: Validate domain before creating company
-            existing_company = self.company_repository.get_by_domain(command.company_domain)
-            if existing_company:
-                raise CompanyDomainAlreadyExistsError(f"Company with domain {command.company_domain} already exists")
+            # TODO: Re-enable domain uniqueness check when needed
+            # existing_company = self.company_repository.get_by_domain(command.company_domain)
+            # if existing_company:
+            #     raise CompanyDomainAlreadyExistsError(f"Company with domain {command.company_domain} already exists")
             
             # Prepare company settings
             company_settings: Dict[str, Any] = {}
@@ -95,7 +103,7 @@ class LinkUserToCompanyCommandHandler(CommandHandler[LinkUserToCompanyCommand]):
             if command.include_example_data:
                 company_settings["include_example_data"] = True
             
-            # Create company using CreateCompanyCommand (this will trigger InitializeCompanyPhasesCommand automatically)
+            # Create company using CreateCompanyCommand
             create_company_command = CreateCompanyCommand(
                 id=str(command.company_id.value),
                 name=command.company_name,
@@ -117,6 +125,35 @@ class LinkUserToCompanyCommandHandler(CommandHandler[LinkUserToCompanyCommand]):
             )
             self.company_user_repository.save(company_user)
             log.info(f"Company user relationship created: {command.user_email} -> {command.company_name} (Role: ADMIN)")
+            
+            # Step 4: Initialize onboarding (ALWAYS) - roles and pages
+            onboarding_command = InitializeOnboardingCommand(
+                company_id=command.company_id,
+                create_roles=True,
+                create_pages=True
+            )
+            self.command_bus.dispatch(onboarding_command)
+            log.info(f"Onboarding initialized for company: {command.company_name}")
+            
+            # Step 5: Initialize workflows (CONDITIONAL)
+            if command.initialize_workflows:
+                workflows_command = InitializeCompanyPhasesCommand(
+                    company_id=command.company_id
+                )
+                self.command_bus.dispatch(workflows_command)
+                log.info(f"Workflows initialized for company: {command.company_name}")
+            
+            # Step 6: Initialize sample data (CONDITIONAL)
+            if command.include_example_data:
+                sample_data_command = InitializeSampleDataCommand(
+                    company_id=command.company_id,
+                    company_user_id=company_user_id,
+                    num_candidates=50,
+                    num_recruiters=3,
+                    num_viewers=2
+                )
+                self.command_bus.dispatch(sample_data_command)
+                log.info(f"Sample data initialized for company: {command.company_name}")
             
             log.info(f"User linked to company successfully: {command.company_name}")
             

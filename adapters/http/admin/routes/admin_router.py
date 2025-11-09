@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Annotated, List, Optional
 
 from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Security, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, Security, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
 from adapters.http.admin.controllers.admin_candidate_controller import AdminCandidateController
@@ -17,8 +17,10 @@ from adapters.http.admin.controllers.enum_controller import EnumController, Enum
 from adapters.http.admin.controllers.interview_controller import InterviewController
 from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
 from adapters.http.admin.controllers.job_position_controller import JobPositionController
-from adapters.http.admin.controllers.job_position_workflow_controller import JobPositionWorkflowController
+# JobPositionWorkflowController removed - use generic WorkflowController or JobPositionController instead
 from adapters.http.admin.controllers.job_position_comment_controller import JobPositionCommentController
+from adapters.http.workflow.controllers import WorkflowController
+from adapters.http.workflow.schemas import WorkflowResponse
 # Company schemas
 from adapters.http.admin.schemas.company import (
     CompanyResponse, CompanyCreate, CompanyUpdate, CompanyListResponse,
@@ -42,9 +44,10 @@ from adapters.http.admin.schemas.job_position import (
     JobPositionStatsResponse, JobPositionActionResponse
 )
 from adapters.http.admin.schemas.job_position_workflow import (
-    JobPositionWorkflowCreate, JobPositionWorkflowUpdate, JobPositionWorkflowResponse,
+    JobPositionWorkflowCreate, JobPositionWorkflowResponse,
     MoveJobPositionToStageRequest, UpdateJobPositionCustomFieldsRequest
 )
+from adapters.http.workflow.schemas.update_workflow_request import UpdateWorkflowRequest
 from adapters.http.admin.schemas.job_position_comment import (
     CreateJobPositionCommentRequest, UpdateJobPositionCommentRequest,
     JobPositionCommentResponse, JobPositionCommentListResponse
@@ -655,67 +658,175 @@ def delete_position(
 # ====================================
 # JOB POSITION WORKFLOW ENDPOINTS
 # ====================================
+# Note: Workflow CRUD operations are now handled by the generic workflow system
+# at /api/company-workflows. These endpoints are kept for backward compatibility
+# but should be migrated to use the generic workflow endpoints.
 
-@router.post("/workflows", response_model=JobPositionWorkflowResponse)
-@inject
-def create_workflow(
-        workflow_data: JobPositionWorkflowCreate,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionWorkflowResponse:
-    """Create a new job position workflow"""
-    return controller.create_workflow(workflow_data)
-
-
-@router.get("/workflows/{workflow_id}", response_model=JobPositionWorkflowResponse)
+@router.get("/workflows/{workflow_id}", response_model=WorkflowResponse)
 @inject
 def get_workflow(
         workflow_id: str,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
-) -> JobPositionWorkflowResponse:
-    """Get a job position workflow by ID"""
-    return controller.get_workflow(workflow_id)
+        controller: Annotated[WorkflowController, Depends(Provide[Container.candidate_application_workflow_controller])],
+) -> WorkflowResponse:
+    """Get a workflow by ID (backward compatibility endpoint)"""
+    result = controller.get_workflow_by_id(workflow_id)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found")
+    
+    # Ensure stages is always a list (not None) for frontend compatibility
+    if result.stages is None:
+        result.stages = []
+    
+    # Transform stages to match frontend expected format
+    # Frontend expects: icon, background_color, text_color, status_mapping, field_visibility, etc.
+    # Generic system has: style: {background_color, text_color, icon}, kanban_display, etc.
+    if result.stages:
+        transformed_stages = []
+        for stage in result.stages:
+            # Extract style fields
+            style = stage.get('style', {}) if isinstance(stage, dict) else getattr(stage, 'style', {})
+            icon = style.get('icon', '📋') if isinstance(style, dict) else getattr(style, 'icon', '📋')
+            background_color = style.get('background_color', '#E5E7EB') if isinstance(style, dict) else getattr(style, 'background_color', '#E5E7EB')
+            text_color = style.get('text_color', '#374151') if isinstance(style, dict) else getattr(style, 'text_color', '#374151')
+            
+            # Get other fields
+            stage_id = stage.get('id') if isinstance(stage, dict) else getattr(stage, 'id', '')
+            name = stage.get('name') if isinstance(stage, dict) else getattr(stage, 'name', '')
+            kanban_display = stage.get('kanban_display', 'column') if isinstance(stage, dict) else getattr(stage, 'kanban_display', 'column')
+            default_role_ids = stage.get('default_role_ids', []) if isinstance(stage, dict) else getattr(stage, 'default_role_ids', [])
+            role = default_role_ids[0] if default_role_ids else None
+            
+            # Map kanban_display values (generic: 'column'/'row'/'none' -> frontend: 'vertical'/'horizontal'/'hidden')
+            kanban_display_map = {
+                'column': 'vertical',
+                'row': 'horizontal',
+                'none': 'hidden'
+            }
+            kanban_display_mapped = kanban_display_map.get(kanban_display, kanban_display)
+            
+            # Create transformed stage
+            transformed_stage = {
+                'id': stage_id,
+                'name': name,
+                'icon': icon,
+                'background_color': background_color,
+                'text_color': text_color,
+                'role': role,
+                'status_mapping': 'draft',  # Default, as this doesn't exist in generic system
+                'kanban_display': kanban_display_mapped,
+                'field_visibility': {},  # Empty, as this doesn't exist in generic system
+                'field_validation': stage.get('validation_rules', {}) if isinstance(stage, dict) else getattr(stage, 'validation_rules', {}),
+                'field_candidate_visibility': {}  # Empty, as this doesn't exist in generic system
+            }
+            transformed_stages.append(transformed_stage)
+        
+        result.stages = transformed_stages
+    
+    return result
 
 
-@router.put("/workflows/{workflow_id}", response_model=JobPositionWorkflowResponse)
+@router.put("/workflows/{workflow_id}", response_model=WorkflowResponse)
 @inject
 def update_workflow(
         workflow_id: str,
-        workflow_data: JobPositionWorkflowUpdate,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[WorkflowController, Depends(Provide[Container.candidate_application_workflow_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionWorkflowResponse:
-    """Update a job position workflow"""
-    return controller.update_workflow(workflow_id, workflow_data)
+        body: dict = Body(...),
+) -> WorkflowResponse:
+    """Update a workflow (backward compatibility endpoint)
+    
+    Accepts both old format (JobPositionWorkflowUpdate with default_view, stages, custom_fields_config)
+    and new format (UpdateWorkflowRequest with name, description, display, phase_id)
+    """
+    # Extract fields - handle both old and new formats
+    name = body.get('name', '')
+    description = body.get('description', '')
+    
+    # Handle display/default_view mapping
+    display = body.get('display') or body.get('default_view')
+    if display == 'kanban':
+        display = 'kanban'
+    elif display == 'list':
+        display = 'list'
+    else:
+        display = None
+    
+    # Create UpdateWorkflowRequest with available fields
+    update_request = UpdateWorkflowRequest(
+        name=name,
+        description=description or "",
+        display=display,
+        phase_id=body.get('phase_id')  # Phase ID if provided
+    )
+    
+    # Update workflow using generic system
+    result = controller.update_workflow(workflow_id, update_request)
+    
+    # Note: stages and custom_fields_config from old format are ignored
+    # These should be updated through separate stage endpoints or EntityCustomization system
+    
+    # Re-fetch to get enriched response with stages
+    result = controller.get_workflow_by_id(workflow_id)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found after update")
+    
+    # Ensure stages is always a list (not None) for frontend compatibility
+    if result.stages is None:
+        result.stages = []
+    
+    # Transform stages to match frontend expected format (same as GET endpoint)
+    if result.stages:
+        transformed_stages = []
+        for stage in result.stages:
+            # Extract style fields
+            style = stage.get('style', {}) if isinstance(stage, dict) else getattr(stage, 'style', {})
+            icon = style.get('icon', '📋') if isinstance(style, dict) else getattr(style, 'icon', '📋')
+            background_color = style.get('background_color', '#E5E7EB') if isinstance(style, dict) else getattr(style, 'background_color', '#E5E7EB')
+            text_color = style.get('text_color', '#374151') if isinstance(style, dict) else getattr(style, 'text_color', '#374151')
+            
+            # Get other fields
+            stage_id = stage.get('id') if isinstance(stage, dict) else getattr(stage, 'id', '')
+            name = stage.get('name') if isinstance(stage, dict) else getattr(stage, 'name', '')
+            kanban_display = stage.get('kanban_display', 'column') if isinstance(stage, dict) else getattr(stage, 'kanban_display', 'column')
+            default_role_ids = stage.get('default_role_ids', []) if isinstance(stage, dict) else getattr(stage, 'default_role_ids', [])
+            role = default_role_ids[0] if default_role_ids else None
+            
+            # Map kanban_display values (generic: 'column'/'row'/'none' -> frontend: 'vertical'/'horizontal'/'hidden')
+            kanban_display_map = {
+                'column': 'vertical',
+                'row': 'horizontal',
+                'none': 'hidden'
+            }
+            kanban_display_mapped = kanban_display_map.get(kanban_display, kanban_display)
+            
+            # Create transformed stage
+            transformed_stage = {
+                'id': stage_id,
+                'name': name,
+                'icon': icon,
+                'background_color': background_color,
+                'text_color': text_color,
+                'role': role,
+                'status_mapping': 'draft',  # Default, as this doesn't exist in generic system
+                'kanban_display': kanban_display_mapped,
+                'field_visibility': {},  # Empty, as this doesn't exist in generic system
+                'field_validation': stage.get('validation_rules', {}) if isinstance(stage, dict) else getattr(stage, 'validation_rules', {}),
+                'field_candidate_visibility': {}  # Empty, as this doesn't exist in generic system
+            }
+            transformed_stages.append(transformed_stage)
+        
+        result.stages = transformed_stages
+    
+    return result
 
-
-@router.get("/workflows", response_model=List[JobPositionWorkflowResponse])
-@inject
-def list_workflows(
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
-        company_id: str = Query(..., description="Company ID"),
-) -> List[JobPositionWorkflowResponse]:
-    """List job position workflows for a company"""
-    return controller.list_workflows(company_id)
-
-
-@router.post("/workflows/initialize", response_model=List[JobPositionWorkflowResponse])
-@inject
-def initialize_default_workflows(
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-        company_id: str = Query(..., description="Company ID"),
-) -> List[JobPositionWorkflowResponse]:
-    """Initialize default job position workflows for a company"""
-    return controller.initialize_default_workflows(company_id)
-
+# Job Position Stage Management Endpoints
 
 @router.post("/positions/{position_id}/move-to-stage", response_model=dict)
 @inject
 def move_position_to_stage(
         position_id: str,
         request: MoveJobPositionToStageRequest,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> dict:
     """Move a job position to a new stage with validation"""
@@ -723,7 +834,11 @@ def move_position_to_stage(
     from fastapi import HTTPException
     
     try:
-        return controller.move_position_to_stage(position_id, request)
+        return controller.move_position_to_stage(
+            position_id=position_id,
+            stage_id=request.stage_id,
+            comment=request.comment
+        )
     except JobPositionValidationError as e:
         # Return 400 with validation errors
         raise HTTPException(
@@ -740,11 +855,14 @@ def move_position_to_stage(
 def update_position_custom_fields(
         position_id: str,
         request: UpdateJobPositionCustomFieldsRequest,
-        controller: Annotated[JobPositionWorkflowController, Depends(Provide[Container.job_position_workflow_controller])],
+        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> dict:
     """Update custom fields values for a job position"""
-    return controller.update_custom_fields(position_id, request)
+    return controller.update_custom_fields(
+        position_id=position_id,
+        custom_fields_values=request.custom_fields_values
+    )
 
 
 # Job Position Comments & Activity Endpoints

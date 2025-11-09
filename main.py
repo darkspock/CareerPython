@@ -31,6 +31,7 @@ from adapters.http.workflow.routers.workflow_router import router as candidate_a
 from adapters.http.workflow.routers.workflow_stage_router import router as workflow_stage_router
 from adapters.http.customization.routers.entity_customization_router import router as entity_customization_router
 from adapters.http.company.routers.candidate_comment_router import router as candidate_comment_router
+from adapters.http.company.routers.candidate_review_router import router as candidate_review_router
 from src.field_validation.presentation.routers.validation_rule_router import router as validation_rule_router
 from src.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
 from src.company_page.presentation.routers.company_page_router import router as company_page_router
@@ -93,6 +94,7 @@ app.include_router(candidate_application_workflow_router)  # Company workflow ma
 app.include_router(workflow_stage_router)  # Workflow stage management
 app.include_router(entity_customization_router)  # Entity customization management
 app.include_router(candidate_comment_router)  # Candidate comment management
+app.include_router(candidate_review_router)  # Candidate review management
 app.include_router(validation_rule_router)  # Field validation rules
 app.include_router(position_stage_assignment_router)  # Position stage assignment management
 app.include_router(company_page_router)  # Company pages management
@@ -151,6 +153,7 @@ container.wire(modules=[
     "adapters.http.workflow.routers.workflow_stage_router",
     "adapters.http.customization.routers.entity_customization_router",
     "adapters.http.company.routers.candidate_comment_router",
+    "adapters.http.company.routers.candidate_review_router",
     "src.field_validation.presentation.routers.validation_rule_router",
     "src.position_stage_assignment.presentation.routers.position_stage_assignment_router",
     "src.workflow_analytics.presentation.routers.workflow_analytics_router",

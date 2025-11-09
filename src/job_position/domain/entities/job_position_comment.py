@@ -7,6 +7,7 @@ from src.job_position.domain.value_objects import (
     JobPositionCommentId,
     JobPositionId,
     JobPositionWorkflowId,
+    JobPositionStageId,
 )
 from src.job_position.domain.value_objects.workflow_stage import WorkflowStage
 from src.job_position.domain.enums.comment_visibility import CommentVisibilityEnum
@@ -28,7 +29,8 @@ class JobPositionComment:
     job_position_id: JobPositionId
     comment: str
     workflow_id: Optional[JobPositionWorkflowId]
-    stage_id: Optional[str]  # NULL = global comment (visible at all stages)
+    stage_id: Optional[str]  # NULL = global comment (visible at all stages) - points to workflow_stages.id
+    job_position_stage_id: Optional[JobPositionStageId]  # Points to job_position_stages.id (specific stage instance)
     created_by_user_id: CompanyUserId
     review_status: CommentReviewStatusEnum
     visibility: CommentVisibilityEnum
@@ -44,6 +46,7 @@ class JobPositionComment:
         created_by_user_id: CompanyUserId,
         workflow_id: Optional[JobPositionWorkflowId] = None,
         stage_id: Optional[str] = None,
+        job_position_stage_id: Optional[JobPositionStageId] = None,
         visibility: CommentVisibilityEnum = CommentVisibilityEnum.SHARED,
         review_status: CommentReviewStatusEnum = CommentReviewStatusEnum.REVIEWED,
     ) -> "JobPositionComment":
@@ -56,7 +59,8 @@ class JobPositionComment:
             comment: Comment text content
             created_by_user_id: User who created this comment
             workflow_id: Optional workflow ID where comment was made
-            stage_id: Optional stage ID where comment was made (None = global comment)
+            stage_id: Optional stage ID where comment was made (None = global comment) - points to workflow_stages.id
+            job_position_stage_id: Optional job position stage ID (specific stage instance) - points to job_position_stages.id
             visibility: Visibility level of the comment
             review_status: Review status (default: REVIEWED)
 
@@ -77,6 +81,7 @@ class JobPositionComment:
             comment=comment.strip(),
             workflow_id=workflow_id,
             stage_id=stage_id,
+            job_position_stage_id=job_position_stage_id,
             created_by_user_id=created_by_user_id,
             review_status=review_status,
             visibility=visibility,

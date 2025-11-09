@@ -24,7 +24,6 @@ class CompanyCandidateResponseMapper:
             archived_at=dto.archived_at,
             visibility_settings=dto.visibility_settings,
             tags=dto.tags,
-            internal_notes=dto.internal_notes,
             position=dto.position,
             department=dto.department,
             priority=dto.priority,

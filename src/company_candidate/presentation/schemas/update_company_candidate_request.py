@@ -9,4 +9,3 @@ class UpdateCompanyCandidateRequest(BaseModel):
     priority: Optional[str] = Field(None, description="Priority level: low, medium, high")
     visibility_settings: Optional[Dict[str, bool]] = Field(None, description="Visibility settings for candidate data")
     tags: Optional[List[str]] = Field(None, description="Tags for categorization")
-    internal_notes: Optional[str] = Field(None, description="Internal notes about the candidate")

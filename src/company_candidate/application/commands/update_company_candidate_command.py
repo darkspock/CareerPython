@@ -19,7 +19,6 @@ class UpdateCompanyCandidateCommand(Command):
     priority: Optional[CandidatePriority] = None
     visibility_settings: Optional[Dict[str, bool]] = None
     tags: Optional[List[str]] = None
-    internal_notes: Optional[str] = None
 
 
 class UpdateCompanyCandidateCommandHandler(CommandHandler):
@@ -47,8 +46,7 @@ class UpdateCompanyCandidateCommandHandler(CommandHandler):
             department=command.department if command.department is not None else company_candidate.department,
             priority=command.priority if command.priority is not None else company_candidate.priority,
             visibility_settings=visibility_settings if visibility_settings is not None else company_candidate.visibility_settings,
-            tags=command.tags if command.tags is not None else company_candidate.tags,
-            internal_notes=command.internal_notes if command.internal_notes is not None else company_candidate.internal_notes
+            tags=command.tags if command.tags is not None else company_candidate.tags
         )
 
         # Save to repository

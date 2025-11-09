@@ -70,6 +70,18 @@ class JobPositionController:
 
             positions: List[JobPositionDto] = self.query_bus.query(query)
 
+            # Get total count using the same filters
+            # We need to get the repository from the query handler
+            # For now, we'll use a simple approach: if we got fewer results than page_size,
+            # that's the total. Otherwise, we estimate.
+            # TODO: Add count_by_filters to the query handler or return total from query
+            if len(positions) < page_size:
+                # This is likely the last page or the only page
+                total = (page - 1) * page_size + len(positions)
+            else:
+                # There might be more pages, estimate at least this many
+                total = page * page_size + 1
+
             # Convert DTOs to response schemas using mapper
             # TODO: Ideally we should get company names in batch for performance
             response_positions = []
@@ -78,8 +90,7 @@ class JobPositionController:
                 response_positions.append(JobPositionMapper.dto_to_response(dto, company_name=None))
 
             # Calculate pagination
-            total = len(response_positions)  # This is simplified, should be from repository
-            total_pages = (total + page_size - 1) // page_size
+            total_pages = (total + page_size - 1) // page_size if total > 0 else 1
 
             return JobPositionListResponse(
                 positions=response_positions,
@@ -286,4 +297,62 @@ class JobPositionController:
             )
 
 # Status management methods (activate, pause, resume, close, archive) have been removed.
-# Use JobPositionWorkflowController.move_position_to_stage() instead.
+# Use move_position_to_stage() instead.
+
+    def move_position_to_stage(
+        self,
+        position_id: str,
+        stage_id: str,
+        comment: Optional[str] = None
+    ) -> dict:
+        """Move a job position to a new stage"""
+        from src.job_position.application.commands.move_job_position_to_stage import (
+            MoveJobPositionToStageCommand,
+            JobPositionValidationError
+        )
+        
+        try:
+            command = MoveJobPositionToStageCommand(
+                id=JobPositionId.from_string(position_id),
+                stage_id=StageId.from_string(stage_id),
+                comment=comment
+            )
+            self.command_bus.dispatch(command)
+            
+            return {
+                "success": True,
+                "message": "Position moved to stage successfully",
+                "position_id": position_id,
+                "stage_id": stage_id
+            }
+        except JobPositionValidationError as e:
+            raise e
+        except Exception as e:
+            logger.error(f"Error moving position {position_id} to stage {stage_id}: {str(e)}")
+            raise
+
+    def update_custom_fields(
+        self,
+        position_id: str,
+        custom_fields_values: Dict[str, Any]
+    ) -> dict:
+        """Update custom fields values for a job position"""
+        from src.job_position.application.commands.update_job_position_custom_fields import (
+            UpdateJobPositionCustomFieldsCommand
+        )
+        
+        try:
+            command = UpdateJobPositionCustomFieldsCommand(
+                id=JobPositionId.from_string(position_id),
+                custom_fields_values=custom_fields_values
+            )
+            self.command_bus.dispatch(command)
+            
+            return {
+                "success": True,
+                "message": "Custom fields updated successfully",
+                "position_id": position_id
+            }
+        except Exception as e:
+            logger.error(f"Error updating custom fields for position {position_id}: {str(e)}")
+            raise

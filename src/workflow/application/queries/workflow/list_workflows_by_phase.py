@@ -12,9 +12,9 @@ from src.workflow.domain.interfaces.workflow_repository_interface import Workflo
 
 @dataclass(frozen=True)
 class ListWorkflowsByPhaseQuery(Query):
-    """Query to list workflows filtered by phase and optionally status"""
+    """Query to list workflows filtered by phase and optionally workflow_type and status"""
     phase_id: PhaseId
-    workflow_type: WorkflowTypeEnum
+    workflow_type: Optional[WorkflowTypeEnum] = None  # If None, returns all workflow types
     status: Optional[WorkflowStatusEnum] = None  # If None, returns all statuses
 
 

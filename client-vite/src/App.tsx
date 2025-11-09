@@ -74,8 +74,6 @@ import CompanyRolesPage from './pages/company/CompanyRolesPage';
 import PositionsListPage from './pages/company/PositionsListPage';
 import JobPositionWorkflowsSettingsPage from './pages/company/JobPositionWorkflowsSettingsPage.tsx';
 import CreateJobPositionWorkflowPage from './pages/company/CreateJobPositionWorkflowPage';
-import EditJobPositionWorkflowPage from './pages/company/EditJobPositionWorkflowPage';
-import EditJobPositionWorkflowCustomFieldsPage from './pages/company/EditJobPositionWorkflowCustomFieldsPage';
 import WorkflowBoardPage from './pages/workflow/WorkflowBoardPage.tsx';
 import CreatePositionPage from './pages/company/CreatePositionPage';
 import CreateWorkflowPage from './pages/workflow/CreateWorkflowPage.tsx';
@@ -227,7 +225,6 @@ function App() {
                           <Route path="positions/:id/edit" element={<EditPositionPage />} />
                           <Route path="workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="workflows/:workflowId/edit" element={<EditWorkflowPage />} />
-                          <Route path="workflows/:workflowId/advanced-config" element={<WorkflowAdvancedConfigPage />} />
                           <Route path="pages" element={<CompanyPagesListPage />} />
                           <Route path="pages/create" element={<CreateCompanyPagePage />} />
                           <Route path="pages/:pageId/view" element={<ViewCompanyPagePage />} />
@@ -237,9 +234,6 @@ function App() {
                           <Route path="settings/workflows" element={<WorkflowsSettingsPage />} />
                           <Route path="settings/workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="settings/job-position-workflows" element={<JobPositionWorkflowsSettingsPage />} />
-                          <Route path="settings/job-position-workflows/create" element={<CreateJobPositionWorkflowPage />} />
-                          <Route path="settings/job-position-workflows/:workflowId/edit" element={<EditJobPositionWorkflowPage />} />
-                          <Route path="settings/job-position-workflows/:workflowId/configure" element={<EditJobPositionWorkflowCustomFieldsPage />} />
                           <Route path="settings/phases" element={<PhasesPage />} />
                           <Route path="settings/roles" element={<CompanyRolesPage />} />
                           <Route path="users" element={<UsersManagementPage />} />

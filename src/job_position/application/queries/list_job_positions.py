@@ -24,6 +24,13 @@ class ListJobPositionsQuery(Query):
     current_user_id: Optional[str] = None  # For pending comments count with visibility filtering
 
 
+@dataclass
+class ListJobPositionsResult:
+    """Result of listing job positions with total count"""
+    positions: List[JobPositionDto]
+    total: int
+
+
 class ListJobPositionsQueryHandler:
     def __init__(
         self,
@@ -35,6 +42,16 @@ class ListJobPositionsQueryHandler:
 
     def handle(self, query: ListJobPositionsQuery) -> List[JobPositionDto]:
         """Handle query - simplified filters"""
+        # Get total count with same filters
+        total = self.job_position_repository.count_by_filters(
+            company_id=query.company_id,
+            status=query.status,
+            job_category=query.job_category,
+            search_term=query.search_term,
+            visibility=query.visibility
+        )
+        
+        # Get paginated results
         jobPositions = self.job_position_repository.find_by_filters(
             company_id=query.company_id,
             status=query.status,  # TODO: This will require workflow repository to map stage to status

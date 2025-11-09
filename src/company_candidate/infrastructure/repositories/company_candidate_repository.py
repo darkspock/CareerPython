@@ -58,7 +58,6 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             archived_at=model.archived_at,
             visibility_settings=VisibilitySettings.from_dict(model.visibility_settings or {}),
             tags=model.tags or [],
-            internal_notes=model.internal_notes or "",
             position=model.position,
             department=model.department,
             priority=CandidatePriority(model.priority),
@@ -89,7 +88,6 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             archived_at=entity.archived_at,
             visibility_settings=entity.visibility_settings.to_dict(),
             tags=entity.tags,
-            internal_notes=entity.internal_notes,
             position=entity.position,
             department=entity.department,
             priority=entity.priority.value,
@@ -122,7 +120,6 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             model.archived_at = company_candidate.archived_at
             model.visibility_settings = company_candidate.visibility_settings.to_dict()
             model.tags = company_candidate.tags
-            model.internal_notes = company_candidate.internal_notes
             model.position = company_candidate.position
             model.department = company_candidate.department
             model.priority = company_candidate.priority.value
@@ -208,7 +205,6 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             archived_at=cc_model.archived_at,
             visibility_settings=cc_model.visibility_settings or {},
             tags=cc_model.tags or [],
-            internal_notes=cc_model.internal_notes or '',
             position=cc_model.position,
             department=cc_model.department,
             priority=cc_model.priority,
@@ -354,7 +350,6 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
                 archived_at=cc_model.archived_at,
                 visibility_settings=cc_model.visibility_settings or {},
                 tags=cc_model.tags or [],
-                internal_notes=cc_model.internal_notes or '',
                 position=cc_model.position,
                 department=cc_model.department,
                 priority=cc_model.priority,

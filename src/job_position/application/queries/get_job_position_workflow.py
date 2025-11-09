@@ -2,9 +2,11 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.shared.application.query_bus import Query, QueryHandler
-from src.job_position.application.dtos.job_position_workflow_dto import JobPositionWorkflowDto
+from src.workflow.application.dtos.workflow_dto import WorkflowDto
+from src.workflow.application.mappers.workflow_mapper import WorkflowMapper
+from src.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
+from src.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
-from src.job_position.domain.infrastructure.job_position_workflow_repository_interface import JobPositionWorkflowRepositoryInterface
 
 
 @dataclass
@@ -13,17 +15,18 @@ class GetJobPositionWorkflowQuery(Query):
     workflow_id: JobPositionWorkflowId
 
 
-class GetJobPositionWorkflowQueryHandler(QueryHandler[GetJobPositionWorkflowQuery, JobPositionWorkflowDto]):
+class GetJobPositionWorkflowQueryHandler(QueryHandler[GetJobPositionWorkflowQuery, Optional[WorkflowDto]]):
     """Handler for getting a job position workflow"""
 
-    def __init__(self, workflow_repository: JobPositionWorkflowRepositoryInterface):
+    def __init__(self, workflow_repository: WorkflowRepositoryInterface):
         self.workflow_repository = workflow_repository
 
-    def handle(self, query: GetJobPositionWorkflowQuery) -> JobPositionWorkflowDto:
+    def handle(self, query: GetJobPositionWorkflowQuery) -> Optional[WorkflowDto]:
         """Handle the query - returns workflow DTO"""
-        workflow = self.workflow_repository.get_by_id(query.workflow_id)
+        # Convert JobPositionWorkflowId to WorkflowId
+        workflow_id = WorkflowId.from_string(query.workflow_id.value)
+        workflow = self.workflow_repository.get_by_id(workflow_id)
         if not workflow:
-            raise ValueError(f"Workflow with id {query.workflow_id.value} not found")
+            return None
 
-        return JobPositionWorkflowDto.from_entity(workflow)
-
+        return WorkflowMapper.entity_to_dto(workflow)

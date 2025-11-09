@@ -5,12 +5,10 @@ import { companyWorkflowService } from '../../services/companyWorkflowService.ts
 import { phaseService } from '../../services/phaseService.ts';
 import { api } from '../../lib/api.ts';
 import type { CompanyWorkflow, WorkflowStage, StageType } from '../../types/workflow.ts';
-import type { CustomField, FieldConfiguration } from '../../types/customization.ts';
 import type { CompanyRole } from '../../types/company.ts';
 import type { Phase } from '../../types/phase.ts';
 import type { UpdateStageStyleRequest } from '../../types/stageStyle.ts';
-import { EntityCustomFieldEditor, FieldVisibilityMatrix } from '../../components/customization';
-import { ValidationRuleEditor, PhaseTransitionIndicator } from '../../components/workflow';
+import { PhaseTransitionIndicator } from '../../components/workflow';
 import { StageStyleEditor } from '../../components/workflow/StageStyleEditor.tsx';
 
 interface StageFormData {
@@ -59,10 +57,6 @@ export default function EditWorkflowPage() {
   const [selectedStageIndex, setSelectedStageIndex] = useState<number | null>(null);
   const [styleEditorOpen, setStyleEditorOpen] = useState(false);
   const [editingStageIndex, setEditingStageIndex] = useState<number | null>(null);
-
-  // Custom fields state
-  const [customFields, setCustomFields] = useState<CustomField[]>([]);
-  const [_fieldConfigurations, setFieldConfigurations] = useState<FieldConfiguration[]>([]);
 
   useEffect(() => {
     loadWorkflow();
@@ -520,45 +514,65 @@ export default function EditWorkflowPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Move Up/Down buttons */}
-                    <button
-                      type="button"
-                      onClick={() => handleMoveStageUp(index)}
-                      disabled={index === 0}
-                      className="p-1 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed"
-                      title="Move up"
-                    >
-                      <ArrowUp className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMoveStageDown(index)}
-                      disabled={index === stages.length - 1}
-                      className="p-1 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed"
-                      title="Move down"
-                    >
-                      <ArrowDown className="w-4 h-4" />
-                    </button>
-                    {/* Style button */}
-                    {!stage.isNew && (
+                    <div className="relative group">
                       <button
                         type="button"
-                        onClick={() => handleEditStageStyle(index)}
-                        className="p-1 text-blue-600 hover:text-blue-800"
-                        title="Edit stage style"
+                        onClick={() => handleMoveStageUp(index)}
+                        disabled={index === 0}
+                        className="p-1 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed"
                       >
-                        <Settings className="w-4 h-4" />
+                        <ArrowUp className="w-4 h-4" />
                       </button>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-10">
+                        Move up
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+                    <div className="relative group">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveStageDown(index)}
+                        disabled={index === stages.length - 1}
+                        className="p-1 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed"
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </button>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-10">
+                        Move down
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+                    {/* Style button */}
+                    {!stage.isNew && (
+                      <div className="relative group">
+                        <button
+                          type="button"
+                          onClick={() => handleEditStageStyle(index)}
+                          className="p-1 text-blue-600 hover:text-blue-800"
+                        >
+                          <Settings className="w-4 h-4" />
+                        </button>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-10">
+                          Edit stage style
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
                     )}
                     {/* Delete button */}
                     {stages.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveStage(index)}
-                        className="p-1 text-red-600 hover:text-red-800"
-                        title="Remove stage"
-                      >
-                        {stage.isNew ? <X className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
-                      </button>
+                      <div className="relative group">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveStage(index)}
+                          className="p-1 text-red-600 hover:text-red-800"
+                        >
+                          {stage.isNew ? <X className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+                        </button>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-10">
+                          Remove stage
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -606,6 +620,37 @@ export default function EditWorkflowPage() {
                       <option value="row">Row (Horizontal)</option>
                       <option value="none">Hidden</option>
                     </select>
+                  </div>
+
+                  {/* Default Role */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Responsible Role</label>
+                    {loadingRoles ? (
+                      <div className="text-sm text-gray-500 px-4 py-2">Loading roles...</div>
+                    ) : roles.length === 0 ? (
+                      <div className="text-sm text-gray-500 px-4 py-2">
+                        No roles available. <a href="/company/settings/roles" className="text-blue-600 hover:underline">Create roles first</a>
+                      </div>
+                    ) : (
+                      <select
+                        value={stage.default_role_ids?.[0] || ''}
+                        onChange={(e) => {
+                          const roleId = e.target.value || undefined;
+                          handleStageChange(index, 'default_role_ids', roleId ? [roleId] : undefined);
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Not assigned</option>
+                        {roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <p className="mt-1 text-xs text-gray-500">
+                      Primary role responsible for this stage
+                    </p>
                   </div>
 
                   {/* Next Phase (only for success/fail stages) */}
@@ -687,58 +732,27 @@ export default function EditWorkflowPage() {
           </div>
         </div>
 
-        {/* Custom Fields */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <EntityCustomFieldEditor
-            entityType="Workflow"
-            entityId={workflowId!}
-            onFieldsChange={setCustomFields}
-          />
+        {/* Advanced Configuration Link */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-blue-900 mb-1">
+                Advanced Configuration
+              </h3>
+              <p className="text-sm text-blue-700">
+                Configure custom fields, field visibility, and validation rules for this workflow
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate(`/company/workflows/${workflowId}/advanced-config`)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Open Advanced Config
+            </button>
+          </div>
         </div>
-
-        {/* Field Visibility Matrix */}
-        {customFields.length > 0 && stages.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <FieldVisibilityMatrix
-              entityType="Workflow"
-              entityId={workflowId!}
-              contextType="Workflow"
-              contexts={stages.map((s, idx) => ({
-                id: s.id || `temp-${idx}`,
-                name: s.name
-              }))}
-              fields={customFields}
-              onConfigurationsChange={setFieldConfigurations}
-            />
-          </div>
-        )}
-
-        {/* Validation Rules */}
-        {customFields.length > 0 && stages.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <ValidationRuleEditor
-              workflowId={workflowId!}
-              stages={stages.map((s, idx) => ({
-                ...s,
-                id: s.id || `temp-${idx}`,
-                workflow_id: workflowId!,
-                description: s.description || null,
-                is_active: s.is_active ?? true,
-                allow_skip: s.allow_skip ?? false,
-                estimated_duration_days: s.estimated_duration_days ?? null,
-                default_role_ids: s.default_role_ids ?? null,
-                default_assigned_users: s.default_assigned_users ?? null,
-                email_template_id: s.email_template_id ?? null,
-                custom_email_text: s.custom_email_text ?? null,
-                deadline_days: s.deadline_days ?? null,
-                estimated_cost: s.estimated_cost ?? null,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              } as WorkflowStage))}
-              customFields={customFields}
-            />
-          </div>
-        )}
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3">
@@ -778,12 +792,18 @@ export default function EditWorkflowPage() {
                   <h3 className="text-lg font-semibold text-gray-900">
                     Advanced Settings - {stages[selectedStageIndex].name || 'New Stage'}
                   </h3>
-                  <button
-                    onClick={closeAdvancedSettings}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+                  <div className="relative group">
+                    <button
+                      onClick={closeAdvancedSettings}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                    <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-10">
+                      Close
+                      <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Advanced Settings Form */}

@@ -3,9 +3,12 @@
 Seed development database with sample data
 Creates:
 - 1 Company with admin user
-- 3 Phases with workflows (automatically via InitializeCompanyPhasesCommand)
-- 50 Sample candidates
-- Company-candidate relationships
+- 7 Default roles (via InitializeOnboardingCommand)
+- 5 Default pages in DRAFT status (via InitializeOnboardingCommand)
+- 3 Phases with workflows for CANDIDATE_APPLICATION (via InitializeCompanyPhasesCommand)
+- 1 Phase with workflow for JOB_POSITION_OPENING (via InitializeCompanyPhasesCommand)
+- 50 Sample candidates (via InitializeSampleDataCommand)
+- Company-candidate relationships (via InitializeSampleDataCommand)
 """
 import os
 import sys
@@ -24,9 +27,11 @@ from src.company.domain.enums.company_user_role import CompanyUserRole
 
 # Import commands
 from src.company.application.commands.create_company_command import CreateCompanyCommand
+from src.company.application.commands.initialize_onboarding_command import InitializeOnboardingCommand
+from src.company.application.commands.initialize_sample_data_command import InitializeSampleDataCommand
+from src.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommand
 from src.user.application.commands.create_user_command import CreateUserCommand
 from src.company.application.commands.add_company_user_command import AddCompanyUserCommand
-from src.company.application.commands.initialize_sample_data_command import InitializeSampleDataCommand
 
 # Import infrastructure
 from core.container import Container
@@ -50,7 +55,7 @@ def create_company_and_admin():
         print(f"  ⚠️  Company with domain 'mycompany.com' already exists (ID: {existing_company.id.value})")
         company_id = existing_company.id
     else:
-        # Create company (this will automatically create phases via InitializeCompanyPhasesCommand)
+        # Create company
         create_company_cmd = CreateCompanyCommand(
             id=company_id.value,
             name="My Company",
@@ -98,6 +103,26 @@ def create_company_and_admin():
         command_bus.dispatch(add_company_user_cmd)
         print(f"  ✓ Company-user relationship created (Role: ADMIN)")
     
+    # Initialize onboarding (roles + pages) - only if company was just created
+    if not existing_company:
+        print("📋 Initializing onboarding (roles and pages)...")
+        onboarding_cmd = InitializeOnboardingCommand(
+            company_id=company_id,
+            create_roles=True,
+            create_pages=True
+        )
+        command_bus.dispatch(onboarding_cmd)
+        print("  ✓ Onboarding initialized (7 roles + 5 pages)\n")
+    
+    # Initialize workflows - only if company was just created
+    if not existing_company:
+        print("🔄 Initializing workflows...")
+        workflows_cmd = InitializeCompanyPhasesCommand(
+            company_id=company_id
+        )
+        command_bus.dispatch(workflows_cmd)
+        print("  ✓ Workflows initialized (3 phases for CANDIDATE_APPLICATION + 1 phase for JOB_POSITION_OPENING)\n")
+    
     print()
     return company_id, user_id, company_user_id
 
@@ -111,7 +136,7 @@ def main():
     print("="*60 + "\n")
     
     try:
-        # Step 1: Create company and admin
+        # Step 1: Create company and admin (includes onboarding and workflows initialization)
         company_id, user_id, company_user_id = create_company_and_admin()
         
         # Step 2: Initialize sample data (users, candidates and company-candidate relationships)
@@ -135,6 +160,7 @@ def main():
         print("\n🎯 SAMPLE DATA CREATED:")
         print("   - 1 Company (My Company)")
         print("   - 1 Admin user (admin@company.com)")
+        print("   - 7 Company roles (HR Manager, Recruiter, Tech Lead, Hiring Manager, Interviewer, Department Head, CTO)")
         print("   - 3 Recruiter users (recruiter1@company.com, recruiter2@company.com, recruiter3@company.com)")
         print("   - 2 Viewer users (viewer1@company.com, viewer2@company.com)")
         print("   - 3 Phases with workflows and stages (auto-created)")

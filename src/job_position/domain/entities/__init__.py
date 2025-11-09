@@ -1,5 +1,13 @@
 from src.job_position.domain.value_objects.salary_range import SalaryRange
 from .job_position import JobPosition
-from .job_position_workflow import JobPositionWorkflow
+from .job_position_activity import JobPositionActivity
+from .job_position_comment import JobPositionComment
+from .job_position_stage import JobPositionStage
 
-__all__ = ["JobPosition", "JobPositionWorkflow", "SalaryRange"]
+__all__ = [
+    "JobPosition",
+    "SalaryRange",
+    "JobPositionActivity",
+    "JobPositionComment",
+    "JobPositionStage",
+]

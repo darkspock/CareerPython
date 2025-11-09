@@ -284,8 +284,11 @@ export default function WorkflowBoardPage() {
       const phaseData = await phaseService.getPhase(companyId, phaseIdFromUrl);
       setPhase(phaseData);
 
-      // Load stages for the selected phase
-      const stagesData = await companyWorkflowService.listStagesByPhase(phaseIdFromUrl);
+      // Load stages for the selected phase (requires workflow_type from phase)
+      if (!phaseData.workflow_type) {
+        throw new Error('Phase does not have workflow_type');
+      }
+      const stagesData = await companyWorkflowService.listStagesByPhase(phaseIdFromUrl, phaseData.workflow_type);
       setStages(stagesData.sort((a, b) => a.order - b.order));
 
       // Load candidates for the selected phase

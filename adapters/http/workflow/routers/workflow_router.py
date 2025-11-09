@@ -81,28 +81,24 @@ def list_workflows(
 
     Args:
         phase_id: Optional phase ID to filter workflows
-        workflow_type: Required workflow type (CA, PO, CO)
+        workflow_type: Optional workflow type (CA, PO, CO). If phase_id is provided, workflow_type is optional.
         workflow_status: Optional status to filter workflows (active, draft, archived)
 
     Returns:
         List of workflows matching the filters
     """
-    if not phase_id:
+    if phase_id:
+        # If phase_id is provided, workflow_type is optional
+        try:
+            return controller.list_workflows_by_phase(phase_id, workflow_type, workflow_status)
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    else:
+        # If no phase_id, require company_id and optionally workflow_type
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="phase_id query parameter is required"
+            detail="phase_id query parameter is required. Use /company/{company_id} endpoint to list workflows by company."
         )
-    
-    if not workflow_type:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="workflow_type query parameter is required"
-        )
-
-    try:
-        return controller.list_workflows_by_phase(phase_id, workflow_type, workflow_status)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.put(

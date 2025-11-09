@@ -7,7 +7,6 @@ from core.event_bus import EventBus
 from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
 from adapters.http.admin.controllers.company_controller import CompanyController
 from adapters.http.admin.controllers import JobPositionController
-from adapters.http.admin.controllers.job_position_workflow_controller import JobPositionWorkflowController
 from adapters.http.admin.controllers.job_position_comment_controller import JobPositionCommentController
 from adapters.http.admin.controllers.interview_controller import InterviewController
 from adapters.http.shared.controllers.user import UserController
@@ -35,9 +34,11 @@ from src.user.application.queries.check_user_exists_query import CheckUserExists
 from src.user.application.queries.create_access_token_query import CreateAccessTokenQueryHandler
 from src.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQueryHandler
 from src.user.application.queries.get_user_language_query import GetUserLanguageQueryHandler
+from src.user.application.queries.get_user_by_email_query import GetUserByEmailQueryHandler
 
 # Auth Infrastructure
 from src.user.infrastructure.repositories.user_repository import SQLAlchemyUserRepository
+from src.staff.infrastructure.repositories.staff_repository import SQLAlchemyStaffRepository
 
 # Interview Template Application Layer
 from src.interview.interview_template.application.queries.list_interview_templates import ListInterviewTemplatesQueryHandler
@@ -91,10 +92,12 @@ from src.company.application.commands.register_company_with_user_command import 
 from src.company.application.commands.link_user_to_company_command import LinkUserToCompanyCommandHandler
 from src.company.application.commands.update_company_command import UpdateCompanyCommandHandler
 from src.company.application.commands.initialize_sample_data_command import InitializeSampleDataCommandHandler
+from src.company.application.commands.initialize_onboarding_command import InitializeOnboardingCommandHandler
 from src.company.application.commands.upload_company_logo_command import UploadCompanyLogoCommandHandler
 from src.company.application.commands.suspend_company_command import SuspendCompanyCommandHandler
 from src.company.application.commands.activate_company_command import ActivateCompanyCommandHandler
 from src.company.application.commands.delete_company_command import DeleteCompanyCommandHandler
+from src.company.application.commands.delete_company_with_all_data_command import DeleteCompanyWithAllDataCommandHandler
 from src.company.application.commands.add_company_user_command import AddCompanyUserCommandHandler
 from src.company.application.commands.update_company_user_command import UpdateCompanyUserCommandHandler
 from src.company.application.commands.activate_company_user_command import ActivateCompanyUserCommandHandler
@@ -155,6 +158,17 @@ from src.company_candidate.application.commands.update_candidate_comment_command
 from src.company_candidate.application.commands.delete_candidate_comment_command import DeleteCandidateCommentCommandHandler
 from src.company_candidate.application.commands.mark_comment_as_pending_command import MarkCommentAsPendingCommandHandler
 from src.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCandidateCommentAsReviewedCommandHandler
+from src.candidate_review.application.commands.create_candidate_review_command import CreateCandidateReviewCommandHandler
+from src.candidate_review.application.commands.update_candidate_review_command import UpdateCandidateReviewCommandHandler
+from src.candidate_review.application.commands.delete_candidate_review_command import DeleteCandidateReviewCommandHandler
+from src.candidate_review.application.commands.mark_review_as_reviewed_command import MarkReviewAsReviewedCommandHandler
+from src.candidate_review.application.commands.mark_review_as_pending_command import MarkReviewAsPendingCommandHandler
+from src.candidate_review.application.queries.get_review_by_id_query import GetReviewByIdQueryHandler
+from src.candidate_review.application.queries.list_reviews_by_company_candidate_query import ListReviewsByCompanyCandidateQueryHandler
+from src.candidate_review.application.queries.list_reviews_by_stage_query import ListReviewsByStageQueryHandler
+from src.candidate_review.application.queries.list_global_reviews_query import ListGlobalReviewsQueryHandler
+from src.candidate_review.infrastructure.repositories.candidate_review_repository import CandidateReviewRepository
+from src.candidate_review.presentation.controllers.review_controller import ReviewController
 
 # CompanyCandidate Application Layer - Queries
 from src.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQueryHandler
@@ -257,9 +271,6 @@ from src.job_position.application.commands.create_job_position import CreateJobP
 from src.job_position.application.commands.update_job_position import UpdateJobPositionCommandHandler
 from src.job_position.application.commands.delete_job_position import DeleteJobPositionCommandHandler
 # Status management command handlers have been removed - use MoveJobPositionToStageCommandHandler instead
-from src.job_position.application.commands.create_job_position_workflow import CreateJobPositionWorkflowCommandHandler
-from src.job_position.application.commands.update_job_position_workflow import UpdateJobPositionWorkflowCommandHandler
-from src.job_position.application.commands.delete_job_position_workflow_command import DeleteJobPositionWorkflowCommandHandler
 from src.job_position.application.commands.move_job_position_to_stage import MoveJobPositionToStageCommandHandler
 from src.job_position.application.commands.update_job_position_custom_fields import UpdateJobPositionCustomFieldsCommandHandler
 from src.job_position.application.commands.create_job_position_comment_command import CreateJobPositionCommentCommandHandler
@@ -281,9 +292,9 @@ from src.job_position.application.queries.list_job_position_activities_query imp
 
 # Job Position Infrastructure
 from src.job_position.infrastructure.repositories.job_position_repository import JobPositionRepository
-from src.job_position.infrastructure.repositories.job_position_workflow_repository import JobPositionWorkflowRepository
 from src.job_position.infrastructure.repositories.job_position_comment_repository import JobPositionCommentRepository
 from src.job_position.infrastructure.repositories.job_position_activity_repository import JobPositionActivityRepository
+from src.job_position.infrastructure.repositories.job_position_stage_repository import JobPositionStageRepository
 
 # Phase 10: Public Position Controller
 from src.job_position.presentation.controllers.public_position_controller import PublicPositionController
@@ -438,6 +449,11 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
+    staff_repository = providers.Factory(
+        SQLAlchemyStaffRepository,
+        database=database
+    )
+
     # Email service - automatically selects SMTP or Mailgun based on settings
     @staticmethod
     def _get_email_service():
@@ -570,12 +586,6 @@ class Container(containers.DeclarativeContainer):
         database=database
     )
 
-    # Job Position Workflow Repository
-    job_position_workflow_repository = providers.Factory(
-        JobPositionWorkflowRepository,
-        database=database
-    )
-
     job_position_comment_repository = providers.Factory(
         JobPositionCommentRepository,
         database=database
@@ -583,6 +593,11 @@ class Container(containers.DeclarativeContainer):
 
     job_position_activity_repository = providers.Factory(
         JobPositionActivityRepository,
+        database=database
+    )
+
+    job_position_stage_repository = providers.Factory(
+        JobPositionStageRepository,
         database=database
     )
 
@@ -697,6 +712,12 @@ class Container(containers.DeclarativeContainer):
     get_user_language_query_handler = providers.Factory(
         GetUserLanguageQueryHandler,
         user_repository=user_repository
+    )
+
+    get_user_by_email_query_handler = providers.Factory(
+        GetUserByEmailQueryHandler,
+        user_repository=user_repository,
+        staff_repository=staff_repository
     )
 
 
@@ -999,12 +1020,12 @@ class Container(containers.DeclarativeContainer):
     # Job Position Workflow Query Handlers
     get_job_position_workflow_query_handler = providers.Factory(
         GetJobPositionWorkflowQueryHandler,
-        workflow_repository=job_position_workflow_repository
+        workflow_repository=workflow_repository
     )
 
     list_job_position_workflows_query_handler = providers.Factory(
         ListJobPositionWorkflowsQueryHandler,
-        workflow_repository=job_position_workflow_repository
+        workflow_repository=workflow_repository
     )
 
     list_job_position_comments_query_handler = providers.Factory(
@@ -1225,6 +1246,25 @@ class Container(containers.DeclarativeContainer):
     delete_company_command_handler = providers.Factory(
         DeleteCompanyCommandHandler,
         repository=company_repository
+    )
+
+    delete_company_with_all_data_command_handler = providers.Factory(
+        DeleteCompanyWithAllDataCommandHandler,
+        company_repository=company_repository,
+        company_user_repository=company_user_repository,
+        company_user_invitation_repository=company_user_invitation_repository,
+        company_role_repository=company_role_repository,
+        company_page_repository=providers.Factory(
+            'src.company_page.infrastructure.repositories.company_page_repository.CompanyPageRepository',
+            database=database
+        ),
+        company_candidate_repository=company_candidate_repository,
+        workflow_repository=workflow_repository,
+        workflow_stage_repository=workflow_stage_repository,
+        phase_repository=phase_repository,
+        job_position_repository=job_position_repository,
+        entity_customization_repository=entity_customization_repository,
+        database=database
     )
 
     # Company User Command Handlers
@@ -1528,27 +1568,14 @@ class Container(containers.DeclarativeContainer):
 
     # Status management command handlers have been removed
     # Use MoveJobPositionToStageCommandHandler instead
-
-    # Job Position Workflow Command Handlers
-    create_job_position_workflow_command_handler = providers.Factory(
-        CreateJobPositionWorkflowCommandHandler,
-        workflow_repository=job_position_workflow_repository
-    )
-
-    update_job_position_workflow_command_handler = providers.Factory(
-        UpdateJobPositionWorkflowCommandHandler,
-        workflow_repository=job_position_workflow_repository
-    )
-
-    delete_job_position_workflow_command_handler = providers.Factory(
-        DeleteJobPositionWorkflowCommandHandler,
-        repository=job_position_workflow_repository
-    )
+    # Job Position Workflow Command Handlers have been removed - use generic workflow system instead
 
     move_job_position_to_stage_command_handler = providers.Factory(
         MoveJobPositionToStageCommandHandler,
         job_position_repository=job_position_repository,
-        workflow_repository=job_position_workflow_repository
+        workflow_repository=workflow_repository,
+        stage_repository=workflow_stage_repository,
+        job_position_stage_repository=job_position_stage_repository
     )
 
     update_job_position_custom_fields_command_handler = providers.Factory(
@@ -1648,8 +1675,7 @@ class Container(containers.DeclarativeContainer):
 
     create_company_command_handler = providers.Factory(
         CreateCompanyCommandHandler,
-        repository=company_repository,
-        command_bus=command_bus
+        repository=company_repository
     )
 
     register_company_with_user_command_handler = providers.Factory(
@@ -1672,6 +1698,11 @@ class Container(containers.DeclarativeContainer):
         InitializeSampleDataCommandHandler,
         command_bus=command_bus,
         database=database
+    )
+
+    initialize_onboarding_command_handler = providers.Factory(
+        InitializeOnboardingCommandHandler,
+        command_bus=command_bus
     )
 
     # Onboarding Command Handlers - SIMPLIFIED
@@ -2067,6 +2098,65 @@ class Container(containers.DeclarativeContainer):
         query_bus=query_bus
     )
 
+    # CandidateReview Repository
+    candidate_review_repository = providers.Factory(
+        CandidateReviewRepository,
+        database=database
+    )
+
+    # CandidateReview Command Handlers
+    create_candidate_review_command_handler = providers.Factory(
+        CreateCandidateReviewCommandHandler,
+        repository=candidate_review_repository
+    )
+
+    update_candidate_review_command_handler = providers.Factory(
+        UpdateCandidateReviewCommandHandler,
+        repository=candidate_review_repository
+    )
+
+    delete_candidate_review_command_handler = providers.Factory(
+        DeleteCandidateReviewCommandHandler,
+        repository=candidate_review_repository
+    )
+
+    mark_review_as_reviewed_command_handler = providers.Factory(
+        MarkReviewAsReviewedCommandHandler,
+        repository=candidate_review_repository
+    )
+
+    mark_review_as_pending_command_handler = providers.Factory(
+        MarkReviewAsPendingCommandHandler,
+        repository=candidate_review_repository
+    )
+
+    # CandidateReview Query Handlers
+    get_review_by_id_query_handler = providers.Factory(
+        GetReviewByIdQueryHandler,
+        repository=candidate_review_repository
+    )
+
+    list_reviews_by_company_candidate_query_handler = providers.Factory(
+        ListReviewsByCompanyCandidateQueryHandler,
+        repository=candidate_review_repository
+    )
+
+    list_reviews_by_stage_query_handler = providers.Factory(
+        ListReviewsByStageQueryHandler,
+        repository=candidate_review_repository
+    )
+
+    list_global_reviews_query_handler = providers.Factory(
+        ListGlobalReviewsQueryHandler,
+        repository=candidate_review_repository
+    )
+
+    review_controller = providers.Factory(
+        ReviewController,
+        command_bus=command_bus,
+        query_bus=query_bus
+    )
+
     candidate_application_workflow_controller = providers.Factory(
         WorkflowController,
         command_bus=command_bus,
@@ -2100,11 +2190,6 @@ class Container(containers.DeclarativeContainer):
         command_bus=command_bus
     )
 
-    job_position_workflow_controller = providers.Factory(
-        JobPositionWorkflowController,
-        command_bus=command_bus,
-        query_bus=query_bus
-    )
 
     job_position_comment_controller = providers.Factory(
         JobPositionCommentController,

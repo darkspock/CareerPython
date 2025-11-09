@@ -40,9 +40,15 @@ export const companyWorkflowService = {
 
   /**
    * List workflows for a specific company
+   * @param companyId - Company ID
+   * @param workflowType - Optional workflow type filter ('CA', 'PO', 'CO')
    */
-  listWorkflowsByCompany: async (companyId: string): Promise<CandidateApplicationWorkflow[]> => {
-    return ApiClient.get(`/api/company-workflows/company/${companyId}`, {
+  listWorkflowsByCompany: async (companyId: string, workflowType?: string): Promise<CandidateApplicationWorkflow[]> => {
+    let url = `/api/company-workflows/company/${companyId}`;
+    if (workflowType) {
+      url += `?workflow_type=${workflowType}`;
+    }
+    return ApiClient.get(url, {
       headers: getAuthHeaders(),
     });
   },
@@ -162,9 +168,11 @@ export const companyWorkflowService = {
 
   /**
    * List stages for a specific phase
+   * @param phaseId - Phase ID
+   * @param workflowType - Workflow type (CA, PO, CO)
    */
-  listStagesByPhase: async (phaseId: string): Promise<WorkflowStage[]> => {
-    return ApiClient.get(`/api/workflow-stages/phase/${phaseId}`, {
+  listStagesByPhase: async (phaseId: string, workflowType: string): Promise<WorkflowStage[]> => {
+    return ApiClient.get(`/api/workflow-stages/phase/${phaseId}?workflow_type=${workflowType}`, {
       headers: getAuthHeaders(),
     });
   },

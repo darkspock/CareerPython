@@ -29,7 +29,6 @@ class CreateCompanyCandidateCommand(Command):
     priority: CandidatePriority = CandidatePriority.MEDIUM
     visibility_settings: Optional[Dict[str, bool]] = None
     tags: Optional[List[str]] = None
-    internal_notes: str = ""
     lead_id: Optional[str] = None
     resume_url: Optional[str] = None
     resume_uploaded_by: Optional[CompanyUserId] = None
@@ -87,7 +86,6 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
             priority=command.priority,
             visibility_settings=visibility_settings,
             tags=command.tags or [],
-            internal_notes=command.internal_notes,
             lead_id=command.lead_id,
             resume_url=command.resume_url,
             resume_uploaded_by=command.resume_uploaded_by,

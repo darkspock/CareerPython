@@ -71,7 +71,6 @@ class CompanyCandidateModel(Base):
         nullable=False,
         default=list
     )
-    internal_notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
     position: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     department: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     priority: Mapped[str] = mapped_column(

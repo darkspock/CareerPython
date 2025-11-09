@@ -21,4 +21,3 @@ class CreateCompanyCandidateRequest(BaseModel):
     priority: str = Field(default="medium", description="Priority level: low, medium, high")
     visibility_settings: Optional[Dict[str, bool]] = Field(default=None, description="Visibility settings for candidate data")
     tags: List[str] = Field(default_factory=list, description="Tags for categorization")
-    internal_notes: str = Field(default="", description="Internal notes about the candidate")
