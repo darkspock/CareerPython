@@ -4,7 +4,7 @@ from typing import Optional, List
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.candidate_bc.resume.domain.enums.resume_type import ResumeType
 from src.candidate_bc.resume.domain.repositories.resume_repository_interface import ResumeRepositoryInterface
-from adapters.http.candidate_app.schemas.resume_dto import ResumeDto
+from src.candidate_bc.resume.application.dtos.resume_dto import ResumeDto
 from src.framework.application.query_bus import Query, QueryHandler
 
 

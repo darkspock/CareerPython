@@ -1,5 +1,9 @@
 from dependency_injector import containers, providers
 
+from adapters.http.auth.controllers.user import UserController
+from adapters.http.company_app.position_stage_assignment.controllers.position_stage_assignment_controller import \
+    PositionStageAssignmentController
+from adapters.http.shared.field_validation.controllers.validation_rule_controller import ValidationRuleController
 from core.database import SQLAlchemyDatabase
 from core.event_bus import EventBus
 
@@ -9,7 +13,6 @@ from adapters.http.admin_app.controllers.company_controller import CompanyContro
 from adapters.http.admin_app.controllers import JobPositionController
 from adapters.http.admin_app.controllers.job_position_comment_controller import JobPositionCommentController
 from adapters.http.admin_app.controllers.interview_controller import InterviewController
-from adapters.http.shared.controllers.user import UserController
 
 # Onboarding Controller
 from adapters.http.candidate_app import OnboardingController
@@ -19,6 +22,9 @@ from adapters.http.company_app.company.controllers.task_controller import TaskCo
 
 # Admin Controllers
 from adapters.http.admin_app.controllers.admin_candidate_controller import AdminCandidateController
+from src.auth_bc.user.infrastructure.repositories.user_asset_repository import SQLAlchemyUserAssetRepository
+from src.candidate_bc.candidate.application.commands.delete_education import DeleteEducationCommandHandler
+from src.candidate_bc.candidate.infrastructure.repositories import SQLAlchemyCandidateEducationRepository
 from src.company_bc.company.application.queries.get_companies_stats import GetCompaniesStatsQueryHandler
 
 # Auth Application Layer
@@ -39,52 +45,60 @@ from src.auth_bc.user.application import GetUserByEmailQueryHandler
 # Auth Infrastructure
 from src.auth_bc.user.infrastructure.repositories.user_repository import SQLAlchemyUserRepository
 from src.auth_bc.staff.infrastructure.repositories.staff_repository import SQLAlchemyStaffRepository
+from src.company_bc.company_candidate.infrastructure.repositories import CandidateCommentRepository
+from src.company_bc.company_candidate.infrastructure.repositories.company_candidate_repository import \
+    CompanyCandidateRepository
+from src.company_bc.company_role.application import DeleteRoleCommandHandler, UpdateRoleCommandHandler, \
+    ListRolesByCompanyQueryHandler, GetCompanyRoleByIdQueryHandler, CreateRoleCommandHandler
+from src.company_bc.company_role.infrastructure.repositories.company_role_repository import CompanyRoleRepository
+from src.company_bc.job_position.application import ListJobPositionCommentsQueryHandler, \
+    DeleteJobPositionCommentCommandHandler, UpdateJobPositionCommandHandler
 
 # Interview Template Application Layer
-from src.interview.interview_template.application.queries.list_interview_templates import ListInterviewTemplatesQueryHandler
-from src.interview.interview_template.application.queries.get_interview_template_by_id import GetInterviewTemplateByIdQueryHandler
-from src.interview.interview_template.application.queries.get_interview_template_full_by_id import GetInterviewTemplateFullByIdQueryHandler
-from src.interview.interview_template.application.queries.get_questions_by_section import GetQuestionsBySectionQueryHandler
-from src.interview.interview_template.application.commands.create_interview_template import CreateInterviewTemplateCommandHandler
-from src.interview.interview_template.application import UpdateInterviewTemplateCommandHandler
-from src.interview.interview_template.application.commands.enable_interview_template import EnableInterviewTemplateCommandHandler
-from src.interview.interview_template.application.commands.disable_interview_template import DisableInterviewTemplateCommandHandler
-from src.interview.interview_template.application.commands.create_interview_template_section import CreateInterviewTemplateSectionCommandHandler
-from src.interview.interview_template.application.commands.update_interview_template_section import UpdateInterviewTemplateSectionCommandHandler
-from src.interview.interview_template.application.commands.enable_interview_template_section import EnableInterviewTemplateSectionCommandHandler
-from src.interview.interview_template.application.commands.disable_interview_template_section import DisableInterviewTemplateSectionCommandHandler
-from src.interview.interview_template.application.commands.delete_interview_template_section import DeleteInterviewTemplateSectionCommandHandler
-from src.interview.interview_template.application.commands.move_section_up import MoveSectionUpCommandHandler
-from src.interview.interview_template.application.commands.move_section_down import MoveSectionDownCommandHandler
-from src.interview.interview_template.application.commands.create_interview_template_question import CreateInterviewTemplateQuestionCommandHandler
-from src.interview.interview_template.application.commands.update_interview_template_question import UpdateInterviewTemplateQuestionCommandHandler
-from src.interview.interview_template.application.commands.enable_interview_template_question import EnableInterviewTemplateQuestionCommandHandler
-from src.interview.interview_template.application.commands.disable_interview_template_question import DisableInterviewTemplateQuestionCommandHandler
-from src.interview.interview_template.application.commands.delete_interview_template import DeleteInterviewTemplateCommandHandler
+from src.interview_bc.interview_template.application.queries.list_interview_templates import ListInterviewTemplatesQueryHandler
+from src.interview_bc.interview_template.application.queries.get_interview_template_by_id import GetInterviewTemplateByIdQueryHandler
+from src.interview_bc.interview_template.application.queries.get_interview_template_full_by_id import GetInterviewTemplateFullByIdQueryHandler
+from src.interview_bc.interview_template.application.queries.get_questions_by_section import GetQuestionsBySectionQueryHandler
+from src.interview_bc.interview_template.application.commands.create_interview_template import CreateInterviewTemplateCommandHandler
+from src.interview_bc.interview_template.application import UpdateInterviewTemplateCommandHandler
+from src.interview_bc.interview_template.application.commands.enable_interview_template import EnableInterviewTemplateCommandHandler
+from src.interview_bc.interview_template.application.commands.disable_interview_template import DisableInterviewTemplateCommandHandler
+from src.interview_bc.interview_template.application.commands.create_interview_template_section import CreateInterviewTemplateSectionCommandHandler
+from src.interview_bc.interview_template.application.commands.update_interview_template_section import UpdateInterviewTemplateSectionCommandHandler
+from src.interview_bc.interview_template.application.commands.enable_interview_template_section import EnableInterviewTemplateSectionCommandHandler
+from src.interview_bc.interview_template.application.commands.disable_interview_template_section import DisableInterviewTemplateSectionCommandHandler
+from src.interview_bc.interview_template.application.commands.delete_interview_template_section import DeleteInterviewTemplateSectionCommandHandler
+from src.interview_bc.interview_template.application.commands.move_section_up import MoveSectionUpCommandHandler
+from src.interview_bc.interview_template.application.commands.move_section_down import MoveSectionDownCommandHandler
+from src.interview_bc.interview_template.application.commands.create_interview_template_question import CreateInterviewTemplateQuestionCommandHandler
+from src.interview_bc.interview_template.application.commands.update_interview_template_question import UpdateInterviewTemplateQuestionCommandHandler
+from src.interview_bc.interview_template.application.commands.enable_interview_template_question import EnableInterviewTemplateQuestionCommandHandler
+from src.interview_bc.interview_template.application.commands.disable_interview_template_question import DisableInterviewTemplateQuestionCommandHandler
+from src.interview_bc.interview_template.application.commands.delete_interview_template import DeleteInterviewTemplateCommandHandler
 
 # Interview Template Infrastructure
-from src.interview.interview_template.infrastructure import InterviewTemplateRepository
-from src.interview.interview_template.infrastructure.repositories.interview_template_section_repository import InterviewTemplateSectionRepository
-from src.interview.interview_template.infrastructure.repositories.interview_template_question_repository import InterviewTemplateQuestionRepository
+from src.interview_bc.interview_template.infrastructure import InterviewTemplateRepository
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_section_repository import InterviewTemplateSectionRepository
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_question_repository import InterviewTemplateQuestionRepository
 
 # Interview Management Application Layer
-from src.interview.interview.application.commands.create_interview import CreateInterviewCommandHandler
-from src.interview.interview.application.commands.start_interview import StartInterviewCommandHandler
-from src.interview.interview.application.commands.finish_interview import FinishInterviewCommandHandler
-from src.interview.interview.application.commands.create_interview_answer import CreateInterviewAnswerCommandHandler
-from src.interview.interview.application.commands.update_interview_answer import UpdateInterviewAnswerCommandHandler
-from src.interview.interview.application.commands.score_interview_answer import ScoreInterviewAnswerCommandHandler
-from src.interview.interview.application.queries.list_interviews import ListInterviewsQueryHandler
-from src.interview.interview.application.queries.get_interview_by_id import GetInterviewByIdQueryHandler
-from src.interview.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQueryHandler
-from src.interview.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQueryHandler
-from src.interview.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQueryHandler
-from src.interview.interview.application.queries.get_answers_by_interview import GetAnswersByInterviewQueryHandler
-from src.interview.interview.application.queries.get_interview_answer_by_id import GetInterviewAnswerByIdQueryHandler
+from src.interview_bc.interview.application.commands.create_interview import CreateInterviewCommandHandler
+from src.interview_bc.interview.application.commands.start_interview import StartInterviewCommandHandler
+from src.interview_bc.interview.application.commands.finish_interview import FinishInterviewCommandHandler
+from src.interview_bc.interview.application.commands.create_interview_answer import CreateInterviewAnswerCommandHandler
+from src.interview_bc.interview.application.commands.update_interview_answer import UpdateInterviewAnswerCommandHandler
+from src.interview_bc.interview.application.commands.score_interview_answer import ScoreInterviewAnswerCommandHandler
+from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQueryHandler
+from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQueryHandler
+from src.interview_bc.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQueryHandler
+from src.interview_bc.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQueryHandler
+from src.interview_bc.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQueryHandler
+from src.interview_bc.interview.application.queries.get_answers_by_interview import GetAnswersByInterviewQueryHandler
+from src.interview_bc.interview.application.queries.get_interview_answer_by_id import GetInterviewAnswerByIdQueryHandler
 
 # Interview Management Infrastructure
-from src.interview.interview.Infrastructure.repositories.interview_repository import SQLAlchemyInterviewRepository as InterviewRepository
-from src.interview.interview.Infrastructure.repositories.interview_answer_repository import SQLAlchemyInterviewAnswerRepository as InterviewAnswerRepository
+from src.interview_bc.interview.Infrastructure.repositories.interview_repository import SQLAlchemyInterviewRepository as InterviewRepository
+from src.interview_bc.interview.Infrastructure.repositories.interview_answer_repository import SQLAlchemyInterviewAnswerRepository as InterviewAnswerRepository
 
 # Company Application Layer - Commands
 from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommandHandler
@@ -130,34 +144,28 @@ from adapters.http.company_app.company.controllers.company_controller import Com
 from adapters.http.company_app.company.controllers.company_user_controller import CompanyUserController
 
 # CompanyRole Application Layer - Commands
-from src.company_role.application.commands.create_role_command import CreateRoleCommandHandler
-from src.company_role.application.commands.update_role_command import UpdateRoleCommandHandler
-from src.company_role.application.commands.delete_role_command import DeleteRoleCommandHandler
 
 # CompanyRole Application Layer - Queries
-from src.company_role.application.queries.get_role_by_id import GetCompanyRoleByIdQueryHandler
-from src.company_role.application.queries.list_roles_by_company import ListRolesByCompanyQueryHandler
 
 # CompanyRole Infrastructure
-from src.company_role.infrastructure.repositories.company_role_repository import CompanyRoleRepository
 
 # CompanyRole Presentation Controllers
 from adapters.http.company_app.company.controllers.company_role_controller import CompanyRoleController
 
 # CompanyCandidate Application Layer - Commands
-from src.company_candidate.application.commands.create_company_candidate_command import CreateCompanyCandidateCommandHandler
-from src.company_candidate.application.commands.update_company_candidate_command import UpdateCompanyCandidateCommandHandler
-from src.company_candidate.application.commands.confirm_company_candidate_command import ConfirmCompanyCandidateCommandHandler
-from src.company_candidate.application.commands.reject_company_candidate_command import RejectCompanyCandidateCommandHandler
-from src.company_candidate.application.commands.archive_company_candidate_command import ArchiveCompanyCandidateCommandHandler
-from src.company_candidate.application.commands.transfer_ownership_command import TransferOwnershipCommandHandler
-from src.company_candidate.application.commands.assign_workflow_command import AssignWorkflowCommandHandler
-from src.company_candidate.application.commands.change_stage_command import ChangeStageCommandHandler
-from src.company_candidate.application.commands.create_candidate_comment_command import CreateCandidateCommentCommandHandler
-from src.company_candidate.application.commands.update_candidate_comment_command import UpdateCandidateCommentCommandHandler
-from src.company_candidate.application.commands.delete_candidate_comment_command import DeleteCandidateCommentCommandHandler
-from src.company_candidate.application.commands.mark_comment_as_pending_command import MarkCommentAsPendingCommandHandler
-from src.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCandidateCommentAsReviewedCommandHandler
+from src.company_bc.company_candidate.application.commands.create_company_candidate_command import CreateCompanyCandidateCommandHandler
+from src.company_bc.company_candidate.application.commands.update_company_candidate_command import UpdateCompanyCandidateCommandHandler
+from src.company_bc.company_candidate.application.commands.confirm_company_candidate_command import ConfirmCompanyCandidateCommandHandler
+from src.company_bc.company_candidate.application.commands.reject_company_candidate_command import RejectCompanyCandidateCommandHandler
+from src.company_bc.company_candidate.application.commands.archive_company_candidate_command import ArchiveCompanyCandidateCommandHandler
+from src.company_bc.company_candidate.application.commands.transfer_ownership_command import TransferOwnershipCommandHandler
+from src.company_bc.company_candidate.application.commands.assign_workflow_command import AssignWorkflowCommandHandler
+from src.company_bc.company_candidate.application.commands.change_stage_command import ChangeStageCommandHandler
+from src.company_bc.company_candidate.application.commands.create_candidate_comment_command import CreateCandidateCommentCommandHandler
+from src.company_bc.company_candidate.application.commands.update_candidate_comment_command import UpdateCandidateCommentCommandHandler
+from src.company_bc.company_candidate.application.commands.delete_candidate_comment_command import DeleteCandidateCommentCommandHandler
+from src.company_bc.company_candidate.application.commands.mark_comment_as_pending_command import MarkCommentAsPendingCommandHandler
+from src.company_bc.company_candidate.application.commands.mark_comment_as_reviewed_command import MarkCandidateCommentAsReviewedCommandHandler
 from src.company_bc.candidate_review.application.commands.create_candidate_review_command import CreateCandidateReviewCommandHandler
 from src.company_bc.candidate_review.application.commands.update_candidate_review_command import UpdateCandidateReviewCommandHandler
 from src.company_bc.candidate_review.application.commands.delete_candidate_review_command import DeleteCandidateReviewCommandHandler
@@ -171,24 +179,27 @@ from src.company_bc.candidate_review.infrastructure.repositories.candidate_revie
 from adapters.http.company_app.company.controllers.review_controller import ReviewController
 
 # CompanyCandidate Application Layer - Queries
-from src.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQueryHandler
-from src.company_candidate.application.queries.get_company_candidate_by_id_with_candidate_info import GetCompanyCandidateByIdWithCandidateInfoQueryHandler
-from src.company_candidate.application.queries.get_company_candidate_by_company_and_candidate import GetCompanyCandidateByCompanyAndCandidateQueryHandler
-from src.company_candidate.application.queries.list_company_candidates_by_company import ListCompanyCandidatesByCompanyQueryHandler
-from src.company_candidate.application.queries.list_company_candidates_by_candidate import ListCompanyCandidatesByCandidateQueryHandler
-from src.company_candidate.application.queries.list_company_candidates_with_candidate_info import ListCompanyCandidatesWithCandidateInfoQueryHandler
-from src.company_candidate.application.queries.get_candidate_comment_by_id import GetCandidateCommentByIdQueryHandler
+from src.company_bc.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQueryHandler
+from src.company_bc.company_candidate.application.queries.get_company_candidate_by_id_with_candidate_info import GetCompanyCandidateByIdWithCandidateInfoQueryHandler
+from src.company_bc.company_candidate.application.queries.get_company_candidate_by_company_and_candidate import GetCompanyCandidateByCompanyAndCandidateQueryHandler
+from src.company_bc.company_candidate.application.queries.list_company_candidates_by_company import ListCompanyCandidatesByCompanyQueryHandler
+from src.company_bc.company_candidate.application.queries.list_company_candidates_by_candidate import ListCompanyCandidatesByCandidateQueryHandler
+from src.company_bc.company_candidate.application.queries.list_company_candidates_with_candidate_info import ListCompanyCandidatesWithCandidateInfoQueryHandler
+from src.company_bc.company_candidate.application.queries.get_candidate_comment_by_id import GetCandidateCommentByIdQueryHandler
 from src.company_bc.company_candidate.application.queries.list_candidate_comments_by_company_candidate import ListCandidateCommentsByCompanyCandidateQueryHandler
-from src.company_candidate.application.queries.list_candidate_comments_by_stage import ListCandidateCommentsByStageQueryHandler
-from src.company_candidate.application.queries.count_pending_comments_query import CountPendingCommentsQueryHandler
+from src.company_bc.company_candidate.application.queries.list_candidate_comments_by_stage import ListCandidateCommentsByStageQueryHandler
+from src.company_bc.company_candidate.application.queries.count_pending_comments_query import CountPendingCommentsQueryHandler
 
-# CompanyCandidate Infrastructure
-from src.company_candidate.infrastructure.repositories.company_candidate_repository import CompanyCandidateRepository
-from src.company_candidate.infrastructure.repositories.candidate_comment_repository import CandidateCommentRepository
 
 # CompanyCandidate Presentation Controllers
 from adapters.http.company_app.company_candidate.controllers.company_candidate_controller import CompanyCandidateController
 from adapters.http.company_app.company.controllers.candidate_comment_controller import CandidateCommentController
+from src.shared_bc.customization.phase.application import GetPhaseByIdQueryHandler, ListPhasesByCompanyQueryHandler, \
+    ArchivePhaseCommandHandler, ActivatePhaseCommandHandler, CreatePhaseCommandHandler, UpdatePhaseCommandHandler, \
+    InitializeCompanyPhasesCommandHandler, DeletePhaseCommandHandler
+from src.shared_bc.customization.phase.application.handlers.candidate_stage_transition_handler import \
+    CandidateStageTransitionHandler
+from src.shared_bc.customization.phase.infrastructure.repositories.phase_repository import PhaseRepository
 
 # CandidateApplicationWorkflow Application Layer - Commands
 from src.shared_bc.customization.workflow.application import CreateWorkflowCommandHandler
@@ -216,24 +227,24 @@ from src.shared_bc.customization.workflow.application import GetInitialStageQuer
 from src.shared_bc.customization.workflow.application.queries.stage.get_final_stages import GetFinalStagesQueryHandler
 
 # New Customization Application Layer - Commands
-from src.customization.application.commands.create_entity_customization_command import CreateEntityCustomizationCommandHandler
-from src.customization.application.commands.update_entity_customization_command import UpdateEntityCustomizationCommandHandler
-from src.customization.application.commands.delete_entity_customization_command import DeleteEntityCustomizationCommandHandler
-from src.customization.application.commands.add_custom_field_to_entity_command import AddCustomFieldToEntityCommandHandler
+from src.shared_bc.customization.entity_customization.application.commands.create_entity_customization_command import CreateEntityCustomizationCommandHandler
+from src.shared_bc.customization.entity_customization.application.commands.update_entity_customization_command import UpdateEntityCustomizationCommandHandler
+from src.shared_bc.customization.entity_customization.application.commands.delete_entity_customization_command import DeleteEntityCustomizationCommandHandler
+from src.shared_bc.customization.entity_customization.application.commands.add_custom_field_to_entity_command import AddCustomFieldToEntityCommandHandler
 
 # New Customization Application Layer - Queries
-from src.customization.application.queries.get_entity_customization_query import GetEntityCustomizationQueryHandler
-from src.customization.application.queries.get_entity_customization_by_id_query import GetEntityCustomizationByIdQueryHandler
-from src.customization.application.queries.list_custom_fields_by_entity_query import ListCustomFieldsByEntityQueryHandler
-from src.customization.application.queries.get_custom_field_values_by_entity_query import GetCustomFieldValuesByEntityQueryHandler
+from src.shared_bc.customization.entity_customization.application.queries.get_entity_customization_query import GetEntityCustomizationQueryHandler
+from src.shared_bc.customization.entity_customization.application.queries.get_entity_customization_by_id_query import GetEntityCustomizationByIdQueryHandler
+from src.shared_bc.customization.entity_customization.application.queries.list_custom_fields_by_entity_query import ListCustomFieldsByEntityQueryHandler
+from src.shared_bc.customization.entity_customization.application.queries.get_custom_field_values_by_entity_query import GetCustomFieldValuesByEntityQueryHandler
 from src.shared_bc.customization.workflow.infrastructure.repositories import WorkflowRepository
 
 # CandidateApplicationWorkflow Infrastructure
 from src.shared_bc.customization.workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
 
 # New Customization Infrastructure
-from src.customization.infrastructure.repositories.entity_customization_repository import EntityCustomizationRepository
-from src.customization.infrastructure.repositories.custom_field_repository import CustomFieldRepository as NewCustomFieldRepository
+from src.shared_bc.customization.entity_customization.infrastructure.repositories.entity_customization_repository import EntityCustomizationRepository
+from src.shared_bc.customization.entity_customization.infrastructure.repositories.custom_field_repository import CustomFieldRepository as NewCustomFieldRepository
 
 # CandidateApplicationWorkflow Presentation Controllers
 from adapters.http.shared.workflow.controllers import WorkflowController
@@ -265,18 +276,15 @@ from src.company_bc.candidate_application.application.services.stage_permission_
 from src.shared_bc.customization.field_validation.infrastructure.repositories.validation_rule_repository import ValidationRuleRepository
 
 # FieldValidation Presentation Controllers
-from adapters.http.shared.field_validation.controllers import ValidationRuleController
 
 # Job Position Application Layer
 from src.company_bc.job_position.application.commands.create_job_position import CreateJobPositionCommandHandler
-from src.company_bc.job_position.application.commands import UpdateJobPositionCommandHandler
 from src.company_bc.job_position.application.commands.delete_job_position import DeleteJobPositionCommandHandler
 # Status management command handlers have been removed - use MoveJobPositionToStageCommandHandler instead
 from src.company_bc.job_position.application.commands.move_job_position_to_stage import MoveJobPositionToStageCommandHandler
 from src.company_bc.job_position.application.commands.update_job_position_custom_fields import UpdateJobPositionCustomFieldsCommandHandler
 from src.company_bc.job_position.application.commands.create_job_position_comment_command import CreateJobPositionCommentCommandHandler
 from src.company_bc.job_position.application.commands.update_job_position_comment_command import UpdateJobPositionCommentCommandHandler
-from src.company_bc.job_position.application.commands import DeleteJobPositionCommentCommandHandler
 from src.company_bc.job_position.application.commands.mark_comment_as_reviewed_command import MarkJobPositionCommentAsReviewedCommandHandler
 from src.company_bc.job_position.application.commands.mark_comment_as_pending_command import MarkJobPositionCommentAsPendingCommandHandler
 from src.company_bc.job_position.application.queries.list_job_positions import ListJobPositionsQueryHandler
@@ -287,7 +295,6 @@ from src.company_bc.job_position.application.queries.list_public_job_positions i
 from src.company_bc.job_position.application.queries.get_public_job_position import GetPublicJobPositionQueryHandler
 from src.company_bc.job_position.application.queries.get_job_position_workflow import GetJobPositionWorkflowQueryHandler
 from src.company_bc.job_position.application.queries.list_job_position_workflows import ListJobPositionWorkflowsQueryHandler
-from src.company_bc.job_position.application.queries import ListJobPositionCommentsQueryHandler
 from src.company_bc.job_position.application.queries.list_all_job_position_comments_query import ListAllJobPositionCommentsQueryHandler
 from src.company_bc.job_position.application.queries.list_job_position_activities_query import ListJobPositionActivitiesQueryHandler
 
@@ -297,29 +304,11 @@ from src.company_bc.job_position.infrastructure.repositories.job_position_commen
 from src.company_bc.job_position.infrastructure.repositories.job_position_activity_repository import JobPositionActivityRepository
 from src.company_bc.job_position.infrastructure.repositories.job_position_stage_repository import JobPositionStageRepository
 
-# Phase 10: Public Position Controller
 from adapters.http.company_app.job_position.controllers.public_position_controller import PublicPositionController
 
-# Phase 12: Phase Application Layer - Commands
-from src.shared_bc.customization.phase.application import CreatePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.update_phase_command import UpdatePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.delete_phase_command import DeletePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.archive_phase_command import ArchivePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.activate_phase_command import ActivatePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommandHandler
 
-# Phase 12: Phase Application Layer - Queries
-from src.shared_bc.customization.phase.application.queries.get_phase_by_id_query import GetPhaseByIdQueryHandler
-from src.shared_bc.customization.phase.application import ListPhasesByCompanyQueryHandler
-
-# Phase 12: Phase Infrastructure
-from src.shared_bc.customization.phase.infrastructure.repositories import PhaseRepository
-
-# Phase 12: Phase Presentation Controllers
 from adapters.http.shared.phase.controllers.phase_controller import PhaseController
 
-# Phase 12: Phase Handlers
-from src.shared_bc.customization.phase.application.handlers.candidate_stage_transition_handler import CandidateStageTransitionHandler
 
 # Position Stage Assignment Application Layer - Commands
 from src.company_bc.position_stage_assignment import (
@@ -339,10 +328,8 @@ from src.company_bc.position_stage_assignment import (
 from src.company_bc.position_stage_assignment import PositionStageAssignmentRepository
 
 # Position Stage Assignment Presentation
-from adapters.http.company_app.position_stage_assignment.controllers import PositionStageAssignmentController
 
 # Onboarding dependencies - SIMPLIFIED for landing endpoint only
-from src.auth_bc.user.infrastructure.repositories import SQLAlchemyUserAssetRepository
 from src.auth_bc.user.infrastructure.services.pdf_processing_service import PDFProcessingService
 from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommandHandler
 from src.candidate_bc.candidate.application.commands.update_candidate_basic import UpdateCandidateCommandHandler
@@ -365,14 +352,12 @@ from src.candidate_bc.candidate.application.commands.update_experience import Up
 from src.candidate_bc.candidate.application.commands.delete_experience import DeleteExperienceCommandHandler
 from src.candidate_bc.candidate.application.commands.create_education import CreateEducationCommandHandler
 from src.candidate_bc.candidate.application.commands.update_education import UpdateEducationCommandHandler
-from src.candidate_bc.candidate.application.commands import DeleteEducationCommandHandler
 from src.candidate_bc.candidate.application.commands.create_project import CreateProjectCommandHandler
 from src.candidate_bc.candidate.application.commands.update_project import UpdateProjectCommandHandler
 from src.candidate_bc.candidate.application.commands.delete_project import DeleteProjectCommandHandler
 from src.candidate_bc.candidate.application.commands.populate_candidate_from_pdf_analysis import PopulateCandidateFromPdfAnalysisCommandHandler
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_repository import SQLAlchemyCandidateRepository
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_experience_repository import SQLAlchemyCandidateExperienceRepository
-from src.candidate_bc.candidate.infrastructure import SQLAlchemyCandidateEducationRepository
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_project_repository import SQLAlchemyCandidateProjectRepository
 from src.company_bc.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommandHandler
 from src.company_bc.candidate_application.application.commands.update_application_status import UpdateApplicationStatusCommandHandler
@@ -656,12 +641,12 @@ class Container(containers.DeclarativeContainer):
 
     # Resume Repository and Services
     resume_repository = providers.Factory(
-        'src.resume.infrastructure.repositories.resume_repository.SQLAlchemyResumeRepository',
+        'src.candidate_bc.resume.infrastructure.repositories.resume_repository.SQLAlchemyResumeRepository',
         database=database
     )
 
     resume_generation_service = providers.Factory(
-        'src.resume.application.services.resume_generation_service.ResumeGenerationService'
+        'src.candidate_bc.resume.application.services.resume_generation_service.ResumeGenerationService'
     )
 
     candidate_application_repository = providers.Factory(
@@ -1257,7 +1242,7 @@ class Container(containers.DeclarativeContainer):
         company_user_invitation_repository=company_user_invitation_repository,
         company_role_repository=company_role_repository,
         company_page_repository=providers.Factory(
-            'src.company_page.infrastructure.repositories.company_page_repository.CompanyPageRepository',
+            'src.company_bc.company_page.infrastructure.repositories.company_page_repository.CompanyPageRepository',
             database=database
         ),
         company_candidate_repository=company_candidate_repository,
@@ -1859,7 +1844,7 @@ class Container(containers.DeclarativeContainer):
 
     # Resume Command Handlers
     create_general_resume_command_handler = providers.Factory(
-        'src.resume.application.commands.create_general_resume_command.CreateGeneralResumeCommandHandler',
+        'src.candidate_bc.resume.application.commands.create_general_resume_command.CreateGeneralResumeCommandHandler',
         resume_repository=resume_repository,
         candidate_repository=candidate_repository,
         generation_service=resume_generation_service,
@@ -1867,28 +1852,28 @@ class Container(containers.DeclarativeContainer):
     )
 
     update_resume_content_command_handler = providers.Factory(
-        'src.resume.application.commands.update_resume_content_command.UpdateResumeContentCommandHandler',
+        'src.candidate_bc.resume.application.commands.update_resume_content_command.UpdateResumeContentCommandHandler',
         resume_repository=resume_repository
     )
 
     delete_resume_command_handler = providers.Factory(
-        'src.resume.application.commands.delete_resume_command.DeleteResumeCommandHandler',
+        'src.candidate_bc.resume.application.commands.delete_resume_command.DeleteResumeCommandHandler',
         resume_repository=resume_repository
     )
 
     # Resume Query Handlers
     get_resumes_by_candidate_query_handler = providers.Factory(
-        'src.resume.application.queries.get_resumes_by_candidate_query.GetResumesByCandidateQueryHandler',
+        'src.candidate_bc.resume.application.queries.get_resumes_by_candidate_query.GetResumesByCandidateQueryHandler',
         resume_repository=resume_repository
     )
 
     get_resume_by_id_query_handler = providers.Factory(
-        'src.resume.application.queries.get_resume_by_id_query.GetResumeByIdQueryHandler',
+        'src.candidate_bc.resume.application.queries.get_resume_by_id_query.GetResumeByIdQueryHandler',
         resume_repository=resume_repository
     )
 
     get_resume_statistics_query_handler = providers.Factory(
-        'src.resume.application.queries.get_resume_statistics_query.GetResumeStatisticsQueryHandler',
+        'src.candidate_bc.resume.application.queries.get_resume_statistics_query.GetResumeStatisticsQueryHandler',
         resume_repository=resume_repository
     )
 
@@ -2248,7 +2233,7 @@ class Container(containers.DeclarativeContainer):
     )
 
     resume_controller = providers.Factory(
-        'adapters.http.resume.controllers.resume_controller.ResumeController',
+        'adapters.http.candidate_app.controllers.resume_controller.ResumeController',
         command_bus=command_bus,
         query_bus=query_bus
     )
@@ -2298,7 +2283,7 @@ class Container(containers.DeclarativeContainer):
 
     # Company Pages Module
     company_page_repository = providers.Factory(
-        'src.company_page.infrastructure.repositories.company_page_repository.CompanyPageRepository',
+        'src.company_bc.company_page.infrastructure.repositories.company_page_repository.CompanyPageRepository',
         database=database
     )
 
@@ -2356,7 +2341,7 @@ class Container(containers.DeclarativeContainer):
 
     # Company Pages Controller
     company_page_controller = providers.Factory(
-        'adapters.http.company_page.controllers.company_page_controller.CompanyPageController',
+        'adapters.http.company_app.company_page.controllers.company_page_controller.CompanyPageController',
         command_bus=command_bus,
         query_bus=query_bus
     )

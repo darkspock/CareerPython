@@ -37,6 +37,7 @@ interface CommentsSectionProps<T extends BaseComment> {
   showStageInfo?: boolean;
   showAuthorInfo?: boolean;
   onCommentsChange?: () => void;
+  refreshKey?: number; // Key that changes when comments are updated externally
   
   // UI customization
   title?: string;
@@ -60,6 +61,7 @@ export function CommentsSection<T extends BaseComment>({
   showStageInfo = false,
   showAuthorInfo = true,
   onCommentsChange,
+  refreshKey = 0,
   title = 'Comentarios',
   emptyMessage = 'No hay comentarios todavía',
   placeholder = 'Escribe un comentario...',
@@ -97,12 +99,24 @@ export function CommentsSection<T extends BaseComment>({
     }
   };
 
+  // Initial load
   useEffect(() => {
     loadTotalCommentsCount();
     if (isExpanded) {
       handleLoadComments();
     }
   }, [activeTab, currentStageId, isExpanded]);
+
+  // Reload count and list when refreshKey changes (external updates from other instances)
+  useEffect(() => {
+    if (refreshKey > 0) {
+      loadTotalCommentsCount();
+      // If expanded, also reload the comments list
+      if (isExpanded) {
+        handleLoadComments();
+      }
+    }
+  }, [refreshKey, isExpanded]);
 
   // Create comment
   const handleCreateComment = async (data: CommentFormData) => {
@@ -267,16 +281,6 @@ export function CommentsSection<T extends BaseComment>({
             showAuthorInfo={showAuthorInfo}
             formatDate={formatDate}
           />
-
-          {/* Collapse button */}
-          <div className="mt-4">
-            <button
-              onClick={() => setIsExpanded(false)}
-              className="text-sm text-gray-600 hover:text-gray-700 hover:underline"
-            >
-              Ocultar comentarios
-            </button>
-          </div>
         </div>
       )}
     </div>

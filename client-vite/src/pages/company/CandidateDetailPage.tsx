@@ -60,6 +60,7 @@ export default function CandidateDetailPage() {
   const [allComments, setAllComments] = useState<CandidateComment[]>([]);
   const [pendingCommentsCount, setPendingCommentsCount] = useState(0);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
 
   // Workflow tabs state
   const [allCustomFieldValues, setAllCustomFieldValues] = useState<Record<string, Record<string, any>>>({});
@@ -577,7 +578,9 @@ export default function CandidateDetailPage() {
                       onCommentChange={async () => {
                         await loadAllComments();
                         await loadWorkflowsWithData();
+                        setCommentsRefreshKey(prev => prev + 1);
                       }}
+                      refreshKey={commentsRefreshKey}
                       defaultExpanded={true}
                     />
                   ) : (
@@ -771,7 +774,9 @@ export default function CandidateDetailPage() {
                       onCommentChange={async () => {
                         await loadAllComments();
                         await loadWorkflowsWithData();
+                        setCommentsRefreshKey(prev => prev + 1);
                       }}
+                      refreshKey={commentsRefreshKey}
                       onNavigateToCommentsTab={() => setActiveTab('comments')}
                     />
                   )}
@@ -796,7 +801,11 @@ export default function CandidateDetailPage() {
                     companyCandidateId={id!}
                     stageId={candidate.current_stage_id}
                     currentWorkflowId={candidate.current_workflow_id || undefined}
-                    onCommentChange={loadAllComments}
+                    onCommentChange={async () => {
+                      await loadAllComments();
+                      setCommentsRefreshKey(prev => prev + 1);
+                    }}
+                    refreshKey={commentsRefreshKey}
                     onNavigateToCommentsTab={() => setActiveTab('comments')}
                   />
                 )}

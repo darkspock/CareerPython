@@ -17,6 +17,7 @@ interface CandidateCommentsSectionProps {
   onCommentChange?: () => void;
   defaultExpanded?: boolean;
   onNavigateToCommentsTab?: () => void;
+  refreshKey?: number;
 }
 
 export default function CandidateCommentsSection({
@@ -26,6 +27,7 @@ export default function CandidateCommentsSection({
   onCommentChange,
   defaultExpanded = false,
   onNavigateToCommentsTab,
+  refreshKey,
 }: CandidateCommentsSectionProps) {
   // Load comments based on tab
   const loadComments = async (tab: CommentTab): Promise<CandidateComment[]> => {
@@ -93,6 +95,7 @@ export default function CandidateCommentsSection({
       placeholder="Escribe un comentario..."
       defaultExpanded={defaultExpanded}
       onNavigateToCommentsTab={onNavigateToCommentsTab}
+      refreshKey={refreshKey}
       formatDate={(dateStr) => {
         return new Date(dateStr).toLocaleDateString('en-US', {
           year: 'numeric',
