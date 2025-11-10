@@ -327,7 +327,6 @@ export default function WorkflowBoardPage() {
     const newStageId = over.id as string;
 
     // Find if over is a stage or another candidate
-    // const _stage = stages.find((s) => s.id === newStageId);
     const candidate = candidates.find((c) => c.id === newStageId);
 
     let targetStageId = newStageId;
@@ -336,21 +335,43 @@ export default function WorkflowBoardPage() {
       targetStageId = candidate.current_stage_id || '';
     }
 
-    if (!targetStageId) {
+    // Check if it's a valid stage ID
+    const isValidStage = stages.some((s) => s.id === targetStageId);
+    if (!targetStageId || !isValidStage) {
       setActiveId(null);
       return;
     }
 
-    // Update candidate stage
+    // Check if candidate is already in this stage
+    const currentCandidate = candidates.find((c) => c.id === candidateId);
+    if (currentCandidate?.current_stage_id === targetStageId) {
+      setActiveId(null);
+      return;
+    }
+
+    // Optimistic update: update local state immediately
+    setCandidates(prevCandidates =>
+      prevCandidates.map(candidate =>
+        candidate.id === candidateId
+          ? { ...candidate, current_stage_id: targetStageId }
+          : candidate
+      )
+    );
+    setActiveId(null);
+
+    // Update candidate stage on backend (fire and forget)
     try {
       await companyCandidateService.changeStage(candidateId, { new_stage_id: targetStageId });
-
-      // Refresh data
-      loadStagesAndCandidates();
     } catch (err: any) {
+      // Revert on error
+      setCandidates(prevCandidates =>
+        prevCandidates.map(candidate =>
+          candidate.id === candidateId
+            ? { ...candidate, current_stage_id: currentCandidate?.current_stage_id || '' }
+            : candidate
+        )
+      );
       alert('Failed to move candidate: ' + err.message);
-    } finally {
-      setActiveId(null);
     }
   };
 
