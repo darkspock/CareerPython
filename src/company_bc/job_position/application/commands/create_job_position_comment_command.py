@@ -60,7 +60,30 @@ class CreateJobPositionCommentCommandHandler(CommandHandler[CreateJobPositionCom
         comment_id = JobPositionCommentId.generate()
         job_position_id = JobPositionId.from_string(command.job_position_id)
         created_by_user_id = CompanyUserId.from_string(command.created_by_user_id)
-        workflow_id = JobPositionWorkflowId.from_string(command.workflow_id) if command.workflow_id else None
+        
+        # Validate workflow_id exists in job_position_workflows before using it
+        # If workflow_id doesn't exist in job_position_workflows, ignore it (set to None)
+        workflow_id = None
+        if command.workflow_id:
+            try:
+                # Try to parse as JobPositionWorkflowId
+                workflow_id_vo = JobPositionWorkflowId.from_string(command.workflow_id)
+                # Verify it exists in job_position_workflows table
+                from core.database import SQLAlchemyDatabase
+                from src.company_bc.job_position.infrastructure.models.job_position_workflow_model import JobPositionWorkflowModel
+                
+                database = SQLAlchemyDatabase()
+                with database.get_session() as session:
+                    workflow_model = session.query(JobPositionWorkflowModel).filter(
+                        JobPositionWorkflowModel.id == str(workflow_id_vo)
+                    ).first()
+                    
+                    if workflow_model:
+                        workflow_id = workflow_id_vo
+                    # If not found, workflow_id remains None (ignore invalid workflow_id)
+            except (ValueError, Exception):
+                # Invalid workflow_id format or doesn't exist, ignore it
+                workflow_id = None
 
         # Create the comment entity
         comment = JobPositionComment.create(

@@ -29,14 +29,15 @@ import '../../components/kanban/kanban-styles.css';
 function CandidateCard({ 
   candidate, 
   companyId: _companyId, 
-  rowStages, 
+  allStages,
   onMoveToStage 
 }: { 
   candidate: CompanyCandidate; 
   companyId: string;
-  rowStages: WorkflowStage[];
+  allStages: WorkflowStage[];
   onMoveToStage: (candidateId: string, stageId: string) => void;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -116,46 +117,80 @@ function CandidateCard({
         </div>
       )}
 
-      {/* Quick Action Dropdown for Row Stages */}
-      {rowStages.length > 0 && (
-        <div ref={dropdownRef} className="mt-3 pt-2 border-t border-gray-200 relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowDropdown(!showDropdown);
-            }}
-            className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors w-full justify-center"
-          >
-            <Move className="w-3 h-3" />
-            <span>Move to Stage</span>
-            <ChevronDown className="w-3 h-3" />
-          </button>
-          
-          {showDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-              <div className="py-1">
-                {rowStages.map((stage) => (
-                  <button
-                    key={stage.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onMoveToStage(candidate.id, stage.id);
-                      setShowDropdown(false);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 w-full text-left"
-                  >
-                    <span 
-                      className="text-sm"
-                      dangerouslySetInnerHTML={{ __html: stage.style.icon }}
-                    />
-                    <span className="text-gray-700">{stage.name}</span>
-                  </button>
-                ))}
+      {/* Quick Action Dropdown for Move to Stage */}
+      {(() => {
+        // Get current stage
+        const currentStage = candidate.current_stage_id 
+          ? allStages.find(s => s.id === candidate.current_stage_id)
+          : null;
+        
+        // Get next stage (next in order)
+        const nextStage = currentStage 
+          ? allStages
+              .filter(s => s.order > currentStage.order && s.is_active)
+              .sort((a, b) => a.order - b.order)[0]
+          : null;
+        
+        // Get stages that are ROW or HIDDEN/NONE (not visible in columns)
+        const hiddenOrRowStages = allStages.filter(s => 
+          s.is_active && 
+          s.id !== candidate.current_stage_id &&
+          (s.kanban_display === KanbanDisplay.ROW || s.kanban_display === KanbanDisplay.NONE)
+        );
+        
+        // Combine next stage and hidden/row stages, removing duplicates
+        const availableStages = [
+          ...(nextStage ? [nextStage] : []),
+          ...hiddenOrRowStages.filter(s => !nextStage || s.id !== nextStage.id)
+        ].sort((a, b) => a.order - b.order);
+        
+        if (availableStages.length === 0) return null;
+        
+        return (
+          <div ref={dropdownRef} className="mt-3 pt-2 border-t border-gray-200 relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDropdown(!showDropdown);
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors w-full justify-center"
+            >
+              <Move className="w-3 h-3" />
+              <span>{t('company.workflowBoard.moveToStage')}</span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            
+            {showDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="py-1">
+                  {availableStages.map((stage) => (
+                    <button
+                      key={stage.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMoveToStage(candidate.id, stage.id);
+                        setShowDropdown(false);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 w-full text-left"
+                    >
+                      <span 
+                        className="text-sm"
+                        dangerouslySetInnerHTML={{ __html: stage.style.icon }}
+                      />
+                      <span className="text-gray-700">
+                        {stage.name}
+                        {nextStage && stage.id === nextStage.id && (
+                          <span className="ml-2 text-blue-600 text-xs">({t('company.workflowBoard.nextStage')})</span>
+                        )}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -165,13 +200,13 @@ function StageColumn({
   stage,
   candidates,
   companyId,
-  rowStages,
+  allStages,
   onMoveToStage,
 }: {
   stage: WorkflowStage;
   candidates: CompanyCandidate[];
   companyId: string;
-  rowStages: WorkflowStage[];
+  allStages: WorkflowStage[];
   onMoveToStage: (candidateId: string, stageId: string) => void;
 }) {
   const { t } = useTranslation();
@@ -229,7 +264,7 @@ function StageColumn({
                 key={candidate.id} 
                 candidate={candidate} 
                 companyId={companyId}
-                rowStages={rowStages}
+                allStages={allStages}
                 onMoveToStage={onMoveToStage}
               />
             ))
@@ -371,7 +406,7 @@ export default function WorkflowBoardPage() {
             : candidate
         )
       );
-      alert('Failed to move candidate: ' + err.message);
+      alert(t('company.workflowBoard.failedToMoveCandidateMessage', { message: err.message }));
     }
   };
 
@@ -393,7 +428,7 @@ export default function WorkflowBoardPage() {
       );
     } catch (error) {
       console.error('Failed to move candidate:', error);
-      setError('Failed to move candidate');
+      setError(t('company.workflowBoard.failedToMoveCandidate'));
     }
   };
 
@@ -422,7 +457,7 @@ export default function WorkflowBoardPage() {
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <List className="w-4 h-4 mr-2" />
-            Go to Phases
+            {t('company.workflowBoard.goToPhases')}
           </Link>
         </div>
       </div>
@@ -500,7 +535,7 @@ export default function WorkflowBoardPage() {
                       stage={stage}
                       candidates={getCandidatesByStage(stage.id)}
                       companyId={getCompanyId() || ''}
-                      rowStages={rowStages}
+                      allStages={stages}
                       onMoveToStage={moveCandidateToStage}
                     />
                   ))}

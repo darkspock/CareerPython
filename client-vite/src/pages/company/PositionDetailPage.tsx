@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, Workflow, Eye, EyeOff, FileText, MessageSquare, History } from 'lucide-react';
+import { ArrowLeft, Edit, Workflow, Eye, EyeOff, FileText, MessageSquare, History, Move, ChevronDown } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { Position, JobPositionWorkflow } from '../../types/position';
 import { 
@@ -17,6 +17,9 @@ import { JobPositionActivityTimeline } from '../../components/jobPosition/JobPos
 import JobPositionActivityService from '../../services/JobPositionActivityService';
 import JobPositionCommentService from '../../services/JobPositionCommentService';
 import type { JobPositionActivity } from '../../types/jobPositionActivity';
+import { companyWorkflowService } from '../../services/companyWorkflowService';
+import type { WorkflowStage } from '../../types/workflow';
+import { KanbanDisplay } from '../../types/workflow';
 
 export default function PositionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +32,17 @@ export default function PositionDetailPage() {
   const [activities, setActivities] = useState<JobPositionActivity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [pendingCommentsCount, setPendingCommentsCount] = useState(0);
+  
+  // Stage transition state
+  const [availableStages, setAvailableStages] = useState<WorkflowStage[]>([]);
+  const [changingStage, setChangingStage] = useState(false);
+  
+  // Move to Stage dropdown state
+  const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
+  const moveToStageDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Comments refresh key
+  const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -53,6 +67,9 @@ export default function PositionDetailPage() {
         try {
           const workflowData = await PositionService.getWorkflow(data.job_position_workflow_id);
           setWorkflow(workflowData);
+          
+          // Load workflow stages
+          await loadWorkflowStages(data.job_position_workflow_id);
         } catch (err) {
           console.error('Error loading workflow:', err);
         }
@@ -93,6 +110,46 @@ export default function PositionDetailPage() {
     }
   };
 
+  const loadWorkflowStages = async (workflowId: string) => {
+    try {
+      // Use companyWorkflowService to get full stage data including kanban_display
+      const stages = await companyWorkflowService.listStagesByWorkflow(workflowId);
+      setAvailableStages(stages);
+    } catch (err) {
+      console.error('Error loading workflow stages:', err);
+    }
+  };
+
+  const handleMoveToStage = async (stageId: string) => {
+    if (!id || !position) return;
+
+    try {
+      setChangingStage(true);
+      await PositionService.moveToStage(id, stageId);
+      // Reload position to get updated stage
+      await loadPosition();
+      setShowMoveToStageDropdown(false);
+    } catch (err: any) {
+      alert(`Failed to move position: ${err.message}`);
+    } finally {
+      setChangingStage(false);
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moveToStageDropdownRef.current && !moveToStageDropdownRef.current.contains(event.target as Node)) {
+        setShowMoveToStageDropdown(false);
+      }
+    };
+
+    if (showMoveToStageDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMoveToStageDropdown]);
+
   const getVisibilityLabel = (visibility: string) => {
     switch (visibility) {
       case 'public':
@@ -120,16 +177,6 @@ export default function PositionDetailPage() {
   };
 
 
-  const handleDelete = async () => {
-    if (!id || !confirm('Are you sure you want to delete this position?')) return;
-
-    try {
-      await PositionService.deletePosition(id);
-      navigate('/company/positions');
-    } catch (err: any) {
-      alert('Failed to delete position: ' + err.message);
-    }
-  };
 
   if (loading) {
     return (
@@ -200,14 +247,87 @@ export default function PositionDetailPage() {
               <Edit className="w-4 h-4" />
               Edit
             </button>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              title="Delete this position"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
+            {/* Move to Stage Dropdown */}
+            {(() => {
+              // Show dropdown if position has stages available
+              if (!position || availableStages.length === 0) {
+                return null;
+              }
+              
+              // Get current stage
+              const currentStage = position.stage_id 
+                ? availableStages.find(s => s.id === position.stage_id)
+                : null;
+              
+              // Get next stage (next in order)
+              const nextStageOption = currentStage 
+                ? availableStages
+                    .filter(s => s.order > currentStage.order && s.is_active)
+                    .sort((a, b) => a.order - b.order)[0]
+                : null;
+              
+              // Get stages that are ROW or HIDDEN/NONE (not visible in columns)
+              // Handle both enum and string values for kanban_display
+              const hiddenOrRowStages = availableStages.filter((s: WorkflowStage) => {
+                if (!s.is_active || s.id === position.stage_id) return false;
+                const display = s.kanban_display as string;
+                return display === KanbanDisplay.ROW || 
+                       display === 'row' ||
+                       display === KanbanDisplay.NONE || 
+                       display === 'none';
+              });
+              
+              // Combine next stage and hidden/row stages, removing duplicates
+              const stagesToShow = [
+                ...(nextStageOption ? [nextStageOption] : []),
+                ...hiddenOrRowStages.filter(s => !nextStageOption || s.id !== nextStageOption.id)
+              ].sort((a, b) => a.order - b.order);
+              
+              if (stagesToShow.length === 0) {
+                return null;
+              }
+              
+              return (
+                <div ref={moveToStageDropdownRef} className="relative">
+                  <button
+                    onClick={() => setShowMoveToStageDropdown(!showMoveToStageDropdown)}
+                    disabled={changingStage}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Move to Stage"
+                  >
+                    <Move className="w-4 h-4" />
+                    Move to Stage
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  
+                  {showMoveToStageDropdown && (
+                    <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[200px]">
+                      <div className="py-1">
+                        {stagesToShow.map((stage) => (
+                          <button
+                            key={stage.id}
+                            onClick={() => handleMoveToStage(stage.id)}
+                            disabled={changingStage}
+                            className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <span 
+                              className="text-sm"
+                              dangerouslySetInnerHTML={{ __html: stage.style?.icon || '' }}
+                            />
+                            <span className="text-gray-700">
+                              {stage.name}
+                              {nextStageOption && stage.id === nextStageOption.id && (
+                                <span className="ml-2 text-blue-600 text-xs">(Next Stage)</span>
+                              )}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -442,13 +562,20 @@ export default function PositionDetailPage() {
       )}
 
       {/* Comments Tab */}
-      {activeTab === 'comments' && (
-        <PositionCommentsSection
-          positionId={id!}
-          workflowId={position.job_position_workflow_id || undefined}
-          currentStageId={position.stage_id || undefined}
-          onCommentsChange={loadPendingCommentsCount}
-        />
+      {activeTab === 'comments' && position.stage_id && (
+        <div>
+          <PositionCommentsSection
+            positionId={id!}
+            workflowId={position.job_position_workflow_id || undefined}
+            currentStageId={position.stage_id || undefined}
+            onCommentsChange={async () => {
+              await loadPendingCommentsCount();
+              setCommentsRefreshKey(prev => prev + 1);
+            }}
+            refreshKey={commentsRefreshKey}
+            defaultExpanded={true}
+          />
+        </div>
       )}
 
       {/* History Tab */}
@@ -458,6 +585,23 @@ export default function PositionDetailPage() {
           <JobPositionActivityTimeline
             activities={activities}
             isLoading={loadingActivities}
+          />
+        </div>
+      )}
+
+      {/* Comments Section - Always visible at the bottom, like in CandidateDetailPage */}
+      {activeTab === 'info' && position.stage_id && (
+        <div className="mt-6">
+          <PositionCommentsSection
+            positionId={id!}
+            workflowId={position.job_position_workflow_id || undefined}
+            currentStageId={position.stage_id || undefined}
+            onCommentsChange={async () => {
+              await loadPendingCommentsCount();
+              setCommentsRefreshKey(prev => prev + 1);
+            }}
+            refreshKey={commentsRefreshKey}
+            onNavigateToCommentsTab={() => setActiveTab('comments')}
           />
         </div>
       )}

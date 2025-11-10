@@ -35,6 +35,7 @@ from adapters.http.shared.workflow.routers.workflow_router import router as cand
 from adapters.http.shared.workflow.routers.workflow_stage_router import router as workflow_stage_router
 from adapters.http.shared.customization.routers.entity_customization_router import router as entity_customization_router
 from adapters.http.company_app.company.routers.candidate_comment_router import router as candidate_comment_router
+from adapters.http.company_app.company.routers.job_position_comment_router import router as job_position_comment_router
 from adapters.http.company_app.company.routers.candidate_review_router import router as candidate_review_router
 from adapters.http.company_app.company_page.routers.company_page_router import router as company_page_router
 from adapters.http.company_app.company_page.routers.public_company_page_router import router as public_company_page_router
@@ -95,6 +96,7 @@ app.include_router(workflow_stage_router)  # Workflow stage management
 app.include_router(entity_customization_router)  # Entity customization management
 app.include_router(candidate_comment_router)  # Candidate comment management
 app.include_router(candidate_review_router)  # Candidate review management
+app.include_router(job_position_comment_router)  # Job position comment management
 app.include_router(validation_rule_router)  # Field validation rules
 app.include_router(position_stage_assignment_router)  # Position stage assignment management
 app.include_router(company_page_router)  # Company pages management
@@ -155,6 +157,7 @@ container.wire(modules=[
     "adapters.http.shared.customization.routers.entity_customization_router",
     "adapters.http.company_app.company.routers.candidate_comment_router",
     "adapters.http.company_app.company.routers.candidate_review_router",
+    "adapters.http.company_app.company.routers.job_position_comment_router",
     "adapters.http.shared.field_validation.routers.validation_rule_router",
     "adapters.http.candidate_app.routers.position_stage_assignment_router",
     "adapters.http.shared.workflow_analytics.routers.workflow_analytics_router",

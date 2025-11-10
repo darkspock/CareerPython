@@ -16,7 +16,7 @@ class JobPositionStageModel(Base):
     """SQLAlchemy model for job position stage tracking"""
     __tablename__ = "job_position_stages"
 
-    id: Mapped[str] = mapped_column(String(26), primary_key=True, index=True, default=generate_id)
+    id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     job_position_id: Mapped[str] = mapped_column(
         String(26),
         ForeignKey('job_positions.id', ondelete='CASCADE'),
@@ -24,7 +24,7 @@ class JobPositionStageModel(Base):
         index=True
     )
     phase_id: Mapped[Optional[str]] = mapped_column(
-        String(26),
+        String,
         ForeignKey('company_phases.id', ondelete='SET NULL'),
         nullable=True,
         index=True

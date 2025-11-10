@@ -5,7 +5,6 @@
  * with job position-specific logic and services.
  */
 
-import React from 'react';
 import { CommentsSection, type CommentTab, type CommentFormData } from '../shared/comments';
 import JobPositionCommentService from '../../services/JobPositionCommentService';
 import type { JobPositionComment } from '../../types/jobPositionComment';
@@ -15,6 +14,9 @@ interface PositionCommentsSectionProps {
   workflowId?: string;
   currentStageId?: string;
   onCommentsChange?: () => void;
+  defaultExpanded?: boolean;
+  onNavigateToCommentsTab?: () => void;
+  refreshKey?: number;
 }
 
 export function PositionCommentsSection({
@@ -22,6 +24,9 @@ export function PositionCommentsSection({
   workflowId,
   currentStageId,
   onCommentsChange,
+  defaultExpanded = false,
+  onNavigateToCommentsTab,
+  refreshKey,
 }: PositionCommentsSectionProps) {
   // Load comments based on tab
   const loadComments = async (tab: CommentTab): Promise<JobPositionComment[]> => {
@@ -83,6 +88,9 @@ export function PositionCommentsSection({
       showStageInfo={false}
       showAuthorInfo={true}
       onCommentsChange={onCommentsChange}
+      defaultExpanded={defaultExpanded}
+      onNavigateToCommentsTab={onNavigateToCommentsTab}
+      refreshKey={refreshKey}
       title="Comentarios de la posición"
       emptyMessage="No hay comentarios todavía"
       placeholder="Escribe un comentario..."

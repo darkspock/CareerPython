@@ -136,14 +136,15 @@ def main():
         # Step 1: Create company and admin (includes onboarding and workflows initialization)
         company_id, user_id, company_user_id = create_company_and_admin()
         
-        # Step 2: Initialize sample data (users, candidates and company-candidate relationships)
-        print("👥 Creating sample users, candidates and relationships...")
+        # Step 2: Initialize sample data (users, candidates, company-candidate relationships, and job positions)
+        print("👥 Creating sample users, candidates, relationships, and job positions...")
         initialize_sample_data_cmd = InitializeSampleDataCommand(
             company_id=company_id,
             company_user_id=company_user_id,
             num_candidates=50,
             num_recruiters=3,
-            num_viewers=2
+            num_viewers=2,
+            num_job_positions=10
         )
         command_bus.dispatch(initialize_sample_data_cmd)
         print("  ✓ Sample data created\n")
@@ -162,6 +163,7 @@ def main():
         print("   - 2 Viewer users (viewer1@company.com, viewer2@company.com)")
         print("   - 3 Phases with workflows and stages (auto-created)")
         print("   - 50 Sample candidates with workflow assignments")
+        print("   - 10 Sample job positions with workflow assignments")
         print("\n📝 ADDITIONAL USER CREDENTIALS:")
         print("   Recruiters: recruiter1@company.com / Recruiter123!")
         print("   Viewers: viewer1@company.com / Viewer123!")

@@ -355,7 +355,12 @@
       "selectPhaseFromSidebar": "Selecciona una fase del menú lateral para ver el tablero Kanban",
       "noCandidatesInStage": "No hay candidatos en esta etapa",
       "noStagesInPhase": "No hay etapas en esta fase",
-      "addStagesToPhase": "Añade etapas a esta fase en la página de Configuración"
+      "addStagesToPhase": "Añade etapas a esta fase en la página de Configuración",
+      "moveToStage": "Mover a Etapa",
+      "nextStage": "Siguiente",
+      "goToPhases": "Ir a Fases",
+      "failedToMoveCandidate": "Error al mover candidato",
+      "failedToMoveCandidateMessage": "Error al mover candidato: {{message}}"
     },
     "settings": {
       "title": "Configuración de la Empresa",

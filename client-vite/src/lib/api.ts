@@ -16,13 +16,26 @@ export class ApiClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    // Only set Content-Type for requests with a body
+    const hasBody = options.body !== undefined && options.body !== null;
+    const headers: HeadersInit = {
+      ...(hasBody && { 'Content-Type': 'application/json' }),
+      ...options.headers,
+    };
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers,
+      });
+    } catch (error: any) {
+      // Handle network errors (CORS, connection refused, etc.)
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error(`Network error: Unable to reach server at ${url}. Please check if the server is running and CORS is configured correctly.`);
+      }
+      throw error;
+    }
 
     if (!response.ok) {
       let errorMessage = `API Error: ${response.status} ${response.statusText}`;

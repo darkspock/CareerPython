@@ -20,14 +20,24 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    # Add company_type column
-    op.add_column('companies', sa.Column('company_type', sa.Enum('startup_small', 'mid_size', 'enterprise', 'recruitment_agency', name='companytypeenum', native_enum=False, length=30), nullable=True, server_default='mid_size'))
+    # Check if column already exists (it was added manually before)
+    from sqlalchemy import inspect
+    conn = op.get_bind()
+    inspector = inspect(conn)
+    columns = [col['name'] for col in inspector.get_columns('companies')]
     
-    # Update existing records to 'mid_size'
-    op.execute("UPDATE companies SET company_type = 'mid_size' WHERE company_type IS NULL")
-    
-    # Make column NOT NULL after updating existing records
-    op.alter_column('companies', 'company_type', nullable=False)
+    if 'company_type' not in columns:
+        # Add company_type column
+        op.add_column('companies', sa.Column('company_type', sa.Enum('startup_small', 'mid_size', 'enterprise', 'recruitment_agency', name='companytypeenum', native_enum=False, length=30), nullable=True, server_default='mid_size'))
+        
+        # Update existing records to 'mid_size'
+        op.execute("UPDATE companies SET company_type = 'mid_size' WHERE company_type IS NULL")
+        
+        # Make column NOT NULL after updating existing records
+        op.alter_column('companies', 'company_type', nullable=False)
+    else:
+        # Column already exists, just update NULL values
+        op.execute("UPDATE companies SET company_type = 'mid_size' WHERE company_type IS NULL")
 
 
 def downgrade() -> None:

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -18,13 +18,17 @@ import {
   FileText,
   Download,
   Trash2,
-  MessageSquare
+  MessageSquare,
+  Move,
+  ChevronDown
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import { fileUploadService, type AttachedFile } from '../../services/fileUploadService';
-import { workflowStageService, type WorkflowStage } from '../../services/workflowStageService';
+import { workflowStageService } from '../../services/workflowStageService';
 import { customFieldValueService } from '../../services/customFieldValueService';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
+import { phaseService } from '../../services/phaseService';
+import type { WorkflowStage } from '../../types/workflow';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 import {
   getCandidateStatusColor,
@@ -36,6 +40,7 @@ import CandidateCommentsSection from '../../components/candidate/CandidateCommen
 import CandidateReviewsSection from '../../components/candidate/CandidateReviewsSection';
 import { candidateCommentService } from '../../services/candidateCommentService';
 import type { CandidateComment } from '../../types/candidateComment';
+import { KanbanDisplay } from '../../types/workflow';
 
 export default function CandidateDetailPage() {
   const { t } = useTranslation();
@@ -51,10 +56,14 @@ export default function CandidateDetailPage() {
   const [uploadingFile, setUploadingFile] = useState(false);
 
   // Stage transition state
-  const [_availableStages, setAvailableStages] = useState<WorkflowStage[]>([]);
+  const [availableStages, setAvailableStages] = useState<WorkflowStage[]>([]);
   const [nextStage, setNextStage] = useState<WorkflowStage | null>(null);
   const [failStages, setFailStages] = useState<WorkflowStage[]>([]);
   const [changingStage, setChangingStage] = useState(false);
+  
+  // Move to Stage dropdown state
+  const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
+  const moveToStageDropdownRef = useRef<HTMLDivElement>(null);
 
   // Comments state
   const [allComments, setAllComments] = useState<CandidateComment[]>([]);
@@ -103,9 +112,23 @@ export default function CandidateDetailPage() {
         setAttachedFiles([]);
       }
 
-      // Load workflow stages if candidate has a workflow
+      // Load workflow stages if candidate has a workflow or phase
       if (data.current_workflow_id) {
         await loadWorkflowStages(data.current_workflow_id, data.current_stage_id || undefined);
+      } else if (data.phase_id) {
+        // If no workflow but has phase, try to load stages from phase
+        try {
+          const companyId = getCompanyId();
+          if (companyId) {
+            const phase = await phaseService.getPhase(companyId, data.phase_id);
+            if (phase.workflow_type) {
+              const stages = await companyWorkflowService.listStagesByPhase(data.phase_id, phase.workflow_type);
+              setAvailableStages(stages.sort((a, b) => a.order - b.order));
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to load stages from phase:', err);
+        }
       }
       
       // Load all comments
@@ -125,7 +148,8 @@ export default function CandidateDetailPage() {
 
   const loadWorkflowStages = async (workflowId: string, currentStageId?: string) => {
     try {
-      const stages = await workflowStageService.getStagesByWorkflow(workflowId);
+      // Use companyWorkflowService to get full stage data including kanban_display
+      const stages = await companyWorkflowService.getStagesByWorkflow(workflowId);
       setAvailableStages(stages);
 
       // Find current stage order
@@ -172,8 +196,15 @@ export default function CandidateDetailPage() {
       setLoadingWorkflows(true);
       
       // Get all custom field values organized by workflow_id
-      const allValues = await customFieldValueService.getAllCustomFieldValuesByCompanyCandidate(id);
-      setAllCustomFieldValues(allValues);
+      let allValues: Record<string, Record<string, any>> = {};
+      try {
+        allValues = await customFieldValueService.getAllCustomFieldValuesByCompanyCandidate(id);
+        setAllCustomFieldValues(allValues);
+      } catch (err) {
+        console.warn('Failed to load custom field values:', err);
+        // Continue without custom field values
+        setAllCustomFieldValues({});
+      }
       
       // Get unique workflow IDs from custom fields and comments
       const workflowIds = new Set<string>();
@@ -229,16 +260,35 @@ export default function CandidateDetailPage() {
     }
   };
 
-  const handleArchive = async () => {
-    if (!id || !confirm('Are you sure you want to archive this candidate?')) return;
+  const handleMoveToStage = async (stageId: string) => {
+    if (!id || !candidate) return;
 
     try {
-      await companyCandidateService.archive(id);
-      navigate('/company/candidates');
+      setChangingStage(true);
+      await companyCandidateService.changeStage(id, { new_stage_id: stageId });
+      // Reload candidate to get updated stage
+      await loadCandidate();
+      setShowMoveToStageDropdown(false);
     } catch (err: any) {
-      alert('Failed to archive candidate: ' + err.message);
+      alert(t('company.workflowBoard.failedToMoveCandidateMessage', { message: err.message }));
+    } finally {
+      setChangingStage(false);
     }
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moveToStageDropdownRef.current && !moveToStageDropdownRef.current.contains(event.target as Node)) {
+        setShowMoveToStageDropdown(false);
+      }
+    };
+
+    if (showMoveToStageDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMoveToStageDropdown]);
 
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -445,14 +495,101 @@ export default function CandidateDetailPage() {
               <Edit className="w-4 h-4" />
               {t('company.candidates.edit')}
             </button>
-            <button
-              onClick={handleArchive}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              title={t('company.candidates.archiveCandidate')}
-            >
-              <Archive className="w-4 h-4" />
-              {t('company.candidates.archive')}
-            </button>
+            {/* Move to Stage Dropdown */}
+            {(() => {
+              // Show dropdown if candidate has stages available (either from workflow or phase)
+              if (!candidate || availableStages.length === 0) {
+                console.log('Dropdown conditions not met:', {
+                  candidate: !!candidate,
+                  workflowId: candidate?.current_workflow_id,
+                  phaseId: candidate?.phase_id,
+                  stagesCount: availableStages.length
+                });
+                return null;
+              }
+              
+              // Get current stage
+              const currentStage = candidate.current_stage_id 
+                ? availableStages.find(s => s.id === candidate.current_stage_id)
+                : null;
+              
+              // Get next stage (next in order)
+              const nextStageOption = currentStage 
+                ? availableStages
+                    .filter(s => s.order > currentStage.order && s.is_active)
+                    .sort((a, b) => a.order - b.order)[0]
+                : null;
+              
+              // Get stages that are ROW or HIDDEN/NONE (not visible in columns)
+              // Handle both string and enum values for kanban_display
+              const hiddenOrRowStages = availableStages.filter(s => {
+                if (!s.is_active || s.id === candidate.current_stage_id) return false;
+                const display = s.kanban_display;
+                return display === KanbanDisplay.ROW || 
+                       display === 'row' ||
+                       display === KanbanDisplay.NONE || 
+                       display === 'none';
+              });
+              
+              // Combine next stage and hidden/row stages, removing duplicates
+              const stagesToShow = [
+                ...(nextStageOption ? [nextStageOption] : []),
+                ...hiddenOrRowStages.filter(s => !nextStageOption || s.id !== nextStageOption.id)
+              ].sort((a, b) => a.order - b.order);
+              
+              console.log('Stages to show:', {
+                nextStageOption,
+                hiddenOrRowStages,
+                stagesToShow,
+                allStages: availableStages.map(s => ({ id: s.id, name: s.name, kanban_display: s.kanban_display, is_active: s.is_active }))
+              });
+              
+              if (stagesToShow.length === 0) {
+                console.log('No stages to show');
+                return null;
+              }
+              
+              return (
+                <div ref={moveToStageDropdownRef} className="relative">
+                  <button
+                    onClick={() => setShowMoveToStageDropdown(!showMoveToStageDropdown)}
+                    disabled={changingStage}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={t('company.workflowBoard.moveToStage')}
+                  >
+                    <Move className="w-4 h-4" />
+                    {t('company.workflowBoard.moveToStage')}
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  
+                  {showMoveToStageDropdown && (
+                    <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[200px]">
+                      <div className="py-1">
+                        {stagesToShow.map((stage) => (
+                          <button
+                            key={stage.id}
+                            onClick={() => handleMoveToStage(stage.id)}
+                            disabled={changingStage}
+                            className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <span 
+                              className="text-sm"
+                              dangerouslySetInnerHTML={{ __html: stage.style?.icon || '' }}
+                            />
+                            <span className="text-gray-700">
+                              {stage.name}
+                              {nextStageOption && stage.id === nextStageOption.id && (
+                                <span className="ml-2 text-blue-600 text-xs">({t('company.workflowBoard.nextStage')})</span>
+                              )}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

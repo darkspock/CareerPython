@@ -22,6 +22,13 @@ from src.company_bc.company_candidate.application.commands.create_company_candid
 from src.company_bc.company_candidate.application.commands.assign_workflow_command import (
     AssignWorkflowCommand
 )
+from src.company_bc.job_position.application.commands.create_job_position import CreateJobPositionCommand
+from src.company_bc.job_position.domain.value_objects import JobPositionId
+from src.company_bc.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.company_bc.job_position.domain.value_objects.stage_id import StageId
+from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
+from src.framework.domain.enums.job_category import JobCategoryEnum
+from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from core.database import SQLAlchemyDatabase
 
 
@@ -33,6 +40,7 @@ class InitializeSampleDataCommand(Command):
     num_candidates: int = 50  # Number of sample candidates to create
     num_recruiters: int = 3  # Number of recruiter users to create
     num_viewers: int = 2  # Number of viewer users to create
+    num_job_positions: int = 10  # Number of sample job positions to create
 
 
 class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataCommand]):
@@ -124,6 +132,12 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
                 command.company_user_id,
                 candidate_ids
             )
+
+        # Step 4: Create sample job positions
+        self._create_sample_job_positions(
+            command.company_id,
+            command.num_job_positions
+        )
 
     def _create_sample_candidates(self, num_candidates: int) -> list[CandidateId]:
         """Create sample candidates"""
@@ -277,4 +291,115 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
                 except Exception:
                     # Skip company-candidates that fail to create
                     continue
+
+    def _create_sample_job_positions(
+        self,
+        company_id: CompanyId,
+        num_job_positions: int
+    ) -> None:
+        """Create sample job positions"""
+        job_titles = [
+            "Senior Software Engineer",
+            "Product Manager",
+            "UX Designer",
+            "Data Scientist",
+            "DevOps Engineer",
+            "Marketing Manager",
+            "Sales Representative",
+            "HR Specialist",
+            "Financial Analyst",
+            "Customer Success Manager",
+            "Backend Developer",
+            "Frontend Developer",
+            "Full Stack Developer",
+            "QA Engineer",
+            "Technical Writer",
+            "Business Analyst",
+            "Project Manager",
+            "Content Manager",
+            "Operations Manager",
+            "Account Executive"
+        ]
+
+        job_descriptions = [
+            "We are looking for an experienced professional to join our team. You will work on exciting projects and collaborate with talented colleagues.",
+            "Join our dynamic team and help shape the future of our products. This role offers great growth opportunities and competitive benefits.",
+            "We need a creative and motivated individual who can bring fresh ideas to our team. You'll work in a collaborative environment with room for innovation.",
+            "This position offers the opportunity to work on cutting-edge technology and make a real impact. We value diversity and inclusion.",
+            "We're seeking a passionate professional who is eager to learn and grow. You'll be part of a supportive team that values work-life balance."
+        ]
+
+        job_categories = [
+            JobCategoryEnum.TECHNOLOGY,
+            JobCategoryEnum.SALES,
+            JobCategoryEnum.MARKETING,
+            JobCategoryEnum.HR,
+            JobCategoryEnum.FINANCE,
+            JobCategoryEnum.OPERATIONS,
+            JobCategoryEnum.ADMINISTRATION,
+            JobCategoryEnum.CUSTOMER_SERVICE,
+            JobCategoryEnum.OTHER
+        ]
+
+        # Get job position workflow and initial stage
+        with self._database.get_session() as session:
+            # Get the job position workflow (JOB_POSITION_OPENING type)
+            workflow_result = session.execute(
+                text("""
+                    SELECT w.id, ws.id as initial_stage_id
+                    FROM workflows w
+                    LEFT JOIN workflow_stages ws ON w.id = ws.workflow_id
+                    WHERE w.company_id = :company_id
+                    AND w.workflow_type = :workflow_type
+                    AND ws.stage_type = 'initial'
+                    ORDER BY ws."order" ASC
+                    LIMIT 1
+                """),
+                {
+                    "company_id": company_id.value,
+                    "workflow_type": WorkflowTypeEnum.JOB_POSITION_OPENING.value
+                }
+            ).fetchone()
+
+            if not workflow_result:
+                # No job position workflow found, skip creating job positions
+                return
+
+            workflow_id = workflow_result[0]
+            initial_stage_id = workflow_result[1]
+
+            job_position_workflow_id = JobPositionWorkflowId.from_string(workflow_id) if workflow_id else None
+            stage_id = StageId.from_string(initial_stage_id) if initial_stage_id else None
+
+        # Create job positions
+        for i in range(num_job_positions):
+            try:
+                job_position_id = JobPositionId.generate()
+                title = random.choice(job_titles)
+                description = random.choice(job_descriptions)
+                category = random.choice(job_categories)
+                
+                # Random visibility (mostly public, some internal)
+                visibility = random.choice([
+                    JobPositionVisibilityEnum.PUBLIC,
+                    JobPositionVisibilityEnum.PUBLIC,
+                    JobPositionVisibilityEnum.PUBLIC,
+                    JobPositionVisibilityEnum.INTERNAL,
+                    JobPositionVisibilityEnum.HIDDEN
+                ])
+
+                create_job_position_cmd = CreateJobPositionCommand(
+                    id=job_position_id,
+                    company_id=company_id,
+                    job_position_workflow_id=job_position_workflow_id,
+                    stage_id=stage_id,
+                    title=title,
+                    description=description,
+                    job_category=category,
+                    visibility=visibility
+                )
+                self._command_bus.dispatch(create_job_position_cmd)
+            except Exception:
+                # Skip job positions that fail to create
+                continue
 
