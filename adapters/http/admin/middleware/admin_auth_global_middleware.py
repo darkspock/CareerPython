@@ -8,7 +8,7 @@ from fastapi import Request, Response, HTTPException, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.shared.infrastructure.middleware.admin_auth_middleware import AdminAuthMiddleware
+from src.framework.infrastructure.middleware.admin_auth_middleware import AdminAuthMiddleware
 
 
 class AdminAuthGlobalMiddleware(BaseHTTPMiddleware):

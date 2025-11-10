@@ -3,16 +3,16 @@ from typing import Any, Optional
 
 
 from adapters.http.candidate.schemas.candidate import CandidateResponse
-from src.candidate.application.queries import GetCandidateByUserIdQuery
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.staff.application.dtos.staff_dto import StaffDTO
-from src.staff.application.queries.user_is_staff_query import UserIsStaffQuery
-from src.user.application.commands.create_user_command import CreateUserCommand
-from src.user.application.queries.authenticate_user_query import AuthenticateUserQuery
-from src.user.application.queries.create_access_token_query import CreateAccessTokenQuery
-from src.user.application.queries.dtos.auth_dto import TokenDto, AuthenticatedUserDto
-from src.user.domain.value_objects.UserId import UserId
+from src.candidate_bc.candidate.application import GetCandidateByUserIdQuery
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.staff.application.dtos.staff_dto import StaffDTO
+from src.auth_bc.staff.application.queries.user_is_staff_query import UserIsStaffQuery
+from src.auth_bc.user.application.commands.create_user_command import CreateUserCommand
+from src.auth_bc.user.application import AuthenticateUserQuery
+from src.auth_bc.user.application import CreateAccessTokenQuery
+from src.auth_bc.user.application.queries.dtos.auth_dto import TokenDto, AuthenticatedUserDto
+from src.auth_bc.user.domain.value_objects import UserId
 
 log = logging.getLogger(__name__)
 

@@ -1,6 +1,4 @@
-import pytest
-
-from src.company.domain.enums.company_user_invitation_status import CompanyUserInvitationStatus
+from src.company_bc.company.domain.enums.company_user_invitation_status import CompanyUserInvitationStatus
 
 
 class TestCompanyUserInvitationStatus:

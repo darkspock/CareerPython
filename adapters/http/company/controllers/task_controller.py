@@ -7,12 +7,12 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.candidate_application.application.queries.get_my_assigned_tasks_query import GetMyAssignedTasksQuery
-from src.candidate_application.application.commands.claim_task_command import ClaimTaskCommand
-from src.candidate_application.application.commands.unclaim_task_command import UnclaimTaskCommand
-from src.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.company_bc.candidate_application.application.queries.get_my_assigned_tasks_query import GetMyAssignedTasksQuery
+from src.company_bc.candidate_application.application.commands.claim_task_command import ClaimTaskCommand
+from src.company_bc.candidate_application.application.commands.unclaim_task_command import UnclaimTaskCommand
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
 
 logger = logging.getLogger(__name__)
 

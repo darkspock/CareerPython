@@ -247,7 +247,7 @@ from datetime import datetime
 from typing import Optional
 import logging
 
-from src.shared.domain.infrastructure.storage_service_interface import (
+from src.framework.domain.infrastructure.storage_service_interface import (
     StorageServiceInterface,
     StorageType,
     UploadedFile,
@@ -441,7 +441,7 @@ from datetime import datetime
 from typing import Optional
 import logging
 
-from src.shared.domain.infrastructure.storage_service_interface import (
+from src.framework.domain.infrastructure.storage_service_interface import (
     StorageServiceInterface,
     StorageType,
     UploadedFile,
@@ -655,12 +655,12 @@ Storage Factory - Crea la instancia correcta según configuración
 import os
 from typing import Optional
 
-from src.shared.domain.infrastructure.storage_service_interface import (
+from src.framework.domain.infrastructure.storage_service_interface import (
     StorageServiceInterface,
     StorageConfig,
 )
-from src.shared.infrastructure.storage.local_storage_service import LocalStorageService
-from src.shared.infrastructure.storage.s3_storage_service import S3StorageService
+from src.framework.infrastructure.storage.local_storage_service import LocalStorageService
+from src.framework.infrastructure.storage.s3_storage_service import S3StorageService
 
 
 class StorageFactory:
@@ -719,8 +719,8 @@ class StorageFactory:
 ```python
 from dependency_injector import containers, providers
 
-from src.shared.domain.infrastructure.storage_service_interface import StorageConfig
-from src.shared.infrastructure.storage.storage_factory import StorageFactory
+from src.framework.domain.infrastructure.storage_service_interface import StorageConfig
+from src.framework.infrastructure.storage.storage_factory import StorageFactory
 
 
 class Container(containers.DeclarativeContainer):
@@ -781,8 +781,8 @@ ALLOWED_RESUME_TYPES=application/pdf
 
 ```python
 from dataclasses import dataclass
-from src.shared.application.command_bus import Command, CommandHandler
-from src.shared.domain.infrastructure.storage_service_interface import (
+from src.framework.application.command_bus import Command, CommandHandler
+from src.framework.domain.infrastructure.storage_service_interface import (
     StorageServiceInterface,
     StorageType,
 )
@@ -847,8 +847,8 @@ class UploadCandidateResumeCommandHandler(CommandHandler[UploadCandidateResumeCo
 ```python
 import pytest
 from pathlib import Path
-from src.shared.infrastructure.storage.local_storage_service import LocalStorageService
-from src.shared.domain.infrastructure.storage_service_interface import StorageType
+from src.framework.infrastructure.storage.local_storage_service import LocalStorageService
+from src.framework.domain.infrastructure.storage_service_interface import StorageType
 
 
 def test_upload_candidate_resume():

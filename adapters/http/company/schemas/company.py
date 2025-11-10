@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, validator, ConfigDict
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from src.company.domain.enums import CompanyStatusEnum
+from src.company_bc.company.domain.enums import CompanyStatusEnum
 
 
 class CompanyBase(BaseModel):

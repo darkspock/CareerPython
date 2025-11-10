@@ -1,9 +1,9 @@
 """Job position mapper for converting DTOs to response schemas"""
 from typing import Optional, Dict, Any, List
 
-from src.job_position.application.queries.job_position_dto import JobPositionDto
-from src.workflow.application.dtos.workflow_dto import WorkflowDto
-from src.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
+from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
+from src.shared_bc.customization.workflow.application import WorkflowDto
+from src.shared_bc.customization.workflow.application import WorkflowStageDto
 from adapters.http.admin.schemas.job_position import JobPositionResponse, JobPositionPublicResponse
 
 

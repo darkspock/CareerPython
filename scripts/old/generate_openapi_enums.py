@@ -6,9 +6,9 @@ Generate OpenAPI schema for enums that can be consumed by TypeScript generators
 import json
 from typing import Dict, Any
 
-from src.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum
-from src.job_position.domain.enums import WorkLocationTypeEnum, ContractTypeEnum
-from src.job_position.domain.enums.employment_type import EmploymentType
+from src.candidate_bc.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum
+from src.company_bc.job_position.domain.enums import WorkLocationTypeEnum, ContractTypeEnum
+from src.company_bc.job_position.domain.enums import EmploymentType
 
 
 def enum_to_openapi_schema(enum_class, description: str = None) -> Dict[str, Any]:

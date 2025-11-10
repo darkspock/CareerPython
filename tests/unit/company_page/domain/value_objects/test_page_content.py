@@ -3,7 +3,7 @@ Tests unitarios para PageContent Value Object
 """
 import pytest
 
-from src.company_page.domain.value_objects.page_content import PageContent
+from src.company_bc.company_page.domain.value_objects.page_content import PageContent
 
 
 class TestPageContent:

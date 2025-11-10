@@ -4,17 +4,17 @@ Admin controller for candidate and user management
 from datetime import datetime
 from typing import List, Optional
 
-from src.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery
-from src.candidate.application.queries.list_candidates import ListCandidatesQuery
-from src.candidate.application.queries.shared.candidate_dto import CandidateDto
-from src.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
-from src.candidate.domain.value_objects import CandidateId
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.user.application.commands.update_user_password_command import UpdateUserPasswordCommand
-from src.user.domain.repositories.user_repository_interface import UserRepositoryInterface
-from src.user.domain.services.password_service import PasswordService
-from src.user.domain.value_objects.UserId import UserId
+from src.candidate_bc.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery
+from src.candidate_bc.candidate.application.queries.list_candidates import ListCandidatesQuery
+from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
+from src.candidate_bc.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
+from src.candidate_bc.candidate.domain.value_objects import CandidateId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.user.application import UpdateUserPasswordCommand
+from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
+from src.auth_bc.user.domain.services.password_service import PasswordService
+from src.auth_bc.user.domain.value_objects import UserId
 
 
 class AdminCandidateController:
@@ -173,7 +173,7 @@ class AdminCandidateController:
         else:
             # Candidate has no associated user, create a new one
             # Use candidate's email as user's login email
-            from src.user.domain.entities.user import User
+            from src.auth_bc.user.domain.entities.user import User
 
             try:
                 # Generate ID for new user

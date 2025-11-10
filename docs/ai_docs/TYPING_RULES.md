@@ -8,11 +8,12 @@
 
 ```python
 from dataclasses import dataclass
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.company.domain.enums import CompanyUserRole
-from src.user.domain.value_objects.UserId import UserId
-from src.company.domain.value_objects.invitation_token import InvitationToken
-from src.shared.application.command_bus import Command, CommandHandler
+from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
+from src.company_bc.company.domain.enums import CompanyUserRole
+from src.auth_bc.user.domain.value_objects import UserId
+from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
+from src.framework.application.command_bus import Command, CommandHandler
+
 
 @dataclass
 class InviteCompanyUserCommand(Command):
@@ -102,23 +103,25 @@ Al crear un nuevo Command o Query:
 
 ```python
 # IDs - DEBEN heredar de BaseId
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.user.domain.value_objects.UserId import UserId
-from src.job_position.domain.value_objects import JobPositionWorkflowId, StageId
+from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
+from src.auth_bc.user.domain.value_objects import UserId
+from src.company_bc.job_position.domain.value_objects import JobPositionWorkflowId, StageId
 
 # Ejemplo de definición correcta:
-from src.shared.domain.value_objects.base_id import BaseId
+from src.framework.domain.value_objects.base_id import BaseId
+
 
 @dataclass(frozen=True)
 class CompanyId(BaseId):
     value: str
 
+
 # Tokens
-from src.company.domain.value_objects.invitation_token import InvitationToken
+from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
 
 # Enums - DEBEN terminar con Enum
-from src.company.domain.enums import CompanyUserRole  # Enum existente
-from src.job_position.domain.enums import ViewTypeEnum, WorkflowTypeEnum  # Nuevos enums
+from src.company_bc.company.domain.enums import CompanyUserRole  # Enum existente
+from src.company_bc.job_position.domain.enums import ViewTypeEnum, WorkflowTypeEnum  # Nuevos enums
 ```
 
 ## 💡 Razones

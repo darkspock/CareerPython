@@ -18,8 +18,8 @@ from src.interview.interview.application.queries.get_interviews_by_candidate imp
 from src.interview.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQuery
 from src.interview.interview.application.queries.list_interviews import ListInterviewsQuery
 from src.interview.interview.domain.enums.interview_enums import InterviewTypeEnum
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 
 logger = logging.getLogger(__name__)
 

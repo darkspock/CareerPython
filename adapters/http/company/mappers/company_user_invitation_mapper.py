@@ -1,5 +1,5 @@
 from core.config import settings
-from src.company.application.dtos.company_user_invitation_dto import CompanyUserInvitationDto
+from src.company_bc.company.application.dtos.company_user_invitation_dto import CompanyUserInvitationDto
 from adapters.http.company.schemas.company_user_invitation_response import (
     CompanyUserInvitationResponse,
     UserInvitationLinkResponse

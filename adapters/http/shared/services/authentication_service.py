@@ -10,9 +10,9 @@ from fastapi.security import OAuth2PasswordBearer
 
 from core.container import Container
 from adapters.http.shared.schemas.user import UserResponse
-from src.shared.application.query_bus import QueryBus
-from src.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
-from src.user.application.queries.dtos.auth_dto import CurrentUserDto
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
+from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
 
 log = logging.getLogger(__name__)
 

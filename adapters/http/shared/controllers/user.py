@@ -7,20 +7,20 @@ from core.exceptions import UserAlreadyExistsException
 from adapters.http.shared.schemas.token import PasswordResetRequest, PasswordResetResponse, PasswordResetConfirm, \
     UserExistsResponse
 from adapters.http.shared.schemas.user import UserCreate, UserResponse, UserAutoCreateRequest, UserAutoCreateResponse
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.user.application.commands.create_user_automatically_command import CreateUserAutomaticallyCommand
-from src.user.application.commands.create_user_command import CreateUserCommand
-from src.user.application.commands.request_password_reset_command import RequestPasswordResetCommand
-from src.user.application.commands.reset_password_with_token_command import ResetPasswordWithTokenCommand
-from src.user.application.commands.update_user_language_command import UpdateUserLanguageCommand
-from src.user.application.queries.check_user_exists_query import CheckUserExistsQuery
-from src.user.application.queries.dtos.auth_dto import UserExistsDto, CurrentUserDto
-from src.user.application.queries.get_user_by_email_query import GetUserByEmailQuery
-from src.user.application.queries.get_user_language_query import GetUserLanguageQuery
-from src.user.domain.entities.user import User
-from src.user.domain.services.password_service import PasswordService
-from src.user.domain.value_objects.UserId import UserId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.user.application.commands.create_user_automatically_command import CreateUserAutomaticallyCommand
+from src.auth_bc.user.application.commands.create_user_command import CreateUserCommand
+from src.auth_bc.user.application.commands.request_password_reset_command import RequestPasswordResetCommand
+from src.auth_bc.user.application import ResetPasswordWithTokenCommand
+from src.auth_bc.user.application import UpdateUserLanguageCommand
+from src.auth_bc.user.application.queries.check_user_exists_query import CheckUserExistsQuery
+from src.auth_bc.user.application.queries.dtos.auth_dto import UserExistsDto, CurrentUserDto
+from src.auth_bc.user.application import GetUserByEmailQuery
+from src.auth_bc.user.application.queries.get_user_language_query import GetUserLanguageQuery
+from src.auth_bc.user.domain.entities.user import User
+from src.auth_bc.user.domain.services.password_service import PasswordService
+from src.auth_bc.user.domain.value_objects import UserId
 
 
 class UserController:

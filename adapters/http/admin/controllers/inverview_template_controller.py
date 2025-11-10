@@ -7,7 +7,7 @@ from adapters.http.admin.schemas.interview_template import (
     InterviewTemplateSectionCreate, InterviewTemplateSectionUpdate, InterviewTemplateQuestionCreate,
     InterviewTemplateQuestionUpdate, InterviewTemplateQuestionResponse
 )
-from src.company.domain.value_objects.company_id import CompanyId
+from src.company_bc.company.domain.value_objects import CompanyId
 from src.interview.interview_template.application.commands import CreateInterviewTemplateCommand
 from src.interview.interview_template.application.commands.create_interview_template_question import \
     CreateInterviewTemplateQuestionCommand
@@ -47,9 +47,9 @@ from src.interview.interview_template.domain.value_objects.interview_template_qu
     InterviewTemplateQuestionId
 from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.shared.domain.enums.job_category import JobCategoryEnum
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 class InterviewTemplateController:

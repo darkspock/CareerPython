@@ -7,17 +7,17 @@ from pydantic import ValidationError
 
 from core.database import database
 from adapters.http.candidate.schemas.onboarding import LandingRequest, LandingResponse
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.shared.domain.entities.async_job import AsyncJobId
-from src.shared.domain.entities.base import generate_id
-from src.shared.domain.enums.async_job import AsyncJobType, AsyncJobStatus
-from src.shared.infrastructure.jobs.async_job_service import AsyncJobService
-from src.shared.infrastructure.repositories.async_job_repository import AsyncJobRepository
-from src.shared.infrastructure.services.ai.ai_service_factory import get_ai_service
-from src.user.application.commands.create_user_from_landing import CreateUserFromLandingCommand
-from src.user.application.queries.create_access_token_query import CreateAccessTokenQuery
-from src.user.application.queries.dtos.auth_dto import TokenDto
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.framework.domain.entities.async_job import AsyncJobId
+from src.framework.domain.entities.base import generate_id
+from src.framework.domain.enums.async_job import AsyncJobType, AsyncJobStatus
+from src.framework.infrastructure.jobs.async_job_service import AsyncJobService
+from src.framework.infrastructure.repositories.async_job_repository import AsyncJobRepository
+from src.framework.infrastructure.services.ai.ai_service_factory import get_ai_service
+from src.auth_bc.user.application import CreateUserFromLandingCommand
+from src.auth_bc.user.application import CreateAccessTokenQuery
+from src.auth_bc.user.application.queries.dtos.auth_dto import TokenDto
 
 
 class OnboardingController:
@@ -221,7 +221,7 @@ class OnboardingController:
     def _populate_candidate_from_analysis(self, candidate_id: str, analysis_results: dict) -> None:
         """Populate candidate profile from PDF analysis results."""
         try:
-            from src.candidate.application.commands.populate_candidate_from_pdf_analysis import (
+            from src.candidate_bc.candidate.application.commands.populate_candidate_from_pdf_analysis import (
                 PopulateCandidateFromPdfAnalysisCommand
             )
 

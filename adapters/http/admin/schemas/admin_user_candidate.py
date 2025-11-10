@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List, Dict
 from datetime import datetime
 
-from src.candidate.domain.enums import WorkModalityEnum, LanguageLevelEnum, CandidateTypeEnum, CandidateStatusEnum
-from src.shared.domain.enums.job_category import JobCategoryEnum
+from src.candidate_bc.candidate.domain.enums import WorkModalityEnum, LanguageLevelEnum, CandidateTypeEnum, CandidateStatusEnum
+from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 class AdminUserCandidateCreate(BaseModel):

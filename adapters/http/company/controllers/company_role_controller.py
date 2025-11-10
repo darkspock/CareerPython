@@ -12,8 +12,8 @@ from src.company_role.application.dtos.company_role_dto import CompanyRoleDto
 from src.company_role.application.queries.get_role_by_id import GetCompanyRoleByIdQuery
 from src.company_role.application.queries.list_roles_by_company import ListRolesByCompanyQuery
 from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 
 
 class CompanyRoleController:

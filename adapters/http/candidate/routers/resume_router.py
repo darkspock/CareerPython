@@ -8,21 +8,13 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer
 
+from adapters.http.candidate.schemas.resume_request import CreateGeneralResumeRequest, UpdateResumeContentRequest, \
+    UpdateResumeNameRequest, BulkDeleteResumesRequest
+from adapters.http.candidate.schemas.resume_response import ResumeListResponse, ResumeResponse, ResumeStatisticsResponse
 from core.container import Container
 from adapters.http.shared.schemas.user import UserResponse
-from src.resume.presentation.controllers.resume_controller import ResumeController
-from src.resume.presentation.schemas.resume_request import (
-    CreateGeneralResumeRequest,
-    UpdateResumeContentRequest,
-    UpdateResumeNameRequest,
-    BulkDeleteResumesRequest
-)
-from src.resume.presentation.schemas.resume_response import (
-    ResumeResponse,
-    ResumeListResponse,
-    ResumeStatisticsResponse
-)
-from src.shared.application.query_bus import QueryBus
+from adapters.http.candidate.controllers.resume_controller import ResumeController
+from src.framework.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)
 
@@ -101,8 +93,8 @@ def get_current_user(
 ) -> UserResponse:
     """Get current user from JWT token"""
     try:
-        from src.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
-        from src.user.application.queries.dtos.auth_dto import CurrentUserDto
+        from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
+        from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
 
         query = GetCurrentUserFromTokenQuery(token=token)
         user_dto: CurrentUserDto = query_bus.query(query)

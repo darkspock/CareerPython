@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 
-from src.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
+from src.auth_bc.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
 
 
 class AssignRoleRequest(BaseModel):

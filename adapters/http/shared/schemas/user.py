@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from src.staff.domain.enums.staff_enums import RoleEnum
+from src.auth_bc.staff.domain.enums.staff_enums import RoleEnum
 
 
 class UserBase(BaseModel):

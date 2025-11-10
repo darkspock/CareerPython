@@ -1,6 +1,4 @@
-import pytest
-
-from src.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
+from src.company_bc.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
 
 
 class TestCompanyUserPermissionsExpanded:

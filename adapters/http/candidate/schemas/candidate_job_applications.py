@@ -3,7 +3,7 @@ from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel, Field, ConfigDict
 
-from src.candidate_application.domain.enums.application_status import ApplicationStatusEnum
+from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
 
 
 class JobApplicationResponse(BaseModel):

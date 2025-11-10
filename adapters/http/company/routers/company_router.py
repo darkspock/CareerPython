@@ -16,10 +16,10 @@ from adapters.http.company.schemas.company_request import (
 from adapters.http.company.schemas.company_response import CompanyResponse
 from adapters.http.shared.schemas.token import Token
 from core.container import Container
-from src.company.application.dtos.auth_dto import AuthenticatedCompanyUserDto
-from src.company.application.queries.authenticate_company_user_query import AuthenticateCompanyUserQuery
-from src.company.domain import CompanyId
-from src.shared.application.query_bus import QueryBus
+from src.company_bc.company.application.dtos.auth_dto import AuthenticatedCompanyUserDto
+from src.company_bc.company.application.queries.authenticate_company_user_query import AuthenticateCompanyUserQuery
+from src.company_bc.company.domain import CompanyId
+from src.framework.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ async def list_companies(
         offset: int = Query(0, ge=0, description="Number of results to skip"),
 ) -> List[CompanyResponse]:
     """List all companies"""
-    from src.company.domain.enums import CompanyStatusEnum
+    from src.company_bc.company.domain.enums import CompanyStatusEnum
 
     # Convert status string to enum if provided
     status_enum = None

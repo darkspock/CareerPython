@@ -55,7 +55,7 @@ The storage service is automatically injected through the dependency injection c
 ### Example: Upload Resume Command Handler
 
 ```python
-from src.shared.domain.infrastructure.storage_service_interface import (
+from src.framework.domain.infrastructure.storage_service_interface import (
     StorageServiceInterface,
     StorageType,
     UploadedFile
@@ -223,7 +223,7 @@ For temporary access to private files:
 
 ```python
 # Only available in S3StorageService
-from src.shared.infrastructure.storage.s3_storage_service import S3StorageService
+from src.framework.infrastructure.storage.s3_storage_service import S3StorageService
 
 if isinstance(self.storage_service, S3StorageService):
     presigned_url = self.storage_service.get_presigned_url(
@@ -240,7 +240,7 @@ The storage service is already registered in `core/container.py`:
 # Storage service - automatically selects Local or S3 based on settings
 @staticmethod
 def _get_storage_service():
-    from src.shared.domain.infrastructure.storage_service_interface import StorageConfig
+    from src.framework.domain.infrastructure.storage_service_interface import StorageConfig
 
     allowed_extensions = [ext.strip() for ext in settings.ALLOWED_FILE_EXTENSIONS.split(',')]
     config = StorageConfig(

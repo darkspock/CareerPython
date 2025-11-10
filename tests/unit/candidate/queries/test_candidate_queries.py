@@ -1,18 +1,15 @@
 """
 Unit tests for Candidate queries
 """
-import pytest
 from unittest.mock import Mock
-from typing import List
 
-from src.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery, GetCandidateByIdQueryHandler
-from src.candidate.application.queries.get_candidate_by_user_id import GetCandidateByUserIdQuery, GetCandidateByUserIdQueryHandler
-from src.candidate.application.queries.list_candidates import ListCandidatesQuery, ListCandidatesQueryHandler
-from src.candidate.application.queries.shared.candidate_dto import CandidateDto
-from src.candidate.domain.entities.candidate import Candidate
-from src.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
-from src.candidate.domain.value_objects.candidate_id import CandidateId
-from src.user.domain.value_objects.UserId import UserId
+from src.candidate_bc.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery, GetCandidateByIdQueryHandler
+from src.candidate_bc.candidate.application import GetCandidateByUserIdQuery, GetCandidateByUserIdQueryHandler
+from src.candidate_bc.candidate.application.queries.list_candidates import ListCandidatesQuery, ListCandidatesQueryHandler
+from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
+from src.candidate_bc.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
+from src.auth_bc.user.domain.value_objects import UserId
 from tests.unit.candidate.mothers.candidate_mother import CandidateMother
 
 
@@ -229,7 +226,7 @@ class TestListCandidatesQuery:
     def test_list_candidates_different_statuses(self):
         """Test listing candidates with different statuses"""
         # Arrange
-        from src.candidate.domain.enums.candidate_enums import CandidateStatusEnum
+        from src.candidate_bc.candidate.domain.enums.candidate_enums import CandidateStatusEnum
 
         draft_candidate = CandidateMother.create_candidate_entity(name="Draft Candidate")
         draft_candidate.status = CandidateStatusEnum.DRAFT
@@ -260,7 +257,7 @@ class TestListCandidatesQuery:
     def test_list_candidates_with_various_experience_levels(self):
         """Test listing candidates with different experience levels"""
         # Arrange
-        from src.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
+        from src.company_bc.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
 
         junior_candidate = CandidateMother.create_candidate_entity(
             name="Junior Dev",

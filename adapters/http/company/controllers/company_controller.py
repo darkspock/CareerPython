@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-import ulid
 from fastapi import HTTPException, status
 
 from adapters.http.company.mappers.company_mapper import CompanyResponseMapper
@@ -17,7 +16,7 @@ from adapters.http.company.schemas.company_registration_response import (
     CompanyRegistrationResponse,
     LinkUserResponse,
 )
-from src.company.application.commands import (
+from src.company_bc.company.application.commands import (
     CreateCompanyCommand,
     UpdateCompanyCommand,
     UploadCompanyLogoCommand,
@@ -25,30 +24,30 @@ from src.company.application.commands import (
     ActivateCompanyCommand,
     DeleteCompanyCommand,
 )
-from src.company.application.commands.register_company_with_user_command import (
+from src.company_bc.company.application.commands.register_company_with_user_command import (
     RegisterCompanyWithUserCommand,
 )
-from src.company.application.commands.link_user_to_company_command import (
+from src.company_bc.company.application.commands.link_user_to_company_command import (
     LinkUserToCompanyCommand,
 )
-from src.company.application.dtos.company_dto import CompanyDto
-from src.company.application.queries import (
+from src.company_bc.company.application.dtos.company_dto import CompanyDto
+from src.company_bc.company import (
     GetCompanyByIdQuery,
     GetCompanyByDomainQuery,
     GetCompanyBySlugQuery,
     ListCompaniesQuery,
 )
-from src.company.domain import CompanyId, CompanyStatusEnum
-from src.company.domain.value_objects import CompanyId as CompanyIdVO
-from src.user.domain.value_objects.UserId import UserId
-from src.company.domain.exceptions.company_exceptions import (
+from src.company_bc.company.domain import CompanyId, CompanyStatusEnum
+from src.company_bc.company.domain.value_objects import CompanyId as CompanyIdVO
+from src.auth_bc.user.domain.value_objects import UserId
+from src.company_bc.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError, CompanyDomainAlreadyExistsError,
 )
-from src.user.domain.exceptions.user_exceptions import EmailAlreadyExistException, UserNotFoundError
-from src.shared.domain.exceptions import InvalidCredentialsException
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
+from src.auth_bc.user.domain.exceptions.user_exceptions import EmailAlreadyExistException, UserNotFoundError
+from src.framework.domain.exceptions import InvalidCredentialsException
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 import ulid
 
 
@@ -458,8 +457,8 @@ class CompanyController:
             self.command_bus.dispatch(command)
             
             # Get user ID using query
-            from src.user.application.queries.get_user_by_email_query import GetUserByEmailQuery
-            from src.user.application.queries.dtos.auth_dto import CurrentUserDto
+            from src.auth_bc.user.application import GetUserByEmailQuery
+            from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
             user_dto: Optional[CurrentUserDto] = self.query_bus.query(GetUserByEmailQuery(email=request.email))
             
             if not user_dto:

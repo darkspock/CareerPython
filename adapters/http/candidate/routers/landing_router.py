@@ -9,9 +9,9 @@ from fastapi.security import OAuth2PasswordBearer
 from core.container import Container
 from adapters.http.candidate.controllers.onboarding_controller import OnboardingController
 from adapters.http.candidate.schemas.onboarding import LandingResponse
-from src.shared.application.query_bus import QueryBus
-from src.user.application.queries.dtos.auth_dto import CurrentUserDto
-from src.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
+from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/candidate/onboarding", tags=["candidate-onboarding"])

@@ -8,8 +8,8 @@ from src.interview.interview_template.application.queries.dtos.interview_templat
     InterviewTemplateSectionDto, InterviewTemplateFullDto
 from src.interview.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum, InterviewTemplateSectionEnum
 from src.interview.interview_template.domain.value_objects import InterviewTemplateId
-from src.shared.domain.enums.job_category import JobCategoryEnum
-from src.shared.infrastructure.helpers.mixed_helper import MixedHelper
+from src.framework.domain.enums.job_category import JobCategoryEnum
+from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
 
 
 class InterviewTemplateBase(BaseModel):

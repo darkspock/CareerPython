@@ -1,4 +1,4 @@
-from src.workflow.application.dtos.workflow_dto import WorkflowDto
+from src.shared_bc.customization.workflow.application import WorkflowDto
 from adapters.http.workflow.schemas.workflow_response import WorkflowResponse
 
 

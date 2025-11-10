@@ -16,29 +16,29 @@ from adapters.http.company.schemas.company_user_request import (
     UpdateCompanyUserRequest,
 )
 from adapters.http.company.schemas.company_user_response import CompanyUserResponse
-from src.company.application.commands import (
+from src.company_bc.company.application.commands import (
     AddCompanyUserCommand,
     UpdateCompanyUserCommand,
     ActivateCompanyUserCommand,
     DeactivateCompanyUserCommand,
     RemoveCompanyUserCommand,
 )
-from src.company.application.dtos import CompanyUserInvitationDto
-from src.company.application.dtos.company_user_dto import CompanyUserDto
-from src.company.application.queries import (
+from src.company_bc.company.application.dtos import CompanyUserInvitationDto
+from src.company_bc.company.application.dtos.company_user_dto import CompanyUserDto
+from src.company_bc.company import (
     GetCompanyUserByIdQuery,
     GetCompanyUserByCompanyAndUserQuery,
     ListCompanyUsersByCompanyQuery,
 )
-from src.company.domain import CompanyUserRole
-from src.company.domain.exceptions.company_exceptions import (
+from src.company_bc.company.domain import CompanyUserRole
+from src.company_bc.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError,
 )
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.user.domain.value_objects.UserId import UserId
+from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.user.domain.value_objects import UserId
 
 
 class CompanyUserController:
@@ -309,10 +309,10 @@ class CompanyUserController:
             current_user_id: CompanyUserId
     ) -> UserInvitationLinkResponse:
         """Invite a user to a company"""
-        from src.company.application.commands.invite_company_user_command import (
+        from src.company_bc.company.application.commands.invite_company_user_command import (
             InviteCompanyUserCommand
         )
-        from src.company.application.queries.get_invitation_by_email_and_company_query import (
+        from src.company_bc.company.application.queries.get_invitation_by_email_and_company_query import (
             GetInvitationByEmailAndCompanyQuery
         )
         from adapters.http.company.mappers.company_user_invitation_mapper import (
@@ -370,7 +370,7 @@ class CompanyUserController:
             request: AssignRoleRequest
     ) -> CompanyUserResponse:
         """Assign a role to a company user"""
-        from src.company.application.commands.assign_role_to_user_command import (
+        from src.company_bc.company.application.commands.assign_role_to_user_command import (
             AssignRoleToUserCommand
         )
 

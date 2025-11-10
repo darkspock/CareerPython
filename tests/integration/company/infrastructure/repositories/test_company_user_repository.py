@@ -2,21 +2,15 @@
 Integration tests for CompanyUserRepository
 """
 import pytest
-from datetime import datetime
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from src.company.domain.entities.company_user import CompanyUser
-from src.company.domain.enums import CompanyUserRole, CompanyUserStatus
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.company.domain.value_objects.company_user_permissions import (
-    CompanyUserPermissions
-)
-from src.company.infrastructure.repositories.company_user_repository import (
+from src.company_bc.company.domain.entities.company_user import CompanyUser
+from src.company_bc.company.domain.enums import CompanyUserRole
+from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
+from src.company_bc.company.infrastructure.repositories.company_user_repository import (
     CompanyUserRepository
 )
-from src.company.infrastructure.models.company_user_model import CompanyUserModel
-from src.user.domain.value_objects.UserId import UserId
+from src.auth_bc.user.domain.value_objects import UserId
 from core.database import SQLAlchemyDatabase
 from core.base import Base
 

@@ -6,20 +6,19 @@ from adapters.http.admin.schemas.company import (
     CompanyCreate, CompanyUpdate, CompanyResponse, CompanyListResponse,
     CompanyStatsResponse, CompanyActionResponse
 )
-from src.company.application.commands import CreateCompanyCommand, UpdateCompanyCommand, ActivateCompanyCommand, \
+from src.company_bc.company.application.commands import CreateCompanyCommand, UpdateCompanyCommand, ActivateCompanyCommand, \
     SuspendCompanyCommand, DeleteCompanyCommand
 # DTOs and schemas
-from src.company.application.queries.dtos.company_dto import CompanyDto
-from src.company.application.queries.get_companies_stats import GetCompaniesStatsQuery
-from src.company.application.queries.get_company_by_id import GetCompanyByIdQuery
+from src.company_bc.company.application.queries.dtos.company_dto import CompanyDto
+from src.company_bc.company.application.queries.get_companies_stats import GetCompaniesStatsQuery
+from src.company_bc.company.application.queries.get_company_by_id import GetCompanyByIdQuery
 # Company queries
-from src.company.application.queries.list_companies import ListCompaniesQuery
-from src.company.domain import Company, CompanyId
+from src.company_bc.company.application.queries.list_companies import ListCompaniesQuery
+from src.company_bc.company.domain import CompanyId
 # Domain enums
-from src.company.domain.enums.company_status import CompanyStatusEnum
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.user.domain.value_objects.UserId import UserId
+from src.company_bc.company.domain.enums.company_status import CompanyStatusEnum
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +118,7 @@ class CompanyController:
         """Create a new company"""
         try:
             # Import CompanyId here to avoid circular imports
-            from src.company.domain.value_objects.company_id import CompanyId
+            from src.company_bc.company.domain.value_objects import CompanyId
 
             # Generate a new company ID
             company_id = CompanyId.generate()

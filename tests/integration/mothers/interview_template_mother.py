@@ -5,7 +5,7 @@ from typing import Optional
 import factory
 from faker import Faker
 
-from src.shared.domain.enums.job_category import JobCategoryEnum
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview.interview_template.domain.enums import InterviewTemplateStatusEnum, InterviewTemplateTypeEnum
 from src.interview.interview_template.infrastructure.models.interview_template import InterviewTemplateModel
 from tests.integration.mothers.base_mother import BaseMother

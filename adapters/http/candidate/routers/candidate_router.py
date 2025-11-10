@@ -26,13 +26,13 @@ from adapters.http.candidate.schemas.candidate_project import CandidateProjectRe
 from adapters.http.shared.schemas.token import Token
 from adapters.http.shared.schemas.user import UserResponse
 from adapters.http.shared.services.authentication_service import get_current_user
-from src.candidate.application.queries.get_candidate_by_user_id import GetCandidateByUserIdQuery
-from src.candidate.application.queries.shared.candidate_dto import CandidateDto
-from src.candidate_application.domain.enums.application_status import ApplicationStatusEnum
-from src.shared.application.query_bus import QueryBus
-from src.user.application.queries.authenticate_user_query import AuthenticateUserQuery
-from src.user.application.queries.dtos.auth_dto import AuthenticatedUserDto
-from src.user.domain.value_objects.UserId import UserId
+from src.candidate_bc.candidate.application import GetCandidateByUserIdQuery
+from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
+from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.user.application import AuthenticateUserQuery
+from src.auth_bc.user.application.queries.dtos.auth_dto import AuthenticatedUserDto
+from src.auth_bc.user.domain.value_objects import UserId
 
 log = logging.getLogger(__name__)
 
@@ -324,7 +324,7 @@ def update_application_status(
         notes: Optional[str] = None,
 ) -> None:
     """Update application status for authenticated user"""
-    from src.candidate_application.domain.enums.application_status import ApplicationStatusEnum
+    from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
 
     try:
         status_enum = ApplicationStatusEnum(status)

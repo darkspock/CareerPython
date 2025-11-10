@@ -57,13 +57,13 @@ from adapters.http.workflow.controllers import WorkflowController
 from adapters.http.workflow.schemas import WorkflowResponse
 from adapters.http.workflow.schemas.update_workflow_request import UpdateWorkflowRequest
 from core.container import Container
-from src.company.application.dtos import CompanyUserDto
-from src.company.domain import CompanyId
-from src.job_position.application.queries.job_position_dto import JobPositionDto
-from src.shared.application.query_bus import QueryBus
-from src.user.application.queries.authenticate_user_query import AuthenticateUserQuery
-from src.user.application.queries.dtos.auth_dto import CurrentUserDto, AuthenticatedUserDto
-from src.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
+from src.company_bc.company.application.dtos import CompanyUserDto
+from src.company_bc.company.domain import CompanyId
+from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.user.application import AuthenticateUserQuery
+from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto, AuthenticatedUserDto
+from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
 
 logger = logging.getLogger(__name__)
 
@@ -573,7 +573,7 @@ def list_positions(
     # Get company_user_id for the current user (if company_id provided)
     company_user_id = None
     if company_id:
-        from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+        from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
         company_user_query = GetCompanyUserByCompanyAndUserQuery(
             company_id=company_id,
             user_id=current_admin.id
@@ -759,15 +759,11 @@ def update_workflow(
     )
 
     # Update workflow using generic system
+    # Note: update_workflow now returns enriched response with stages via WorkflowResponseService
     result = controller.update_workflow(workflow_id, update_request)
 
     # Note: stages and custom_fields_config from old format are ignored
     # These should be updated through separate stage endpoints or EntityCustomization system
-
-    # Re-fetch to get enriched response with stages
-    result = controller.get_workflow_by_id(workflow_id)
-    if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found after update")
 
     # Ensure stages is always a list (not None) for frontend compatibility
     if result.stages is None:
@@ -829,7 +825,7 @@ def move_position_to_stage(
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> dict:
     """Move a job position to a new stage with validation"""
-    from src.job_position.application.commands.move_job_position_to_stage import JobPositionValidationError
+    from src.company_bc.job_position.application.commands.move_job_position_to_stage import JobPositionValidationError
     from fastapi import HTTPException
 
     try:
@@ -879,9 +875,9 @@ def create_job_position_comment(
 ) -> None:
     """Create a new comment for a job position"""
     # Get the job position to find the company_id
-    from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
-    from src.job_position.domain.value_objects import JobPositionId
-    from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
+    from src.company_bc.job_position.domain.value_objects import JobPositionId
+    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
 
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
     position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
@@ -913,9 +909,9 @@ def list_all_job_position_comments(
 ) -> list[JobPositionCommentResponse]:
     """List ALL comments for a job position (no filtering, visibility applied)"""
     # Get company_user_id for the current user
-    from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
-    from src.job_position.domain.value_objects import JobPositionId
-    from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
+    from src.company_bc.job_position.domain.value_objects import JobPositionId
+    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
 
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
     position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
@@ -947,9 +943,9 @@ def list_job_position_comments(
 ) -> JobPositionCommentListResponse:
     """List comments for a job position (with visibility filtering)"""
     # Get company_user_id for the current user
-    from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
-    from src.job_position.domain.value_objects import JobPositionId
-    from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
+    from src.company_bc.job_position.domain.value_objects import JobPositionId
+    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
 
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
     position_dto:Optional[JobPositionDto] = query_bus.query(position_query)

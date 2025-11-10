@@ -7,35 +7,28 @@ This script will:
 4. Create sample candidates
 5. Create sample job positions
 """
-import os
 import sys
 from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, UTC
 from sqlalchemy import text
 from core.database import database
 
 # Import all models to ensure SQLAlchemy relationships are resolved
-from src.user.infrastructure.models.user_model import UserModel
-from src.user.infrastructure.models.user_asset_model import UserAssetModel
-from src.company.infrastructure.models.company_model import CompanyModel
-from src.company.infrastructure.models.company_user_model import CompanyUserModel
-from src.phase.infrastructure.models.phase_model import PhaseModel
-from src.workflow.infrastructure.models.workflow_model import CandidateApplicationWorkflowModel
-from src.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
-from src.workflow.infrastructure.models.custom_field_model import CustomFieldModel
-from src.workflow.infrastructure.models.field_configuration_model import FieldConfigurationModel
-from src.candidate.infrastructure.models.candidate_model import CandidateModel
-from src.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
-from src.job_position.infrastructure.models.job_position_model import JobPositionModel
+from src.auth_bc.user.infrastructure.models.user_model import UserModel
+from src.company_bc.company.infrastructure.models import CompanyModel
+from src.company_bc.company.infrastructure.models.company_user_model import CompanyUserModel
+from src.shared_bc.customization.phase.infrastructure import PhaseModel
+from src.shared_bc.customization.workflow.infrastructure.models import CandidateApplicationWorkflowModel
+from src.shared_bc.customization.workflow.infrastructure.models import WorkflowStageModel
+from src.shared_bc.customization.workflow import CustomFieldModel
+from src.shared_bc.customization.workflow import FieldConfigurationModel
+from src.candidate_bc.candidate.infrastructure import CandidateModel
+from src.company_bc.job_position.infrastructure.models.job_position_model import JobPositionModel
 from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
-from src.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
-from src.candidate_application_stage.infrastructure.models.candidate_stage_model import CandidateApplicationStageModel
-from src.interview.interview.Infrastructure.models.interview_model import InterviewModel
-from src.interview.interview.Infrastructure.models.interview_answer_model import InterviewAnswerModel
 # from src.staff.infrastructure.models.staff_model import StaffModel
 # from src.resume.infrastructure.models.resume_model import ResumeModel
 # from src.company_role.infrastructure.models.company_role_model import CompanyRoleModel
@@ -43,14 +36,14 @@ from src.interview.interview.Infrastructure.models.interview_answer_model import
 # from src.email_template.infrastructure.models.email_template_model import EmailTemplateModel
 # from src.talent_pool.infrastructure.models.talent_pool_entry_model import TalentPoolEntryModel
 # from src.field_validation.infrastructure.models.validation_rule_model import ValidationRuleModel
-# from src.shared.infrastructure.models.async_job_model import AsyncJobModel
+# from src.framework.infrastructure.models.async_job_model import AsyncJobModel
 
 # Import enums
-from src.phase.domain.enums.phase_status_enum import PhaseStatus
-from src.phase.domain.enums.default_view_enum import DefaultView
-from src.workflow.domain.enums.workflow_status_enum import WorkflowStatusEnum
-from src.workflow.domain.enums.stage_type import StageType
-from src.company.domain.enums.company_user_role import CompanyUserRole
+from src.shared_bc.customization.phase.domain.enums.phase_status_enum import PhaseStatus
+from src.shared_bc.customization.phase.domain.enums.default_view_enum import DefaultView
+from src.shared_bc.customization.workflow.domain import WorkflowStatusEnum
+from src.shared_bc.customization.workflow.domain.enums import StageType
+from src.company_bc.company.domain.enums.company_user_role import CompanyUserRole
 from bcrypt import hashpw, gensalt
 import ulid
 
@@ -418,8 +411,8 @@ def create_candidates(session, company_id: str) -> list[str]:
     print("👥 Creating sample candidates...")
 
     from datetime import date
-    from src.candidate.domain.enums.candidate_enums import CandidateStatusEnum, CandidateTypeEnum
-    from src.shared.domain.enums.job_category import JobCategoryEnum
+    from src.candidate_bc.candidate.domain.enums.candidate_enums import CandidateStatusEnum, CandidateTypeEnum
+    from src.framework.domain.enums.job_category import JobCategoryEnum
 
     # Generate 50 sample candidates with realistic data
     import random
@@ -564,8 +557,8 @@ def create_job_positions(session, company_id: str, phases: dict) -> list[str]:
 
     position_ids = []
 
-    from src.job_position.domain.enums import JobPositionStatusEnum, ContractTypeEnum, WorkLocationTypeEnum
-    from src.job_position.domain.enums.employment_type import EmploymentType
+    from src.company_bc.job_position.domain.enums import JobPositionStatusEnum
+    from src.company_bc.job_position.domain.enums import EmploymentType
 
     for data in positions_data:
         position_id = generate_ulid()

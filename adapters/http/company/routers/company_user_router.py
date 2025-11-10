@@ -21,8 +21,8 @@ from adapters.http.company.schemas.company_user_request import (
 )
 from adapters.http.company.schemas.company_user_response import CompanyUserResponse
 from core.container import Container
-from src.company.domain import CompanyId
-from src.company.domain.value_objects import CompanyUserId
+from src.company_bc.company.domain import CompanyId
+from src.company_bc.company.domain.value_objects import CompanyUserId
 
 log = logging.getLogger(__name__)
 

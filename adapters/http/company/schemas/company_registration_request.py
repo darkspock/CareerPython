@@ -2,7 +2,7 @@
 from typing import Optional
 from pydantic import BaseModel, field_validator, EmailStr
 
-from src.company.domain.enums import CompanyTypeEnum
+from src.company_bc.company.domain.enums import CompanyTypeEnum
 
 
 class CompanyRegistrationRequest(BaseModel):

@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime, date
 
-from src.candidate.domain.enums import CandidateStatusEnum
-from src.shared.domain.enums.job_category import JobCategoryEnum
+from src.candidate_bc.candidate.domain.enums import CandidateStatusEnum
+from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 class CandidateAdminResponse(BaseModel):

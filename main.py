@@ -24,26 +24,26 @@ from adapters.http.company.routers.company_candidate_application_router import r
 from adapters.http.company.routers.enum_router import router as company_enum_router
 from adapters.http.company.routers.task_router import router as task_router
 from adapters.http.company.routers.email_template_router import router as email_template_router
-from src.talent_pool.presentation.routers.talent_pool_router import router as talent_pool_router
-from src.workflow_analytics.presentation.routers.workflow_analytics_router import router as workflow_analytics_router
+from src.company_bc.talent_pool.presentation.routers.talent_pool_router import router as talent_pool_router
+from src.shared_bc.customization.workflow_analytics.presentation.routers.workflow_analytics_router import router as workflow_analytics_router
 from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
 from adapters.http.workflow.routers.workflow_router import router as candidate_application_workflow_router
 from adapters.http.workflow.routers.workflow_stage_router import router as workflow_stage_router
 from adapters.http.customization.routers.entity_customization_router import router as entity_customization_router
 from adapters.http.company.routers.candidate_comment_router import router as candidate_comment_router
 from adapters.http.company.routers.candidate_review_router import router as candidate_review_router
-from src.field_validation.presentation.routers.validation_rule_router import router as validation_rule_router
-from src.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
+from src.shared_bc.customization.field_validation.presentation.routers.validation_rule_router import router as validation_rule_router
+from src.company_bc.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
 from src.company_page.presentation.routers.company_page_router import router as company_page_router
 from src.company_page.presentation.routers.public_company_page_router import router as public_company_page_router
-from src.candidate.presentation.routers.file_attachment_router import router as file_attachment_router
+from src.candidate_bc.candidate.presentation.routers.file_attachment_router import router as file_attachment_router
 from adapters.http.shared.routes.user_router import user_router
 from adapters.http.shared.routes.ai_test_router import router as ai_test_router
 from adapters.http.invitations.routers.invitation_router import router as invitation_router
 # Phase 10: Public Position Router
-from src.job_position.presentation.routers.public_position_router import router as public_position_router
+from src.company_bc.job_position.presentation.routers.public_position_router import router as public_position_router
 # Phase 12: Phase Router
-from src.phase.presentation.routers.phase_router import router as phase_router
+from src.shared_bc.customization.phase.presentation.routers.phase_router import router as phase_router
 
 # Crear tablas - COMENTADO temporalmente para aislamiento
 # Base.metadata.create_all(bind=engine)

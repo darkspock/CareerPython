@@ -3,10 +3,6 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from src.job_position.domain.enums.view_type import ViewTypeEnum
-from src.job_position.domain.enums.job_position_status import JobPositionStatusEnum
-from src.job_position.domain.enums.kanban_display import KanbanDisplayEnum
-
 
 class WorkflowStageCreate(BaseModel):
     """Schema for creating a workflow stage"""

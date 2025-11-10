@@ -1,6 +1,5 @@
 """Job position admin controller"""
 import logging
-from datetime import date
 from typing import List, Optional, Dict, Any
 
 from adapters.http.admin.mappers.job_position_mapper import JobPositionMapper
@@ -8,25 +7,25 @@ from adapters.http.admin.schemas.job_position import (
     JobPositionCreate, JobPositionUpdate, JobPositionResponse, JobPositionListResponse,
     JobPositionStatsResponse, JobPositionActionResponse
 )
-from src.company.domain.value_objects.company_id import CompanyId
+from src.company_bc.company.domain.value_objects import CompanyId
 # Job position commands
-from src.job_position.application.commands.create_job_position import CreateJobPositionCommand
-from src.job_position.application.commands.delete_job_position import DeleteJobPositionCommand
-from src.job_position.application.commands.update_job_position import UpdateJobPositionCommand
+from src.company_bc.job_position.application.commands.create_job_position import CreateJobPositionCommand
+from src.company_bc.job_position.application.commands.delete_job_position import DeleteJobPositionCommand
+from src.company_bc.job_position.application.commands import UpdateJobPositionCommand
 # Status management commands have been removed - use MoveJobPositionToStageCommand instead
-from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
-from src.job_position.application.queries.get_job_positions_stats import GetJobPositionsStatsQuery
-from src.job_position.application.queries.job_position_dto import JobPositionDto
+from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
+from src.company_bc.job_position.application.queries.get_job_positions_stats import GetJobPositionsStatsQuery
+from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
 # Job position queries
-from src.job_position.application.queries.list_job_positions import ListJobPositionsQuery
+from src.company_bc.job_position.application.queries.list_job_positions import ListJobPositionsQuery
 # Domain enums
-from src.job_position.domain.enums import JobPositionVisibilityEnum
-from src.job_position.domain.value_objects import JobPositionId
-from src.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
-from src.job_position.domain.value_objects.stage_id import StageId
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.shared.domain.enums.job_category import JobCategoryEnum
+from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
+from src.company_bc.job_position.domain.value_objects import JobPositionId
+from src.company_bc.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
+from src.company_bc.job_position.domain.value_objects.stage_id import StageId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.framework.domain.enums.job_category import JobCategoryEnum
 
 # DTOs and schemas
 
@@ -306,7 +305,7 @@ class JobPositionController:
         comment: Optional[str] = None
     ) -> dict:
         """Move a job position to a new stage"""
-        from src.job_position.application.commands.move_job_position_to_stage import (
+        from src.company_bc.job_position.application.commands.move_job_position_to_stage import (
             MoveJobPositionToStageCommand,
             JobPositionValidationError
         )
@@ -337,7 +336,7 @@ class JobPositionController:
         custom_fields_values: Dict[str, Any]
     ) -> dict:
         """Update custom fields values for a job position"""
-        from src.job_position.application.commands.update_job_position_custom_fields import (
+        from src.company_bc.job_position.application.commands.update_job_position_custom_fields import (
             UpdateJobPositionCustomFieldsCommand
         )
         

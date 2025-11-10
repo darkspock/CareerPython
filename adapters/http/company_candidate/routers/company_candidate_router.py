@@ -4,7 +4,7 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from core.container import Container
-from src.company_candidate.presentation.controllers.company_candidate_controller import CompanyCandidateController
+from adapters.http.company_candidate.controllers.company_candidate_controller import CompanyCandidateController
 from src.company_candidate.presentation.schemas.assign_workflow_request import AssignWorkflowRequest
 from src.company_candidate.presentation.schemas.change_stage_request import ChangeStageRequest
 from src.company_candidate.presentation.schemas.company_candidate_response import CompanyCandidateResponse

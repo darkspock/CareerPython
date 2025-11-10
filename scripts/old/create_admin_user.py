@@ -5,17 +5,17 @@ Script to create an admin user for testing the admin panel
 
 import os
 import sys
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Add the project root to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from core.config import settings
-from src.user.infrastructure.models.user_model import UserModel
-from src.staff.infrastructure.models.staff_model import StaffModel
-from src.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
-from src.shared.domain.entities.base import generate_id
+from src.auth_bc.user.infrastructure.models.user_model import UserModel
+from src.auth_bc.staff.infrastructure.models.staff_model import StaffModel
+from src.auth_bc.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
+from src.framework.domain.entities.base import generate_id
 from passlib.context import CryptContext
 
 # Password hashing

@@ -1,17 +1,17 @@
 """Job Position Comment Controller."""
 from typing import Optional, List
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.job_position.application.dtos.job_position_comment_dto import JobPositionCommentDto
-from src.job_position.application.dtos.job_position_activity_dto import JobPositionActivityDto
-from src.job_position.application.commands.create_job_position_comment_command import CreateJobPositionCommentCommand
-from src.job_position.application.commands.update_job_position_comment_command import UpdateJobPositionCommentCommand
-from src.job_position.application.commands.delete_job_position_comment_command import DeleteJobPositionCommentCommand
-from src.job_position.application.commands.mark_comment_as_reviewed_command import MarkJobPositionCommentAsReviewedCommand
-from src.job_position.application.commands.mark_comment_as_pending_command import MarkJobPositionCommentAsPendingCommand
-from src.job_position.application.queries.list_job_position_comments_query import ListJobPositionCommentsQuery
-from src.job_position.application.queries.list_job_position_activities_query import ListJobPositionActivitiesQuery
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.company_bc.job_position.application.dtos.job_position_comment_dto import JobPositionCommentDto
+from src.company_bc.job_position.application.dtos.job_position_activity_dto import JobPositionActivityDto
+from src.company_bc.job_position.application.commands.create_job_position_comment_command import CreateJobPositionCommentCommand
+from src.company_bc.job_position.application.commands.update_job_position_comment_command import UpdateJobPositionCommentCommand
+from src.company_bc.job_position.application.commands import DeleteJobPositionCommentCommand
+from src.company_bc.job_position.application.commands.mark_comment_as_reviewed_command import MarkJobPositionCommentAsReviewedCommand
+from src.company_bc.job_position.application.commands.mark_comment_as_pending_command import MarkJobPositionCommentAsPendingCommand
+from src.company_bc.job_position.application.queries import ListJobPositionCommentsQuery
+from src.company_bc.job_position.application.queries.list_job_position_activities_query import ListJobPositionActivitiesQuery
 from adapters.http.admin.schemas.job_position_comment import (
     CreateJobPositionCommentRequest,
     UpdateJobPositionCommentRequest,
@@ -171,7 +171,7 @@ class JobPositionCommentController:
         Returns:
             JobPositionCommentListResponse: List of all comments
         """
-        from src.job_position.application.queries.list_all_job_position_comments_query import ListAllJobPositionCommentsQuery
+        from src.company_bc.job_position.application.queries.list_all_job_position_comments_query import ListAllJobPositionCommentsQuery
         
         query = ListAllJobPositionCommentsQuery(
             job_position_id=job_position_id,

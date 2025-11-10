@@ -1,38 +1,40 @@
 from typing import List, Optional, Any
 
-from src.workflow.application.dtos.workflow_dto import WorkflowDto
-from src.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.company.domain.value_objects.company_id import CompanyId
-from src.phase.domain.value_objects.phase_id import PhaseId
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.workflow.application.commands.workflow.create_workflow_command import CreateWorkflowCommand
-from src.workflow.application.commands.workflow.update_workflow_command import UpdateWorkflowCommand
-from src.workflow.application.commands.workflow.activate_workflow_command import ActivateWorkflowCommand
-from src.workflow.application.commands.workflow.deactivate_workflow_command import DeactivateWorkflowCommand
-from src.workflow.application.commands.workflow.archive_workflow_command import ArchiveWorkflowCommand
-from src.workflow.application.commands.workflow.delete_workflow_command import DeleteWorkflowCommand
-from src.workflow.application.commands.workflow.set_as_default_workflow_command import SetAsDefaultWorkflowCommand
-from src.workflow.application.commands.workflow.unset_as_default_workflow_command import UnsetAsDefaultWorkflowCommand
-from src.workflow.application.queries.workflow.get_workflow_by_id import GetWorkflowByIdQuery
-from src.workflow.application.queries.workflow.list_workflows_by_company import ListWorkflowsByCompanyQuery
-from src.workflow.application.queries.workflow.list_workflows_by_phase import ListWorkflowsByPhaseQuery
-from src.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQuery
+from src.shared_bc.customization.workflow.application import WorkflowDto
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.company_bc.company.domain.value_objects import CompanyId
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.shared_bc.customization.workflow.application import CreateWorkflowCommand
+from src.shared_bc.customization.workflow.application.commands.workflow.update_workflow_command import UpdateWorkflowCommand
+from src.shared_bc.customization.workflow.application.commands.workflow.activate_workflow_command import ActivateWorkflowCommand
+from src.shared_bc.customization.workflow.application import DeactivateWorkflowCommand
+from src.shared_bc.customization.workflow.application.commands.workflow.archive_workflow_command import ArchiveWorkflowCommand
+from src.shared_bc.customization.workflow.application.commands.workflow.delete_workflow_command import DeleteWorkflowCommand
+from src.shared_bc.customization.workflow.application.commands.workflow.set_as_default_workflow_command import SetAsDefaultWorkflowCommand
+from src.shared_bc.customization.workflow.application.commands.workflow.unset_as_default_workflow_command import UnsetAsDefaultWorkflowCommand
+from src.shared_bc.customization.workflow.application.queries.workflow.get_workflow_by_id import GetWorkflowByIdQuery
+from src.shared_bc.customization.workflow.application.queries.workflow.list_workflows_by_company import ListWorkflowsByCompanyQuery
+from src.shared_bc.customization.workflow.application.queries.workflow.list_workflows_by_phase import ListWorkflowsByPhaseQuery
+from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQuery
 from adapters.http.workflow.schemas.create_workflow_request import CreateWorkflowRequest
 from adapters.http.workflow.schemas.update_workflow_request import UpdateWorkflowRequest
 from adapters.http.workflow.schemas.workflow_response import WorkflowResponse
 from adapters.http.workflow.mappers.workflow_mapper import WorkflowResponseMapper
 from adapters.http.workflow.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
-from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
+from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
+from src.shared_bc.customization.workflow.application.services.workflow_response_service import WorkflowResponseService
 
 class WorkflowController:
     """Controller for company workflow operations"""
 
-    def __init__(self, command_bus: CommandBus, query_bus: QueryBus, database: Any):
+    def __init__(self, command_bus: CommandBus, query_bus: QueryBus, database: Any, workflow_response_service: WorkflowResponseService):
         self._command_bus = command_bus
         self._query_bus = query_bus
         self._database = database
+        self._workflow_response_service = workflow_response_service
 
     def create_workflow(self, request: CreateWorkflowRequest) -> WorkflowResponse:
         """Create a new workflow"""
@@ -72,7 +74,7 @@ class WorkflowController:
         response = WorkflowResponseMapper.dto_to_response(dto)
 
         # Enrich with stages
-        from src.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
+        from src.shared_bc.customization.workflow.application import WorkflowStageDto
         stages_query = ListStagesByWorkflowQuery(workflow_id=WorkflowId.from_string(dto.id))
         stage_dtos: List[WorkflowStageDto] = self._query_bus.query(stages_query)
         response.stages = [WorkflowStageResponseMapper.dto_to_response(stage_dto).model_dump() for stage_dto in stage_dtos]
@@ -81,7 +83,7 @@ class WorkflowController:
 
     def list_workflows_by_company(self, company_id: str, workflow_type: Optional[str] = None) -> List[WorkflowResponse]:
         """List all workflows for a company with enriched data"""
-        from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+        from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
         
         company_id_vo = CompanyId.from_string(company_id)
         workflow_type_enum = WorkflowTypeEnum(workflow_type) if workflow_type else None
@@ -97,7 +99,7 @@ class WorkflowController:
             response = WorkflowResponseMapper.dto_to_response(dto)
 
             # Enrich with stages
-            from src.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
+            from src.shared_bc.customization.workflow.application import WorkflowStageDto
             stages_query = ListStagesByWorkflowQuery(workflow_id=WorkflowId.from_string(dto.id))
             stage_dtos: List[WorkflowStageDto] = self._query_bus.query(stages_query)
             response.stages = [WorkflowStageResponseMapper.dto_to_response(stage_dto).model_dump() for stage_dto in stage_dtos]
@@ -118,9 +120,9 @@ class WorkflowController:
         Returns:
             List of workflow responses (simplified, without enrichment)
         """
-        from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-        from src.workflow.domain.enums.workflow_status_enum import WorkflowStatusEnum
-        from src.phase.domain.value_objects.phase_id import PhaseId
+        from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+        from src.shared_bc.customization.workflow.domain import WorkflowStatusEnum
+        from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
         
         status_enum = WorkflowStatusEnum(status) if status else None
         workflow_type_enum = WorkflowTypeEnum(workflow_type) if workflow_type else None
@@ -136,7 +138,7 @@ class WorkflowController:
 
     def update_workflow(self, workflow_id: str, request: UpdateWorkflowRequest) -> WorkflowResponse:
         """Update workflow information"""
-        from src.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
+        from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
         
         workflow_id_vo = WorkflowId.from_string(workflow_id)
         command = UpdateWorkflowCommand(
@@ -149,13 +151,8 @@ class WorkflowController:
 
         self._command_bus.dispatch(command)
 
-        query = GetWorkflowByIdQuery(id=workflow_id_vo)
-        dto: Optional[WorkflowDto] = self._query_bus.query(query)
-
-        if not dto:
-            raise Exception("Workflow not found after update")
-
-        return WorkflowResponseMapper.dto_to_response(dto)
+        # Use service to get enriched workflow response
+        return self._workflow_response_service.get_enriched_workflow(workflow_id_vo)
 
     def activate_workflow(self, workflow_id: str) -> WorkflowResponse:
         """Activate a workflow"""

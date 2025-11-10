@@ -26,7 +26,7 @@ from src.interview.interview_template.domain.enums.interview_template_question i
     InterviewTemplateQuestionDataTypeEnum,
     InterviewTemplateQuestionScopeEnum
 )
-from src.shared.domain.entities.base import generate_id
+from src.framework.domain.entities.base import generate_id
 
 
 def delete_all_templates(session):
@@ -413,7 +413,7 @@ def main():
 
     try:
         # Get admin user ID
-        from src.user.infrastructure.models.user_model import UserModel
+        from src.auth_bc.user.infrastructure.models.user_model import UserModel
         admin_user = session.query(UserModel).filter(UserModel.email == "admin@careerpython.com").first()
         admin_id = admin_user.id if admin_user else "system"
 

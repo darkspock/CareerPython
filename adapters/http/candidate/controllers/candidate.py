@@ -12,36 +12,36 @@ from adapters.http.candidate.schemas.candidate_experience import CandidateExperi
     CandidateExperienceCreateRequest
 from adapters.http.candidate.schemas.candidate_project import CandidateProjectResponse, CandidateProjectCreateRequest
 from adapters.http.candidate.services.profile_validation_service import ProfileValidationService
-from src.candidate.application.commands import CreateCandidateCommand
-from src.candidate.application.commands.create_education import CreateEducationCommand
-from src.candidate.application.commands.create_experience import CreateExperienceCommand
-from src.candidate.application.commands.create_project import CreateProjectCommand
-from src.candidate.application.commands.delete_education import DeleteEducationCommand
-from src.candidate.application.commands.delete_experience import DeleteExperienceCommand
-from src.candidate.application.commands.delete_project import DeleteProjectCommand
-from src.candidate.application.commands.update_candidate_basic import UpdateCandidateBasicCommand
-from src.candidate.application.commands.update_education import UpdateEducationCommand
-from src.candidate.application.commands.update_experience import UpdateExperienceCommand
-from src.candidate.application.commands.update_project import UpdateProjectCommand
-from src.candidate.application.queries import GetCandidateByIdQuery, GetCandidateByUserIdQuery, ListCandidatesQuery
-from src.candidate.application.queries.get_education_by_id import GetEducationByIdQuery
-from src.candidate.application.queries.get_educations_by_candidate_id import GetEducationsByCandidateIdQuery
-from src.candidate.application.queries.get_experience_by_id import GetExperienceByIdQuery
-from src.candidate.application.queries.get_experiences_by_candidate_id import GetExperiencesByCandidateIdQuery
-from src.candidate.application.queries.get_project_by_id import GetProjectByIdQuery
-from src.candidate.application.queries.get_projects_by_candidate_id import GetProjectsByCandidateIdQuery
-from src.candidate.application.queries.shared.candidate_dto import CandidateDto
-from src.candidate.application.queries.shared.candidate_education_dto import CandidateEducationDto
-from src.candidate.application.queries.shared.candidate_project_dto import CandidateProjectDto
-from src.candidate.domain.enums import WorkModalityEnum
-from src.candidate.domain.enums.candidate_enums import PositionRoleEnum, LanguageEnum, LanguageLevelEnum
-from src.candidate.domain.exceptions import CandidateNotFoundError
-from src.candidate.domain.value_objects import CandidateId, CandidateProjectId, CandidateEducationId, \
+from src.candidate_bc.candidate.application.commands import CreateCandidateCommand
+from src.candidate_bc.candidate.application.commands.create_education import CreateEducationCommand
+from src.candidate_bc.candidate.application.commands.create_experience import CreateExperienceCommand
+from src.candidate_bc.candidate.application.commands.create_project import CreateProjectCommand
+from src.candidate_bc.candidate.application.commands import DeleteEducationCommand
+from src.candidate_bc.candidate.application.commands.delete_experience import DeleteExperienceCommand
+from src.candidate_bc.candidate.application.commands.delete_project import DeleteProjectCommand
+from src.candidate_bc.candidate.application.commands.update_candidate_basic import UpdateCandidateBasicCommand
+from src.candidate_bc.candidate.application.commands.update_education import UpdateEducationCommand
+from src.candidate_bc.candidate.application.commands.update_experience import UpdateExperienceCommand
+from src.candidate_bc.candidate.application.commands.update_project import UpdateProjectCommand
+from src.candidate_bc.candidate.application import GetCandidateByIdQuery, GetCandidateByUserIdQuery, ListCandidatesQuery
+from src.candidate_bc.candidate.application import GetEducationByIdQuery
+from src.candidate_bc.candidate.application.queries.get_educations_by_candidate_id import GetEducationsByCandidateIdQuery
+from src.candidate_bc.candidate.application.queries.get_experience_by_id import GetExperienceByIdQuery
+from src.candidate_bc.candidate.application.queries.get_experiences_by_candidate_id import GetExperiencesByCandidateIdQuery
+from src.candidate_bc.candidate.application import GetProjectByIdQuery
+from src.candidate_bc.candidate.application.queries.get_projects_by_candidate_id import GetProjectsByCandidateIdQuery
+from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
+from src.candidate_bc.candidate.application.queries.shared.candidate_education_dto import CandidateEducationDto
+from src.candidate_bc.candidate.application.queries.shared.candidate_project_dto import CandidateProjectDto
+from src.candidate_bc.candidate.domain.enums import WorkModalityEnum
+from src.candidate_bc.candidate.domain.enums.candidate_enums import PositionRoleEnum, LanguageEnum, LanguageLevelEnum
+from src.candidate_bc.candidate.domain.exceptions import CandidateNotFoundError
+from src.candidate_bc.candidate.domain.value_objects import CandidateId, CandidateProjectId, CandidateEducationId, \
     CandidateExperienceId
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.shared.domain.enums.job_category import JobCategoryEnum
-from src.user.domain.value_objects.UserId import UserId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.framework.domain.enums.job_category import JobCategoryEnum
+from src.auth_bc.user.domain.value_objects import UserId
 
 log = logging.getLogger(__name__)
 

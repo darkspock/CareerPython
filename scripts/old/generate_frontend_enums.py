@@ -4,17 +4,14 @@ Script to generate TypeScript enum definitions from Python enums.
 Run this during build process to keep frontend enums in sync.
 """
 
-import inspect
 import os
-from typing import Dict, List
-from enum import Enum
 
 # Import all the enums we want to generate
-from src.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum
-from src.job_position.domain.enums import WorkLocationTypeEnum, ContractTypeEnum
-from src.job_position.domain.enums.employment_type import EmploymentType
-from src.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
-from src.shared.domain.enums.job_category import JobCategoryEnum
+from src.candidate_bc.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum
+from src.company_bc.job_position.domain.enums import WorkLocationTypeEnum, ContractTypeEnum
+from src.company_bc.job_position.domain.enums import EmploymentType
+from src.company_bc.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
+from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 def format_label(enum_name: str, enum_value: str) -> str:

@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, Dict, Any
 
-from src.company.domain.enums import CompanyTypeEnum
+from src.company_bc.company.domain.enums import CompanyTypeEnum
 
 
 class CompanyResponse(BaseModel):

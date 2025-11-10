@@ -53,7 +53,7 @@ Ubicación: `src/{module}/domain/value_objects/`
 
 ```python
 from dataclasses import dataclass
-from src.shared.domain.value_objects.base_id import BaseId
+from src.framework.domain.value_objects.base_id import BaseId
 
 @dataclass(frozen=True)
 class CompanyId(BaseId):
@@ -438,7 +438,8 @@ Ubicación: `adapters/http/{module}/mappers/{entity}_mapper.py`
 
 ```python
 from adapters.http.company.schemas.company_response import CompanyResponse
-from src.company.application.dtos.company_dto import CompanyDto
+from src.company_bc.company.application.dtos.company_dto import CompanyDto
+
 
 class CompanyResponseMapper:
     """Mapper para convertir DTOs a Responses"""
@@ -662,19 +663,20 @@ Ubicación: `adapters/http/{module}/controllers/{entity}_controller.py`
 from typing import Optional
 from core.command_bus import CommandBus
 from core.query_bus import QueryBus
-from src.company.application.commands.create_company_command import CreateCompanyCommand
-from src.company.application.queries.get_company_by_id_query import GetCompanyByIdQuery
+from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommand
+from src.company_bc.company.application.queries import GetCompanyByIdQuery
 from adapters.http.company.schemas.company_request import CreateCompanyRequest
 from adapters.http.company.schemas.company_response import CompanyResponse
 from adapters.http.company.mappers.company_mapper import CompanyResponseMapper
+
 
 class CompanyController:
     """Controller de empresas"""
 
     def __init__(
-        self,
-        command_bus: CommandBus,
-        query_bus: QueryBus
+            self,
+            command_bus: CommandBus,
+            query_bus: QueryBus
     ):
         self.command_bus = command_bus
         self.query_bus = query_bus
@@ -702,7 +704,7 @@ class CompanyController:
     def get_company(self, company_id: str) -> Optional[CompanyResponse]:
         """Obtiene una empresa por ID"""
         # ⚠️ IMPORTANTE: Conversión de strings a value objects en Controller
-        from src.company.domain.value_objects.company_id import CompanyId
+        from src.company_bc.company.domain.value_objects import CompanyId
         query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
         dto = self.query_bus.query(query)
 
@@ -777,10 +779,11 @@ Ubicación: `core/container.py`
 
 ```python
 from dependency_injector import containers, providers
-from src.company.infrastructure.repositories.company_repository import CompanyRepository
-from src.company.application.commands.create_company_command import CreateCompanyCommandHandler
-from src.company.application.queries.get_company_by_id_query import GetCompanyByIdQueryHandler
+from src.company_bc.company.infrastructure.repositories.company_repository import CompanyRepository
+from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommandHandler
+from src.company_bc.company.application.queries import GetCompanyByIdQueryHandler
 from adapters.http.company.controllers.company_controller import CompanyController
+
 
 class Container(containers.DeclarativeContainer):
     # ... existing code ...

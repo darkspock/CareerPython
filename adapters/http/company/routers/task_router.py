@@ -9,7 +9,7 @@ from dependency_injector.wiring import inject, Provide
 
 from core.container import Container
 from adapters.http.company.controllers.task_controller import TaskController
-from src.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
 
 
 router = APIRouter(

@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field
 
 from adapters.http.company.controllers.email_template_controller import EmailTemplateController
 from core.container import Container
-from src.email_template.application.dtos.email_template_dto import EmailTemplateDto
-from src.email_template.domain.enums.trigger_event import TriggerEvent
+from src.notification_bc.email_template.application.dtos.email_template_dto import EmailTemplateDto
+from src.notification_bc.email_template.domain import TriggerEvent
 
 router = APIRouter(
     prefix="/api/company/email-templates",

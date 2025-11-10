@@ -12,19 +12,19 @@ from adapters.http.company.schemas.company_user_invitation_request import (
 from adapters.http.company.schemas.company_user_invitation_response import (
     CompanyUserInvitationResponse,
 )
-from src.company.application.commands.accept_user_invitation_command import (
+from src.company_bc.company.application.commands.accept_user_invitation_command import (
     AcceptUserInvitationCommand
 )
-from src.company.application.dtos.company_user_invitation_dto import (
+from src.company_bc.company.application.dtos.company_user_invitation_dto import (
     CompanyUserInvitationDto
 )
-from src.company.application.queries.get_user_invitation_query import (
+from src.company_bc.company.application.queries.get_user_invitation_query import (
     GetUserInvitationQuery
 )
-from src.company.domain.value_objects.invitation_token import InvitationToken
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.user.domain.value_objects.UserId import UserId
+from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.auth_bc.user.domain.value_objects import UserId
 
 
 class InvitationController:

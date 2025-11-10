@@ -3,9 +3,7 @@ from typing import Optional, List, Dict, Any, Union
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, date
 
-from src.shared.domain.enums.job_category import JobCategoryEnum
-from src.job_position.application.queries.job_position_dto import JobPositionDto
-from src.job_position.domain.enums import JobPositionVisibilityEnum
+from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
 
 
 class JobPositionCreate(BaseModel):

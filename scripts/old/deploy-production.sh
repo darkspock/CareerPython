@@ -265,7 +265,7 @@ asyncio.run(test_db())
     # Test AI service integration (if configured)
     if [ -n "${XAI_API_KEY:-}" ]; then
         docker-compose -f docker-compose.prod.yml exec -T backend python -c "
-from src.shared.infrastructure.services.xai_service import XAIService
+from src.framework.infrastructure.services.xai_service import XAIService
 import asyncio
 async def test_ai():
     service = XAIService()

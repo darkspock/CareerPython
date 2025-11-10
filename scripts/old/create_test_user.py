@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from core.container import container
-from src.user.application.commands.create_user import CreateUserCommand
+from src.auth_bc.user.application.commands import CreateUserCommand
 
 def create_test_user():
     """Create a test user"""

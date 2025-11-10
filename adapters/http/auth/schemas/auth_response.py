@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel
 
-from src.user.application.queries.dtos.auth_dto import AuthenticatedUserDto
+from src.auth_bc.user.application.queries.dtos.auth_dto import AuthenticatedUserDto
 
 
 class LoginResponse(BaseModel):

@@ -1,12 +1,12 @@
 import pytest
 from datetime import datetime, timedelta
 
-from src.company.domain.entities.company_user_invitation import CompanyUserInvitation
-from src.company.domain.enums.company_user_invitation_status import CompanyUserInvitationStatus
-from src.company.domain.exceptions.company_exceptions import CompanyValidationError
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.company.domain.value_objects.company_user_invitation_id import CompanyUserInvitationId
-from src.company.domain.value_objects.invitation_token import InvitationToken
+from src.company_bc.company.domain.entities.company_user_invitation import CompanyUserInvitation
+from src.company_bc.company.domain.enums.company_user_invitation_status import CompanyUserInvitationStatus
+from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError
+from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
+from src.company_bc.company.domain.value_objects.company_user_invitation_id import CompanyUserInvitationId
+from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
 
 
 class TestCompanyUserInvitation:

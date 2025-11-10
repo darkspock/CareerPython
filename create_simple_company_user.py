@@ -4,15 +4,15 @@ Script to create a simple company user with easy credentials
 import ulid
 
 from core.database import SQLAlchemyDatabase
-from src.company.application.commands.create_company_command import CreateCompanyCommand, CreateCompanyCommandHandler
-from src.company.application.commands.add_company_user_command import AddCompanyUserCommand, AddCompanyUserCommandHandler
-from src.company.domain.enums import CompanyUserRole
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.company.infrastructure.repositories.company_repository import CompanyRepository
-from src.company.infrastructure.repositories.company_user_repository import CompanyUserRepository
-from src.user.application.commands.create_user_command import CreateUserCommand, CreateUserCommandHandler
-from src.user.domain.value_objects.UserId import UserId
-from src.user.infrastructure.repositories.user_repository import SQLAlchemyUserRepository
+from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommand, CreateCompanyCommandHandler
+from src.company_bc.company.application.commands.add_company_user_command import AddCompanyUserCommand, AddCompanyUserCommandHandler
+from src.company_bc.company.domain.enums import CompanyUserRole
+from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
+from src.company_bc.company.infrastructure.repositories.company_repository import CompanyRepository
+from src.company_bc.company.infrastructure.repositories.company_user_repository import CompanyUserRepository
+from src.auth_bc.user.application.commands.create_user_command import CreateUserCommand, CreateUserCommandHandler
+from src.auth_bc.user.domain.value_objects import UserId
+from src.auth_bc.user.infrastructure.repositories.user_repository import SQLAlchemyUserRepository
 
 
 def create_simple_company_user():

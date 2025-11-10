@@ -1,15 +1,14 @@
 """
 Test data builder for CandidateProject domain
 """
-from datetime import date
 from typing import Optional
 from faker import Faker
 
-from src.candidate.application.commands.create_project import CreateProjectCommand
-from src.candidate.application.commands.update_project import UpdateProjectCommand
-from src.candidate.domain.entities.candidate_project import CandidateProject
-from src.candidate.domain.value_objects.candidate_id import CandidateId
-from src.candidate.domain.value_objects.candidate_project_id import CandidateProjectId
+from src.candidate_bc.candidate.application.commands.create_project import CreateProjectCommand
+from src.candidate_bc.candidate.application.commands.update_project import UpdateProjectCommand
+from src.candidate_bc.candidate.domain.entities.candidate_project import CandidateProject
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
+from src.candidate_bc.candidate.domain.value_objects.candidate_project_id import CandidateProjectId
 
 fake = Faker()
 

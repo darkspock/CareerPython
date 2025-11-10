@@ -10,28 +10,25 @@ Creates:
 - 50 Sample candidates (via InitializeSampleDataCommand)
 - Company-candidate relationships (via InitializeSampleDataCommand)
 """
-import os
 import sys
 from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from datetime import datetime, UTC
-
 # Import domain objects first
-from src.company.domain.value_objects import CompanyId
-from src.user.domain.value_objects.UserId import UserId
-from src.company.domain.value_objects.company_user_id import CompanyUserId
-from src.company.domain.enums.company_user_role import CompanyUserRole
+from src.company_bc.company.domain.value_objects import CompanyId
+from src.auth_bc.user.domain.value_objects import UserId
+from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.company.domain.enums.company_user_role import CompanyUserRole
 
 # Import commands
-from src.company.application.commands.create_company_command import CreateCompanyCommand
-from src.company.application.commands.initialize_onboarding_command import InitializeOnboardingCommand
-from src.company.application.commands.initialize_sample_data_command import InitializeSampleDataCommand
-from src.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommand
-from src.user.application.commands.create_user_command import CreateUserCommand
-from src.company.application.commands.add_company_user_command import AddCompanyUserCommand
+from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommand
+from src.company_bc.company.application.commands.initialize_onboarding_command import InitializeOnboardingCommand
+from src.company_bc.company.application.commands.initialize_sample_data_command import InitializeSampleDataCommand
+from src.shared_bc.customization.phase.application.commands.initialize_company_phases_command import InitializeCompanyPhasesCommand
+from src.auth_bc.user.application.commands.create_user_command import CreateUserCommand
+from src.company_bc.company.application.commands.add_company_user_command import AddCompanyUserCommand
 
 # Import infrastructure
 from core.container import Container

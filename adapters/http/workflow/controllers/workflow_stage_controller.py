@@ -1,31 +1,31 @@
 """Workflow Stage Controller."""
 from typing import List, Optional
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
-from src.workflow.application.commands.stage.create_stage_command import CreateStageCommand
-from src.workflow.application.commands.stage.update_stage_command import UpdateStageCommand
-from src.workflow.application.commands.stage.delete_stage_command import DeleteStageCommand
-from src.workflow.application.commands.stage.reorder_stages_command import ReorderStagesCommand
-from src.workflow.application.commands.stage.activate_stage_command import ActivateStageCommand
-from src.workflow.application.commands.stage.deactivate_stage_command import DeactivateStageCommand
-from src.workflow.application.queries.stage.get_stage_by_id import GetStageByIdQuery
-from src.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQuery
-from src.workflow.application.queries.stage.get_initial_stage import GetInitialStageQuery
-from src.workflow.application.queries.stage.get_final_stages import GetFinalStagesQuery
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.shared_bc.customization.workflow.application import WorkflowStageDto
+from src.shared_bc.customization.workflow.application import CreateStageCommand
+from src.shared_bc.customization.workflow.application.commands.stage.update_stage_command import UpdateStageCommand
+from src.shared_bc.customization.workflow.application.commands.stage.delete_stage_command import DeleteStageCommand
+from src.shared_bc.customization.workflow.application import ReorderStagesCommand
+from src.shared_bc.customization.workflow.application.commands.stage.activate_stage_command import ActivateStageCommand
+from src.shared_bc.customization.workflow.application import DeactivateStageCommand
+from src.shared_bc.customization.workflow.application.queries.stage.get_stage_by_id import GetStageByIdQuery
+from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQuery
+from src.shared_bc.customization.workflow.application import GetInitialStageQuery
+from src.shared_bc.customization.workflow.application.queries.stage.get_final_stages import GetFinalStagesQuery
 from adapters.http.workflow.schemas.create_stage_request import CreateStageRequest
 from adapters.http.workflow.schemas.update_stage_request import UpdateStageRequest
 from adapters.http.workflow.schemas.reorder_stages_request import ReorderStagesRequest
 from adapters.http.workflow.schemas.stage_style_request import UpdateStageStyleRequest
 from adapters.http.workflow.schemas.workflow_stage_response import WorkflowStageResponse
 from adapters.http.workflow.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
-from src.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
-from src.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
-from src.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
-from src.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 
 
 class WorkflowStageController:
@@ -100,8 +100,8 @@ class WorkflowStageController:
 
     def list_stages_by_phase(self, phase_id: str, workflow_type: str) -> List[WorkflowStageResponse]:
         """List all stages for a phase."""
-        from src.workflow.application.queries.stage.list_stages_by_phase import ListStagesByPhaseQuery
-        from src.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+        from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_phase import ListStagesByPhaseQuery
+        from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
         
         query = ListStagesByPhaseQuery(
             phase_id=PhaseId.from_string(phase_id),

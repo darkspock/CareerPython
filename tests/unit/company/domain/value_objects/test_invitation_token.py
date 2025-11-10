@@ -1,6 +1,6 @@
 import pytest
 
-from src.company.domain.value_objects.invitation_token import InvitationToken
+from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
 
 
 class TestInvitationToken:

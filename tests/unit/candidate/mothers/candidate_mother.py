@@ -1,21 +1,21 @@
 """
 Test data builder for Candidate domain
 """
-from datetime import date, timedelta
-from typing import Dict, List, Optional
+from datetime import date
+from typing import Optional
 from faker import Faker
 
-from src.candidate.application.commands.create_candidate import CreateCandidateCommand
-from src.candidate.application.commands.update_candidate import UpdateCandidateCommand
-from src.candidate.domain.entities.candidate import Candidate
-from src.candidate.domain.enums.candidate_enums import (
-    CandidateStatusEnum, CandidateTypeEnum, WorkModalityEnum,
+from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommand
+from src.candidate_bc.candidate.application.commands.update_candidate import UpdateCandidateCommand
+from src.candidate_bc.candidate.domain.entities.candidate import Candidate
+from src.candidate_bc.candidate.domain.enums.candidate_enums import (
+    CandidateTypeEnum, WorkModalityEnum,
     LanguageEnum, LanguageLevelEnum, PositionRoleEnum
 )
-from src.candidate.domain.value_objects.candidate_id import CandidateId
-from src.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
-from src.shared.domain.enums.job_category import JobCategoryEnum
-from src.user.domain.value_objects.UserId import UserId
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company_bc.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
+from src.framework.domain.enums.job_category import JobCategoryEnum
+from src.auth_bc.user.domain.value_objects import UserId
 
 fake = Faker()
 

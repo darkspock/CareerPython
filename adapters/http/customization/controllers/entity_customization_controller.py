@@ -1,7 +1,7 @@
 from typing import Optional, Any
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 from src.customization.domain.value_objects.entity_customization_id import EntityCustomizationId
 from src.customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
 from src.customization.domain.value_objects.custom_field import CustomField

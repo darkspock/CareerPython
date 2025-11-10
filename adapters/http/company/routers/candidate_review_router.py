@@ -1,16 +1,17 @@
 """Candidate Review Router."""
 import logging
-from typing import List, Annotated
+from typing import List, Any
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status, Security
 from fastapi.security import OAuth2PasswordBearer
 
 from core.container import Container
-from src.candidate_review.presentation.controllers.review_controller import ReviewController
-from src.candidate_review.presentation.schemas.create_review_request import CreateReviewRequest
-from src.candidate_review.presentation.schemas.update_review_request import UpdateReviewRequest
-from src.candidate_review.presentation.schemas.review_response import ReviewResponse
+from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
+from adapters.http.company.controllers.review_controller import ReviewController
+from src.company_bc.candidate_review.presentation.schemas.create_review_request import CreateReviewRequest
+from src.company_bc.candidate_review.presentation.schemas.update_review_request import UpdateReviewRequest
+from src.company_bc.candidate_review.presentation.schemas.review_response import ReviewResponse
 
 log = logging.getLogger(__name__)
 
@@ -36,13 +37,14 @@ def get_company_user_id_from_token(token: str = Security(oauth2_scheme)) -> str:
             payload += '=' * padding
         
         decoded = base64.urlsafe_b64decode(payload)
-        data = json.loads(decoded)
+        data: dict[str, Any] = json.loads(decoded)
         
         company_user_id = data.get('company_user_id')
         if not company_user_id:
             raise HTTPException(status_code=401, detail="Token missing company_user_id")
         
-        return company_user_id
+        # Use MixedHelper to safely convert to string
+        return MixedHelper.get_string(company_user_id)
     except Exception as e:
         log.error(f"Error extracting company_user_id from token: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")

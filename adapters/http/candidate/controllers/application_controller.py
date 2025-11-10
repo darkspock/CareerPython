@@ -6,18 +6,18 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
-from src.shared.application.command_bus import CommandBus
-from src.shared.application.query_bus import QueryBus
-from src.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
-from src.candidate_application.application.commands.update_application_status import UpdateApplicationStatusCommand
-from src.candidate_application.application.queries.get_applications_by_candidate_id import GetApplicationsByCandidateIdQuery
-from src.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
-from src.candidate_application.application.services.stage_permission_service import StagePermissionService
-from src.candidate_application.domain.enums.application_status import ApplicationStatusEnum
-from src.candidate_application.domain.repositories.candidate_application_repository_interface import (
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.company_bc.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
+from src.company_bc.candidate_application.application.commands.update_application_status import UpdateApplicationStatusCommand
+from src.company_bc.candidate_application.application.queries.get_applications_by_candidate_id import GetApplicationsByCandidateIdQuery
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
+from src.company_bc.candidate_application.application.services.stage_permission_service import StagePermissionService
+from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
+from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import (
     CandidateApplicationRepositoryInterface
 )
-from src.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.company_bc.candidate_application.domain.value_objects import CandidateApplicationId
 from adapters.http.candidate.schemas.candidate_job_applications import (
     CandidateJobApplicationSummary,
     JobApplicationListFilters
@@ -74,7 +74,7 @@ class ApplicationController:
         """Create a new job application"""
         try:
             # Generate unique ID for the application
-            from src.shared.domain.entities.base import generate_id
+            from src.framework.domain.entities.base import generate_id
             application_id = generate_id()
 
             # Create command with notes field (cover_letter maps to notes for now)

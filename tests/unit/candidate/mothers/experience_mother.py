@@ -5,11 +5,11 @@ from datetime import date, timedelta
 from typing import Optional
 from faker import Faker
 
-from src.candidate.application.commands.create_experience import CreateExperienceCommand
-from src.candidate.application.commands.update_experience import UpdateExperienceCommand
-from src.candidate.domain.entities.candidate_experience import CandidateExperience
-from src.candidate.domain.value_objects.candidate_experience_id import CandidateExperienceId
-from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.candidate_bc.candidate.application.commands.create_experience import CreateExperienceCommand
+from src.candidate_bc.candidate.application.commands.update_experience import UpdateExperienceCommand
+from src.candidate_bc.candidate.domain.entities.candidate_experience import CandidateExperience
+from src.candidate_bc.candidate.domain.value_objects.candidate_experience_id import CandidateExperienceId
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 
 fake = Faker()
 

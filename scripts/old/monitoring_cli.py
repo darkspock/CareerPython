@@ -9,17 +9,17 @@ import asyncio
 import json
 import sys
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Add project root to path
 sys.path.append('..')
 
-from src.shared.infrastructure.monitoring.monitoring_service import MonitoringService
-from src.user.infrastructure.repositories.usage_tracking_repository import SQLAlchemyUsageTrackingRepository
-from src.user.infrastructure.repositories.user import SQLAlchemyUserRepository
-from src.shared.infrastructure.services.comprehensive_email_service import ComprehensiveEmailService
-from src.shared.infrastructure.services.smtp_email_service import SMTPEmailService
+from src.framework.infrastructure.monitoring.monitoring_service import MonitoringService
+from src.auth_bc.user.infrastructure import SQLAlchemyUsageTrackingRepository
+from src.auth_bc.user.infrastructure import SQLAlchemyUserRepository
+from src.framework.infrastructure.services.comprehensive_email_service import ComprehensiveEmailService
+from src.framework.infrastructure.services.smtp_email_service import SMTPEmailService
 from core.database import get_db
 
 
