@@ -161,19 +161,21 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         workflow.activate()
         self.workflow_repository.save(workflow)
 
+        from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+        
         stages = [
             ("Pending", "Application pending review", WorkflowStageTypeEnum.INITIAL, 0, 
-             WorkflowStageStyle(icon="📋", text_color="#92400e", background_color="#fef3c7")),  # amber
+             WorkflowStageStyle(icon="📋", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.COLUMN),  # amber
             ("Screening", "Initial screening in progress", WorkflowStageTypeEnum.PROGRESS, 1,
-             WorkflowStageStyle(icon="🔍", text_color="#1e40af", background_color="#dbeafe")),  # blue
+             WorkflowStageStyle(icon="🔍", text_color="#1e40af", background_color="#dbeafe"), KanbanDisplayEnum.COLUMN),  # blue
             ("Qualified", "Candidate is qualified", WorkflowStageTypeEnum.SUCCESS, 2,
-             WorkflowStageStyle(icon="✅", text_color="#065f46", background_color="#d1fae5")),  # green
+             WorkflowStageStyle(icon="✅", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),  # green
             ("Not Suitable", "Candidate not suitable for position", WorkflowStageTypeEnum.FAIL, 3,
-             WorkflowStageStyle(icon="❌", text_color="#991b1b", background_color="#fee2e2")),  # red
+             WorkflowStageStyle(icon="❌", text_color="#991b1b", background_color="#fee2e2"), KanbanDisplayEnum.ROW),  # red - ROW
             ("On Hold", "Application on hold", WorkflowStageTypeEnum.PROGRESS, 4,
-             WorkflowStageStyle(icon="⏸️", text_color="#92400e", background_color="#fef3c7")),  # amber
+             WorkflowStageStyle(icon="⏸️", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.ROW),  # amber - ROW
         ]
-        for name, desc, stage_type, order, style in stages:
+        for name, desc, stage_type, order, style, kanban_display in stages:
             stage = WorkflowStage.create(
                 id=WorkflowStageId.generate(),
                 workflow_id=workflow_id,
@@ -184,6 +186,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
                 allow_skip=False,
                 is_active=True,
                 style=style,
+                kanban_display=kanban_display,
                 validation_rules=None,
                 recommended_rules=None
             )

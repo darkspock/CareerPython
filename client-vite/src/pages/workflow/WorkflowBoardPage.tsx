@@ -7,6 +7,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -174,18 +175,20 @@ function StageColumn({
   onMoveToStage: (candidateId: string, stageId: string) => void;
 }) {
   const { t } = useTranslation();
-  const { setNodeRef } = useSortable({ id: stage.id });
+  const { setNodeRef, isOver } = useDroppable({
+    id: stage.id,
+  });
 
   return (
     <div 
-      className="rounded-lg p-4 min-w-[300px] max-w-[300px] flex-shrink-0"
+      className="rounded-lg p-4 min-w-[300px] max-w-[300px] flex-shrink-0 flex flex-col"
       style={{ 
         backgroundColor: stage.style.background_color,
         color: stage.style.color 
       }}
     >
       {/* Stage Header */}
-      <div className="mb-4">
+      <div className="mb-4 flex-shrink-0">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span 
@@ -209,8 +212,12 @@ function StageColumn({
         )}
       </div>
 
-      {/* Drop Zone */}
-      <div ref={setNodeRef} className="min-h-[200px]">
+      {/* Drop Zone - covers full height */}
+      <div 
+        ref={setNodeRef} 
+        className={`flex-1 min-h-[200px] ${isOver ? 'bg-opacity-20' : ''}`}
+        style={isOver ? { backgroundColor: stage.style.color + '20' } : {}}
+      >
         <SortableContext items={candidates.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           {candidates.length === 0 ? (
             <div className="text-center py-8 text-gray-400 text-sm">
@@ -465,7 +472,7 @@ export default function WorkflowBoardPage() {
             {/* Column Stages */}
             {columnStages.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 overflow-x-auto">
-                <div className="flex gap-4">
+                <div className="flex gap-4 items-stretch">
                   {columnStages.map((stage) => (
                     <StageColumn
                       key={stage.id}

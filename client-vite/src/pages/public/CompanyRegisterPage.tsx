@@ -77,6 +77,9 @@ export default function CompanyRegisterPage() {
         newErrors.email = 'El email es requerido';
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
         newErrors.email = 'El email no es válido';
+      } else if (emailExists) {
+        // Prevent continuing if email already exists
+        newErrors.email = 'Este email ya está registrado. Por favor, usa otro email o inicia sesión.';
       }
 
       if (!formData.full_name.trim()) {

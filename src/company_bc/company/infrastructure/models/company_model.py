@@ -16,7 +16,7 @@ class CompanyModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    domain: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
+    domain: Mapped[str] = mapped_column(String, nullable=False, index=True)
     slug: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, unique=True, index=True)
     logo_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     settings: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
