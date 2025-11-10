@@ -8,7 +8,8 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from typing import TYPE_CHECKING
 
-from src.shared_bc.customization.workflow.domain.interfaces import WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.framework.application.query_bus import Query, QueryHandler

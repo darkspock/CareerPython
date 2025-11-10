@@ -11,7 +11,8 @@ from src.company_bc.company_candidate.domain.infrastructure.company_candidate_re
 from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_bc.company_candidate.domain.value_objects.visibility_settings import VisibilitySettings
 from src.framework.application.command_bus import Command, CommandHandler
-from src.shared_bc.customization.workflow.domain.interfaces import WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 

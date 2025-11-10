@@ -1,4 +1,7 @@
 """Position stage assignment module"""
+from adapters.http.candidate_app.schemas.position_stage_assignment_schemas import AssignUsersToStageRequest, \
+    AddUserToStageRequest, RemoveUserFromStageRequest, CopyWorkflowAssignmentsRequest, PositionStageAssignmentResponse
+from adapters.http.company_app.position_stage_assignment.mappers import PositionStageAssignmentMapper
 from .application import (
     AssignUsersToStageCommand,
     AssignUsersToStageCommandHandler,
@@ -27,15 +30,6 @@ from .domain import (
 from .infrastructure import (
     PositionStageAssignmentModel,
     PositionStageAssignmentRepository
-)
-from .presentation import (
-    AssignUsersToStageRequest,
-    AddUserToStageRequest,
-    RemoveUserFromStageRequest,
-    CopyWorkflowAssignmentsRequest,
-    PositionStageAssignmentResponse,
-    PositionStageAssignmentController,
-    PositionStageAssignmentMapper
 )
 
 __all__ = [
@@ -71,6 +65,5 @@ __all__ = [
     'RemoveUserFromStageRequest',
     'CopyWorkflowAssignmentsRequest',
     'PositionStageAssignmentResponse',
-    'PositionStageAssignmentController',
     'PositionStageAssignmentMapper'
 ]

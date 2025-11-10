@@ -4,8 +4,8 @@ from typing import Optional, List
 
 from core.database import DatabaseInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
-from src.company_bc.candidate_application.domain.value_objects import CandidateApplicationId
-from src.interview_bc.interview.infrastructure.models.interview_model import InterviewModel
+from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.interview_bc.interview.Infrastructure.models.interview_model import InterviewModel
 from src.interview_bc.interview.domain.entities.interview import Interview
 from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface

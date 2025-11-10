@@ -3,7 +3,7 @@ from typing import Optional
 
 from src.candidate_bc.resume.domain.repositories.resume_repository_interface import ResumeRepositoryInterface
 from src.candidate_bc.resume.domain.value_objects.resume_id import ResumeId
-from adapters.http.candidate.schemas.resume_dto import ResumeDto
+from adapters.http.candidate_app.schemas.resume_dto import ResumeDto
 from src.framework.application.query_bus import Query, QueryHandler
 
 

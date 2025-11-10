@@ -2,7 +2,7 @@
 from typing import Optional, List
 
 from core.database import DatabaseInterface
-from src.interview_bc.interview.infrastructure.models.interview_answer_model import InterviewAnswerModel
+from src.interview_bc.interview.Infrastructure.models.interview_answer_model import InterviewAnswerModel
 from src.interview_bc.interview.domain.entities.interview_answer import InterviewAnswer
 from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
     InterviewAnswerRepositoryInterface

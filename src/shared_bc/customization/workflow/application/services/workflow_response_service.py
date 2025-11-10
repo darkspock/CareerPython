@@ -1,15 +1,15 @@
 """Workflow Response Service - Service for obtaining enriched WorkflowResponse"""
 from typing import Optional
 
+from adapters.http.shared.workflow.mappers.workflow_mapper import WorkflowResponseMapper
 from src.framework.application.query_bus import QueryBus
 from src.shared_bc.customization.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.shared_bc.customization.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
 from src.shared_bc.customization.workflow.application.queries.workflow.get_workflow_by_id import GetWorkflowByIdQuery
 from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQuery
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from adapters.http.workflow.schemas.workflow_response import WorkflowResponse
-from adapters.http.workflow.mappers.workflow_mapper import WorkflowResponseMapper
-from adapters.http.workflow.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
+from adapters.http.shared.workflow.schemas.workflow_response import WorkflowResponse
+from adapters.http.shared.workflow.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
 
 
 class WorkflowResponseService:

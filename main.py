@@ -10,40 +10,40 @@ from fastapi.staticfiles import StaticFiles
 from core.container import Container
 
 # Initialize Dramatiq broker for web service
-from adapters.http.admin.routes.admin_router import router as admin_router
-from adapters.http.candidate.routers.landing_router import router as landing_router
-from adapters.http.candidate.routers.candidate_router import candidate_router
-from adapters.http.candidate.routers.resume_router import router as resume_router
-from adapters.http.candidate.routers.file_router import file_router
-from adapters.http.candidate.routers.job_router import job_router
-from adapters.http.company.routers.company_router import router as company_router
-from adapters.http.company.routers.company_registration_router import router as company_registration_router, users_router as users_public_router
-from adapters.http.company.routers.company_user_router import router as company_user_router
-from adapters.http.company.routers.company_role_router import router as company_role_router
-from adapters.http.company.routers.company_candidate_application_router import router as company_candidate_application_router
-from adapters.http.company.routers.enum_router import router as company_enum_router
-from adapters.http.company.routers.task_router import router as task_router
-from adapters.http.company.routers.email_template_router import router as email_template_router
-from src.company_bc.talent_pool.presentation.routers.talent_pool_router import router as talent_pool_router
-from src.shared_bc.customization.workflow_analytics.presentation.routers.workflow_analytics_router import router as workflow_analytics_router
-from adapters.http.company_candidate.routers.company_candidate_router import router as company_candidate_router
-from adapters.http.workflow.routers.workflow_router import router as candidate_application_workflow_router
-from adapters.http.workflow.routers.workflow_stage_router import router as workflow_stage_router
-from adapters.http.customization.routers.entity_customization_router import router as entity_customization_router
-from adapters.http.company.routers.candidate_comment_router import router as candidate_comment_router
-from adapters.http.company.routers.candidate_review_router import router as candidate_review_router
+from adapters.http.admin_app.routes.admin_router import router as admin_router
+from adapters.http.candidate_app.routers.landing_router import router as landing_router
+from adapters.http.candidate_app.routers.candidate_router import candidate_router
+from adapters.http.candidate_app.routers.resume_router import router as resume_router
+from adapters.http.candidate_app.routers.file_router import file_router
+from adapters.http.candidate_app.routers.job_router import job_router
+from adapters.http.company_app.company.routers.company_router import router as company_router
+from adapters.http.company_app.company.routers.company_registration_router import router as company_registration_router, users_router as users_public_router
+from adapters.http.company_app.company.routers.company_user_router import router as company_user_router
+from adapters.http.company_app.company.routers.company_role_router import router as company_role_router
+from adapters.http.company_app.company.routers.company_candidate_application_router import router as company_candidate_application_router
+from adapters.http.company_app.company.routers.enum_router import router as company_enum_router
+from adapters.http.company_app.company.routers.task_router import router as task_router
+from adapters.http.company_app.company.routers.email_template_router import router as email_template_router
+from adapters.http.company_app.talent_pool.routers import router as talent_pool_router
+from adapters.http.shared.workflow_analytics.routers.workflow_analytics_router import router as workflow_analytics_router
+from adapters.http.company_app.company_candidate.routers.company_candidate_router import router as company_candidate_router
+from adapters.http.shared.workflow.routers.workflow_router import router as candidate_application_workflow_router
+from adapters.http.shared.workflow.routers.workflow_stage_router import router as workflow_stage_router
+from adapters.http.shared.customization.routers.entity_customization_router import router as entity_customization_router
+from adapters.http.company_app.company.routers.candidate_comment_router import router as candidate_comment_router
+from adapters.http.company_app.company.routers.candidate_review_router import router as candidate_review_router
 from src.shared_bc.customization.field_validation.presentation.routers.validation_rule_router import router as validation_rule_router
-from src.company_bc.position_stage_assignment.presentation.routers import router as position_stage_assignment_router
-from src.company_page.presentation.routers.company_page_router import router as company_page_router
-from src.company_page.presentation.routers.public_company_page_router import router as public_company_page_router
+from src.company_bc.position_stage_assignment.presentation.routers.position_stage_assignment_router import router as position_stage_assignment_router
+from adapters.http.company_app.company_page.routers.company_page_router import router as company_page_router
+from adapters.http.company_app.company_page.routers.public_company_page_router import router as public_company_page_router
 from src.candidate_bc.candidate.presentation.routers.file_attachment_router import router as file_attachment_router
-from adapters.http.shared.routes.user_router import user_router
-from adapters.http.shared.routes.ai_test_router import router as ai_test_router
-from adapters.http.invitations.routers.invitation_router import router as invitation_router
+from adapters.http.auth.routes.user_router import user_router
+from adapters.http.auth.routes.ai_test_router import router as ai_test_router
+from adapters.http.auth.invitations.routers.invitation_router import router as invitation_router
 # Phase 10: Public Position Router
 from src.company_bc.job_position.presentation.routers.public_position_router import router as public_position_router
 # Phase 12: Phase Router
-from adapters.http.phase.routers import router as phase_router
+from adapters.http.shared.phase.routers.phase_router import router as phase_router
 
 # Crear tablas - COMENTADO temporalmente para aislamiento
 # Base.metadata.create_all(bind=engine)
@@ -137,30 +137,30 @@ app.container = container
 
 # Wire solo el admin router y onboarding
 container.wire(modules=[
-    "adapters.http.admin.routes.admin_router",
-    "adapters.http.candidate.routers.landing_router",
-    "adapters.http.candidate.routers.candidate_router",
-    "adapters.http.candidate.routers.resume_router",
-    "adapters.http.candidate.routers.file_router",
-    "adapters.http.candidate.routers.job_router",
-    "adapters.http.company.routers.company_registration_router",  # Public registration (includes users_router)
-    "adapters.http.company.routers.company_router",
-    "adapters.http.company.routers.company_user_router",
-    "adapters.http.company.routers.company_role_router",
-    "adapters.http.company.routers.company_candidate_application_router",
-    "adapters.http.company_candidate.routers.company_candidate_router",
-    "adapters.http.workflow.routers.workflow_router",
-    "adapters.http.workflow.routers.workflow_stage_router",
-    "adapters.http.customization.routers.entity_customization_router",
-    "adapters.http.company.routers.candidate_comment_router",
-    "adapters.http.company.routers.candidate_review_router",
-    "src.field_validation.presentation.routers.validation_rule_router",
-    "src.position_stage_assignment.presentation.routers.position_stage_assignment_router",
-    "src.workflow_analytics.presentation.routers.workflow_analytics_router",
-    "src.job_position.presentation.routers.public_position_router",  # Phase 10: Public position endpoints
-    "src.phase.presentation.routers.phase_router",  # Phase 12: Phase management
-    "src.company_page.presentation.routers.company_page_router",  # Company Pages management
-    "src.company_page.presentation.routers.public_company_page_router",  # Public Company Pages
-    "adapters.http.shared.routes.user_router",
-    "adapters.http.invitations.routers.invitation_router",
+    "adapters.http.admin_app.routes.admin_router",
+    "adapters.http.candidate_app.routers.landing_router",
+    "adapters.http.candidate_app.routers.candidate_router",
+    "adapters.http.candidate_app.routers.resume_router",
+    "adapters.http.candidate_app.routers.file_router",
+    "adapters.http.candidate_app.routers.job_router",
+    "adapters.http.company_app.company.routers.company_registration_router",  # Public registration (includes users_router)
+    "adapters.http.company_app.company.routers.company_router",
+    "adapters.http.company_app.company.routers.company_user_router",
+    "adapters.http.company_app.company.routers.company_role_router",
+    "adapters.http.company_app.company.routers.company_candidate_application_router",
+    "adapters.http.company_app.company_candidate.routers.company_candidate_router",
+    "adapters.http.shared.workflow.routers.workflow_router",
+    "adapters.http.shared.workflow.routers.workflow_stage_router",
+    "adapters.http.shared.customization.routers.entity_customization_router",
+    "adapters.http.company_app.company.routers.candidate_comment_router",
+    "adapters.http.company_app.company.routers.candidate_review_router",
+    "src.shared_bc.customization.field_validation.presentation.routers.validation_rule_router",
+    "src.company_bc.position_stage_assignment.presentation.routers.position_stage_assignment_router",
+    "src.shared_bc.customization.workflow_analytics.presentation.routers.workflow_analytics_router",
+    "src.company_bc.job_position.presentation.routers.public_position_router",  # Phase 10: Public position endpoints
+    "adapters.http.shared.phase.routers.phase_router",  # Phase 12: Phase management
+    "adapters.http.company_app.company_page.routers.company_page_router",  # Company Pages management
+    "adapters.http.company_app.company_page.routers.public_company_page_router",  # Public Company Pages
+    "adapters.http.auth.routes.user_router",
+    "adapters.http.auth.invitations.routers.invitation_router",
 ])

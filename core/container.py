@@ -4,21 +4,21 @@ from core.database import SQLAlchemyDatabase
 from core.event_bus import EventBus
 
 # Solo imports esenciales para admin e interview templates
-from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
-from adapters.http.admin.controllers.company_controller import CompanyController
-from adapters.http.admin.controllers import JobPositionController
-from adapters.http.admin.controllers.job_position_comment_controller import JobPositionCommentController
-from adapters.http.admin.controllers.interview_controller import InterviewController
+from adapters.http.admin_app.controllers.inverview_template_controller import InterviewTemplateController
+from adapters.http.admin_app.controllers.company_controller import CompanyController
+from adapters.http.admin_app.controllers import JobPositionController
+from adapters.http.admin_app.controllers.job_position_comment_controller import JobPositionCommentController
+from adapters.http.admin_app.controllers.interview_controller import InterviewController
 from adapters.http.shared.controllers.user import UserController
 
 # Onboarding Controller
-from adapters.http.candidate import OnboardingController
-from adapters.http.candidate.controllers.candidate import CandidateController
-from adapters.http.candidate.controllers.application_controller import ApplicationController
-from adapters.http.company.controllers.task_controller import TaskController
+from adapters.http.candidate_app import OnboardingController
+from adapters.http.candidate_app.controllers.candidate import CandidateController
+from adapters.http.candidate_app.controllers.application_controller import ApplicationController
+from adapters.http.company_app.company.controllers.task_controller import TaskController
 
 # Admin Controllers
-from adapters.http.admin.controllers.admin_candidate_controller import AdminCandidateController
+from adapters.http.admin_app.controllers.admin_candidate_controller import AdminCandidateController
 from src.company_bc.company.application.queries.get_companies_stats import GetCompaniesStatsQueryHandler
 
 # Auth Application Layer
@@ -126,8 +126,8 @@ from src.company_bc.company.infrastructure.repositories.company_user_repository 
 from src.company_bc.company.infrastructure.repositories.company_user_invitation_repository import CompanyUserInvitationRepository
 
 # Company Presentation Controllers
-from adapters.http.company.controllers.company_controller import CompanyController as CompanyManagementController
-from adapters.http.company.controllers.company_user_controller import CompanyUserController
+from adapters.http.company_app.company.controllers.company_controller import CompanyController as CompanyManagementController
+from adapters.http.company_app.company.controllers.company_user_controller import CompanyUserController
 
 # CompanyRole Application Layer - Commands
 from src.company_role.application.commands.create_role_command import CreateRoleCommandHandler
@@ -142,7 +142,7 @@ from src.company_role.application.queries.list_roles_by_company import ListRoles
 from src.company_role.infrastructure.repositories.company_role_repository import CompanyRoleRepository
 
 # CompanyRole Presentation Controllers
-from adapters.http.company.controllers.company_role_controller import CompanyRoleController
+from adapters.http.company_app.company.controllers.company_role_controller import CompanyRoleController
 
 # CompanyCandidate Application Layer - Commands
 from src.company_candidate.application.commands.create_company_candidate_command import CreateCompanyCandidateCommandHandler
@@ -168,7 +168,7 @@ from src.company_bc.candidate_review.application.queries.list_reviews_by_company
 from src.company_bc.candidate_review.application.queries.list_reviews_by_stage_query import ListReviewsByStageQueryHandler
 from src.company_bc.candidate_review.application.queries.list_global_reviews_query import ListGlobalReviewsQueryHandler
 from src.company_bc.candidate_review.infrastructure.repositories.candidate_review_repository import CandidateReviewRepository
-from adapters.http.company.controllers.review_controller import ReviewController
+from adapters.http.company_app.company.controllers.review_controller import ReviewController
 
 # CompanyCandidate Application Layer - Queries
 from src.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQueryHandler
@@ -187,8 +187,8 @@ from src.company_candidate.infrastructure.repositories.company_candidate_reposit
 from src.company_candidate.infrastructure.repositories.candidate_comment_repository import CandidateCommentRepository
 
 # CompanyCandidate Presentation Controllers
-from adapters.http.company_candidate.controllers.company_candidate_controller import CompanyCandidateController
-from adapters.http.company.controllers.candidate_comment_controller import CandidateCommentController
+from adapters.http.company_app.company_candidate.controllers.company_candidate_controller import CompanyCandidateController
+from adapters.http.company_app.company.controllers.candidate_comment_controller import CandidateCommentController
 
 # CandidateApplicationWorkflow Application Layer - Commands
 from src.shared_bc.customization.workflow.application import CreateWorkflowCommandHandler
@@ -236,12 +236,12 @@ from src.customization.infrastructure.repositories.entity_customization_reposito
 from src.customization.infrastructure.repositories.custom_field_repository import CustomFieldRepository as NewCustomFieldRepository
 
 # CandidateApplicationWorkflow Presentation Controllers
-from adapters.http.workflow.controllers import WorkflowController
-from adapters.http.workflow.controllers import WorkflowStageController
+from adapters.http.shared.workflow.controllers import WorkflowController
+from adapters.http.shared.workflow.controllers import WorkflowStageController
 from src.shared_bc.customization.workflow.application.services.workflow_response_service import WorkflowResponseService
 
 # New Customization Presentation Controllers
-from adapters.http.customization.controllers.entity_customization_controller import EntityCustomizationController
+from adapters.http.shared.customization.controllers.entity_customization_controller import EntityCustomizationController
 
 # FieldValidation Application Layer - Commands
 from src.shared_bc.customization.field_validation.application.commands.create_validation_rule_command import CreateValidationRuleCommandHandler
@@ -265,7 +265,7 @@ from src.company_bc.candidate_application.application.services.stage_permission_
 from src.shared_bc.customization.field_validation.infrastructure.repositories.validation_rule_repository import ValidationRuleRepository
 
 # FieldValidation Presentation Controllers
-from adapters.http.field_validation.controllers.validation_rule_controller import ValidationRuleController
+from adapters.http.shared.field_validation.controllers import ValidationRuleController
 
 # Job Position Application Layer
 from src.company_bc.job_position.application.commands.create_job_position import CreateJobPositionCommandHandler
@@ -298,7 +298,7 @@ from src.company_bc.job_position.infrastructure.repositories.job_position_activi
 from src.company_bc.job_position.infrastructure.repositories.job_position_stage_repository import JobPositionStageRepository
 
 # Phase 10: Public Position Controller
-from adapters.http.job_position.controllers.public_position_controller import PublicPositionController
+from adapters.http.company_app.job_position.controllers.public_position_controller import PublicPositionController
 
 # Phase 12: Phase Application Layer - Commands
 from src.shared_bc.customization.phase.application import CreatePhaseCommandHandler
@@ -316,7 +316,7 @@ from src.shared_bc.customization.phase.application import ListPhasesByCompanyQue
 from src.shared_bc.customization.phase.infrastructure.repositories import PhaseRepository
 
 # Phase 12: Phase Presentation Controllers
-from adapters.http.phase.controllers.phase_controller import PhaseController
+from adapters.http.shared.phase.controllers.phase_controller import PhaseController
 
 # Phase 12: Phase Handlers
 from src.shared_bc.customization.phase.application.handlers.candidate_stage_transition_handler import CandidateStageTransitionHandler
@@ -339,7 +339,7 @@ from src.company_bc.position_stage_assignment import (
 from src.company_bc.position_stage_assignment import PositionStageAssignmentRepository
 
 # Position Stage Assignment Presentation
-from adapters.http.position_stage_assignment.controllers.position_stage_assignment_controller import PositionStageAssignmentController
+from adapters.http.company_app.position_stage_assignment.controllers import PositionStageAssignmentController
 
 # Onboarding dependencies - SIMPLIFIED for landing endpoint only
 from src.auth_bc.user.infrastructure.repositories import SQLAlchemyUserAssetRepository
@@ -399,7 +399,7 @@ from src.notification_bc.email_template.application.queries.list_email_templates
 from src.notification_bc.email_template.application.queries.get_email_templates_by_trigger_query import GetEmailTemplatesByTriggerQueryHandler
 from src.notification_bc.email_template.infrastructure.repositories.email_template_repository import EmailTemplateRepository
 from src.notification_bc.email_template.application.handlers.send_stage_transition_email_handler import SendStageTransitionEmailHandler
-from adapters.http.company.controllers.email_template_controller import EmailTemplateController
+from adapters.http.company_app.company.controllers.email_template_controller import EmailTemplateController
 
 # Phase 8: Talent Pool Management
 from src.company_bc.talent_pool.application.commands.add_to_talent_pool_command import AddToTalentPoolCommandHandler
@@ -410,12 +410,12 @@ from src.company_bc.talent_pool.application.queries.list_talent_pool_entries_que
 from src.company_bc.talent_pool.application.queries.get_talent_pool_entry_by_id_query import GetTalentPoolEntryByIdQueryHandler
 from src.company_bc.talent_pool.application.queries.search_talent_pool_query import SearchTalentPoolQueryHandler
 from src.company_bc.talent_pool.infrastructure.repositories.talent_pool_entry_repository import TalentPoolEntryRepository
-from adapters.http.talent_pool.controllers.talent_pool_controller import TalentPoolController
+from adapters.http.company_app.talent_pool.controllers.talent_pool_controller import TalentPoolController
 
 # Phase 9: Workflow Analytics
 from src.shared_bc.customization.workflow_analytics.application.queries.get_workflow_analytics_query import GetWorkflowAnalyticsQueryHandler
 from src.shared_bc.customization.workflow_analytics.application.queries.get_stage_bottlenecks_query import GetStageBottlenecksQueryHandler
-from adapters.http.workflow_analytics.controllers.workflow_analytics_controller import WorkflowAnalyticsController
+from adapters.http.shared.workflow_analytics.controllers.workflow_analytics_controller import WorkflowAnalyticsController
 
 # Email Services
 from src.notification_bc.notification.infrastructure.services.smtp_email_service import SMTPEmailService
@@ -2078,7 +2078,7 @@ class Container(containers.DeclarativeContainer):
     )
 
     # Invitation Controller
-    from adapters.http.invitations.controllers.invitation_controller import (
+    from adapters.http.auth.invitations.controllers.invitation_controller import (
         InvitationController
     )
     invitation_controller = providers.Factory(

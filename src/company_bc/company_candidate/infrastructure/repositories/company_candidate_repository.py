@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from sqlalchemy.orm import Session
 
+from src.candidate_bc.candidate.infrastructure.models import CandidateModel
 from src.company_bc.company_candidate.domain.entities.company_candidate import CompanyCandidate
 from src.company_bc.company_candidate.domain.enums import (
     CompanyCandidateStatus,
@@ -19,7 +20,6 @@ from src.company_bc.company_candidate.domain.infrastructure.company_candidate_re
     CompanyCandidateRepositoryInterface
 )
 from src.company_bc.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
-from src.candidate_bc.candidate.infrastructure import CandidateModel
 from src.company_bc.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
 from src.company_bc.job_position.infrastructure.models.job_position_model import JobPositionModel
 from src.company_bc.company.domain.value_objects import CompanyId

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, List
 
 from src.candidate_bc.candidate.domain.value_objects import CandidateId
-from src.company_bc.candidate_application.domain.value_objects import CandidateApplicationId
+from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.interview_bc.interview.domain.entities.interview import Interview
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId

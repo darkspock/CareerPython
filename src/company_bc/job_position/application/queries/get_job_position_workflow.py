@@ -2,9 +2,10 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.framework.application.query_bus import Query, QueryHandler
-from src.shared_bc.customization.workflow.application import WorkflowDto
-from src.shared_bc.customization.workflow.application import WorkflowMapper
-from src.shared_bc.customization.workflow.domain.interfaces import WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.application.dtos.workflow_dto import WorkflowDto
+from src.shared_bc.customization.workflow.application.mappers.workflow_mapper import WorkflowMapper
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.company_bc.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 

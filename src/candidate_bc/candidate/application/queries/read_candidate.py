@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Optional
 
-from adapters.http.candidate.schemas.candidate import CandidateResponse
+from adapters.http.candidate_app.schemas.candidate import CandidateResponse
 from src.candidate_bc.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.framework.application.query_bus import Query, QueryHandler

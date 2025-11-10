@@ -437,7 +437,7 @@ class CompanyMapper:
 Ubicación: `adapters/http/{module}/mappers/{entity}_mapper.py`
 
 ```python
-from adapters.http.company.schemas.company_response import CompanyResponse
+from adapters.http.company_app.company.schemas.company_response import CompanyResponse
 from src.company_bc.company.application.dtos.company_dto import CompanyDto
 
 
@@ -665,9 +665,9 @@ from core.command_bus import CommandBus
 from core.query_bus import QueryBus
 from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommand
 from src.company_bc.company.application.queries import GetCompanyByIdQuery
-from adapters.http.company.schemas.company_request import CreateCompanyRequest
-from adapters.http.company.schemas.company_response import CompanyResponse
-from adapters.http.company.mappers.company_mapper import CompanyResponseMapper
+from adapters.http.company_app.company import CreateCompanyRequest
+from adapters.http.company_app.company.schemas.company_response import CompanyResponse
+from adapters.http.company_app.company.mappers.company_mapper import CompanyResponseMapper
 
 
 class CompanyController:
@@ -727,12 +727,13 @@ Ubicación: `adapters/http/{module}/routers/{entity}_router.py`
 ```python
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional
-from adapters.http.company.controllers.company_controller import CompanyController
-from adapters.http.company.schemas.company_request import CreateCompanyRequest, UpdateCompanyRequest
-from adapters.http.company.schemas.company_response import CompanyResponse
+from adapters.http.company_app.company.controllers.company_controller import CompanyController
+from adapters.http.company_app.company import CreateCompanyRequest, UpdateCompanyRequest
+from adapters.http.company_app.company.schemas.company_response import CompanyResponse
 from core.dependencies import get_company_controller
 
 router = APIRouter(prefix="/companies", tags=["companies"])
+
 
 @router.post(
     "",
@@ -741,8 +742,8 @@ router = APIRouter(prefix="/companies", tags=["companies"])
     summary="Crear empresa"
 )
 def create_company(
-    request: CreateCompanyRequest,
-    controller: CompanyController = Depends(get_company_controller)
+        request: CreateCompanyRequest,
+        controller: CompanyController = Depends(get_company_controller)
 ) -> CompanyResponse:
     """Crea una nueva empresa"""
     try:
@@ -750,14 +751,15 @@ def create_company(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.get(
     "/{company_id}",
     response_model=CompanyResponse,
     summary="Obtener empresa"
 )
 def get_company(
-    company_id: str,
-    controller: CompanyController = Depends(get_company_controller)
+        company_id: str,
+        controller: CompanyController = Depends(get_company_controller)
 ) -> CompanyResponse:
     """Obtiene una empresa por ID"""
     result = controller.get_company(company_id)
@@ -782,7 +784,7 @@ from dependency_injector import containers, providers
 from src.company_bc.company.infrastructure.repositories.company_repository import CompanyRepository
 from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommandHandler
 from src.company_bc.company.application.queries import GetCompanyByIdQueryHandler
-from adapters.http.company.controllers.company_controller import CompanyController
+from adapters.http.company_app.company.controllers.company_controller import CompanyController
 
 
 class Container(containers.DeclarativeContainer):

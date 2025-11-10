@@ -8,7 +8,7 @@ from typing import Optional
 
 from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import \
     CandidateApplicationRepositoryInterface
-from src.company_bc.candidate_application.domain.value_objects import CandidateApplicationId
+from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface

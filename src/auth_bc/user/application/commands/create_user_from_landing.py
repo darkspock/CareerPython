@@ -7,7 +7,6 @@ from src.candidate_bc.candidate.application.commands.create_candidate import Cre
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
 from src.notification_bc.notification.application.commands.send_email_command import SendEmailCommand
-from src.notification_bc.notification.domain.enums import NotificationTypeEnum
 from src.candidate_bc.resume.application.commands.analyze_pdf_resume_command import AnalyzePDFResumeCommand
 from src.framework.application.command_bus import Command
 from src.framework.application.command_bus import CommandHandler, CommandBus
@@ -22,6 +21,7 @@ from src.auth_bc.user.domain.services.password_service import PasswordService
 from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.auth_bc.user.domain.value_objects.user_asset_id import UserAssetId
 from src.auth_bc.user.infrastructure.services.pdf_processing_service import PDFProcessingService
+from src.notification_bc.notification.domain.enums.notification_type import NotificationTypeEnum
 
 
 @dataclass

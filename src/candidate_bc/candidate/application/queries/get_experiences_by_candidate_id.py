@@ -1,6 +1,6 @@
 from typing import List
 
-from adapters.http.candidate.schemas.candidate_experience import CandidateExperienceResponse
+from adapters.http.candidate_app.schemas.candidate_experience import CandidateExperienceResponse
 from src.candidate_bc.candidate.domain.repositories.candiadate_experience_repository_interface import \
     CandidateExperienceRepositoryInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId

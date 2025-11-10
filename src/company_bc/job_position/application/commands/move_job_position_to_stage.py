@@ -11,7 +11,8 @@ from src.company_bc.job_position.domain.infrastructure.job_position_stage_reposi
     JobPositionStageRepositoryInterface
 )
 from src.company_bc.job_position.domain.entities.job_position_stage import JobPositionStage
-from src.shared_bc.customization.workflow.domain.interfaces import WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId

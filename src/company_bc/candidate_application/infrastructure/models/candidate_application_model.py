@@ -14,7 +14,7 @@ from src.framework.domain.entities.base import generate_id
 if TYPE_CHECKING:
     from src.candidate_bc.candidate.infrastructure import CandidateModel
     from src.company_bc.job_position.infrastructure.models.job_position_model import JobPositionModel
-    from src.interview_bc.interview.infrastructure.models.interview_model import InterviewModel
+    from src.interview_bc.interview.Infrastructure.models.interview_model import InterviewModel
 
 
 @dataclass
