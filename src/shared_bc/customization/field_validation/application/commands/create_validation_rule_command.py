@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Any
 
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
 from src.framework.application.command_bus import Command
 from src.framework.application.command_bus import CommandHandler
 from src.shared_bc.customization.field_validation.domain.entities.validation_rule import ValidationRule

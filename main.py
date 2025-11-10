@@ -43,7 +43,7 @@ from adapters.http.invitations.routers.invitation_router import router as invita
 # Phase 10: Public Position Router
 from src.company_bc.job_position.presentation.routers.public_position_router import router as public_position_router
 # Phase 12: Phase Router
-from src.shared_bc.customization.phase.presentation.routers.phase_router import router as phase_router
+from adapters.http.phase.routers import router as phase_router
 
 # Crear tablas - COMENTADO temporalmente para aislamiento
 # Base.metadata.create_all(bind=engine)

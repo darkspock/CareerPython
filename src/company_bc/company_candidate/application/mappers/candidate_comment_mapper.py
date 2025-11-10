@@ -1,5 +1,5 @@
-from src.company_candidate.domain.entities.candidate_comment import CandidateComment
-from src.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
+from src.company_bc.company_candidate.domain.entities.candidate_comment import CandidateComment
+from src.company_bc.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
 
 
 class CandidateCommentMapper:

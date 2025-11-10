@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from src.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
+from src.company_bc.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
 from src.framework.application.command_bus import Command, CommandHandler
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
-from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 

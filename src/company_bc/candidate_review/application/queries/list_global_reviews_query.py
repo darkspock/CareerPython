@@ -4,7 +4,7 @@ from typing import List
 from src.framework.application.query_bus import Query, QueryHandler
 from src.company_bc.candidate_review.application.dtos.candidate_review_dto import CandidateReviewDto
 from src.company_bc.candidate_review.application.mappers.candidate_review_mapper import CandidateReviewMapper
-from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import CandidateReviewRepositoryInterface
 
 

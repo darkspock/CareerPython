@@ -1,6 +1,7 @@
 """Phase controller for handling HTTP requests"""
 from typing import List
 
+from adapters.http.phase.mappers.phase_mapper import PhaseMapper
 from src.company_bc.company.domain.value_objects import CompanyId
 from src.shared_bc.customization.phase.application import CreatePhaseCommand, CreatePhaseCommandHandler
 from src.shared_bc.customization.phase.application.commands.delete_phase_command import DeletePhaseCommand, DeletePhaseCommandHandler
@@ -17,8 +18,7 @@ from src.shared_bc.customization.phase.application import (
     ListPhasesByCompanyQueryHandler
 )
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.shared_bc.customization.phase.presentation import PhaseMapper
-from src.shared_bc.customization.phase.presentation.schemas.phase_schemas import (
+from adapters.http.phase.schemas.phase_schemas import (
     CreatePhaseRequest,
     UpdatePhaseRequest,
     PhaseResponse

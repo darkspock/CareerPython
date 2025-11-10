@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.interview.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
-from src.interview.interview_template.domain.enums.interview_template_question import \
+from src.interview_bc.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
+from src.interview_bc.interview_template.domain.enums.interview_template_question import \
     InterviewTemplateQuestionScopeEnum, InterviewTemplateQuestionDataTypeEnum
-from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
-from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
-from src.interview.interview_template.infrastructure.repositories.interview_template_question_repository import \
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_question_repository import \
     InterviewTemplateQuestionRepository
 from src.framework.application.command_bus import Command
 

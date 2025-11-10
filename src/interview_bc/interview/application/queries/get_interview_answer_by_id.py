@@ -1,9 +1,9 @@
 """Get interview answer by id query"""
 from dataclasses import dataclass
 
-from src.interview.interview.application.queries.dtos.interview_answer_dto import InterviewAnswerDto
-from src.interview.interview.domain.exceptions.interview_answer_exceptions import InterviewAnswerNotFoundException
-from src.interview.interview.domain.infrastructure.interview_answer_repository_interface import \
+from src.interview_bc.interview.application.queries.dtos.interview_answer_dto import InterviewAnswerDto
+from src.interview_bc.interview.domain.exceptions.interview_answer_exceptions import InterviewAnswerNotFoundException
+from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
     InterviewAnswerRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
 

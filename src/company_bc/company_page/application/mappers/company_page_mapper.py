@@ -11,7 +11,7 @@ from src.company_bc.company_page.domain.enums.page_type import PageType
 from src.company_bc.company_page.domain.value_objects.page_content import PageContent
 from src.company_bc.company_page.domain.value_objects.page_id import PageId
 from src.company_bc.company_page.domain.value_objects.page_metadata import PageMetadata
-from src.company_page.infrastructure.models.company_page_model import CompanyPageModel
+from src.company_bc.company_page.infrastructure.models.company_page_model import CompanyPageModel
 
 
 class CompanyPageMapper:

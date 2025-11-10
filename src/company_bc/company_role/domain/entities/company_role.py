@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company_bc.company.domain.value_objects import CompanyId
 
 

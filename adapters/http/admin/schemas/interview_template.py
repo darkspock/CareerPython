@@ -1,13 +1,13 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict, Any
 
-from src.interview.interview_template.application.queries.dtos.interview_template_dto import InterviewTemplateDto
-from src.interview.interview_template.application.queries.dtos.interview_template_list_dto import \
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_dto import InterviewTemplateDto
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_list_dto import \
     InterviewTemplateListDto
-from src.interview.interview_template.application.queries.dtos.interview_template_full_dto import \
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import \
     InterviewTemplateSectionDto, InterviewTemplateFullDto
-from src.interview.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum, InterviewTemplateSectionEnum
-from src.interview.interview_template.domain.value_objects import InterviewTemplateId
+from src.interview_bc.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum, InterviewTemplateSectionEnum
+from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
 

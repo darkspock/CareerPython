@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.customization.domain.interfaces.custom_field_repository_interface import CustomFieldRepositoryInterface
-from src.customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.customization.application.dtos.custom_field_dto import CustomFieldDto
-from src.customization.application.mappers.custom_field_mapper import CustomFieldMapper
+from src.shared_bc.customization.entity_customization.domain.interfaces.custom_field_repository_interface import CustomFieldRepositoryInterface
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
+from src.shared_bc.customization.entity_customization.application.dtos.custom_field_dto import CustomFieldDto
+from src.shared_bc.customization.entity_customization.application.mappers.custom_field_mapper import CustomFieldMapper
 from src.framework.application.query_bus import Query, QueryHandler
 
 

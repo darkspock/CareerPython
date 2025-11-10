@@ -10,8 +10,8 @@ from src.company_bc.company.domain.infrastructure.company_user_repository_interf
 from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyNotFoundError
 from src.framework.application.command_bus import Command, CommandHandler
 from src.auth_bc.user.domain.value_objects.UserId import UserId
-from src.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 
 
 @dataclass

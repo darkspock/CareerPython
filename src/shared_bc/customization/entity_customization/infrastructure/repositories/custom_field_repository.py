@@ -1,10 +1,10 @@
 from typing import Optional, List, Any
 
-from src.customization.domain.value_objects.custom_field import CustomField
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
-from src.customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.customization.domain.interfaces.custom_field_repository_interface import CustomFieldRepositoryInterface
-from src.customization.infrastructure.models.custom_field_model import CustomFieldModel
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
+from src.shared_bc.customization.entity_customization.domain.interfaces.custom_field_repository_interface import CustomFieldRepositoryInterface
+from src.shared_bc.customization.entity_customization.infrastructure.models.custom_field_model import CustomFieldModel
 
 
 class CustomFieldRepository(CustomFieldRepositoryInterface):

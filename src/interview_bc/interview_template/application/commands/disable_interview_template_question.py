@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.interview.interview_template.domain.exceptions.interview_exceptions import (
+from src.interview_bc.interview_template.domain.exceptions.interview_exceptions import (
     InterviewTemplateQuestionNotFoundException
 )
-from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
-from src.interview.interview_template.infrastructure.repositories.interview_template_question_repository import \
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_question_repository import \
     InterviewTemplateQuestionRepository
 from src.framework.application.command_bus import Command
 

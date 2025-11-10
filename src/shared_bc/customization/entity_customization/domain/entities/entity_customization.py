@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-from src.customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
-from src.customization.domain.value_objects.custom_field import CustomField
-from src.customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
 
 
 @dataclass
@@ -86,7 +86,7 @@ class EntityCustomization:
 
     def remove_field(self, field_id: CustomFieldId) -> None:
         """Remove a custom field from this customization"""
-        from src.customization.domain.exceptions.custom_field_not_found import CustomFieldNotFound
+        from src.shared_bc.customization.entity_customization.domain.exceptions.custom_field_not_found import CustomFieldNotFound
         
         field_to_remove = next((f for f in self.fields if str(f.id) == str(field_id)), None)
         if not field_to_remove:
@@ -97,7 +97,7 @@ class EntityCustomization:
 
     def update_field(self, field_id: CustomFieldId, field: CustomField) -> None:
         """Update a custom field in this customization"""
-        from src.customization.domain.exceptions.custom_field_not_found import CustomFieldNotFound
+        from src.shared_bc.customization.entity_customization.domain.exceptions.custom_field_not_found import CustomFieldNotFound
         
         field_index = next((i for i, f in enumerate(self.fields) if str(f.id) == str(field_id)), None)
         if field_index is None:
@@ -113,7 +113,7 @@ class EntityCustomization:
 
     def reorder_fields(self, field_ids_in_order: List[CustomFieldId]) -> None:
         """Reorder fields according to the provided list of field IDs"""
-        from src.customization.domain.exceptions.custom_field_not_found import CustomFieldNotFound
+        from src.shared_bc.customization.entity_customization.domain.exceptions.custom_field_not_found import CustomFieldNotFound
         
         if len(field_ids_in_order) != len(self.fields):
             raise ValueError("Number of field IDs must match number of fields")

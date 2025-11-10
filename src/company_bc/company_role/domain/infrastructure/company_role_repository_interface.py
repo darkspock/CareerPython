@@ -2,8 +2,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from src.company_role.domain.entities.company_role import CompanyRole
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.company_role.domain.entities.company_role import CompanyRole
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company_bc.company.domain.value_objects import CompanyId
 
 

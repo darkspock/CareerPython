@@ -3,9 +3,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from src.interview.interview.domain.value_objects.interview_answer_id import InterviewAnswerId
-from src.interview.interview.domain.value_objects.interview_id import InterviewId
-from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+from src.interview_bc.interview.domain.value_objects.interview_answer_id import InterviewAnswerId
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
 
 

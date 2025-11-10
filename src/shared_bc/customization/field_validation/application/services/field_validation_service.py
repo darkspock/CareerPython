@@ -1,6 +1,6 @@
 from typing import Dict, Any, Optional, List
 
-from src.customization.domain.interfaces import CustomFieldRepositoryInterface
+from src.shared_bc.customization.entity_customization.domain.interfaces import CustomFieldRepositoryInterface
 from src.shared_bc.customization.field_validation.domain.infrastructure.validation_rule_repository_interface import ValidationRuleRepositoryInterface
 from src.shared_bc.customization.field_validation.application.dtos.stage_validation_result_dto import StageValidationResultDto, ValidationIssueDto
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId

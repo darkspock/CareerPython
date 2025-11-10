@@ -16,6 +16,8 @@ from adapters.http.company.schemas.company_registration_response import (
     CompanyRegistrationResponse,
     LinkUserResponse,
 )
+from src.company_bc.company.application import GetCompanyByIdQuery, GetCompanyBySlugQuery, GetCompanyByDomainQuery, \
+    ListCompaniesQuery
 from src.company_bc.company.application.commands import (
     CreateCompanyCommand,
     UpdateCompanyCommand,
@@ -31,12 +33,7 @@ from src.company_bc.company.application.commands.link_user_to_company_command im
     LinkUserToCompanyCommand,
 )
 from src.company_bc.company.application.dtos.company_dto import CompanyDto
-from src.company_bc.company import (
-    GetCompanyByIdQuery,
-    GetCompanyByDomainQuery,
-    GetCompanyBySlugQuery,
-    ListCompaniesQuery,
-)
+
 from src.company_bc.company.domain import CompanyId, CompanyStatusEnum
 from src.company_bc.company.domain.value_objects import CompanyId as CompanyIdVO
 from src.auth_bc.user.domain.value_objects import UserId

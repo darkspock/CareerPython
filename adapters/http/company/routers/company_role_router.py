@@ -9,8 +9,8 @@ from adapters.http.company.schemas.create_role_request import CreateRoleRequest
 from adapters.http.company.schemas.update_role_request import UpdateRoleRequest
 from adapters.http.company.schemas.role_response import RoleResponse
 from core.container import Container
-from src.company_role.domain.exceptions.role_not_found import RoleNotFound
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.company_role.domain.exceptions.role_not_found import RoleNotFound
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 
 router = APIRouter(prefix="/companies/{company_id}/roles", tags=["Company Roles"])
 

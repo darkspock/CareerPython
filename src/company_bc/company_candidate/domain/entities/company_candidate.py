@@ -2,16 +2,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
 
-from src.company_candidate.domain.enums import (
+from src.company_bc.company_candidate.domain.enums import (
     CompanyCandidateStatus,
     OwnershipStatus,
     CandidatePriority,
 )
-from src.company_candidate.domain.value_objects import (
+from src.company_bc.company_candidate.domain.value_objects import (
     CompanyCandidateId,
     VisibilitySettings,
 )
-from src.company_candidate.domain.exceptions import (
+from src.company_bc.company_candidate.domain.exceptions import (
     CompanyCandidateValidationError,
     InvalidOwnershipTransitionError,
 )

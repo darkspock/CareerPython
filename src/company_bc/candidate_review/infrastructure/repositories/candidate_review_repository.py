@@ -12,7 +12,7 @@ from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repo
     CandidateReviewRepositoryInterface
 )
 from src.company_bc.candidate_review.infrastructure.models.candidate_review_model import CandidateReviewModel
-from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId

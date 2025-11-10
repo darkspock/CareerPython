@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.interview.interview.domain.infrastructure.interview_answer_repository_interface import \
+from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
     InterviewAnswerRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
 

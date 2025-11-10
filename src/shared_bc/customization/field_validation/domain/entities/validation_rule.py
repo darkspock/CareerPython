@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any, Dict
 
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
 from ..value_objects.validation_rule_id import ValidationRuleId
 from ..value_objects.validation_result import ValidationResult
 from ..enums.validation_rule_type import ValidationRuleType

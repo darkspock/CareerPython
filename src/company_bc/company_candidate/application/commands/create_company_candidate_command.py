@@ -4,12 +4,12 @@ from typing import Optional, Dict, List
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.company.domain.value_objects import CompanyId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
-from src.company_candidate.domain.entities.company_candidate import CompanyCandidate
-from src.company_candidate.domain.enums.candidate_priority import CandidatePriority
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
+from src.company_bc.company_candidate.domain.entities.company_candidate import CompanyCandidate
+from src.company_bc.company_candidate.domain.enums.candidate_priority import CandidatePriority
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
     CompanyCandidateRepositoryInterface
-from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
-from src.company_candidate.domain.value_objects.visibility_settings import VisibilitySettings
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.company_candidate.domain.value_objects.visibility_settings import VisibilitySettings
 from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.workflow.domain.interfaces import WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface

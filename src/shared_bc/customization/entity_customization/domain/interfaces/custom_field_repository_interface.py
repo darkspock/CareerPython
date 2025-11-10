@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from src.customization.domain.value_objects.custom_field import CustomField
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
-from src.customization.domain.value_objects.entity_customization_id import EntityCustomizationId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
 
 
 class CustomFieldRepositoryInterface(ABC):

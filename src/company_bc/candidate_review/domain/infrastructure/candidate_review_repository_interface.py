@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from src.company_bc.candidate_review.domain.entities.candidate_review import CandidateReview
 from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
-from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 

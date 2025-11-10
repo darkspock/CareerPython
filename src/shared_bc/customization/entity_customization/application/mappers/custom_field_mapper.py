@@ -1,5 +1,5 @@
-from src.customization.domain.value_objects.custom_field import CustomField
-from src.customization.application.dtos.custom_field_dto import CustomFieldDto
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
+from src.shared_bc.customization.entity_customization.application.dtos.custom_field_dto import CustomFieldDto
 
 
 class CustomFieldMapper:

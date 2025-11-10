@@ -5,12 +5,12 @@ from typing import Optional, List
 from core.database import DatabaseInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects import CandidateApplicationId
-from src.interview.interview.Infrastructure.models.interview_model import InterviewModel
-from src.interview.interview.domain.entities.interview import Interview
-from src.interview.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
-from src.interview.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
-from src.interview.interview.domain.value_objects.interview_id import InterviewId
-from src.interview.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
+from src.interview_bc.interview.infrastructure.models.interview_model import InterviewModel
+from src.interview_bc.interview.domain.entities.interview import Interview
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
+from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.framework.infrastructure.repositories.base import BaseRepository
 

@@ -5,18 +5,18 @@ from sqlalchemy import desc, asc, or_
 from sqlalchemy.exc import IntegrityError
 
 from core.database import DatabaseInterface
-from src.interview.interview_template.domain.entities.interview_template import InterviewTemplate
-from src.interview.interview_template.domain.enums import (
+from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
+from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum, InterviewTemplateTypeEnum
 )
-from src.interview.interview_template.domain.exceptions.interview_exceptions import (
+from src.interview_bc.interview_template.domain.exceptions.interview_exceptions import (
     InterviewTemplateNotFoundException,
     InterviewTemplateValidationException
 )
-from src.interview.interview_template.domain.infrastructure.interview_template_repository_interface import \
+from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import \
     InterviewTemplateRepositoryInterface
-from src.interview.interview_template.domain.value_objects import InterviewTemplateId
-from src.interview.interview_template.infrastructure.models.interview_template import InterviewTemplateModel
+from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
+from src.interview_bc.interview_template.infrastructure.models.interview_template import InterviewTemplateModel
 from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
@@ -225,7 +225,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
 
     def _to_domain(self, db_template: InterviewTemplateModel) -> InterviewTemplate:
         """Convert database model to domain entity"""
-        from src.interview.interview_template.domain.value_objects import InterviewTemplateId
+        from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 
         return InterviewTemplate(
             id=InterviewTemplateId.from_string(db_template.id),
@@ -245,7 +245,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
 
     def clone_template(self, template_id: str, new_name: str, created_by: Optional[str] = None) -> InterviewTemplate:
         """Clone existing template with new ID"""
-        from src.interview.interview_template.domain.value_objects import InterviewTemplateId
+        from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 
         original = self.get_by_id(InterviewTemplateId.from_string(template_id))
         if not original:

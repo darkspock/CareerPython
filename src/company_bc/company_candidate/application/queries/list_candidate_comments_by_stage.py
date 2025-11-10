@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from typing import List
 
 from src.framework.application.query_bus import Query, QueryHandler
-from src.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
-from src.company_candidate.application.mappers.candidate_comment_mapper import CandidateCommentMapper
-from src.company_candidate.domain.value_objects import CompanyCandidateId
+from src.company_bc.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
+from src.company_bc.company_candidate.application.mappers.candidate_comment_mapper import CandidateCommentMapper
+from src.company_bc.company_candidate.domain.value_objects import CompanyCandidateId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
+from src.company_bc.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
 
 
 @dataclass(frozen=True)

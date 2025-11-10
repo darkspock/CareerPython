@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.company_candidate.domain.value_objects import (
+from src.company_bc.company_candidate.domain.value_objects import (
     CandidateCommentId,
     CompanyCandidateId,
 )
-from src.company_candidate.domain.enums import (
+from src.company_bc.company_candidate.domain.enums import (
     CommentVisibility,
     CommentReviewStatus,
 )

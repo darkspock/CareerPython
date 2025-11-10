@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.framework.application.command_bus import Command, CommandHandler
-from src.company_candidate.domain.value_objects import CandidateCommentId
-from src.company_candidate.domain.enums import CommentVisibility
-from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
+from src.company_bc.company_candidate.domain.value_objects import CandidateCommentId
+from src.company_bc.company_candidate.domain.enums import CommentVisibility
+from src.company_bc.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
 
 
 @dataclass(frozen=True)

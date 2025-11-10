@@ -5,11 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from core.container import Container
 from adapters.http.company_candidate.controllers.company_candidate_controller import CompanyCandidateController
-from src.company_candidate.presentation.schemas.assign_workflow_request import AssignWorkflowRequest
-from src.company_candidate.presentation.schemas.change_stage_request import ChangeStageRequest
-from src.company_candidate.presentation.schemas.company_candidate_response import CompanyCandidateResponse
-from src.company_candidate.presentation.schemas.create_company_candidate_request import CreateCompanyCandidateRequest
-from src.company_candidate.presentation.schemas.update_company_candidate_request import UpdateCompanyCandidateRequest
+from src.company_bc.company_candidate.presentation.schemas.assign_workflow_request import AssignWorkflowRequest
+from src.company_bc.company_candidate.presentation.schemas.change_stage_request import ChangeStageRequest
+from src.company_bc.company_candidate.presentation.schemas.company_candidate_response import CompanyCandidateResponse
+from src.company_bc.company_candidate.presentation.schemas.create_company_candidate_request import CreateCompanyCandidateRequest
+from src.company_bc.company_candidate.presentation.schemas.update_company_candidate_request import UpdateCompanyCandidateRequest
 
 router = APIRouter(
     prefix="/api/company-candidates",

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
 from src.framework.application.query_bus import Query
 from src.framework.application.query_bus import QueryHandler
 from src.shared_bc.customization.field_validation.domain.infrastructure.validation_rule_repository_interface import ValidationRuleRepositoryInterface

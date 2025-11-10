@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from src.framework.application.query_bus import Query, QueryHandler
-from src.company_candidate.domain.value_objects import CompanyCandidateId
-from src.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
+from src.company_bc.company_candidate.domain.value_objects import CompanyCandidateId
+from src.company_bc.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
 
 
 @dataclass(frozen=True)

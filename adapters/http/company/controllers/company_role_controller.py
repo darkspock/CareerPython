@@ -5,13 +5,13 @@ from adapters.http.company.mappers.role_response_mapper import RoleResponseMappe
 from adapters.http.company.schemas.create_role_request import CreateRoleRequest
 from adapters.http.company.schemas.role_response import RoleResponse
 from adapters.http.company.schemas.update_role_request import UpdateRoleRequest
-from src.company_role.application.commands.create_role_command import CreateRoleCommand
-from src.company_role.application.commands.delete_role_command import DeleteRoleCommand
-from src.company_role.application.commands.update_role_command import UpdateRoleCommand
-from src.company_role.application.dtos.company_role_dto import CompanyRoleDto
-from src.company_role.application.queries.get_role_by_id import GetCompanyRoleByIdQuery
-from src.company_role.application.queries.list_roles_by_company import ListRolesByCompanyQuery
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.company_role.application.commands.create_role_command import CreateRoleCommand
+from src.company_bc.company_role.application.commands.delete_role_command import DeleteRoleCommand
+from src.company_bc.company_role.application.commands.update_role_command import UpdateRoleCommand
+from src.company_bc.company_role.application.dtos.company_role_dto import CompanyRoleDto
+from src.company_bc.company_role.application.queries.get_role_by_id import GetCompanyRoleByIdQuery
+from src.company_bc.company_role.application.queries.list_roles_by_company import ListRolesByCompanyQuery
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 

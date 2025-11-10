@@ -1,15 +1,15 @@
 from typing import List, Optional
 
 from core.database import DatabaseInterface
-from src.interview.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
-from src.interview.interview_template.domain.enums import InterviewTemplateQuestionStatusEnum
-from src.interview.interview_template.domain.infrastructure.interview_template_question_repository_interface import \
+from src.interview_bc.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
+from src.interview_bc.interview_template.domain.enums import InterviewTemplateQuestionStatusEnum
+from src.interview_bc.interview_template.domain.infrastructure.interview_template_question_repository_interface import \
     InterviewTemplateQuestionRepositoryInterface
-from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
-from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
-from src.interview.interview_template.infrastructure.models.interview_template_question import \
+from src.interview_bc.interview_template.infrastructure.models.interview_template_question import \
     InterviewTemplateQuestionModel
 from src.framework.infrastructure.repositories.base import BaseRepository
 
@@ -23,9 +23,9 @@ class InterviewTemplateQuestionRepository(InterviewTemplateQuestionRepositoryInt
 
     def _to_domain(self, model: InterviewTemplateQuestionModel) -> InterviewTemplateQuestion:
         """Convierte modelo de SQLAlchemy a entidad de dominio"""
-        from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+        from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
             InterviewTemplateQuestionId
-        from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+        from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
             InterviewTemplateSectionId
 
         return InterviewTemplateQuestion(

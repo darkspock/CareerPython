@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
 # Removed import to avoid circular dependency
-from src.interview.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
 from src.framework.domain.entities.base import generate_id
 
 # Forward references for mypy

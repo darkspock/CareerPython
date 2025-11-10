@@ -6,7 +6,7 @@ from dependency_injector.wiring import inject, Provide
 
 from core.container import Container
 from adapters.http.phase.controllers.phase_controller import PhaseController
-from src.shared_bc.customization.phase.presentation.schemas.phase_schemas import (
+from adapters.http.phase.schemas.phase_schemas import (
     CreatePhaseRequest,
     UpdatePhaseRequest,
     PhaseResponse

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import List, Optional, Dict, Any
 
-from src.customization.domain.entities.entity_customization import EntityCustomization
-from src.customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
-from src.customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.customization.domain.value_objects.custom_field import CustomField
-from src.customization.domain.exceptions.entity_customization_not_found import EntityCustomizationNotFound
+from src.shared_bc.customization.entity_customization.domain.entities.entity_customization import EntityCustomization
+from src.shared_bc.customization.entity_customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
+from src.shared_bc.customization.entity_customization.domain.exceptions.entity_customization_not_found import EntityCustomizationNotFound
 from src.framework.application.command_bus import Command, CommandHandler
 
 

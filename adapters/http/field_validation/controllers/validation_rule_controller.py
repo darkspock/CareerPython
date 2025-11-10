@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 from src.shared_bc.customization.field_validation.application.dtos.validation_rule_dto import ValidationRuleDto

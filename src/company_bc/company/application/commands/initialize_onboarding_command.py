@@ -5,8 +5,8 @@ import logging
 
 from src.framework.application.command_bus import Command, CommandHandler, CommandBus
 from src.company_bc.company.domain.value_objects.company_id import CompanyId
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
-from src.company_role.application.commands.create_role_command import CreateRoleCommand
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.company_role.application.commands.create_role_command import CreateRoleCommand
 from src.company_bc.company_page.application.commands.create_company_page_command import CreateCompanyPageCommand
 from src.company_bc.company_page.domain.enums.page_type import PageType
 from src.framework.infrastructure.helpers.mixed_helper import MixedHelper

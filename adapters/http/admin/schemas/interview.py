@@ -4,8 +4,8 @@ from typing import Optional
 
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.company.domain.value_objects import CompanyId
-from src.interview.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
-from src.interview.interview_template.domain.value_objects import InterviewTemplateId
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
+from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 
 

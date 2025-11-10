@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
+from src.company_bc.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
     CompanyCandidateWithCandidateReadModel
 )
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import (
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import (
     CompanyCandidateRepositoryInterface
 )
 from src.company_bc.company.domain.value_objects import CompanyId

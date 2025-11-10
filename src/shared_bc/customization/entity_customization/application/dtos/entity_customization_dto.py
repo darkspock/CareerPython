@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
-from src.customization.application.dtos.custom_field_dto import CustomFieldDto
+from src.shared_bc.customization.entity_customization.application.dtos.custom_field_dto import CustomFieldDto
 
 
 @dataclass

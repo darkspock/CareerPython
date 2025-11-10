@@ -10,16 +10,16 @@ from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_candidate.domain.enums import CandidatePriority
-from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.company_candidate.domain.enums import CandidatePriority
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.framework.application.command_bus import Command, CommandHandler, CommandBus
 from src.auth_bc.user.application.commands.create_user_command import CreateUserCommand
 from src.company_bc.company.application.commands.add_company_user_command import AddCompanyUserCommand
 from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommand
-from src.company_candidate.application.commands.create_company_candidate_command import (
+from src.company_bc.company_candidate.application.commands.create_company_candidate_command import (
     CreateCompanyCandidateCommand
 )
-from src.company_candidate.application.commands.assign_workflow_command import (
+from src.company_bc.company_candidate.application.commands.assign_workflow_command import (
     AssignWorkflowCommand
 )
 from core.database import SQLAlchemyDatabase

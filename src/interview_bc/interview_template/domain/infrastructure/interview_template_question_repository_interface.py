@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from src.interview.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
-from src.interview.interview_template.domain.enums import InterviewTemplateQuestionStatusEnum
-from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+from src.interview_bc.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
+from src.interview_bc.interview_template.domain.enums import InterviewTemplateQuestionStatusEnum
+from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
-from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
 
 

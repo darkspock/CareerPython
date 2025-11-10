@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, List
 
-from src.interview.interview.domain.entities.interview import Interview
-from src.interview.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
-from src.interview.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview.domain.entities.interview import Interview
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 
 
 class InterviewRepositoryInterface(ABC):

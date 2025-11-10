@@ -1,16 +1,16 @@
 from typing import Optional, List
 
-from src.interview.interview_template.application.queries.dtos.interview_template_full_dto import (
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import (
     InterviewTemplateFullDto,
     InterviewTemplateSectionDto,
     InterviewTemplateQuestionDto
 )
-from src.interview.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-from src.interview.interview_template.infrastructure.repositories.interview_template_question_repository import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_question_repository import \
     InterviewTemplateQuestionRepository
-from src.interview.interview_template.infrastructure.repositories.interview_template_repository import \
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_repository import \
     InterviewTemplateRepository
-from src.interview.interview_template.infrastructure.repositories.interview_template_section_repository import \
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_section_repository import \
     InterviewTemplateSectionRepository
 from src.framework.application.query_bus import Query, QueryHandler
 

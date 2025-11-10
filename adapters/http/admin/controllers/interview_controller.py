@@ -7,17 +7,17 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
-from src.interview.interview.application.commands.create_interview import CreateInterviewCommand
-from src.interview.interview.application.commands.finish_interview import FinishInterviewCommand
-from src.interview.interview.application.commands.start_interview import StartInterviewCommand
-from src.interview.interview.application.queries.dtos.interview_dto import InterviewDto
-from src.interview.interview.application.queries.get_interview_by_id import GetInterviewByIdQuery
-from src.interview.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQuery, \
+from src.interview_bc.interview.application.commands.create_interview import CreateInterviewCommand
+from src.interview_bc.interview.application.commands.finish_interview import FinishInterviewCommand
+from src.interview_bc.interview.application.commands.start_interview import StartInterviewCommand
+from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQuery
+from src.interview_bc.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQuery, \
     InterviewScoreSummaryDto
-from src.interview.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQuery
-from src.interview.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQuery
-from src.interview.interview.application.queries.list_interviews import ListInterviewsQuery
-from src.interview.interview.domain.enums.interview_enums import InterviewTypeEnum
+from src.interview_bc.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQuery
+from src.interview_bc.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQuery
+from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQuery
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 

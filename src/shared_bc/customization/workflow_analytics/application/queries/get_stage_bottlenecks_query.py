@@ -61,7 +61,7 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
         bottlenecks: List[StageBottleneckDto] = []
 
         with self._database.get_session() as session:
-            from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+            from src.company_bc.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 
             # Base query with date filtering
             base_query = session.query(CompanyCandidateModel).filter(

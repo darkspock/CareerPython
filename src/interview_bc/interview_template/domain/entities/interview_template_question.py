@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.interview.interview_template.domain.enums.interview_template_question import \
+from src.interview_bc.interview_template.domain.enums.interview_template_question import \
     InterviewTemplateQuestionStatusEnum, \
     InterviewTemplateQuestionDataTypeEnum, InterviewTemplateQuestionScopeEnum
-from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
-from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
 
 

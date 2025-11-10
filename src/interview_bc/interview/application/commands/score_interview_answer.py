@@ -4,10 +4,10 @@ from datetime import datetime
 from typing import Optional
 
 from core.event_bus import EventBus
-from src.interview.interview.domain.events.interview_answer_events import InterviewAnswerScoredEvent
-from src.interview.interview.domain.exceptions.interview_answer_exceptions import InterviewAnswerNotFoundException, \
+from src.interview_bc.interview.domain.events.interview_answer_events import InterviewAnswerScoredEvent
+from src.interview_bc.interview.domain.exceptions.interview_answer_exceptions import InterviewAnswerNotFoundException, \
     InterviewAnswerInvalidScoreException
-from src.interview.interview.domain.infrastructure.interview_answer_repository_interface import \
+from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
     InterviewAnswerRepositoryInterface
 from src.framework.application.command_bus import Command, CommandHandler
 

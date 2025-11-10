@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
-from src.customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
+from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
 from src.framework.application.query_bus import Query, QueryHandler
 from core.database import SQLAlchemyDatabase
-from src.customization.infrastructure.models.custom_field_value_model import CustomFieldValueModel
+from src.shared_bc.customization.entity_customization.infrastructure.models.custom_field_value_model import CustomFieldValueModel
 
 
 @dataclass(frozen=True)

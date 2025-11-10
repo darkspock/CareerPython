@@ -3,12 +3,12 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from src.company_bc.company.domain.value_objects import CompanyId
-from src.interview.interview_template.domain.entities.interview_template import InterviewTemplate
-from src.interview.interview_template.domain.enums import (
+from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
+from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum,
     InterviewTemplateTypeEnum
 )
-from src.interview.interview_template.domain.value_objects import InterviewTemplateId
+from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 from src.framework.domain.enums.job_category import JobCategoryEnum
 
 

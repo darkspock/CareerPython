@@ -1,17 +1,17 @@
 from typing import Optional
 
-from src.interview.interview_template.application.queries.dtos import (
+from src.interview_bc.interview_template.application.queries.dtos import (
     InterviewTemplateFullDto,
     InterviewTemplateSectionDto,
     InterviewTemplateQuestionDto
 )
-from src.interview.interview_template.domain.enums.interview_template_question import \
+from src.interview_bc.interview_template.domain.enums.interview_template_question import \
     InterviewTemplateQuestionStatusEnum
-from src.interview.interview_template.domain.enums.interview_template_section import InterviewTemplateSectionStatusEnum
-from src.interview.interview_template.infrastructure.repositories import InterviewTemplateSectionRepository
-from src.interview.interview_template.infrastructure.repositories.interview_template_question_repository import \
+from src.interview_bc.interview_template.domain.enums.interview_template_section import InterviewTemplateSectionStatusEnum
+from src.interview_bc.interview_template.infrastructure.repositories import InterviewTemplateSectionRepository
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_question_repository import \
     InterviewTemplateQuestionRepository
-from src.interview.interview_template.infrastructure.repositories.interview_template_repository import \
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_repository import \
     InterviewTemplateRepository
 from src.framework.application.query_bus import Query, QueryHandler
 from src.framework.domain.enums.job_category import JobCategoryEnum

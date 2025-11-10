@@ -1,9 +1,9 @@
 from typing import Optional
 
-from src.interview.interview_template.application.queries.dtos.interview_template_full_dto import \
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import \
     InterviewTemplateQuestionDto
-from src.interview.interview_template.domain.value_objects import InterviewTemplateQuestionId
-from src.interview.interview_template.infrastructure.repositories.interview_template_question_repository import \
+from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateQuestionId
+from src.interview_bc.interview_template.infrastructure.repositories.interview_template_question_repository import \
     InterviewTemplateQuestionRepository
 from src.framework.application.query_bus import Query, QueryHandler
 

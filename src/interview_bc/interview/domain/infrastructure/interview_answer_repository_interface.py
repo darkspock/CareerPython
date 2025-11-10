@@ -2,8 +2,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from src.interview.interview.domain.entities.interview_answer import InterviewAnswer
-from src.interview.interview.domain.value_objects.interview_answer_id import InterviewAnswerId
+from src.interview_bc.interview.domain.entities.interview_answer import InterviewAnswer
+from src.interview_bc.interview.domain.value_objects.interview_answer_id import InterviewAnswerId
 
 
 class InterviewAnswerRepositoryInterface(ABC):

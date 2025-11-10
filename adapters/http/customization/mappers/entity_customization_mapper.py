@@ -1,4 +1,4 @@
-from src.customization.application.dtos.entity_customization_dto import EntityCustomizationDto
+from src.shared_bc.customization.entity_customization.application.dtos.entity_customization_dto import EntityCustomizationDto
 from adapters.http.customization.schemas.entity_customization_response import EntityCustomizationResponse
 from adapters.http.customization.mappers.custom_field_mapper import CustomFieldResponseMapper
 

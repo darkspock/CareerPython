@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSON
 
 from core.database import Base
-from src.customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
+from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
 
 
 @dataclass

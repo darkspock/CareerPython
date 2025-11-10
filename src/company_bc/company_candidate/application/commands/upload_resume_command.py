@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from src.framework.application.command_bus import Command, CommandHandler
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
-from src.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
 from src.framework.domain.infrastructure.storage_service_interface import StorageServiceInterface, StorageType
 

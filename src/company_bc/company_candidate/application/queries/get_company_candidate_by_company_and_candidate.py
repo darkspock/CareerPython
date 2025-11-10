@@ -3,9 +3,9 @@ from typing import Optional
 
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.company.domain.value_objects import CompanyId
-from src.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
-from src.company_candidate.application.mappers.company_candidate_mapper import CompanyCandidateMapper
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
+from src.company_bc.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
+from src.company_bc.company_candidate.application.mappers.company_candidate_mapper import CompanyCandidateMapper
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
     CompanyCandidateRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
 

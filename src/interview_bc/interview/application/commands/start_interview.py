@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from core.event_bus import EventBus
-from src.interview.interview.domain.events.interview_events import InterviewStartedEvent
-from src.interview.interview.domain.exceptions.interview_exceptions import InterviewNotFoundException
-from src.interview.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
+from src.interview_bc.interview.domain.events.interview_events import InterviewStartedEvent
+from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewNotFoundException
+from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.framework.application.command_bus import Command, CommandHandler
 
 

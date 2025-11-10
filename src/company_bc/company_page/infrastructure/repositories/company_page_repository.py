@@ -17,7 +17,7 @@ from src.company_bc.company_page.domain.exceptions.company_page_exceptions impor
 )
 from src.company_bc.company_page.domain.infrastructure.company_page_repository_interface import CompanyPageRepositoryInterface
 from src.company_bc.company_page.domain.value_objects.page_id import PageId
-from src.company_page.infrastructure.models.company_page_model import CompanyPageModel
+from src.company_bc.company_page.infrastructure.models.company_page_model import CompanyPageModel
 
 
 class CompanyPageRepository(CompanyPageRepositoryInterface):

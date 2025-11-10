@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from src.interview.interview_template.domain.entities.interview_template_section import InterviewTemplateSection
-from src.interview.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+from src.interview_bc.interview_template.domain.entities.interview_template_section import InterviewTemplateSection
+from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
+from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
 
 

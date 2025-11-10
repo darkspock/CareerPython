@@ -1,5 +1,5 @@
-from src.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
-from src.company_candidate.domain.entities.company_candidate import CompanyCandidate
+from src.company_bc.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
+from src.company_bc.company_candidate.domain.entities.company_candidate import CompanyCandidate
 
 
 class CompanyCandidateMapper:

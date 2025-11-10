@@ -10,9 +10,9 @@ from fastapi.security import OAuth2PasswordBearer
 
 from core.container import Container
 from adapters.http.company.controllers.candidate_comment_controller import CandidateCommentController
-from src.company_candidate.presentation.schemas.create_candidate_comment_request import CreateCandidateCommentRequest
-from src.company_candidate.presentation.schemas.update_candidate_comment_request import UpdateCandidateCommentRequest
-from src.company_candidate.presentation.schemas.candidate_comment_response import CandidateCommentResponse
+from src.company_bc.company_candidate.presentation.schemas.create_candidate_comment_request import CreateCandidateCommentRequest
+from src.company_bc.company_candidate.presentation.schemas.update_candidate_comment_request import UpdateCandidateCommentRequest
+from src.company_bc.company_candidate.presentation.schemas.candidate_comment_response import CandidateCommentResponse
 
 log = logging.getLogger(__name__)
 

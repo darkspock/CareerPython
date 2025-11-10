@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
 from src.shared_bc.customization.field_validation.domain.entities.validation_rule import ValidationRule
 from src.shared_bc.customization.field_validation.domain.value_objects.validation_rule_id import ValidationRuleId
 from src.shared_bc.customization.field_validation.domain.infrastructure.validation_rule_repository_interface import ValidationRuleRepositoryInterface

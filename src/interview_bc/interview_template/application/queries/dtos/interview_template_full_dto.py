@@ -2,18 +2,18 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
-from src.interview.interview_template.domain import InterviewTemplateQuestion, InterviewTemplateSection
-from src.interview.interview_template.domain.enums import (
+from src.interview_bc.interview_template.domain import InterviewTemplateQuestion, InterviewTemplateSection
+from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum,
     InterviewTemplateTypeEnum, InterviewTemplateSectionEnum
 )
-from src.interview.interview_template.domain.enums.interview_template_question import (
+from src.interview_bc.interview_template.domain.enums.interview_template_question import (
     InterviewTemplateQuestionStatusEnum,
     InterviewTemplateQuestionDataTypeEnum,
     InterviewTemplateQuestionScopeEnum
 )
-from src.interview.interview_template.domain.enums.interview_template_section import InterviewTemplateSectionStatusEnum
-from src.interview.interview_template.domain.value_objects import InterviewTemplateQuestionId, \
+from src.interview_bc.interview_template.domain.enums.interview_template_section import InterviewTemplateSectionStatusEnum
+from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateQuestionId, \
     InterviewTemplateSectionId, InterviewTemplateId
 from src.framework.domain.enums.job_category import JobCategoryEnum
 

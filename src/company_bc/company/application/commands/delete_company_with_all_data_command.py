@@ -8,15 +8,15 @@ from src.company_bc.company.domain.infrastructure.company_repository_interface i
 from src.company_bc.company.domain.exceptions.company_exceptions import CompanyNotFoundError
 from src.company_bc.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company_bc.company.domain.infrastructure.company_user_invitation_repository_interface import CompanyUserInvitationRepositoryInterface
-from src.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
+from src.company_bc.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
 from src.company_bc.company_page.domain.infrastructure.company_page_repository_interface import CompanyPageRepositoryInterface
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.shared_bc.customization.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.company_bc.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
-from src.customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
-from src.customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
+from src.shared_bc.customization.entity_customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
+from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
 from core.database import SQLAlchemyDatabase
 
 log = logging.getLogger(__name__)
@@ -185,7 +185,7 @@ class DeleteCompanyWithAllDataCommandHandler(CommandHandler[DeleteCompanyWithAll
         log.debug(f"Deleting EntityCustomizations for company {company_id.value}")
         # Delete customizations where entity_type is Company and entity_id is the company_id
         with self.database.get_session() as session:
-            from src.customization.infrastructure.models.entity_customization_model import EntityCustomizationModel
+            from src.shared_bc.customization.entity_customization.infrastructure.models.entity_customization_model import EntityCustomizationModel
 
             # Get all workflow IDs for this company
             workflows = self.workflow_repository.list_by_company(company_id)

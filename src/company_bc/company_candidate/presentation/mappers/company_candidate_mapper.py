@@ -1,9 +1,9 @@
 from typing import Optional, Dict, Any
-from src.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
-from src.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
+from src.company_bc.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
+from src.company_bc.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
     CompanyCandidateWithCandidateReadModel
 )
-from src.company_candidate.presentation.schemas.company_candidate_response import CompanyCandidateResponse
+from src.company_bc.company_candidate.presentation.schemas.company_candidate_response import CompanyCandidateResponse
 
 
 class CompanyCandidateResponseMapper:

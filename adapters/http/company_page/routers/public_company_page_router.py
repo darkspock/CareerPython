@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from dependency_injector.wiring import inject, Provide
 
 from adapters.http.company_page.controllers.company_page_controller import CompanyPageController
-from src.company_page.presentation.schemas.company_page_response import CompanyPageResponse
+from src.company_bc.company_page.presentation.schemas.company_page_response import CompanyPageResponse
 from core.container import Container
 
 # Crear router

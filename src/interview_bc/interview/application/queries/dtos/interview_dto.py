@@ -5,9 +5,9 @@ from typing import Optional, List
 
 from src.candidate_bc.candidate.domain.value_objects import CandidateId
 from src.company_bc.candidate_application.domain.value_objects import CandidateApplicationId
-from src.interview.interview.domain.entities.interview import Interview
-from src.interview.interview.domain.value_objects.interview_id import InterviewId
-from src.interview.interview_template.domain.value_objects import InterviewTemplateId
+from src.interview_bc.interview.domain.entities.interview import Interview
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects import JobPositionId
 
 

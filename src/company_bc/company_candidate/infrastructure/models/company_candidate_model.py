@@ -6,7 +6,7 @@ from sqlalchemy import String, Text, DateTime, ForeignKey, JSON, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base
-from src.company_candidate.domain.enums import (
+from src.company_bc.company_candidate.domain.enums import (
     CompanyCandidateStatus,
     OwnershipStatus,
     CandidatePriority,

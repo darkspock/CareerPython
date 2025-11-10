@@ -6,17 +6,17 @@ from typing import List, Optional
 from sqlalchemy.exc import IntegrityError
 
 from core.database import DatabaseInterface
-from src.interview.interview_template.domain.entities.interview_template_section import InterviewTemplateSection
-from src.interview.interview_template.domain.exceptions.interview_exceptions import (
+from src.interview_bc.interview_template.domain.entities.interview_template_section import InterviewTemplateSection
+from src.interview_bc.interview_template.domain.exceptions.interview_exceptions import (
     InterviewTemplateNotFoundException,
     InterviewTemplateValidationException
 )
-from src.interview.interview_template.domain.infrastructure.interview_template_section_repository_interface import \
+from src.interview_bc.interview_template.domain.infrastructure.interview_template_section_repository_interface import \
     InterviewTemplateSectionRepositoryInterface
-from src.interview.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
+from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
-from src.interview.interview_template.infrastructure.models.interview_template_section import \
+from src.interview_bc.interview_template.infrastructure.models.interview_template_section import \
     InterviewTemplateSectionModel
 
 
@@ -119,8 +119,8 @@ class InterviewTemplateSectionRepository(InterviewTemplateSectionRepositoryInter
 
     def _to_domain(self, db_section: InterviewTemplateSectionModel) -> InterviewTemplateSection:
         """Convert database model to domain entity"""
-        from src.interview.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-        from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+        from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
+        from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
             InterviewTemplateSectionId
 
         return InterviewTemplateSection(

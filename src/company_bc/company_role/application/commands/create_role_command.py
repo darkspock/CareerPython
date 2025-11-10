@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import Optional
 import ulid
 
-from src.company_role.domain.entities.company_role import CompanyRole
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.company_role.domain.entities.company_role import CompanyRole
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company_bc.company.domain.value_objects import CompanyId
-from src.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
+from src.company_bc.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
 from src.framework.application.command_bus import Command, CommandHandler
 
 

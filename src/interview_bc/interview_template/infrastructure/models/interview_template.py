@@ -6,7 +6,7 @@ from sqlalchemy import String, Enum, Text, DateTime, Index, JSON, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
-from src.interview.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum
+from src.interview_bc.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum
 from src.framework.domain.entities.base import generate_id
 from src.framework.domain.enums.job_category import JobCategoryEnum
 

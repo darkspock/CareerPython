@@ -66,7 +66,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
         # Calculate analytics using raw SQL for performance
         with self._database.get_session() as session:
             # Import models inline to avoid circular dependencies
-            from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+            from src.company_bc.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 
             # Base query with date filtering
             base_query = session.query(CompanyCandidateModel).filter(
@@ -86,7 +86,7 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
             total_applications = base_query.count()
 
             # Count by status
-            from src.company_candidate.domain.enums import CompanyCandidateStatus
+            from src.company_bc.company_candidate.domain.enums import CompanyCandidateStatus
 
             active_count = base_query.filter(
                 CompanyCandidateModel.status.in_([

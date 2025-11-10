@@ -2,23 +2,23 @@ from typing import Optional, List
 
 from sqlalchemy.orm import Session
 
-from src.company_candidate.domain.entities.company_candidate import CompanyCandidate
-from src.company_candidate.domain.enums import (
+from src.company_bc.company_candidate.domain.entities.company_candidate import CompanyCandidate
+from src.company_bc.company_candidate.domain.enums import (
     CompanyCandidateStatus,
     OwnershipStatus,
     CandidatePriority,
 )
-from src.company_candidate.domain.value_objects import (
+from src.company_bc.company_candidate.domain.value_objects import (
     CompanyCandidateId,
     VisibilitySettings,
 )
-from src.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
+from src.company_bc.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
     CompanyCandidateWithCandidateReadModel
 )
-from src.company_candidate.domain.infrastructure.company_candidate_repository_interface import (
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import (
     CompanyCandidateRepositoryInterface
 )
-from src.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+from src.company_bc.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
 from src.candidate_bc.candidate.infrastructure import CandidateModel
 from src.company_bc.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
 from src.company_bc.job_position.infrastructure.models.job_position_model import JobPositionModel
@@ -284,8 +284,8 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         # Import models for JOIN
         from src.shared_bc.customization.workflow.infrastructure.models import WorkflowModel
         from src.shared_bc.customization.workflow.infrastructure.models import WorkflowStageModel
-        from src.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
-        from src.company_candidate.domain.enums.comment_review_status import CommentReviewStatus
+        from src.company_bc.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
+        from src.company_bc.company_candidate.domain.enums.comment_review_status import CommentReviewStatus
         from sqlalchemy import func
         # from src.phase.infrastructure.models.phase_model import PhaseModel  # Temporarily disabled
         

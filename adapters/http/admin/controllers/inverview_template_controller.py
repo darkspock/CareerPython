@@ -8,44 +8,44 @@ from adapters.http.admin.schemas.interview_template import (
     InterviewTemplateQuestionUpdate, InterviewTemplateQuestionResponse
 )
 from src.company_bc.company.domain.value_objects import CompanyId
-from src.interview.interview_template.application.commands import CreateInterviewTemplateCommand
-from src.interview.interview_template.application.commands.create_interview_template_question import \
+from src.interview_bc.interview_template.application.commands import CreateInterviewTemplateCommand
+from src.interview_bc.interview_template.application.commands.create_interview_template_question import \
     CreateInterviewTemplateQuestionCommand
-from src.interview.interview_template.application.commands.create_interview_template_section import \
+from src.interview_bc.interview_template.application.commands.create_interview_template_section import \
     CreateInterviewTemplateSectionCommand
-from src.interview.interview_template.application.commands.delete_interview_template_question import \
+from src.interview_bc.interview_template.application.commands.delete_interview_template_question import \
     DeleteInterviewTemplateQuestionCommand
-from src.interview.interview_template.application.commands.disable_interview_template import \
+from src.interview_bc.interview_template.application.commands.disable_interview_template import \
     DisableInterviewTemplateCommand
-from src.interview.interview_template.application.commands.disable_interview_template_question import \
+from src.interview_bc.interview_template.application.commands.disable_interview_template_question import \
     DisableInterviewTemplateQuestionCommand
-from src.interview.interview_template.application.commands.disable_interview_template_section import \
+from src.interview_bc.interview_template.application.commands.disable_interview_template_section import \
     DisableInterviewTemplateSectionCommand
-from src.interview.interview_template.application.commands.enable_interview_template import \
+from src.interview_bc.interview_template.application.commands.enable_interview_template import \
     EnableInterviewTemplateCommand
-from src.interview.interview_template.application.commands.enable_interview_template_question import \
+from src.interview_bc.interview_template.application.commands.enable_interview_template_question import \
     EnableInterviewTemplateQuestionCommand
-from src.interview.interview_template.application.commands.enable_interview_template_section import \
+from src.interview_bc.interview_template.application.commands.enable_interview_template_section import \
     EnableInterviewTemplateSectionCommand
-from src.interview.interview_template.application.commands.update_interview_template import \
+from src.interview_bc.interview_template.application.commands.update_interview_template import \
     UpdateInterviewTemplateCommand
-from src.interview.interview_template.application.commands.update_interview_template_question import \
+from src.interview_bc.interview_template.application.commands.update_interview_template_question import \
     UpdateInterviewTemplateQuestionCommand
-from src.interview.interview_template.application.commands.update_interview_template_section import \
+from src.interview_bc.interview_template.application.commands.update_interview_template_section import \
     UpdateInterviewTemplateSectionCommand
-from src.interview.interview_template.application.queries import ListInterviewTemplatesQuery
-from src.interview.interview_template.application.queries.dtos.interview_template_full_dto import \
+from src.interview_bc.interview_template.application.queries import ListInterviewTemplatesQuery
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import \
     InterviewTemplateQuestionDto, InterviewTemplateFullDto
-from src.interview.interview_template.application.queries.dtos.interview_template_list_dto import \
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_list_dto import \
     InterviewTemplateListDto
-from src.interview.interview_template.application.queries.get_interview_template_full_by_id import \
+from src.interview_bc.interview_template.application.queries.get_interview_template_full_by_id import \
     GetInterviewTemplateFullByIdQuery
-from src.interview.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum, \
+from src.interview_bc.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum, \
     InterviewTemplateSectionEnum, InterviewTemplateQuestionScopeEnum, InterviewTemplateQuestionDataTypeEnum
-from src.interview.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
+from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
-from src.interview.interview_template.domain.value_objects.interview_template_section_id import \
+from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
@@ -297,7 +297,7 @@ class InterviewTemplateController:
         """
         Delete an interview template (only if disabled)
         """
-        from src.interview.interview_template.application.commands.delete_interview_template import \
+        from src.interview_bc.interview_template.application.commands.delete_interview_template import \
             DeleteInterviewTemplateCommand
 
         command = DeleteInterviewTemplateCommand(
@@ -400,7 +400,7 @@ class InterviewTemplateController:
         """
         Delete an interview template section (only if disabled)
         """
-        from src.interview.interview_template.application.commands.delete_interview_template_section import \
+        from src.interview_bc.interview_template.application.commands.delete_interview_template_section import \
             DeleteInterviewTemplateSectionCommand
 
         command = DeleteInterviewTemplateSectionCommand(
@@ -418,7 +418,7 @@ class InterviewTemplateController:
         """
         Move a section up in the order
         """
-        from src.interview.interview_template.application.commands.move_section_up import MoveSectionUpCommand
+        from src.interview_bc.interview_template.application.commands.move_section_up import MoveSectionUpCommand
 
         command = MoveSectionUpCommand(
             section_id=InterviewTemplateSectionId.from_string(section_id),
@@ -435,7 +435,7 @@ class InterviewTemplateController:
         """
         Move a section down in the order
         """
-        from src.interview.interview_template.application.commands.move_section_down import MoveSectionDownCommand
+        from src.interview_bc.interview_template.application.commands.move_section_down import MoveSectionDownCommand
 
         command = MoveSectionDownCommand(
             section_id=InterviewTemplateSectionId.from_string(section_id),
@@ -448,7 +448,7 @@ class InterviewTemplateController:
         """
         Get all questions for a specific section
         """
-        from src.interview.interview_template.application.queries.get_questions_by_section import \
+        from src.interview_bc.interview_template.application.queries.get_questions_by_section import \
             GetQuestionsBySectionQuery
 
         query = GetQuestionsBySectionQuery(

@@ -4,7 +4,7 @@ from typing import Optional, Dict, Any
 from src.company_bc.job_position.domain.value_objects.stage_id import StageId
 from src.company_bc.job_position.domain.enums.job_position_status import JobPositionStatusEnum
 from src.company_bc.job_position.domain.enums.kanban_display import KanbanDisplayEnum
-from src.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 
 
 @dataclass(frozen=True)

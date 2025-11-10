@@ -5,7 +5,7 @@ from sqlalchemy import String, Integer, Enum, ForeignKey, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
-from src.interview.interview_template.domain.enums.interview_template_question import \
+from src.interview_bc.interview_template.domain.enums.interview_template_question import \
     InterviewTemplateQuestionDataTypeEnum, \
     InterviewTemplateQuestionStatusEnum, InterviewTemplateQuestionScopeEnum
 from src.framework.domain.entities.base import generate_id

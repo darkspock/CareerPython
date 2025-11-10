@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import re
 
-from src.customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
 
 
 @dataclass(frozen=True)

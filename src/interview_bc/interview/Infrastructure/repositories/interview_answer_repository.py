@@ -2,13 +2,13 @@
 from typing import Optional, List
 
 from core.database import DatabaseInterface
-from src.interview.interview.Infrastructure.models.interview_answer_model import InterviewAnswerModel
-from src.interview.interview.domain.entities.interview_answer import InterviewAnswer
-from src.interview.interview.domain.infrastructure.interview_answer_repository_interface import \
+from src.interview_bc.interview.infrastructure.models.interview_answer_model import InterviewAnswerModel
+from src.interview_bc.interview.domain.entities.interview_answer import InterviewAnswer
+from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
     InterviewAnswerRepositoryInterface
-from src.interview.interview.domain.value_objects.interview_answer_id import InterviewAnswerId
-from src.interview.interview.domain.value_objects.interview_id import InterviewId
-from src.interview.interview_template.domain.value_objects.interview_template_question_id import \
+from src.interview_bc.interview.domain.value_objects.interview_answer_id import InterviewAnswerId
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
 from src.framework.infrastructure.repositories.base import BaseRepository
 

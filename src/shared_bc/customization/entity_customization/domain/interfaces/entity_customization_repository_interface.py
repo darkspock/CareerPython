@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from src.customization.domain.entities.entity_customization import EntityCustomization
-from src.customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
+from src.shared_bc.customization.entity_customization.domain.entities.entity_customization import EntityCustomization
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
+from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
 
 
 class EntityCustomizationRepositoryInterface(ABC):

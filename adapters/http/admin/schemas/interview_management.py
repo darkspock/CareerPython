@@ -6,8 +6,8 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field, ConfigDict
 
-from src.interview.interview.application.queries.dtos.interview_dto import InterviewDto
-from src.interview.interview.domain.enums.interview_enums import InterviewTypeEnum
+from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum
 
 
 class InterviewCreateRequest(BaseModel):

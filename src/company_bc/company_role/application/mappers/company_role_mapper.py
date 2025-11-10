@@ -1,6 +1,6 @@
 """Company Role Mapper."""
-from src.company_role.application.dtos.company_role_dto import CompanyRoleDto
-from src.company_role.domain.entities.company_role import CompanyRole
+from src.company_bc.company_role.application.dtos.company_role_dto import CompanyRoleDto
+from src.company_bc.company_role.domain.entities.company_role import CompanyRole
 
 
 class CompanyRoleMapper:
