@@ -52,8 +52,27 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
         if not target_stage:
             raise ValueError(f"Stage {command.new_stage_id.value} not found")
 
-        # Change stage
-        updated_candidate = company_candidate.change_stage(new_stage_id=command.new_stage_id)
+        # Get the workflow of the target stage to check its phase_id
+        target_workflow = self._workflow_repository.get_by_id(target_stage.workflow_id)
+        if not target_workflow:
+            raise ValueError(f"Workflow {target_stage.workflow_id.value} not found")
+
+        # Check if the target stage belongs to a different phase than the candidate's current phase
+        # If so, update phase_id and workflow_id as well
+        current_phase_id = PhaseId.from_string(company_candidate.phase_id) if company_candidate.phase_id else None
+        target_phase_id = target_workflow.phase_id
+
+        # Change stage (and phase/workflow if needed)
+        if target_phase_id and (not current_phase_id or current_phase_id.value != target_phase_id.value):
+            # The target stage belongs to a different phase, update phase_id and workflow_id
+            updated_candidate = company_candidate.assign_workflow(
+                workflow_id=target_stage.workflow_id,
+                initial_stage_id=command.new_stage_id,
+                phase_id=target_phase_id
+            )
+        else:
+            # Same phase, just change the stage
+            updated_candidate = company_candidate.change_stage(new_stage_id=command.new_stage_id)
 
         # Check if this is a SUCCESS stage with next_phase_id configured
         if target_stage.stage_type == WorkflowStageTypeEnum.SUCCESS and target_stage.next_phase_id:

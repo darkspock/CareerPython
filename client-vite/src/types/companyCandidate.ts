@@ -65,6 +65,7 @@ export interface CreateCompanyCandidateRequest {
   candidate_name?: string;
   candidate_email?: string;
   candidate_phone?: string;
+  created_by_user_id: string; // Company user ID who created this relationship
   priority?: Priority;
   tags?: string[];
   internal_notes?: string;

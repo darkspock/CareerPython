@@ -13,7 +13,7 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Kanban, User, AlertCircle, RefreshCw, List, ChevronDown, Move } from 'lucide-react';
+import { Kanban, User, AlertCircle, RefreshCw, List, ChevronDown, Move, Plus } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { companyCandidateService } from '../../services/companyCandidateService.ts';
 import { phaseService } from '../../services/phaseService.ts';
@@ -283,8 +283,11 @@ export default function WorkflowBoardPage() {
   
   const [selectedPhaseId, setSelectedPhaseId] = useState<string>('');
   const [phase, setPhase] = useState<Phase | null>(null);
+  const [allPhases, setAllPhases] = useState<Phase[]>([]);
   const [stages, setStages] = useState<WorkflowStage[]>([]);
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
+  const [nextPhaseCandidates, setNextPhaseCandidates] = useState<Map<string, CompanyCandidate[]>>(new Map()); // Map: next_phase_id -> candidates in initial stage
+  const [nextPhaseInitialStages, setNextPhaseInitialStages] = useState<Map<string, string>>(new Map()); // Map: next_phase_id -> initial_stage_id
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -311,9 +314,26 @@ export default function WorkflowBoardPage() {
   useEffect(() => {
     if (phaseIdFromUrl) {
       setSelectedPhaseId(phaseIdFromUrl);
+      loadPhases();
       loadStagesAndCandidates();
     }
   }, [phaseIdFromUrl]);
+
+  const loadPhases = async () => {
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) return;
+
+      const phasesData = await phaseService.listPhases(companyId);
+      // Filter by CANDIDATE_APPLICATION type and sort by sort_order
+      const candidatePhases = phasesData
+        .filter(p => p.workflow_type === 'CA')
+        .sort((a, b) => a.sort_order - b.sort_order);
+      setAllPhases(candidatePhases);
+    } catch (err) {
+      console.error('Failed to load phases:', err);
+    }
+  };
 
 
   const loadStagesAndCandidates = async () => {
@@ -336,6 +356,43 @@ export default function WorkflowBoardPage() {
       // Load candidates for the selected phase
       const candidatesData = await companyCandidateService.listByCompany(companyId);
       setCandidates(candidatesData.filter((c) => c.phase_id === phaseIdFromUrl));
+
+      // Load candidates from next phases for SUCCESS stages
+      const nextPhaseCandidatesMap = new Map<string, CompanyCandidate[]>();
+      const nextPhaseInitialStagesMap = new Map<string, string>();
+      
+      // Find SUCCESS stages with next_phase_id
+      const successStages = stagesData.filter(s => s.stage_type === 'success' && s.next_phase_id);
+      
+      for (const successStage of successStages) {
+        if (!successStage.next_phase_id) continue;
+        
+        try {
+          // Load stages for the next phase
+          const nextPhaseData = await phaseService.getPhase(companyId, successStage.next_phase_id);
+          if (!nextPhaseData.workflow_type) continue;
+          
+          const nextPhaseStages = await companyWorkflowService.listStagesByPhase(successStage.next_phase_id, nextPhaseData.workflow_type);
+          
+          // Find the initial stage
+          const initialStage = nextPhaseStages.find(s => s.stage_type === 'initial');
+          if (!initialStage) continue;
+          
+          nextPhaseInitialStagesMap.set(successStage.next_phase_id, initialStage.id);
+          
+          // Load candidates in the initial stage of the next phase
+          const nextPhaseCandidatesList = candidatesData.filter(
+            (c) => c.phase_id === successStage.next_phase_id && c.current_stage_id === initialStage.id
+          );
+          
+          nextPhaseCandidatesMap.set(successStage.next_phase_id, nextPhaseCandidatesList);
+        } catch (err) {
+          console.error(`Error loading next phase data for phase ${successStage.next_phase_id}:`, err);
+        }
+      }
+      
+      setNextPhaseCandidates(nextPhaseCandidatesMap);
+      setNextPhaseInitialStages(nextPhaseInitialStagesMap);
 
       setError(null);
     } catch (err: any) {
@@ -361,13 +418,30 @@ export default function WorkflowBoardPage() {
     const candidateId = active.id as string;
     const newStageId = over.id as string;
 
+    // Find candidate in current phase or next phase candidates
+    let currentCandidate = candidates.find((c) => c.id === candidateId);
+    if (!currentCandidate) {
+      // Candidate might be from next phase, search in nextPhaseCandidates
+      for (const nextPhaseCandidatesList of nextPhaseCandidates.values()) {
+        currentCandidate = nextPhaseCandidatesList.find((c) => c.id === candidateId);
+        if (currentCandidate) break;
+      }
+    }
+
     // Find if over is a stage or another candidate
-    const candidate = candidates.find((c) => c.id === newStageId);
+    let targetCandidate = candidates.find((c) => c.id === newStageId);
+    if (!targetCandidate) {
+      // Candidate might be from next phase, search in nextPhaseCandidates
+      for (const nextPhaseCandidatesList of nextPhaseCandidates.values()) {
+        targetCandidate = nextPhaseCandidatesList.find((c) => c.id === newStageId);
+        if (targetCandidate) break;
+      }
+    }
 
     let targetStageId = newStageId;
-    if (candidate) {
+    if (targetCandidate) {
       // Dropped on another candidate, use that candidate's stage
-      targetStageId = candidate.current_stage_id || '';
+      targetStageId = targetCandidate.current_stage_id || '';
     }
 
     // Check if it's a valid stage ID
@@ -378,54 +452,91 @@ export default function WorkflowBoardPage() {
     }
 
     // Check if candidate is already in this stage
-    const currentCandidate = candidates.find((c) => c.id === candidateId);
     if (currentCandidate?.current_stage_id === targetStageId) {
       setActiveId(null);
       return;
     }
 
     // Optimistic update: update local state immediately
-    setCandidates(prevCandidates =>
-      prevCandidates.map(candidate =>
-        candidate.id === candidateId
-          ? { ...candidate, current_stage_id: targetStageId }
-          : candidate
-      )
-    );
+    if (currentCandidate) {
+      setCandidates(prevCandidates =>
+        prevCandidates.map(candidate =>
+          candidate.id === candidateId
+            ? { ...candidate, current_stage_id: targetStageId, phase_id: phaseIdFromUrl || candidate.phase_id }
+            : candidate
+        )
+      );
+      // Also update in nextPhaseCandidates if it was there
+      setNextPhaseCandidates(prevMap => {
+        const newMap = new Map(prevMap);
+        for (const [phaseId, candidatesList] of newMap.entries()) {
+          const updatedList = candidatesList.map(c =>
+            c.id === candidateId
+              ? { ...c, current_stage_id: targetStageId, phase_id: phaseIdFromUrl || c.phase_id }
+              : c
+          );
+          newMap.set(phaseId, updatedList);
+        }
+        return newMap;
+      });
+    }
     setActiveId(null);
 
     // Update candidate stage on backend (fire and forget)
     try {
       await companyCandidateService.changeStage(candidateId, { new_stage_id: targetStageId });
+      // Reload data to get updated phase assignments and next phase candidates
+      await loadStagesAndCandidates();
     } catch (err: any) {
       // Revert on error
-      setCandidates(prevCandidates =>
-        prevCandidates.map(candidate =>
-          candidate.id === candidateId
-            ? { ...candidate, current_stage_id: currentCandidate?.current_stage_id || '' }
-            : candidate
-        )
-      );
+      if (currentCandidate) {
+        setCandidates(prevCandidates =>
+          prevCandidates.map(candidate =>
+            candidate.id === candidateId
+              ? { ...candidate, current_stage_id: currentCandidate.current_stage_id || '', phase_id: currentCandidate.phase_id }
+              : candidate
+          )
+        );
+        // Also revert in nextPhaseCandidates if it was there
+        setNextPhaseCandidates(prevMap => {
+          const newMap = new Map(prevMap);
+          for (const [phaseId, candidatesList] of newMap.entries()) {
+            const updatedList = candidatesList.map(c =>
+              c.id === candidateId
+                ? { ...c, current_stage_id: currentCandidate.current_stage_id || '', phase_id: currentCandidate.phase_id }
+                : c
+            );
+            newMap.set(phaseId, updatedList);
+          }
+          return newMap;
+        });
+      }
       alert(t('company.workflowBoard.failedToMoveCandidateMessage', { message: err.message }));
     }
   };
 
   const getCandidatesByStage = (stageId: string) => {
-    return candidates.filter((c) => c.current_stage_id === stageId);
+    // Get candidates in this stage
+    const stageCandidates = candidates.filter((c) => c.current_stage_id === stageId);
+    
+    // Find the stage to check if it's SUCCESS with next_phase_id
+    const stage = stages.find(s => s.id === stageId);
+    
+    // If this is a SUCCESS stage with next_phase_id, also include candidates from the initial stage of the next phase
+    if (stage && stage.stage_type === 'success' && stage.next_phase_id) {
+      const nextPhaseCandidatesList = nextPhaseCandidates.get(stage.next_phase_id) || [];
+      return [...stageCandidates, ...nextPhaseCandidatesList];
+    }
+    
+    return stageCandidates;
   };
 
   const moveCandidateToStage = async (candidateId: string, stageId: string) => {
     try {
       await companyCandidateService.changeStage(candidateId, { new_stage_id: stageId });
       
-      // Update local state
-      setCandidates(prevCandidates =>
-        prevCandidates.map(candidate =>
-          candidate.id === candidateId
-            ? { ...candidate, current_stage_id: stageId }
-            : candidate
-        )
-      );
+      // Reload data to get updated phase assignments and next phase candidates
+      await loadStagesAndCandidates();
     } catch (error) {
       console.error('Failed to move candidate:', error);
       setError(t('company.workflowBoard.failedToMoveCandidate'));
@@ -436,7 +547,20 @@ export default function WorkflowBoardPage() {
   const columnStages = stages.filter(s => s.kanban_display === KanbanDisplay.COLUMN);
   const rowStages = stages.filter(s => s.kanban_display === KanbanDisplay.ROW);
 
-  const activeDragCandidate = candidates.find((c) => c.id === activeId);
+  // Check if current phase is the first phase (lowest sort_order)
+  const isFirstPhase = allPhases.length > 0 && phaseIdFromUrl === allPhases[0].id;
+
+  // Find active drag candidate in current phase or next phase candidates
+  const activeDragCandidate = (() => {
+    const candidate = candidates.find((c) => c.id === activeId);
+    if (candidate) return candidate;
+    // Search in next phase candidates
+    for (const nextPhaseCandidatesList of nextPhaseCandidates.values()) {
+      const found = nextPhaseCandidatesList.find((c) => c.id === activeId);
+      if (found) return found;
+    }
+    return undefined;
+  })();
 
   if (loading) {
     return (
@@ -484,7 +608,7 @@ export default function WorkflowBoardPage() {
           </button>
         </div>
 
-        {/* Back to List View Button */}
+        {/* Back to List View Button and Add Candidate Button (only in first phase) */}
         {phaseIdFromUrl && (
           <div className="flex items-center gap-4">
             <Link
@@ -494,6 +618,14 @@ export default function WorkflowBoardPage() {
               <List className="w-4 h-4" />
               {t('company.workflowBoard.listView')}
             </Link>
+            {isFirstPhase && (
+              <Link
+                to="/company/candidates/add"
+                className="text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                {t('company.candidates.addCandidate')}
+              </Link>
+            )}
           </div>
         )}
       </div>
@@ -523,7 +655,10 @@ export default function WorkflowBoardPage() {
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <SortableContext items={candidates.map(c => c.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={[
+            ...candidates.map(c => c.id),
+            ...Array.from(nextPhaseCandidates.values()).flat().map(c => c.id)
+          ]} strategy={verticalListSortingStrategy}>
             <div className="space-y-6">
             {/* Column Stages */}
             {columnStages.length > 0 && (
