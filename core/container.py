@@ -1357,7 +1357,9 @@ class Container(containers.DeclarativeContainer):
 
     change_stage_command_handler = providers.Factory(
         ChangeStageCommandHandler,
-        repository=company_candidate_repository
+        repository=company_candidate_repository,
+        workflow_stage_repository=workflow_stage_repository,
+        workflow_repository=workflow_repository
     )
 
     # CandidateComment Repository

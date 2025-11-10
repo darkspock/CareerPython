@@ -529,3 +529,48 @@ class CompanyCandidate:
     def is_user_owned(self) -> bool:
         """Checks if data is owned by the user"""
         return self.ownership_status == OwnershipStatus.USER_OWNED
+
+    def move_to_next_phase(
+        self,
+        next_phase_id: PhaseId,
+        next_workflow_id: WorkflowId,
+        initial_stage_id: WorkflowStageId
+    ) -> "CompanyCandidate":
+        """
+        Moves the candidate to the next phase with the initial stage of that phase's workflow
+
+        Args:
+            next_phase_id: ID of the next phase to move to
+            next_workflow_id: ID of the workflow in the next phase
+            initial_stage_id: ID of the initial stage in the next phase's workflow
+
+        Returns:
+            CompanyCandidate: New instance with updated phase, workflow, and stage
+        """
+        return CompanyCandidate(
+            id=self.id,
+            company_id=self.company_id,
+            candidate_id=self.candidate_id,
+            status=self.status,
+            ownership_status=self.ownership_status,
+            created_by_user_id=self.created_by_user_id,
+            workflow_id=next_workflow_id,
+            current_stage_id=initial_stage_id,
+            phase_id=next_phase_id.value,
+            invited_at=self.invited_at,
+            confirmed_at=self.confirmed_at,
+            rejected_at=self.rejected_at,
+            archived_at=self.archived_at,
+            visibility_settings=self.visibility_settings,
+            tags=self.tags,
+            position=self.position,
+            department=self.department,
+            priority=self.priority,
+            lead_id=self.lead_id,
+            source=self.source,
+            resume_url=self.resume_url,
+            resume_uploaded_by=self.resume_uploaded_by,
+            resume_uploaded_at=self.resume_uploaded_at,
+            created_at=self.created_at,
+            updated_at=datetime.utcnow(),
+        )

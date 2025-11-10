@@ -33,10 +33,10 @@ class JobPositionRepositoryInterface(ABC):
 
     @abstractmethod
     def count_by_filters(self, company_id: Optional[str] = None,
-                        status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
-                        job_category: Optional[JobCategoryEnum] = None,
-                        search_term: Optional[str] = None,
-                        visibility: Optional[JobPositionVisibilityEnum] = None) -> int:
+                         status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
+                         job_category: Optional[JobCategoryEnum] = None,
+                         search_term: Optional[str] = None,
+                         visibility: Optional[JobPositionVisibilityEnum] = None) -> int:
         """Count job positions matching the filters
         
         Args:

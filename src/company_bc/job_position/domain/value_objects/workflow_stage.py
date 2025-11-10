@@ -5,6 +5,7 @@ from src.company_bc.job_position.domain.value_objects.stage_id import StageId
 from src.company_bc.job_position.domain.enums.job_position_status import JobPositionStatusEnum
 from src.company_bc.job_position.domain.enums.kanban_display import KanbanDisplayEnum
 from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,7 @@ class WorkflowStage:
     background_color: str
     text_color: str
     role: Optional[CompanyRoleId]  # Responsible role for this stage
-    status_mapping: JobPositionStatusEnum  # Maps to JobPositionStatusEnum
+    status_mapping: WorkflowStageTypeEnum
     kanban_display: KanbanDisplayEnum
     field_visibility: Dict[str, bool]  # Field name -> visible boolean
     field_validation: Dict[str, Any]  # Field name -> validation rule config (can reference ValidationRule IDs)

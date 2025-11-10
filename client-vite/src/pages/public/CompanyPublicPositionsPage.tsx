@@ -339,9 +339,10 @@ export default function CompanyPublicPositionsPage() {
 
                   {/* Description Preview */}
                   {position.description && (
-                    <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-                      {position.description}
-                    </p>
+                    <div 
+                      className="text-sm text-gray-600 line-clamp-3 mb-4 prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: position.description }}
+                    />
                   )}
 
                   {/* Tags */}

@@ -135,6 +135,7 @@ function App() {
 
                       <Routes>
                         <Route path="/" element={<LandingPage />} />
+                        <Route path="/candidate/landing" element={<LandingPage />} />
                         <Route path="/positions" element={<PublicPositionsPage />} />
                         <Route path="/positions/:slugOrId" element={<PublicPositionDetailPage />} />
                         <Route path="/companies/:companySlug/open-positions" element={<CompanyPublicPositionsPage />} />
@@ -153,6 +154,7 @@ function App() {
                         <Route path="/company/login" element={<Navigate to="/company/auth/login" replace />} />
                         <Route path="/candidate/auth/register" element={<RegisterPage />} />
                         <Route path="/candidate/reset-password" element={<ResetPasswordPage />} />
+                        <Route path="/candidate/onboarding" element={<Navigate to="/candidate/onboarding/complete-profile" replace />} />
                         <Route path="/candidate/onboarding/complete-profile" element={<CompleteProfilePage />} />
                         <Route path="/candidate/onboarding/pdf-processing" element={<PDFProcessingPage />} />
                         <Route path="/candidate/onboarding/experience" element={<OnboardingExperiencePage />} />
@@ -225,6 +227,7 @@ function App() {
                           <Route path="positions/:id/edit" element={<EditPositionPage />} />
                           <Route path="workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="workflows/:workflowId/edit" element={<EditWorkflowPage />} />
+                          <Route path="workflows/:workflowId/advanced-config" element={<WorkflowAdvancedConfigPage />} />
                           <Route path="pages" element={<CompanyPagesListPage />} />
                           <Route path="pages/create" element={<CreateCompanyPagePage />} />
                           <Route path="pages/:pageId/view" element={<ViewCompanyPagePage />} />

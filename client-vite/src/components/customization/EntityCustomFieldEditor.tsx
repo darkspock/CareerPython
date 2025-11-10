@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type {
   CustomField,
   FieldType,
@@ -27,6 +27,7 @@ export const EntityCustomFieldEditor: React.FC<EntityCustomFieldEditorProps> = (
   const [editingField, setEditingField] = useState<CustomField | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [customizationId, setCustomizationId] = useState<string | null>(null);
+  const isLoadingRef = useRef(false); // Prevent duplicate calls - useRef for synchronous updates
 
   // Form state for new/edit field
   const [formData, setFormData] = useState({
@@ -57,8 +58,18 @@ export const EntityCustomFieldEditor: React.FC<EntityCustomFieldEditorProps> = (
   }, [entityType, entityId]);
 
   const loadFields = async (notifyParent: boolean = true) => {
+    // Prevent duplicate calls (React StrictMode in development)
+    // Use ref for synchronous check - if already loading, skip
+    if (isLoadingRef.current) {
+      console.log('loadFields already in progress, skipping...');
+      return;
+    }
+
     try {
+      isLoadingRef.current = true; // Set immediately (synchronous)
       setIsLoading(true);
+      setError(null); // Clear any previous errors
+      
       const customization = await EntityCustomizationService.getCustomization(entityType, entityId);
       setCustomizationId(customization.id);
       const loadedFields = customization.fields || [];
@@ -69,8 +80,9 @@ export const EntityCustomFieldEditor: React.FC<EntityCustomFieldEditorProps> = (
       setError(null);
     } catch (err: any) {
       // If customization doesn't exist (404), create it with empty fields
-      if (err?.status === 404 || err?.message?.includes('404')) {
+      if (err?.status === 404 || err?.message?.includes('404') || err?.message?.includes('not found')) {
         try {
+          console.log('Customization not found, creating new one...');
           const newCustomization = await EntityCustomizationService.createCustomization({
             entity_type: entityType,
             entity_id: entityId,
@@ -81,9 +93,30 @@ export const EntityCustomFieldEditor: React.FC<EntityCustomFieldEditorProps> = (
           if (notifyParent) {
             onFieldsChange?.([]);
           }
-        } catch (createErr) {
-          setError('Failed to create customization');
-          console.error(createErr);
+          setError(null); // Clear error on successful creation
+          console.log('Customization created successfully:', newCustomization.id);
+        } catch (createErr: any) {
+          // Only show error if it's not a duplicate/conflict error
+          if (createErr?.status !== 409 && !createErr?.message?.includes('already exists')) {
+            setError('Failed to create customization');
+            console.error('Error creating customization:', createErr);
+          } else {
+            // If it already exists, try to load it again
+            console.log('Customization already exists, reloading...');
+            try {
+              const existingCustomization = await EntityCustomizationService.getCustomization(entityType, entityId);
+              setCustomizationId(existingCustomization.id);
+              const loadedFields = existingCustomization.fields || [];
+              setFields(loadedFields);
+              if (notifyParent) {
+                onFieldsChange?.(loadedFields);
+              }
+              setError(null);
+            } catch (reloadErr) {
+              setError('Failed to load custom fields');
+              console.error('Error reloading customization:', reloadErr);
+            }
+          }
         }
       } else {
         setError('Failed to load custom fields');
@@ -91,6 +124,7 @@ export const EntityCustomFieldEditor: React.FC<EntityCustomFieldEditorProps> = (
       }
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false; // Reset flag
     }
   };
 

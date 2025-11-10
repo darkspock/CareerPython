@@ -114,6 +114,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             model.created_by_user_id = str(company_candidate.created_by_user_id)
             model.workflow_id = str(company_candidate.workflow_id) if company_candidate.workflow_id else None
             model.current_stage_id = str(company_candidate.current_stage_id) if company_candidate.current_stage_id else None
+            model.phase_id = company_candidate.phase_id  # Update phase_id
             model.invited_at = company_candidate.invited_at
             model.confirmed_at = company_candidate.confirmed_at
             model.rejected_at = company_candidate.rejected_at

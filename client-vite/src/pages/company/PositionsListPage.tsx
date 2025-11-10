@@ -806,7 +806,7 @@ function PositionsListPageContent() {
   console.log('[PositionsList] All positions for kanban:', positions.filter(p => p.job_position_workflow_id === currentWorkflow?.id).length);
 
   return (
-    <div>
+    <div className="max-w-[1600px] mx-auto">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -1079,8 +1079,8 @@ function PositionsListPageContent() {
           <div className="space-y-4">
             {/* Column stages (vertical) - shown in horizontal scrollable row */}
             {columnStages.length > 0 && (
-              <div className="overflow-x-auto pb-4">
-                <div className="flex gap-4 min-w-max">
+              <div className="overflow-x-auto pb-4 max-w-full">
+                <div className="flex gap-0 min-w-max">
                   {columnStages.map((stage) => {
                     const stagePositions = positions.filter(
                       (p) => p.stage_id === stage.id && p.job_position_workflow_id === currentWorkflow.id
@@ -1135,8 +1135,8 @@ function PositionsListPageContent() {
             
             {/* If no stages are configured, show all stages as columns */}
             {columnStages.length === 0 && horizontalStages.length === 0 && (
-              <div className="overflow-x-auto pb-4">
-                <div className="flex gap-4 min-w-max">
+              <div className="overflow-x-auto pb-4 max-w-full">
+                <div className="flex gap-0 min-w-max">
                   {currentWorkflow.stages.map((stage) => {
                     const stagePositions = positions.filter(
                       (p) => p.stage_id === stage.id && p.job_position_workflow_id === currentWorkflow.id

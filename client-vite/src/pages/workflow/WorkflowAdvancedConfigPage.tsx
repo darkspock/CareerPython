@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow.ts';
 import type { CustomField, FieldConfiguration } from '../../types/customization.ts';
@@ -10,6 +12,7 @@ import { ValidationRuleEditor } from '../../components/workflow/ValidationRuleEd
 export default function WorkflowAdvancedConfigPage() {
   console.log('WorkflowAdvancedConfigPage component rendered');
   
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { workflowId } = useParams<{ workflowId: string }>();
   
@@ -19,7 +22,7 @@ export default function WorkflowAdvancedConfigPage() {
   const [stages, setStages] = useState<WorkflowStage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, _setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Custom fields state
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
@@ -33,6 +36,7 @@ export default function WorkflowAdvancedConfigPage() {
     } else {
       console.log('No workflowId, not loading workflow');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workflowId]);
 
   const loadWorkflow = async () => {
@@ -66,9 +70,29 @@ export default function WorkflowAdvancedConfigPage() {
   };
 
   const handleSave = async () => {
-    // This page is read-only for now, but we can add save functionality later
-    // if needed for any advanced configurations
-    console.log('Save functionality not implemented yet');
+    // Note: Individual components (EntityCustomFieldEditor, FieldVisibilityMatrix, ValidationRuleEditor)
+    // save automatically when changes are made. This function reloads data to ensure sync.
+    try {
+      setSaving(true);
+      
+      // Reload workflow and stages to ensure we have the latest data
+      if (workflowId) {
+        await loadWorkflow();
+      }
+      
+      // Show success message
+      toast.success(t('company.workflows.advancedConfigSaveSuccess'), {
+        position: 'top-right',
+        autoClose: 3000
+      });
+    } catch (err: any) {
+      toast.error(t('company.workflows.advancedConfigSaveError', { error: err.message || t('company.workflows.advancedConfigUnknownError') }), {
+        position: 'top-right',
+        autoClose: 5000
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleBack = () => {
@@ -87,13 +111,13 @@ export default function WorkflowAdvancedConfigPage() {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Error</h2>
+          <h2 className="text-lg font-semibold text-red-800 mb-2">{t('company.workflows.advancedConfigError')}</h2>
           <p className="text-red-600 mb-4">{error}</p>
           <button
             onClick={handleBack}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
-            Go Back
+            {t('company.workflows.advancedConfigGoBack')}
           </button>
         </div>
       </div>
@@ -104,13 +128,13 @@ export default function WorkflowAdvancedConfigPage() {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <h2 className="text-lg font-semibold text-yellow-800 mb-2">Workflow Not Found</h2>
-          <p className="text-yellow-600 mb-4">The requested workflow could not be found.</p>
+          <h2 className="text-lg font-semibold text-yellow-800 mb-2">{t('company.workflows.advancedConfigWorkflowNotFound')}</h2>
+          <p className="text-yellow-600 mb-4">{t('company.workflows.advancedConfigWorkflowNotFoundDescription')}</p>
           <button
             onClick={handleBack}
             className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
           >
-            Go Back
+            {t('company.workflows.advancedConfigGoBack')}
           </button>
         </div>
       </div>
@@ -125,16 +149,16 @@ export default function WorkflowAdvancedConfigPage() {
           <button
             onClick={handleBack}
             className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Go back to workflows"
+            title={t('company.workflows.advancedConfigGoBackTooltip')}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Advanced Configuration
+              {t('company.workflows.advancedConfigTitle')}
             </h1>
             <p className="text-gray-600">
-              {workflow.name} - Custom Fields & Validations
+              {workflow.name} - {t('company.workflows.advancedConfigSubtitle')}
             </p>
           </div>
         </div>
@@ -144,7 +168,7 @@ export default function WorkflowAdvancedConfigPage() {
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? t('company.workflows.advancedConfigSaving') : t('company.workflows.advancedConfigSaveChanges')}
         </button>
       </div>
 
@@ -188,10 +212,10 @@ export default function WorkflowAdvancedConfigPage() {
         {customFields.length === 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
             <h3 className="text-lg font-semibold text-blue-800 mb-2">
-              No Custom Fields Yet
+              {t('company.workflows.advancedConfigNoCustomFields')}
             </h3>
             <p className="text-blue-600 mb-4">
-              Add custom fields to your workflow to configure their visibility and validation rules.
+              {t('company.workflows.advancedConfigNoCustomFieldsDescription')}
             </p>
           </div>
         )}

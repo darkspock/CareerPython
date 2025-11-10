@@ -64,7 +64,9 @@ export default function CompanyLayout() {
       if (!companyId) return;
 
       const phasesData = await phaseService.listPhases(companyId);
-      setPhases(phasesData.sort((a, b) => a.sort_order - b.sort_order));
+      // Filter phases to show only CANDIDATE_APPLICATION workflows (type 'CA')
+      const candidatePhases = phasesData.filter(phase => phase.workflow_type === 'CA');
+      setPhases(candidatePhases.sort((a, b) => a.sort_order - b.sort_order));
     } catch (error) {
       console.error('Error loading phases:', error);
     }
