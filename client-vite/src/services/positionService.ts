@@ -13,7 +13,7 @@ import type {
 } from '../types/position';
 
 export class PositionService {
-  private static readonly BASE_PATH = '/admin/positions';
+  private static readonly BASE_PATH = '/api/company/positions';
   private static readonly WORKFLOW_BASE_PATH = '/admin/workflows';
 
   /**

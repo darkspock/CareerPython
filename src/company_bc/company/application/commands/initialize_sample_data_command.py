@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from typing import Optional
 import random
 from sqlalchemy import text
 
@@ -29,6 +30,7 @@ from src.company_bc.job_position.domain.value_objects.stage_id import StageId
 from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
 from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+from src.company_bc.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
 from core.database import SQLAlchemyDatabase
 
 
@@ -125,15 +127,20 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
         # Step 2: Create sample candidates
         candidate_ids = self._create_sample_candidates(command.num_candidates)
 
-        # Step 3: Create company-candidate relationships with random workflow assignments
+        # Step 3: Create one job position in active stage (before creating company candidates)
+        active_job_position_id = self._create_active_job_position(command.company_id)
+
+        # Step 4: Create company-candidate relationships with random workflow assignments
+        # and link them to the active job position
         if candidate_ids:
             self._create_company_candidates(
                 command.company_id,
                 command.company_user_id,
-                candidate_ids
+                candidate_ids,
+                active_job_position_id
             )
 
-        # Step 4: Create sample job positions
+        # Step 5: Create additional sample job positions
         self._create_sample_job_positions(
             command.company_id,
             command.num_job_positions
@@ -210,13 +217,124 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
 
         return candidate_ids
 
+    def _create_active_job_position(
+        self,
+        company_id: CompanyId
+    ) -> Optional[JobPositionId]:
+        """Create one job position in an active stage"""
+        # Get job position workflow and find an active stage
+        with self._database.get_session() as session:
+            # Get the job position workflow (JOB_POSITION_OPENING type)
+            # Note: The workflow_type is stored as the enum name, not the value
+            workflow_result = session.execute(
+                text("""
+                    SELECT w.id
+                    FROM workflows w
+                    WHERE w.company_id = :company_id
+                    AND w.workflow_type = :workflow_type
+                    LIMIT 1
+                """),
+                {
+                    "company_id": company_id.value,
+                    "workflow_type": WorkflowTypeEnum.JOB_POSITION_OPENING.name
+                }
+            ).fetchone()
+
+            if not workflow_result:
+                print(f"Warning: No job position workflow found for company {company_id.value}")
+                return None
+
+            workflow_id = workflow_result[0]
+
+            # Find a stage with stage_type='PROGRESS' (typically "Under Review" or "Approved" which are active)
+            # For job positions, PROGRESS stages typically map to 'active' status
+            active_stage_result = session.execute(
+                text("""
+                    SELECT id
+                    FROM workflow_stages
+                    WHERE workflow_id = :workflow_id
+                    AND stage_type = 'PROGRESS'
+                    AND is_active = true
+                    ORDER BY "order" ASC
+                    LIMIT 1
+                """),
+                {"workflow_id": workflow_id}
+            ).fetchone()
+
+            if not active_stage_result:
+                # If no PROGRESS stage found, try SUCCESS (Published/Closed)
+                success_stage_result = session.execute(
+                    text("""
+                        SELECT id
+                        FROM workflow_stages
+                        WHERE workflow_id = :workflow_id
+                        AND stage_type = 'SUCCESS'
+                        AND is_active = true
+                        ORDER BY "order" ASC
+                        LIMIT 1
+                    """),
+                    {"workflow_id": workflow_id}
+                ).fetchone()
+                
+                if success_stage_result:
+                    stage_id = success_stage_result[0]
+                else:
+                    # If no active stage found, use initial stage as fallback
+                    initial_stage_result = session.execute(
+                        text("""
+                            SELECT id
+                            FROM workflow_stages
+                            WHERE workflow_id = :workflow_id
+                            AND stage_type = 'INITIAL'
+                            AND is_active = true
+                            ORDER BY "order" ASC
+                            LIMIT 1
+                        """),
+                        {"workflow_id": workflow_id}
+                    ).fetchone()
+                    
+                    if not initial_stage_result:
+                        print(f"Warning: No active stage found for workflow {workflow_id}")
+                        return None
+                    
+                    stage_id = initial_stage_result[0]
+            else:
+                stage_id = active_stage_result[0]
+
+            job_position_workflow_id = JobPositionWorkflowId.from_string(workflow_id) if workflow_id else None
+            stage_id_vo = StageId.from_string(stage_id) if stage_id else None
+
+        # Create one job position in active stage
+        try:
+            job_position_id = JobPositionId.generate()
+            
+            create_job_position_cmd = CreateJobPositionCommand(
+                id=job_position_id,
+                company_id=company_id,
+                job_position_workflow_id=job_position_workflow_id,
+                stage_id=stage_id_vo,
+                title="Senior Software Engineer",
+                description="We are looking for an experienced software engineer to join our team. You will work on exciting projects and collaborate with talented colleagues.",
+                job_category=JobCategoryEnum.TECHNOLOGY,
+                visibility=JobPositionVisibilityEnum.PUBLIC
+            )
+            self._command_bus.dispatch(create_job_position_cmd)
+            print(f"Created active job position: {job_position_id.value} in stage: {stage_id}")
+            return job_position_id
+        except Exception as e:
+            print(f"Error creating active job position: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
     def _create_company_candidates(
         self,
         company_id: CompanyId,
         company_user_id: CompanyUserId,
-        candidate_ids: list[CandidateId]
+        candidate_ids: list[CandidateId],
+        active_job_position_id: Optional[JobPositionId] = None
     ) -> None:
-        """Create company-candidate relationships with random workflow assignments"""
+        """Create company-candidate relationships with random workflow assignments and link to active job position"""
         # Get workflows for the company
         with self._database.get_session() as session:
             # Get phases for the company
@@ -288,6 +406,19 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
                             initial_stage_id=initial_stage_id
                         )
                         self._command_bus.dispatch(assign_workflow_cmd)
+
+                    # Link candidate to active job position if available
+                    if active_job_position_id:
+                        try:
+                            create_application_cmd = CreateCandidateApplicationCommand(
+                                candidate_id=str(candidate_id.value),
+                                job_position_id=str(active_job_position_id.value),
+                                notes="Sample data application"
+                            )
+                            self._command_bus.dispatch(create_application_cmd)
+                        except Exception:
+                            # Skip application creation if it fails (e.g., duplicate)
+                            pass
                 except Exception:
                     # Skip company-candidates that fail to create
                     continue
@@ -357,7 +488,7 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
                 """),
                 {
                     "company_id": company_id.value,
-                    "workflow_type": WorkflowTypeEnum.JOB_POSITION_OPENING.value
+                    "workflow_type": WorkflowTypeEnum.JOB_POSITION_OPENING.name
                 }
             ).fetchone()
 

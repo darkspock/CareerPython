@@ -37,6 +37,7 @@ from adapters.http.shared.customization.routers.entity_customization_router impo
 from adapters.http.company_app.company.routers.candidate_comment_router import router as candidate_comment_router
 from adapters.http.company_app.company.routers.job_position_comment_router import router as job_position_comment_router
 from adapters.http.company_app.company.routers.candidate_review_router import router as candidate_review_router
+from adapters.http.company_app.job_position.routers.company_position_router import router as company_position_router
 from adapters.http.company_app.company_page.routers.company_page_router import router as company_page_router
 from adapters.http.company_app.company_page.routers.public_company_page_router import router as public_company_page_router
 from adapters.http.auth.routes.user_router import user_router
@@ -96,6 +97,7 @@ app.include_router(workflow_stage_router)  # Workflow stage management
 app.include_router(entity_customization_router)  # Entity customization management
 app.include_router(candidate_comment_router)  # Candidate comment management
 app.include_router(candidate_review_router)  # Candidate review management
+app.include_router(company_position_router)  # Company job position management (must be before comment router)
 app.include_router(job_position_comment_router)  # Job position comment management
 app.include_router(validation_rule_router)  # Field validation rules
 app.include_router(position_stage_assignment_router)  # Position stage assignment management
@@ -158,6 +160,7 @@ container.wire(modules=[
     "adapters.http.company_app.company.routers.candidate_comment_router",
     "adapters.http.company_app.company.routers.candidate_review_router",
     "adapters.http.company_app.company.routers.job_position_comment_router",
+    "adapters.http.company_app.job_position.routers.company_position_router",  # Company job position management
     "adapters.http.shared.field_validation.routers.validation_rule_router",
     "adapters.http.candidate_app.routers.position_stage_assignment_router",
     "adapters.http.shared.workflow_analytics.routers.workflow_analytics_router",
