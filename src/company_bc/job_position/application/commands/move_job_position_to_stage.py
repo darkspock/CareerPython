@@ -6,11 +6,17 @@ from src.framework.application.command_bus import Command, CommandHandler
 from src.company_bc.job_position.domain.exceptions import JobPositionNotFoundException
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.company_bc.job_position.domain.value_objects.job_position_stage_id import JobPositionStageId
+from src.company_bc.job_position.domain.value_objects.job_position_activity_id import JobPositionActivityId
 from src.company_bc.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
 from src.company_bc.job_position.domain.infrastructure.job_position_stage_repository_interface import (
     JobPositionStageRepositoryInterface
 )
+from src.company_bc.job_position.domain.infrastructure.job_position_activity_repository_interface import (
+    JobPositionActivityRepositoryInterface
+)
 from src.company_bc.job_position.domain.entities.job_position_stage import JobPositionStage
+from src.company_bc.job_position.domain.entities.job_position_activity import JobPositionActivity
+from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
     WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
@@ -32,6 +38,7 @@ class MoveJobPositionToStageCommand(Command):
     id: JobPositionId
     stage_id: StageId  # This is WorkflowStageId as string
     comment: Optional[str] = None  # Optional comment for the stage change
+    user_id: Optional[str] = None  # Company user ID who is moving the stage
 
 
 class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStageCommand]):
@@ -42,12 +49,14 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
         job_position_repository: JobPositionRepositoryInterface,
         workflow_repository: WorkflowRepositoryInterface,
         stage_repository: WorkflowStageRepositoryInterface,
-        job_position_stage_repository: JobPositionStageRepositoryInterface
+        job_position_stage_repository: JobPositionStageRepositoryInterface,
+        activity_repository: JobPositionActivityRepositoryInterface
     ):
         self.job_position_repository = job_position_repository
         self.workflow_repository = workflow_repository
         self.stage_repository = stage_repository
         self.job_position_stage_repository = job_position_stage_repository
+        self.activity_repository = activity_repository
 
     def execute(self, command: MoveJobPositionToStageCommand) -> None:
         """Execute the command - moves job position to new stage"""
@@ -101,6 +110,14 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
                     validation_errors
                 )
 
+        # Get old stage info before moving
+        old_stage_id = job_position.stage_id.value if job_position.stage_id else None
+        old_stage_name = None
+        if old_stage_id:
+            old_stage = self.stage_repository.get_by_id(WorkflowStageId.from_string(old_stage_id))
+            if old_stage:
+                old_stage_name = old_stage.name
+
         # Complete the current stage if it exists
         current_stage_record = self.job_position_stage_repository.get_current_by_job_position(command.id)
         if current_stage_record:
@@ -124,6 +141,27 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
         job_position.move_to_stage(command.stage_id)
 
         self.job_position_repository.save(job_position)
+
+        # Create activity log for stage move
+        if command.user_id:
+            try:
+                activity_id = JobPositionActivityId.generate()
+                user_id = CompanyUserId.from_string(command.user_id)
+                activity = JobPositionActivity.from_stage_move(
+                    id=activity_id,
+                    job_position_id=command.id,
+                    user_id=user_id,
+                    old_stage_id=old_stage_id,
+                    old_stage_name=old_stage_name,
+                    new_stage_id=command.stage_id.value,
+                    new_stage_name=target_stage.name
+                )
+                self.activity_repository.save(activity)
+            except Exception as e:
+                # Log error but don't fail the command if activity creation fails
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to create activity for stage move: {e}")
 
     def _validate_with_jsonlogic(
         self,

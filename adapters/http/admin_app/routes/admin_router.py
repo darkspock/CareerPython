@@ -823,16 +823,35 @@ def move_position_to_stage(
         request: MoveJobPositionToStageRequest,
         controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
 ) -> dict:
     """Move a job position to a new stage with validation"""
     from src.company_bc.job_position.application.commands.move_job_position_to_stage import JobPositionValidationError
+    from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
+    from src.company_bc.job_position.domain.value_objects import JobPositionId
+    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
     from fastapi import HTTPException
 
     try:
+        # Get company_user_id for the current user
+        position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
+        position_dto = query_bus.query(position_query)
+        
+        company_user_id = None
+        if position_dto:
+            company_user_query = GetCompanyUserByCompanyAndUserQuery(
+                company_id=position_dto.company_id.value,
+                user_id=current_admin.id
+            )
+            company_user_dto = query_bus.query(company_user_query)
+            if company_user_dto:
+                company_user_id = company_user_dto.id
+        
         return controller.move_position_to_stage(
             position_id=position_id,
             stage_id=request.stage_id,
-            comment=request.comment
+            comment=request.comment,
+            user_id=company_user_id
         )
     except JobPositionValidationError as e:
         # Return 400 with validation errors

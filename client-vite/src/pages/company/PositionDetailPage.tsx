@@ -590,7 +590,7 @@ export default function PositionDetailPage() {
       )}
 
       {/* Comments Section - Always visible at the bottom, like in CandidateDetailPage */}
-      {activeTab === 'info' && position.stage_id && (
+      {position.stage_id && (
         <div className="mt-6">
           <PositionCommentsSection
             positionId={id!}

@@ -302,7 +302,8 @@ class JobPositionController:
         self,
         position_id: str,
         stage_id: str,
-        comment: Optional[str] = None
+        comment: Optional[str] = None,
+        user_id: Optional[str] = None
     ) -> dict:
         """Move a job position to a new stage"""
         from src.company_bc.job_position.application.commands.move_job_position_to_stage import (
@@ -314,7 +315,8 @@ class JobPositionController:
             command = MoveJobPositionToStageCommand(
                 id=JobPositionId.from_string(position_id),
                 stage_id=StageId.from_string(stage_id),
-                comment=comment
+                comment=comment,
+                user_id=user_id
             )
             self.command_bus.dispatch(command)
             
