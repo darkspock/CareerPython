@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
 from src.company.domain.entities.company import Company
+from src.company.domain.enums import CompanyTypeEnum
 from src.company.domain.value_objects import CompanyId, CompanySettings
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError
@@ -17,6 +18,7 @@ class CreateCompanyCommand(Command):
     domain: str
     logo_url: Optional[str] = None
     settings: Optional[Dict[str, Any]] = None
+    company_type: Optional[CompanyTypeEnum] = None
 
 
 class CreateCompanyCommandHandler(CommandHandler):
@@ -45,6 +47,7 @@ class CreateCompanyCommandHandler(CommandHandler):
             domain=command.domain,
             logo_url=command.logo_url,
             settings=CompanySettings.from_dict(command.settings) if command.settings else None,
+            company_type=command.company_type,
         )
 
         # Persist

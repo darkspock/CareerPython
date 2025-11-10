@@ -16,6 +16,7 @@ class CompanyResponseMapper:
             logo_url=dto.logo_url,
             settings=dto.settings,
             status=dto.status,
+            company_type=dto.company_type,
             created_at=dto.created_at,
             updated_at=dto.updated_at,
         )

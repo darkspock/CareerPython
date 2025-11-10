@@ -14,7 +14,7 @@ from src.company.domain.exceptions.company_exceptions import CompanyValidationEr
 from src.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.company.domain.entities.company_user import CompanyUser
 from src.company.domain.value_objects import CompanyUserId
-from src.company.domain.enums import CompanyUserRole
+from src.company.domain.enums import CompanyUserRole, CompanyTypeEnum
 from src.company.application.commands.create_company_command import CreateCompanyCommand
 from src.company.application.commands.initialize_onboarding_command import InitializeOnboardingCommand
 from src.company.application.commands.initialize_sample_data_command import InitializeSampleDataCommand
@@ -42,6 +42,7 @@ class RegisterCompanyWithUserCommand(Command):
     company_logo_url: Optional[str] = None
     company_contact_phone: Optional[str] = None
     company_address: Optional[str] = None
+    company_type: Optional[CompanyTypeEnum] = None  # Company type for onboarding customization
     
     # Options
     initialize_workflows: bool = True   # Whether to initialize default workflows
@@ -120,6 +121,7 @@ class RegisterCompanyWithUserCommandHandler(CommandHandler[RegisterCompanyWithUs
                 domain=command.company_domain,
                 logo_url=command.company_logo_url,
                 settings=company_settings if company_settings else None,
+                company_type=command.company_type,
             )
             self.command_bus.dispatch(create_company_command)
             log.info(f"Company created successfully: {command.company_name} ({command.company_domain})")

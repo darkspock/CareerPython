@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 
 from src.company.domain.entities.company import Company
+from src.company.domain.enums import CompanyTypeEnum
 
 
 @dataclass
@@ -18,6 +19,7 @@ class CompanyDto:
     status: str
     created_at: datetime
     updated_at: datetime
+    company_type: Optional[CompanyTypeEnum] = None
 
     @classmethod
     def from_entity(cls, company: Company) -> "CompanyDto":
@@ -31,7 +33,8 @@ class CompanyDto:
             settings=company.settings.to_dict(),
             status=company.status.value if hasattr(company.status, 'value') else company.status,
             created_at=company.created_at,
-            updated_at=company.updated_at
+            updated_at=company.updated_at,
+            company_type=company.company_type
         )
 
 

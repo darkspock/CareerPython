@@ -4,7 +4,7 @@ from sqlalchemy import func
 
 from core.database import DatabaseInterface
 from src.company.domain.entities.company import Company
-from src.company.domain.enums import CompanyStatusEnum
+from src.company.domain.enums import CompanyStatusEnum, CompanyTypeEnum
 from src.company.domain.value_objects import CompanyId, CompanySettings
 from src.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company.infrastructure.models.company_model import CompanyModel
@@ -99,6 +99,7 @@ class CompanyRepository(CompanyRepositoryInterface):
             logo_url=model.logo_url,
             settings=CompanySettings.from_dict(model.settings or {}),
             status=CompanyStatusEnum(model.status),
+            company_type=CompanyTypeEnum(model.company_type) if model.company_type else None,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -113,6 +114,7 @@ class CompanyRepository(CompanyRepositoryInterface):
             logo_url=entity.logo_url,
             settings=entity.settings.to_dict(),
             status=entity.status.value,
+            company_type=entity.company_type.value if entity.company_type else None,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )

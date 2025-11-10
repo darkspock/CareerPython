@@ -6,7 +6,7 @@ from sqlalchemy import String, JSON, Enum, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.base import Base
-from src.company.domain.enums import CompanyStatusEnum
+from src.company.domain.enums import CompanyStatusEnum, CompanyTypeEnum
 
 
 @dataclass
@@ -24,6 +24,11 @@ class CompanyModel(Base):
         Enum(CompanyStatusEnum, native_enum=False, length=20),
         nullable=False,
         default=CompanyStatusEnum.ACTIVE.value
+    )
+    company_type: Mapped[Optional[str]] = mapped_column(
+        Enum(CompanyTypeEnum, native_enum=False, length=30),
+        nullable=True,
+        default=CompanyTypeEnum.MID_SIZE.value
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now(), onupdate=func.now())

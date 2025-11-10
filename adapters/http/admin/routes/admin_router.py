@@ -16,11 +16,9 @@ from adapters.http.admin.controllers.company_controller import CompanyController
 from adapters.http.admin.controllers.enum_controller import EnumController, EnumMetadataResponse
 from adapters.http.admin.controllers.interview_controller import InterviewController
 from adapters.http.admin.controllers.inverview_template_controller import InterviewTemplateController
-from adapters.http.admin.controllers.job_position_controller import JobPositionController
 # JobPositionWorkflowController removed - use generic WorkflowController or JobPositionController instead
 from adapters.http.admin.controllers.job_position_comment_controller import JobPositionCommentController
-from adapters.http.workflow.controllers import WorkflowController
-from adapters.http.workflow.schemas import WorkflowResponse
+from adapters.http.admin.controllers.job_position_controller import JobPositionController
 # Company schemas
 from adapters.http.admin.schemas.company import (
     CompanyResponse, CompanyCreate, CompanyUpdate, CompanyListResponse,
@@ -43,20 +41,21 @@ from adapters.http.admin.schemas.job_position import (
     JobPositionResponse, JobPositionCreate, JobPositionUpdate, JobPositionListResponse,
     JobPositionStatsResponse, JobPositionActionResponse
 )
-from adapters.http.admin.schemas.job_position_workflow import (
-    JobPositionWorkflowCreate, JobPositionWorkflowResponse,
-    MoveJobPositionToStageRequest, UpdateJobPositionCustomFieldsRequest
+from adapters.http.admin.schemas.job_position_activity import (
+    JobPositionActivityListResponse
 )
-from adapters.http.workflow.schemas.update_workflow_request import UpdateWorkflowRequest
 from adapters.http.admin.schemas.job_position_comment import (
     CreateJobPositionCommentRequest, UpdateJobPositionCommentRequest,
     JobPositionCommentResponse, JobPositionCommentListResponse
 )
-from adapters.http.admin.schemas.job_position_activity import (
-    JobPositionActivityResponse, JobPositionActivityListResponse
+from adapters.http.admin.schemas.job_position_workflow import (
+    MoveJobPositionToStageRequest, UpdateJobPositionCustomFieldsRequest
 )
 from adapters.http.shared.schemas.token import Token
 from adapters.http.shared.schemas.user import UserResponse
+from adapters.http.workflow.controllers import WorkflowController
+from adapters.http.workflow.schemas import WorkflowResponse
+from adapters.http.workflow.schemas.update_workflow_request import UpdateWorkflowRequest
 from core.container import Container
 from src.company.application.dtos import CompanyUserDto
 from src.company.domain import CompanyId
@@ -582,7 +581,7 @@ def list_positions(
         company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
-    
+
     return controller.list_positions(
         company_id=company_id,
         search_term=search_term,
@@ -672,11 +671,11 @@ def get_workflow(
     result = controller.get_workflow_by_id(workflow_id)
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found")
-    
+
     # Ensure stages is always a list (not None) for frontend compatibility
     if result.stages is None:
         result.stages = []
-    
+
     # Transform stages to match frontend expected format
     # Frontend expects: icon, background_color, text_color, status_mapping, field_visibility, etc.
     # Generic system has: style: {background_color, text_color, icon}, kanban_display, etc.
@@ -688,14 +687,14 @@ def get_workflow(
             icon = style.get('icon', '📋') if isinstance(style, dict) else getattr(style, 'icon', '📋')
             background_color = style.get('background_color', '#E5E7EB') if isinstance(style, dict) else getattr(style, 'background_color', '#E5E7EB')
             text_color = style.get('text_color', '#374151') if isinstance(style, dict) else getattr(style, 'text_color', '#374151')
-            
+
             # Get other fields
             stage_id = stage.get('id') if isinstance(stage, dict) else getattr(stage, 'id', '')
             name = stage.get('name') if isinstance(stage, dict) else getattr(stage, 'name', '')
             kanban_display = stage.get('kanban_display', 'column') if isinstance(stage, dict) else getattr(stage, 'kanban_display', 'column')
             default_role_ids = stage.get('default_role_ids', []) if isinstance(stage, dict) else getattr(stage, 'default_role_ids', [])
             role = default_role_ids[0] if default_role_ids else None
-            
+
             # Map kanban_display values (generic: 'column'/'row'/'none' -> frontend: 'vertical'/'horizontal'/'hidden')
             kanban_display_map = {
                 'column': 'vertical',
@@ -703,7 +702,7 @@ def get_workflow(
                 'none': 'hidden'
             }
             kanban_display_mapped = kanban_display_map.get(kanban_display, kanban_display)
-            
+
             # Create transformed stage
             transformed_stage = {
                 'id': stage_id,
@@ -719,9 +718,9 @@ def get_workflow(
                 'field_candidate_visibility': {}  # Empty, as this doesn't exist in generic system
             }
             transformed_stages.append(transformed_stage)
-        
+
         result.stages = transformed_stages
-    
+
     return result
 
 
@@ -741,7 +740,7 @@ def update_workflow(
     # Extract fields - handle both old and new formats
     name = body.get('name', '')
     description = body.get('description', '')
-    
+
     # Handle display/default_view mapping
     display = body.get('display') or body.get('default_view')
     if display == 'kanban':
@@ -750,7 +749,7 @@ def update_workflow(
         display = 'list'
     else:
         display = None
-    
+
     # Create UpdateWorkflowRequest with available fields
     update_request = UpdateWorkflowRequest(
         name=name,
@@ -758,22 +757,22 @@ def update_workflow(
         display=display,
         phase_id=body.get('phase_id')  # Phase ID if provided
     )
-    
+
     # Update workflow using generic system
     result = controller.update_workflow(workflow_id, update_request)
-    
+
     # Note: stages and custom_fields_config from old format are ignored
     # These should be updated through separate stage endpoints or EntityCustomization system
-    
+
     # Re-fetch to get enriched response with stages
     result = controller.get_workflow_by_id(workflow_id)
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found after update")
-    
+
     # Ensure stages is always a list (not None) for frontend compatibility
     if result.stages is None:
         result.stages = []
-    
+
     # Transform stages to match frontend expected format (same as GET endpoint)
     if result.stages:
         transformed_stages = []
@@ -783,14 +782,14 @@ def update_workflow(
             icon = style.get('icon', '📋') if isinstance(style, dict) else getattr(style, 'icon', '📋')
             background_color = style.get('background_color', '#E5E7EB') if isinstance(style, dict) else getattr(style, 'background_color', '#E5E7EB')
             text_color = style.get('text_color', '#374151') if isinstance(style, dict) else getattr(style, 'text_color', '#374151')
-            
+
             # Get other fields
             stage_id = stage.get('id') if isinstance(stage, dict) else getattr(stage, 'id', '')
             name = stage.get('name') if isinstance(stage, dict) else getattr(stage, 'name', '')
             kanban_display = stage.get('kanban_display', 'column') if isinstance(stage, dict) else getattr(stage, 'kanban_display', 'column')
             default_role_ids = stage.get('default_role_ids', []) if isinstance(stage, dict) else getattr(stage, 'default_role_ids', [])
             role = default_role_ids[0] if default_role_ids else None
-            
+
             # Map kanban_display values (generic: 'column'/'row'/'none' -> frontend: 'vertical'/'horizontal'/'hidden')
             kanban_display_map = {
                 'column': 'vertical',
@@ -798,7 +797,7 @@ def update_workflow(
                 'none': 'hidden'
             }
             kanban_display_mapped = kanban_display_map.get(kanban_display, kanban_display)
-            
+
             # Create transformed stage
             transformed_stage = {
                 'id': stage_id,
@@ -814,9 +813,9 @@ def update_workflow(
                 'field_candidate_visibility': {}  # Empty, as this doesn't exist in generic system
             }
             transformed_stages.append(transformed_stage)
-        
+
         result.stages = transformed_stages
-    
+
     return result
 
 # Job Position Stage Management Endpoints
@@ -832,7 +831,7 @@ def move_position_to_stage(
     """Move a job position to a new stage with validation"""
     from src.job_position.application.commands.move_job_position_to_stage import JobPositionValidationError
     from fastapi import HTTPException
-    
+
     try:
         return controller.move_position_to_stage(
             position_id=position_id,
@@ -883,23 +882,23 @@ def create_job_position_comment(
     from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.job_position.domain.value_objects import JobPositionId
     from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
-    
+
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
     position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
-    
+
     if not position_dto:
         raise HTTPException(status_code=404, detail="Job position not found")
-    
+
     # Get company_user_id for the current user
     company_user_query = GetCompanyUserByCompanyAndUserQuery(
         company_id=position_dto.company_id.value,
         user_id=current_admin.id
     )
     company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
-    
+
     if not company_user_dto:
         raise HTTPException(status_code=403, detail="User not authorized for this company")
-    
+
     controller.create_comment(position_id, request, company_user_dto.id)
 
 
@@ -917,10 +916,10 @@ def list_all_job_position_comments(
     from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.job_position.domain.value_objects import JobPositionId
     from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
-    
+
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
     position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
-    
+
     company_user_id = None
     if position_dto:
         company_user_query = GetCompanyUserByCompanyAndUserQuery(
@@ -930,7 +929,7 @@ def list_all_job_position_comments(
         company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
-    
+
     response = controller.list_all_comments(position_id, current_user_id=company_user_id)
     return response.comments
 
@@ -951,10 +950,10 @@ def list_job_position_comments(
     from src.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.job_position.domain.value_objects import JobPositionId
     from src.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
-    
+
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
     position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
-    
+
     company_user_id = None
     if position_dto:
         company_user_query = GetCompanyUserByCompanyAndUserQuery(
@@ -964,7 +963,7 @@ def list_job_position_comments(
         company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
-    
+
     return controller.list_comments(position_id, stage_id, include_global, current_user_id=company_user_id)
 
 

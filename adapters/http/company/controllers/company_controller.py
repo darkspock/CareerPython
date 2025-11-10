@@ -72,6 +72,7 @@ class CompanyController:
                 domain=request.domain,
                 logo_url=request.logo_url,
                 settings=request.settings,
+                company_type=request.company_type,
             )
             self.command_bus.dispatch(command)
 
@@ -400,6 +401,7 @@ class CompanyController:
                 company_logo_url=request.logo_url,
                 company_contact_phone=request.contact_phone,
                 company_address=request.address,
+                company_type=request.company_type,
                 initialize_workflows=request.initialize_workflows,
                 include_example_data=request.include_example_data,
             )
@@ -449,6 +451,7 @@ class CompanyController:
                 company_logo_url=request.logo_url,
                 company_contact_phone=request.contact_phone,
                 company_address=request.address,
+                company_type=request.company_type,
                 initialize_workflows=request.initialize_workflows,
                 include_example_data=request.include_example_data,
             )

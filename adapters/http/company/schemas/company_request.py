@@ -2,6 +2,8 @@ from typing import Optional, Dict, Any
 
 from pydantic import BaseModel, field_validator
 
+from src.company.domain.enums import CompanyTypeEnum
+
 
 class CreateCompanyRequest(BaseModel):
     """Request schema to create a company"""
@@ -9,6 +11,7 @@ class CreateCompanyRequest(BaseModel):
     domain: str
     logo_url: Optional[str] = None
     settings: Optional[Dict[str, Any]] = None
+    company_type: Optional[CompanyTypeEnum] = None
 
     @field_validator('name')
     @classmethod
@@ -40,6 +43,7 @@ class UpdateCompanyRequest(BaseModel):
     slug: Optional[str] = None
     logo_url: Optional[str] = None
     settings: Dict[str, Any]
+    company_type: Optional[CompanyTypeEnum] = None
 
     @field_validator('name')
     @classmethod

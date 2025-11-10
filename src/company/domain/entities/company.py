@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.company.domain.enums import CompanyStatusEnum
+from src.company.domain.enums import CompanyStatusEnum, CompanyTypeEnum
 from src.company.domain.exceptions.company_exceptions import CompanyValidationError
 from src.company.domain.value_objects import CompanyId, CompanySettings
 
@@ -20,6 +20,7 @@ class Company:
     logo_url: Optional[str]
     settings: CompanySettings
     status: CompanyStatusEnum
+    company_type: Optional[CompanyTypeEnum]  # Company type for onboarding customization
     created_at: datetime
     updated_at: datetime
 
@@ -32,6 +33,7 @@ class Company:
             slug: Optional[str] = None,
             logo_url: Optional[str] = None,
             settings: Optional[CompanySettings] = None,
+            company_type: Optional[CompanyTypeEnum] = None,
     ) -> "Company":
         """
         Factory method to create a new company
@@ -43,6 +45,7 @@ class Company:
             slug: URL-friendly identifier (optional, auto-generated from name if not provided)
             logo_url: Logo URL (optional)
             settings: Custom settings (optional)
+            company_type: Company type for onboarding customization (optional, defaults to MID_SIZE)
 
         Returns:
             Company: New company instance
@@ -74,6 +77,7 @@ class Company:
         # Default values
         now = datetime.utcnow()
         company_settings = settings or CompanySettings.default()
+        company_type_value = company_type or CompanyTypeEnum.MID_SIZE
 
         return cls(
             id=id,
@@ -83,6 +87,7 @@ class Company:
             logo_url=logo_url,
             settings=company_settings,
             status=CompanyStatusEnum.ACTIVE,
+            company_type=company_type_value,
             created_at=now,
             updated_at=now,
         )
@@ -135,6 +140,7 @@ class Company:
             logo_url=logo_url,
             settings=settings,
             status=self.status,
+            company_type=self.company_type,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )
@@ -163,6 +169,7 @@ class Company:
             logo_url=self.logo_url,
             settings=self.settings,
             status=CompanyStatusEnum.SUSPENDED,
+            company_type=self.company_type,
             created_at=self.created_at,
             updated_at=datetime.utcnow(),
         )

@@ -2,6 +2,8 @@
 from typing import Optional
 from pydantic import BaseModel, field_validator, EmailStr
 
+from src.company.domain.enums import CompanyTypeEnum
+
 
 class CompanyRegistrationRequest(BaseModel):
     """Request schema to register a company with a new user"""
@@ -17,6 +19,7 @@ class CompanyRegistrationRequest(BaseModel):
     logo_url: Optional[str] = None
     contact_phone: Optional[str] = None
     address: Optional[str] = None
+    company_type: Optional[CompanyTypeEnum] = None  # Company type for onboarding customization
     
     # Options
     initialize_workflows: bool = True   # Whether to initialize default workflows
@@ -98,6 +101,7 @@ class LinkUserRequest(BaseModel):
     logo_url: Optional[str] = None
     contact_phone: Optional[str] = None
     address: Optional[str] = None
+    company_type: Optional[CompanyTypeEnum] = None  # Company type for onboarding customization
     
     # Options
     initialize_workflows: bool = True   # Whether to initialize default workflows

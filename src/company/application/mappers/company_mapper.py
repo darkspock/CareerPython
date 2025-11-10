@@ -18,4 +18,5 @@ class CompanyMapper:
             status=entity.status.value if hasattr(entity.status, 'value') else entity.status,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
+            company_type=entity.company_type,
         )

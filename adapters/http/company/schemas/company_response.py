@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, Dict, Any
 
+from src.company.domain.enums import CompanyTypeEnum
+
 
 class CompanyResponse(BaseModel):
     """Company API response schema"""
@@ -12,6 +14,7 @@ class CompanyResponse(BaseModel):
     logo_url: Optional[str]
     settings: Dict[str, Any]
     status: str
+    company_type: Optional[CompanyTypeEnum] = None
     created_at: datetime
     updated_at: datetime
 

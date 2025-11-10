@@ -11,8 +11,9 @@
  * @param {Function} [props.onLogoUpload] - Handler for logo upload
  */
 import React, { useRef, useState, useEffect } from 'react';
-import { Building, Globe, Phone, MapPin, Upload, X, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Building, Globe, Phone, MapPin, Upload, X, AlertCircle, CheckCircle, Loader2, Briefcase } from 'lucide-react';
 import { CompanyRegistrationService } from '../../services/companyRegistrationService';
+import { COMPANY_TYPE_OPTIONS, type CompanyType } from '../../types/recruiter-company';
 
 interface CompanyDataFormProps {
   formData: {
@@ -21,8 +22,9 @@ interface CompanyDataFormProps {
     logo_url?: string;
     contact_phone?: string;
     address?: string;
+    company_type?: CompanyType;
   };
-  onChange: (field: string, value: string) => void;
+  onChange: (field: string, value: string | CompanyType) => void;
   errors: Record<string, string>;
   onLogoUpload?: (file: File) => Promise<void>;
   onDomainValidation?: (isValid: boolean, error?: string) => void;
@@ -272,6 +274,48 @@ export default function CompanyDataForm({
         )}
         <p className="mt-1 text-xs text-gray-500">
           Sin http:// o www.
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="company_type" className="block text-sm font-medium text-gray-700 mb-2">
+          ¿Qué mejor describe tu empresa? *
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Briefcase className="h-5 w-5 text-gray-400" />
+          </div>
+          <select
+            id="company_type"
+            value={formData.company_type || 'mid_size'}
+            onChange={(e) => onChange('company_type', e.target.value as CompanyType)}
+            className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 ${
+              errors.company_type
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-blue-500'
+            }`}
+            required
+          >
+            {COMPANY_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        {errors.company_type && (
+          <p className="mt-1 text-sm text-red-600 flex items-center">
+            <AlertCircle className="w-4 h-4 mr-1" />
+            {errors.company_type}
+          </p>
+        )}
+        {formData.company_type && (
+          <p className="mt-1 text-xs text-gray-500">
+            {COMPANY_TYPE_OPTIONS.find(opt => opt.value === formData.company_type)?.description}
+          </p>
+        )}
+        <p className="mt-1 text-xs text-gray-500">
+          Esto nos ayuda a personalizar tu experiencia de onboarding
         </p>
       </div>
 
