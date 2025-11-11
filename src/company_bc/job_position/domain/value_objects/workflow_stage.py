@@ -46,7 +46,7 @@ class WorkflowStage:
         icon: str,
         background_color: str,
         text_color: str,
-        status_mapping: JobPositionStatusEnum,
+        status_mapping: WorkflowStageTypeEnum,
         kanban_display: KanbanDisplayEnum = KanbanDisplayEnum.VERTICAL,
         role: Optional[CompanyRoleId] = None,
         field_visibility: Optional[Dict[str, bool]] = None,
@@ -62,7 +62,7 @@ class WorkflowStage:
             icon: Icon (emoji or HTML)
             background_color: Background color (hex, rgb, or CSS color name)
             text_color: Text color (hex, rgb, or CSS color name)
-            status_mapping: Maps to JobPositionStatusEnum
+            status_mapping: Maps to WorkflowStageTypeEnum
             kanban_display: How to display in Kanban
             role: Responsible role (optional)
             field_visibility: Field visibility configuration
@@ -92,7 +92,7 @@ class WorkflowStage:
         background_color: Optional[str] = None,
         text_color: Optional[str] = None,
         role: Optional[CompanyRoleId] = None,
-        status_mapping: Optional[JobPositionStatusEnum] = None,
+        status_mapping: Optional[WorkflowStageTypeEnum] = None,
         kanban_display: Optional[KanbanDisplayEnum] = None,
         field_visibility: Optional[Dict[str, bool]] = None,
         field_validation: Optional[Dict[str, Any]] = None,

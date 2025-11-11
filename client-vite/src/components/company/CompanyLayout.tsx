@@ -10,7 +10,9 @@ import {
   Layers,
   ChevronDown,
   ChevronRight,
-  Search
+  Search,
+  FileText,
+  MessageSquare
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -89,12 +91,20 @@ export default function CompanyLayout() {
   const menuItems = [
     { path: '/company/dashboard', icon: LayoutDashboard, label: t('company.navigation.dashboard') },
     { path: '/company/positions', icon: Briefcase, label: t('company.navigation.jobPositions') },
+    { path: '/company/interview-templates', icon: FileText, label: t('company.navigation.interviewTemplates') },
+    { path: '/company/interviews', icon: MessageSquare, label: t('company.navigation.interviews') },
     { path: '/company/settings', icon: Settings, label: t('company.navigation.settings') },
   ];
 
   const isActive = (path: string) => {
     if (path === '/company/settings') {
       return location.pathname.startsWith('/company/settings') || location.pathname.startsWith('/company/users');
+    }
+    if (path === '/company/interview-templates') {
+      return location.pathname.startsWith('/company/interview-templates');
+    }
+    if (path === '/company/interviews') {
+      return location.pathname.startsWith('/company/interviews');
     }
     return location.pathname === path;
   };

@@ -119,7 +119,6 @@ def list_interview_templates(
         type: Optional[str] = None,
         status: Optional[str] = None,
         job_category: Optional[str] = None,
-        section: Optional[str] = None,
         page: Optional[int] = None,
         page_size: Optional[int] = None
 ) -> List[InterviewTemplateResponse]:
@@ -129,7 +128,6 @@ def list_interview_templates(
         type=type,
         status=status,
         job_category=job_category,
-        section=section,
         page=page,
         page_size=page_size
     )
@@ -834,8 +832,11 @@ def move_position_to_stage(
 
     try:
         # Get company_user_id for the current user
+        from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
+        from src.company_bc.company.application.dtos import CompanyUserDto
+        
         position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
-        position_dto = query_bus.query(position_query)
+        position_dto: Optional[JobPositionDto] = query_bus.query(position_query)
         
         company_user_id = None
         if position_dto:
@@ -843,7 +844,7 @@ def move_position_to_stage(
                 company_id=position_dto.company_id.value,
                 user_id=current_admin.id
             )
-            company_user_dto = query_bus.query(company_user_query)
+            company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
             if company_user_dto:
                 company_user_id = company_user_dto.id
         

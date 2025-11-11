@@ -217,6 +217,8 @@
     "navigation": {
       "dashboard": "Panel",
       "jobPositions": "Posiciones de Trabajo",
+      "interviewTemplates": "Plantillas de Entrevista",
+      "interviews": "Entrevistas",
       "settings": "Configuración",
       "candidates": "Candidatos",
       "searchAllCandidates": "Buscar Todos los Candidatos",

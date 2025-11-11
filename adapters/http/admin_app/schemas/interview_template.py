@@ -19,7 +19,6 @@ class InterviewTemplateBase(BaseModel):
     goal: Optional[str] = None
     type: InterviewTemplateTypeEnum
     job_category: Optional[JobCategoryEnum] = None
-    section: Optional[InterviewTemplateSectionEnum] = None
     allow_ai_questions: Optional[bool] = False
     legal_notice: Optional[str] = None
     tags: Optional[List[str]] = None
@@ -44,6 +43,7 @@ class InterviewTemplate(InterviewTemplateBase):
 class InterviewTemplateResponse(InterviewTemplateBase):
     id: str
     status: InterviewTemplateStatusEnum
+    company_id: Optional[str] = None  # Company that owns this template
     sections: Optional[List['InterviewTemplateSectionResponse']] = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -59,6 +59,7 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             goal=dto.goal,
             type=dto.template_type,
             status=dto.status,
+            company_id=dto.company_id.value if dto.company_id and hasattr(dto.company_id, 'value') else (str(dto.company_id) if dto.company_id else None),
             job_category=dto.job_category,
             allow_ai_questions=dto.allow_ai_questions,
             legal_notice=dto.legal_notice,
@@ -81,6 +82,7 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             goal=dto.goal,
             type=dto.template_type,
             status=dto.status,
+            company_id=dto.company_id,  # Already a string in FullDto
             job_category=dto.job_category,
             allow_ai_questions=dto.allow_ai_questions,
             legal_notice=dto.legal_notice,
@@ -115,7 +117,6 @@ class InterviewTemplateSectionBase(BaseModel):
     intro: Optional[str] = None
     prompt: Optional[str] = None
     goal: Optional[str] = None
-    section: Optional[InterviewTemplateSectionEnum] = None
     sort_order: int = 0
     allow_ai_questions: Optional[bool] = False
     allow_ai_override_questions: Optional[bool] = False
@@ -152,7 +153,6 @@ class InterviewTemplateSectionResponse(InterviewTemplateSectionBase):
             intro=dto.intro,
             prompt=dto.prompt,
             goal=dto.goal,
-            section=dto.section,
             sort_order=dto.sort_order,
             allow_ai_questions=dto.allow_ai_questions,
             allow_ai_override_questions=dto.allow_ai_override_questions,

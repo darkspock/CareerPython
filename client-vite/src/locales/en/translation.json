@@ -217,6 +217,8 @@
     "navigation": {
       "dashboard": "Dashboard",
       "jobPositions": "Job Positions",
+      "interviewTemplates": "Interview Templates",
+      "interviews": "Interviews",
       "settings": "Settings",
       "candidates": "Candidates",
       "searchAllCandidates": "Search All Candidates",

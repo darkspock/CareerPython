@@ -40,6 +40,8 @@ from adapters.http.company_app.company.routers.candidate_review_router import ro
 from adapters.http.company_app.job_position.routers.company_position_router import router as company_position_router
 from adapters.http.company_app.company_page.routers.company_page_router import router as company_page_router
 from adapters.http.company_app.company_page.routers.public_company_page_router import router as public_company_page_router
+from adapters.http.company_app.interview.routers.company_interview_template_router import router as company_interview_template_router
+from adapters.http.company_app.interview.routers.company_interview_router import router as company_interview_router
 from adapters.http.auth.routes.user_router import user_router
 from adapters.http.auth.routes.ai_test_router import router as ai_test_router
 from adapters.http.auth.invitations.routers.invitation_router import router as invitation_router
@@ -99,6 +101,8 @@ app.include_router(candidate_comment_router)  # Candidate comment management
 app.include_router(candidate_review_router)  # Candidate review management
 app.include_router(company_position_router)  # Company job position management (must be before comment router)
 app.include_router(job_position_comment_router)  # Job position comment management
+app.include_router(company_interview_template_router)  # Company interview template management
+app.include_router(company_interview_router)  # Company interview management
 app.include_router(validation_rule_router)  # Field validation rules
 app.include_router(position_stage_assignment_router)  # Position stage assignment management
 app.include_router(company_page_router)  # Company pages management
@@ -161,6 +165,8 @@ container.wire(modules=[
     "adapters.http.company_app.company.routers.candidate_review_router",
     "adapters.http.company_app.company.routers.job_position_comment_router",
     "adapters.http.company_app.job_position.routers.company_position_router",  # Company job position management
+    "adapters.http.company_app.interview.routers.company_interview_template_router",  # Company interview template management
+    "adapters.http.company_app.interview.routers.company_interview_router",  # Company interview management
     "adapters.http.shared.field_validation.routers.validation_rule_router",
     "adapters.http.candidate_app.routers.position_stage_assignment_router",
     "adapters.http.shared.workflow_analytics.routers.workflow_analytics_router",

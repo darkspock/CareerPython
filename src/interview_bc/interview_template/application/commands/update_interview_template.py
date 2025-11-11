@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
-from src.interview_bc.interview_template.domain.enums import InterviewTemplateSectionEnum, InterviewTemplateTypeEnum
+from src.interview_bc.interview_template.domain.enums import InterviewTemplateTypeEnum
 from src.interview_bc.interview_template.domain.exceptions.interview_exceptions import (
     InterviewTemplateNotFoundException,
     InvalidTemplateStateException
@@ -26,7 +26,6 @@ class UpdateInterviewTemplateCommand(Command):
     goal: Optional[str] = None
     type: Optional[InterviewTemplateTypeEnum] = None
     job_category: Optional[JobCategoryEnum] = None
-    section: Optional[InterviewTemplateSectionEnum] = None
     allow_ai_questions: Optional[bool] = None
     legal_notice: Optional[str] = None
     tags: Optional[List[str]] = None

@@ -41,6 +41,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
                     job_category=template.job_category,
                     allow_ai_questions=template.allow_ai_questions,
                     legal_notice=template.legal_notice,
+                    company_id=template.company_id.value if template.company_id else None,
                     created_by=getattr(template, 'created_by', None),
                     tags=template.tags or [],
                     template_metadata=template.metadata or {},
@@ -95,6 +96,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             db_template.job_category = template.job_category
             db_template.allow_ai_questions = template.allow_ai_questions
             db_template.legal_notice = template.legal_notice
+            db_template.company_id = template.company_id.value if template.company_id else None
             db_template.tags = template.tags or []
             db_template.template_metadata = template.metadata or {}
             db_template.updated_at = datetime.utcnow()
@@ -154,6 +156,9 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
 
             if 'created_by' in criteria and criteria['created_by']:
                 query = query.filter(InterviewTemplateModel.created_by == criteria['created_by'])
+
+            if 'company_id' in criteria and criteria['company_id']:
+                query = query.filter(InterviewTemplateModel.company_id == criteria['company_id'])
 
             if 'created_after' in criteria and criteria['created_after']:
                 query = query.filter(InterviewTemplateModel.created_at >= criteria['created_after'])
@@ -226,10 +231,11 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
     def _to_domain(self, db_template: InterviewTemplateModel) -> InterviewTemplate:
         """Convert database model to domain entity"""
         from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
+        from src.company_bc.company.domain.value_objects import CompanyId
 
         return InterviewTemplate(
             id=InterviewTemplateId.from_string(db_template.id),
-            company_id=None,  # Add company_id mapping later if needed
+            company_id=CompanyId.from_string(db_template.company_id) if db_template.company_id else None,
             name=db_template.name,
             intro=db_template.intro,
             prompt=db_template.prompt,

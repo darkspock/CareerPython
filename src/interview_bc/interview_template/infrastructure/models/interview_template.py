@@ -35,6 +35,7 @@ class InterviewTemplateModel(Base):
     # Extended metadata
     created_by: Mapped[Optional[str]] = mapped_column(String, nullable=True,
                                                       index=True)  # User who created this template
+    company_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)  # Company that owns this template
     tags: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)  # List of tags for categorization
     template_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)  # Additional metadata
 
@@ -54,4 +55,5 @@ class InterviewTemplateModel(Base):
         Index('idx_job_category_status', 'job_category', 'status'),
         Index('idx_type', 'type'),
         Index('idx_created_by_status', 'created_by', 'status'),
+        Index('idx_company_id_status', 'company_id', 'status'),  # Composite index for company filtering
     )

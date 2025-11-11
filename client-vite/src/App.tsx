@@ -71,6 +71,10 @@ import WorkflowsSettingsPage from './pages/workflow/WorkflowsSettingsPage.tsx';
 import WorkflowAdvancedConfigPage from './pages/workflow/WorkflowAdvancedConfigPage.tsx';
 import CompanySettingsPage from './pages/company/CompanySettingsPage';
 import CompanyRolesPage from './pages/company/CompanyRolesPage';
+import CompanyInterviewTemplatesPage from './pages/company/CompanyInterviewTemplatesPage';
+import CompanyInterviewsPage from './pages/company/CompanyInterviewsPage';
+import CompanyInterviewDetailPage from './pages/company/CompanyInterviewDetailPage';
+import CreateInterviewPage from './pages/company/CreateInterviewPage';
 import PositionsListPage from './pages/company/PositionsListPage';
 import JobPositionWorkflowsSettingsPage from './pages/company/JobPositionWorkflowsSettingsPage.tsx';
 import CreateJobPositionWorkflowPage from './pages/company/CreateJobPositionWorkflowPage';
@@ -239,6 +243,13 @@ function App() {
                           <Route path="settings/job-position-workflows" element={<JobPositionWorkflowsSettingsPage />} />
                           <Route path="settings/phases" element={<PhasesPage />} />
                           <Route path="settings/roles" element={<CompanyRolesPage />} />
+                          <Route path="interview-templates" element={<CompanyInterviewTemplatesPage />} />
+                          <Route path="interview-templates/create" element={<InterviewTemplateEditor />} />
+                          <Route path="interview-templates/edit/:templateId" element={<InterviewTemplateEditor />} />
+                          <Route path="interviews" element={<CompanyInterviewsPage />} />
+                          <Route path="interviews/:interviewId" element={<CompanyInterviewDetailPage />} />
+                          <Route path="interviews/create" element={<CreateInterviewPage />} />
+                          <Route path="interviews/:interviewId/edit" element={<div>Edit Interview (Coming Soon)</div>} />
                           <Route path="users" element={<UsersManagementPage />} />
                           <Route index element={<CompanyDashboardPage />} />
                         </Route>

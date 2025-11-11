@@ -3,8 +3,7 @@ from typing import List, Optional, Dict, Any
 
 from src.interview_bc.interview_template.application.queries.dtos.interview_template_list_dto import \
     InterviewTemplateListDto
-from src.interview_bc.interview_template.domain.enums import InterviewTemplateStatusEnum, InterviewTemplateTypeEnum, \
-    InterviewTemplateSectionEnum
+from src.interview_bc.interview_template.domain.enums import InterviewTemplateStatusEnum, InterviewTemplateTypeEnum
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_repository import \
     InterviewTemplateRepository
 from src.framework.application.query_bus import Query, QueryHandler
@@ -17,7 +16,7 @@ class ListInterviewTemplatesQuery(Query):
     type: Optional[InterviewTemplateTypeEnum] = None
     status: Optional[InterviewTemplateStatusEnum] = None
     job_category: Optional[JobCategoryEnum] = None
-    section: Optional[InterviewTemplateSectionEnum] = None
+    company_id: Optional[str] = None  # Filter by company_id (required in company context)
     page: Optional[int] = None
     page_size: Optional[int] = None
 
@@ -38,8 +37,8 @@ class ListInterviewTemplatesQueryHandler(QueryHandler[ListInterviewTemplatesQuer
             criteria['status'] = query.status
         if query.job_category:
             criteria['job_category'] = query.job_category
-        if query.section:
-            criteria['section'] = query.section
+        if query.company_id:
+            criteria['company_id'] = query.company_id
         if query.page and query.page_size:
             criteria['offset'] = (query.page - 1) * query.page_size
             criteria['limit'] = query.page_size

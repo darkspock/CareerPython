@@ -63,9 +63,9 @@ class InterviewTemplateController:
             type: Optional[str] = None,
             status: Optional[str] = None,
             job_category: Optional[str] = None,
-            section: Optional[str] = None,
             page: Optional[int] = None,
-            page_size: Optional[int] = None
+            page_size: Optional[int] = None,
+            company_id: Optional[str] = None  # Optional for admin, required for company
     ) -> List[InterviewTemplateResponse]:
         # Convert string parameters to enums
         type_enum = None
@@ -89,34 +89,40 @@ class InterviewTemplateController:
             except ValueError:
                 pass
 
-        section_enum = None
-        if section:
-            try:
-                section_enum = InterviewTemplateSectionEnum(section)
-            except ValueError:
-                pass
-
         query = ListInterviewTemplatesQuery(
             search_term=search_term,
             type=type_enum,
             status=status_enum,
             job_category=job_category_enum,
-            section=section_enum,
             page=page,
-            page_size=page_size
+            page_size=page_size,
+            company_id=company_id  # Pass company_id to filter
         )
         templates_dto: List[InterviewTemplateListDto] = self.query_bus.query(query)
         return [InterviewTemplateResponse.from_list_dto(dto) for dto in templates_dto]
 
     def create_interview_template(self,
                                   template_data: InterviewTemplateCreate,
-                                  current_admin_id: str) -> InterviewTemplateResponse:
+                                  current_admin_id: str,
+                                  company_id: Optional[str] = None) -> InterviewTemplateResponse:
         # Generate ID before creating the command
         template_id = InterviewTemplateId.generate()
+        
+        # Convert company_id string to CompanyId VO if provided
+        # In company context, company_id is MANDATORY
+        company_id_vo = None
+        if company_id:
+            from src.company_bc.company.domain.value_objects import CompanyId
+            company_id_vo = CompanyId.from_string(company_id)
+        else:
+            # Log warning if company_id is missing in company context
+            import logging
+            log = logging.getLogger(__name__)
+            log.warning(f"create_interview_template called without company_id. Template ID: {template_id.value}")
 
         command = CreateInterviewTemplateCommand(
             id=template_id,
-            company_id=None,  # Set to None for now - can be enhanced later
+            company_id=company_id_vo,  # Use provided company_id (mandatory in company context)
             name=template_data.name,
             intro=template_data.intro,
             prompt=template_data.prompt,
@@ -181,11 +187,36 @@ class InterviewTemplateController:
             self,
             template_id: str,
             template_data: InterviewTemplateCreate,
-            current_admin_id: str
+            current_admin_id: str,
+            company_id: Optional[str] = None
     ) -> InterviewTemplateResponse:
         """
         Update an existing interview template and its sections
         """
+        # If company_id is provided, we need to update it in the template
+        # First, get the existing template to check if company_id needs updating
+        if company_id:
+            from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
+            from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import InterviewTemplateRepositoryInterface
+            from core.container import Container
+            
+            # Get repository to update company_id if needed
+            template_repo: InterviewTemplateRepositoryInterface = Container.interview_template_repository()
+            existing_template = template_repo.get_by_id(InterviewTemplateId.from_string(template_id))
+            if existing_template:
+                from src.company_bc.company.domain.value_objects import CompanyId
+                company_id_vo = CompanyId.from_string(company_id)
+                existing_template.update_details(
+                    company_id=company_id_vo,
+                    name=template_data.name,
+                    status=existing_template.status,  # Keep existing status unless explicitly changed
+                    template_type=template_data.type,
+                    job_category=template_data.job_category,
+                    allow_ai_questions=template_data.allow_ai_questions or False,
+                    legal_notice=template_data.legal_notice
+                )
+                template_repo.update(existing_template)
+        
         # Update the main template
         command = UpdateInterviewTemplateCommand(
             template_id=InterviewTemplateId.from_string(template_id),
@@ -195,7 +226,6 @@ class InterviewTemplateController:
             goal=template_data.goal,
             type=template_data.type,
             job_category=template_data.job_category,
-            section=template_data.section,
             allow_ai_questions=template_data.allow_ai_questions,
             legal_notice=template_data.legal_notice,
             tags=template_data.tags,
@@ -324,7 +354,7 @@ class InterviewTemplateController:
             id=section_id,
             company_id=CompanyId.from_string(section_data.company_id) if section_data.company_id else None,
             interview_template_id=InterviewTemplateId.from_string(section_data.interview_template_id),
-            section=section_data.section,
+            section=getattr(section_data, 'section', None),
             name=section_data.name,
             intro=section_data.intro,
             prompt=section_data.prompt,
@@ -353,7 +383,7 @@ class InterviewTemplateController:
             intro=section_data.intro,
             prompt=section_data.prompt,
             goal=section_data.goal,
-            section=section_data.section,
+            section=getattr(section_data, 'section', None),
             allow_ai_questions=getattr(section_data, 'allow_ai_questions', None),
             allow_ai_override_questions=getattr(section_data, 'allow_ai_override_questions', None),
             legal_notice=getattr(section_data, 'legal_notice', None),

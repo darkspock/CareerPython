@@ -103,7 +103,18 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
 
         # Get the target stage and workflow (already validated by Domain Service)
         target_stage = self.stage_repository.get_by_id(workflow_stage_id)
+        if not target_stage:
+            raise JobPositionValidationError(
+                "Target stage not found",
+                {"stage": [f"Stage {workflow_stage_id.value} not found"]}
+            )
+
         workflow = self.workflow_repository.get_by_id(workflow_id)
+        if not workflow:
+            raise JobPositionValidationError(
+                "Workflow not found",
+                {"workflow": [f"Workflow {workflow_id.value} not found"]}
+            )
 
         # Validate consistency with phase_workflows if exists
         if job_position.phase_workflows:
@@ -149,7 +160,7 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
             stage_id=workflow_stage_id,
             phase_id=workflow.phase_id,
             comments=command.comment,
-            estimated_cost=target_stage.estimated_cost,
+            estimated_cost=target_stage.estimated_cost if target_stage.estimated_cost else None,
             deadline=self._calculate_deadline(target_stage.deadline_days) if target_stage.deadline_days else None
         )
         self.job_position_stage_repository.save(new_stage_record)
