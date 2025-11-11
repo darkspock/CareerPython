@@ -13,6 +13,7 @@ from adapters.http.admin_app.schemas.job_position import (
     JobPositionListResponse,
     JobPositionResponse,
 )
+from adapters.http.admin_app.schemas.job_position_workflow import MoveJobPositionToStageRequest
 from fastapi.security import OAuth2PasswordBearer
 
 log = logging.getLogger(__name__)
@@ -133,6 +134,53 @@ def get_position(
         raise
     except Exception as e:
         log.error(f"Error getting position: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/move-to-stage", response_model=dict)
+@inject
+def move_position_to_stage(
+    position_id: str,
+    request: MoveJobPositionToStageRequest,
+    controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+    company_id: str = Depends(get_company_id_from_token),
+    company_user_id: Optional[str] = Depends(get_company_user_id_from_token)
+) -> dict:
+    """Move a job position to a new stage with validation"""
+    from src.company_bc.job_position.application.commands.move_job_position_to_stage import JobPositionValidationError
+    
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+        
+        # Move the position to the new stage
+        return controller.move_position_to_stage(
+            position_id=position_id,
+            stage_id=request.stage_id,
+            comment=request.comment,
+            user_id=company_user_id
+        )
+    except HTTPException:
+        raise
+    except JobPositionValidationError as e:
+        # Return 400 with validation errors
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": str(e),
+                "validation_errors": e.validation_errors
+            }
+        )
+    except Exception as e:
+        log.error(f"Error moving position {position_id} to stage: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, Trash2, ArrowUp, ArrowDown, Settings } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { phaseService } from '../../services/phaseService.ts';
 import { api } from '../../lib/api.ts';
@@ -41,7 +42,6 @@ export default function EditWorkflowPage() {
   const { workflowId } = useParams<{ workflowId: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [roles, setRoles] = useState<CompanyRole[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [phases, setPhases] = useState<Phase[]>([]);
@@ -107,7 +107,7 @@ export default function EditWorkflowPage() {
 
   const loadWorkflow = async () => {
     if (!workflowId) {
-      setError('Workflow ID not found');
+      toast.error('Workflow ID not found');
       setLoading(false);
       return;
     }
@@ -140,9 +140,8 @@ export default function EditWorkflowPage() {
         style: stage.style,
       }));
       setStages(formattedStages);
-      setError(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to load workflow');
+      toast.error(err.message || 'Failed to load workflow');
       console.error('Error loading workflow:', err);
     } finally {
       setLoading(false);
@@ -256,7 +255,7 @@ export default function EditWorkflowPage() {
       setEditingStageIndex(null);
     } catch (error) {
       console.error('Error updating stage style:', error);
-      setError('Failed to update stage style');
+      toast.error('Failed to update stage style');
     }
   };
 
@@ -267,29 +266,57 @@ export default function EditWorkflowPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!workflowId) {
-      setError('Workflow ID not found');
+      toast.error('Workflow ID not found');
       return;
     }
 
     if (!workflowName) {
-      setError('Workflow name is required');
+      toast.error('Workflow name is required');
       return;
     }
 
     if (stages.length === 0) {
-      setError('At least one stage is required');
+      toast.error('At least one stage is required');
       return;
     }
 
     // Validate stages
     for (const stage of stages) {
       if (!stage.name) {
-        setError('All stages must have a name');
+        toast.error('All stages must have a name');
         return;
       }
+    }
+
+    // Validate workflow stage rules
+    const initialStages = stages.filter(s => s.stage_type === 'initial');
+    const successStages = stages.filter(s => s.stage_type === 'success');
+    const standardStages = stages.filter(s => s.stage_type === 'standard'); // 'standard' maps to 'progress' in backend
+    
+    // Rule 1: Only one INITIAL stage allowed
+    if (initialStages.length > 1) {
+      toast.error(`Only one INITIAL stage is allowed. Found ${initialStages.length} INITIAL stages: ${initialStages.map(s => s.name).join(', ')}`);
+      return;
+    }
+    
+    // Rule 2: Only one SUCCESS stage allowed
+    if (successStages.length > 1) {
+      toast.error(`Only one SUCCESS stage is allowed. Found ${successStages.length} SUCCESS stages: ${successStages.map(s => s.name).join(', ')}`);
+      return;
+    }
+    
+    // Rule 3: Always must have a SUCCESS stage
+    if (successStages.length === 0) {
+      toast.error('A workflow must have at least one SUCCESS stage');
+      return;
+    }
+    
+    // Rule 4: If there are PROGRESS (standard) stages, there must be an INITIAL stage
+    if (standardStages.length > 0 && initialStages.length === 0) {
+      toast.error('If a workflow has PROGRESS stages, it must have an INITIAL stage');
+      return;
     }
 
     try {
@@ -355,9 +382,11 @@ export default function EditWorkflowPage() {
         });
       }
 
+      toast.success('Workflow updated successfully');
       navigate('/company/settings/workflows');
     } catch (err: any) {
-      setError(err.message || 'Failed to update workflow');
+      const errorMessage = err.message || 'Failed to update workflow';
+      toast.error(errorMessage);
       console.error('Error updating workflow:', err);
     } finally {
       setSaving(false);
@@ -394,13 +423,6 @@ export default function EditWorkflowPage() {
         <h1 className="text-2xl font-bold text-gray-900">Edit Workflow</h1>
         <p className="text-gray-600 mt-1">Update workflow details and stages</p>
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-red-800">{error}</p>
-        </div>
-      )}
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -605,6 +627,7 @@ export default function EditWorkflowPage() {
                       <option value="standard">Standard</option>
                       <option value="success">Success</option>
                       <option value="fail">Fail</option>
+                      <option value="archived">Archived</option>
                     </select>
                   </div>
 
@@ -729,28 +752,6 @@ export default function EditWorkflowPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Advanced Configuration Link */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-blue-900 mb-1">
-                Advanced Configuration
-              </h3>
-              <p className="text-sm text-blue-700">
-                Configure custom fields, field visibility, and validation rules for this workflow
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate(`/company/workflows/${workflowId}/advanced-config`)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Settings className="w-4 h-4" />
-              Open Advanced Config
-            </button>
           </div>
         </div>
 

@@ -53,7 +53,30 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
 
         Args:
             command: The create stage command
+            
+        Raises:
+            ValueError: If trying to create a stage with INITIAL or SUCCESS type
+                       when another stage with that type already exists in the workflow
         """
+        # Validate that only one INITIAL and one SUCCESS stage can exist per workflow
+        existing_stages = self.repository.list_by_workflow(command.workflow_id)
+        
+        if command.stage_type == WorkflowStageTypeEnum.INITIAL:
+            initial_stages = [s for s in existing_stages if s.stage_type == WorkflowStageTypeEnum.INITIAL]
+            if initial_stages:
+                raise ValueError(
+                    f"Workflow already has an INITIAL stage ({initial_stages[0].name}). "
+                    "Only one INITIAL stage is allowed per workflow."
+                )
+        
+        if command.stage_type == WorkflowStageTypeEnum.SUCCESS:
+            success_stages = [s for s in existing_stages if s.stage_type == WorkflowStageTypeEnum.SUCCESS]
+            if success_stages:
+                raise ValueError(
+                    f"Workflow already has a SUCCESS stage ({success_stages[0].name}). "
+                    "Only one SUCCESS stage is allowed per workflow."
+                )
+        
         stage = WorkflowStage.create(
             id=command.id,
             workflow_id=command.workflow_id,

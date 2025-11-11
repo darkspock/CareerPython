@@ -161,6 +161,35 @@ export default function CreateWorkflowPage() {
       }
     }
 
+    // Validate workflow stage rules
+    const initialStages = stages.filter(s => s.stage_type === 'initial');
+    const successStages = stages.filter(s => s.stage_type === 'success');
+    const standardStages = stages.filter(s => s.stage_type === 'standard'); // 'standard' maps to 'progress' in backend
+    
+    // Rule 1: Only one INITIAL stage allowed
+    if (initialStages.length > 1) {
+      setError(`Only one INITIAL stage is allowed. Found ${initialStages.length} INITIAL stages: ${initialStages.map(s => s.name).join(', ')}`);
+      return;
+    }
+    
+    // Rule 2: Only one SUCCESS stage allowed
+    if (successStages.length > 1) {
+      setError(`Only one SUCCESS stage is allowed. Found ${successStages.length} SUCCESS stages: ${successStages.map(s => s.name).join(', ')}`);
+      return;
+    }
+    
+    // Rule 3: Always must have a SUCCESS stage
+    if (successStages.length === 0) {
+      setError('A workflow must have at least one SUCCESS stage');
+      return;
+    }
+    
+    // Rule 4: If there are PROGRESS (standard) stages, there must be an INITIAL stage
+    if (standardStages.length > 0 && initialStages.length === 0) {
+      setError('If a workflow has PROGRESS stages, it must have an INITIAL stage');
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -382,6 +411,7 @@ export default function CreateWorkflowPage() {
                       <option value="standard">Standard</option>
                       <option value="success">Success</option>
                       <option value="fail">Fail</option>
+                      <option value="archived">Archived</option>
                     </select>
                   </div>
 

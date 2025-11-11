@@ -4,8 +4,8 @@ import type { StageStyle } from './stageStyle';
 // Phase 12: Updated workflow status (INACTIVE → DRAFT)
 export type WorkflowStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 
-// Phase 12: Updated stage types (INTERMEDIATE → STANDARD, FINAL → SUCCESS, added FAIL)
-export type StageType = 'initial' | 'standard' | 'success' | 'fail';
+// Phase 12: Updated stage types (INTERMEDIATE → STANDARD, FINAL → SUCCESS, added FAIL, ARCHIVED)
+export type StageType = 'initial' | 'standard' | 'success' | 'fail' | 'archived';
 
 // Kanban display configuration
 export const KanbanDisplay = {

@@ -22,6 +22,7 @@ from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
 from src.company_bc.job_position.domain.value_objects.stage_id import StageId
 
 
@@ -50,13 +51,15 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
         workflow_repository: WorkflowRepositoryInterface,
         stage_repository: WorkflowStageRepositoryInterface,
         job_position_stage_repository: JobPositionStageRepositoryInterface,
-        activity_repository: JobPositionActivityRepositoryInterface
+        activity_repository: JobPositionActivityRepositoryInterface,
+        validation_service: StagePhaseValidationService
     ):
         self.job_position_repository = job_position_repository
         self.workflow_repository = workflow_repository
         self.stage_repository = stage_repository
         self.job_position_stage_repository = job_position_stage_repository
         self.activity_repository = activity_repository
+        self.validation_service = validation_service
 
     def execute(self, command: MoveJobPositionToStageCommand) -> None:
         """Execute the command - moves job position to new stage"""
@@ -74,29 +77,43 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
         # Convert StageId to WorkflowStageId
         workflow_stage_id = WorkflowStageId.from_string(command.stage_id.value)
 
-        # Get the target stage from the new workflow system
-        target_stage = self.stage_repository.get_by_id(workflow_stage_id)
-        if not target_stage:
-            raise JobPositionValidationError(
-                "Stage not found",
-                {"stage": [f"Stage {command.stage_id.value} not found"]}
-            )
-
-        # Verify the stage belongs to the workflow
         # Convert JobPositionWorkflowId to WorkflowId
         workflow_id = WorkflowId.from_string(job_position.job_position_workflow_id.value)
-        workflow = self.workflow_repository.get_by_id(workflow_id)
-        if not workflow:
+
+        # Validate stage belongs to workflow using Domain Service
+        try:
+            self.validation_service.validate_stage_belongs_to_workflow(
+                stage_id=workflow_stage_id,
+                workflow_id=workflow_id
+            )
+        except ValueError as e:
             raise JobPositionValidationError(
-                "Workflow not found",
-                {"workflow": ["Associated workflow not found"]}
+                str(e),
+                {"stage": [str(e)]}
             )
 
-        if target_stage.workflow_id.value != workflow.id.value:
+        # Validate workflow has phase_id using Domain Service
+        try:
+            workflow_phase_id = self.validation_service.validate_workflow_has_phase(workflow_id)
+        except ValueError as e:
             raise JobPositionValidationError(
-                "Stage not in workflow",
-                {"stage": [f"Stage {command.stage_id.value} does not belong to workflow {workflow.id.value}"]}
+                str(e),
+                {"workflow": [str(e)]}
             )
+
+        # Get the target stage and workflow (already validated by Domain Service)
+        target_stage = self.stage_repository.get_by_id(workflow_stage_id)
+        workflow = self.workflow_repository.get_by_id(workflow_id)
+
+        # Validate consistency with phase_workflows if exists
+        if job_position.phase_workflows:
+            workflow_phase_id_str = workflow_phase_id.value
+            if workflow_phase_id_str not in job_position.phase_workflows:
+                raise JobPositionValidationError(
+                    f"Stage belongs to workflow in phase {workflow_phase_id_str}, "
+                    f"but job position phase_workflows does not include this phase",
+                    {"phase": [f"Phase {workflow_phase_id_str} not in phase_workflows"]}
+                )
 
         # Validate custom fields using JsonLogic validation rules
         if target_stage.validation_rules:

@@ -3,7 +3,6 @@ from src.interview_bc.interview_template.infrastructure.models.interview_templat
 from src.interview_bc.interview_template.infrastructure.models.interview_template_question import InterviewTemplateQuestionModel
 from src.interview_bc.interview_template.infrastructure.models.interview_template_section import InterviewTemplateSectionModel
 from src.company_bc.job_position.infrastructure.models.job_position_model import JobPositionModel
-from src.company_bc.job_position.infrastructure.models.job_position_workflow_model import JobPositionWorkflowModel
 from src.company_bc.job_position.infrastructure.models.job_position_comment_model import JobPositionCommentModel
 from src.company_bc.job_position.infrastructure.models.job_position_stage_model import JobPositionStageModel
 from src.shared_bc.customization.phase.infrastructure.models.phase_model import PhaseModel
@@ -37,7 +36,6 @@ __all__ = [
     "InterviewTemplateQuestionModel",
     "InterviewTemplateSectionModel",
     "JobPositionModel",
-    "JobPositionWorkflowModel",
     "JobPositionCommentModel",
     "JobPositionStageModel",
     "PhaseModel",

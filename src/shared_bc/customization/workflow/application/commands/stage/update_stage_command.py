@@ -52,11 +52,36 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
 
         Raises:
             WorkflowStageNotFound: If stage doesn't exist
+            ValueError: If trying to change stage type to INITIAL or SUCCESS
+                       when another stage with that type already exists in the workflow
         """
         stage = self.repository.get_by_id(command.id)
 
         if not stage:
             raise WorkflowStageNotFound(f"Stage with id {command.id} not found")
+
+        # Validate that only one INITIAL and one SUCCESS stage can exist per workflow
+        # Only validate if the stage type is being changed to INITIAL or SUCCESS
+        if command.stage_type != stage.stage_type:
+            existing_stages = self.repository.list_by_workflow(stage.workflow_id)
+            # Exclude the current stage from the check
+            other_stages = [s for s in existing_stages if s.id.value != command.id.value]
+            
+            if command.stage_type == WorkflowStageTypeEnum.INITIAL:
+                initial_stages = [s for s in other_stages if s.stage_type == WorkflowStageTypeEnum.INITIAL]
+                if initial_stages:
+                    raise ValueError(
+                        f"Workflow already has an INITIAL stage ({initial_stages[0].name}). "
+                        "Only one INITIAL stage is allowed per workflow."
+                    )
+            
+            if command.stage_type == WorkflowStageTypeEnum.SUCCESS:
+                success_stages = [s for s in other_stages if s.stage_type == WorkflowStageTypeEnum.SUCCESS]
+                if success_stages:
+                    raise ValueError(
+                        f"Workflow already has a SUCCESS stage ({success_stages[0].name}). "
+                        "Only one SUCCESS stage is allowed per workflow."
+                    )
 
         # Update modifies the instance directly (mutability)
         stage.update(

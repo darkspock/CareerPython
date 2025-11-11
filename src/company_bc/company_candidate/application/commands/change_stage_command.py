@@ -12,6 +12,7 @@ from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repos
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
 
 
 @dataclass(frozen=True)
@@ -28,11 +29,13 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
         self,
         repository: CompanyCandidateRepositoryInterface,
         workflow_stage_repository: WorkflowStageRepositoryInterface,
-        workflow_repository: WorkflowRepositoryInterface
+        workflow_repository: WorkflowRepositoryInterface,
+        validation_service: StagePhaseValidationService
     ):
         self._repository = repository
         self._workflow_stage_repository = workflow_stage_repository
         self._workflow_repository = workflow_repository
+        self._validation_service = validation_service
 
     def execute(self, command: ChangeStageCommand) -> None:
         """Handle the change stage command with automatic phase transition
@@ -52,15 +55,19 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
         if not target_stage:
             raise ValueError(f"Stage {command.new_stage_id.value} not found")
 
-        # Get the workflow of the target stage to check its phase_id
+        # Validate workflow has phase_id using Domain Service
+        try:
+            target_phase_id = self._validation_service.validate_workflow_has_phase(target_stage.workflow_id)
+        except ValueError as e:
+            raise ValueError(f"Cannot change stage: {e}")
+
+        # Get the workflow of the target stage (already validated by Domain Service)
         target_workflow = self._workflow_repository.get_by_id(target_stage.workflow_id)
-        if not target_workflow:
-            raise ValueError(f"Workflow {target_stage.workflow_id.value} not found")
 
         # Check if the target stage belongs to a different phase than the candidate's current phase
         # If so, update phase_id and workflow_id as well
+        # target_phase_id was already validated and obtained from Domain Service above
         current_phase_id = PhaseId.from_string(company_candidate.phase_id) if company_candidate.phase_id else None
-        target_phase_id = target_workflow.phase_id
 
         # Change stage (and phase/workflow if needed)
         if target_phase_id and (not current_phase_id or current_phase_id.value != target_phase_id.value):

@@ -15,6 +15,7 @@ from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_
     WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
 
 
 @dataclass(frozen=True)
@@ -42,11 +43,13 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
             self,
             repository: CompanyCandidateRepositoryInterface,
             workflow_repository: WorkflowRepositoryInterface,
-            stage_repository: WorkflowStageRepositoryInterface
+            stage_repository: WorkflowStageRepositoryInterface,
+            validation_service: StagePhaseValidationService
     ):
         self._repository = repository
         self._workflow_repository = workflow_repository
         self._stage_repository = stage_repository
+        self._validation_service = validation_service
 
     def execute(self, command: CreateCompanyCandidateCommand) -> None:
         """Handle the create company candidate command"""
@@ -64,12 +67,30 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
             default_workflow = self._workflow_repository.get_default_by_company(command.company_id)
             if default_workflow:
                 workflow_id = WorkflowId.from_string(str(default_workflow.id))
-                phase_id = default_workflow.phase_id
+                
+                # Validate workflow has phase_id using Domain Service
+                try:
+                    phase_id = self._validation_service.validate_workflow_has_phase(workflow_id)
+                except ValueError as e:
+                    print(f"Warning: Workflow {workflow_id.value} does not have phase_id: {e}")
+                    workflow_id = None
+                    phase_id = None
 
-                # Get initial stage of the workflow
-                initial_stage = self._stage_repository.get_initial_stage(workflow_id)
-                if initial_stage:
-                    initial_stage_id = initial_stage.id
+                if workflow_id:
+                    # Get initial stage of the workflow
+                    initial_stage = self._stage_repository.get_initial_stage(workflow_id)
+                    if initial_stage:
+                        initial_stage_id = initial_stage.id
+                        
+                        # Validate stage belongs to workflow using Domain Service
+                        try:
+                            self._validation_service.validate_stage_belongs_to_workflow(
+                                stage_id=initial_stage_id,
+                                workflow_id=workflow_id
+                            )
+                        except ValueError as e:
+                            print(f"Warning: Initial stage {initial_stage_id.value} does not belong to workflow {workflow_id.value}: {e}")
+                            initial_stage_id = None
         except Exception as e:
             # Log the error but don't fail the candidate creation
             # This ensures candidates are still created even if workflow assignment fails

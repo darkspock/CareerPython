@@ -7,3 +7,4 @@ class WorkflowStageTypeEnum(str, Enum):
     PROGRESS = "progress"
     FAIL = "fail"
     HOLD = "hold"
+    ARCHIVED = "archived"

@@ -306,7 +306,14 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
                 break
 
     def _create_job_position_workflow(self, workflow_id: WorkflowId, company_id: CompanyId, phase_id: PhaseId) -> None:
-        """Create workflow for Job Position Opening with stages covering the full lifecycle"""
+        """Create workflow for Job Position Opening with stages covering the full lifecycle
+        
+        Creates workflow in the shared workflows table. Job positions use the shared workflow system,
+        not the legacy job_position_workflows table.
+        """
+        from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+        
+        # Create workflow in shared workflows table
         workflow = Workflow.create(
             id=workflow_id,
             workflow_type=WorkflowTypeEnum.JOB_POSITION_OPENING,
@@ -320,21 +327,23 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         workflow.activate()
         self.workflow_repository.save(workflow)
 
-        stages = [
+        # Create stages in workflow_stages table
+        stages_data = [
             ("Draft", "Position being drafted", WorkflowStageTypeEnum.INITIAL, 0,
-             WorkflowStageStyle(icon="📝", text_color="#92400e", background_color="#fef3c7")),  # amber
+             WorkflowStageStyle(icon="📝", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.COLUMN),  # amber
             ("Under Review", "Position under review", WorkflowStageTypeEnum.PROGRESS, 1,
-             WorkflowStageStyle(icon="🔍", text_color="#1e40af", background_color="#dbeafe")),  # blue
+             WorkflowStageStyle(icon="🔍", text_color="#1e40af", background_color="#dbeafe"), KanbanDisplayEnum.COLUMN),  # blue
             ("Approved", "Position approved", WorkflowStageTypeEnum.PROGRESS, 2,
-             WorkflowStageStyle(icon="✅", text_color="#065f46", background_color="#d1fae5")),  # green
+             WorkflowStageStyle(icon="✅", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),  # green - PROGRESS (aún no publicado)
             ("Published", "Position is published", WorkflowStageTypeEnum.SUCCESS, 3,
-             WorkflowStageStyle(icon="🌐", text_color="#065f46", background_color="#d1fae5")),  # green
-            ("Closed", "Position closed", WorkflowStageTypeEnum.SUCCESS, 4,
-             WorkflowStageStyle(icon="🔒", text_color="#6b7280", background_color="#f3f4f6")),  # gray
+             WorkflowStageStyle(icon="🌐", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),  # green - ÚNICO SUCCESS
+            ("Closed", "Position closed", WorkflowStageTypeEnum.ARCHIVED, 4,
+             WorkflowStageStyle(icon="🔒", text_color="#6b7280", background_color="#f3f4f6"), KanbanDisplayEnum.COLUMN),  # gray - ARCHIVED
             ("Cancelled", "Position cancelled", WorkflowStageTypeEnum.FAIL, 5,
-             WorkflowStageStyle(icon="❌", text_color="#991b1b", background_color="#fee2e2")),  # red
+             WorkflowStageStyle(icon="❌", text_color="#991b1b", background_color="#fee2e2"), KanbanDisplayEnum.ROW),  # red - ROW
         ]
-        for name, desc, stage_type, order, style in stages:
+        
+        for name, desc, stage_type, order, style, kanban_display in stages_data:
             stage = WorkflowStage.create(
                 id=WorkflowStageId.generate(),
                 workflow_id=workflow_id,
@@ -345,6 +354,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
                 allow_skip=False,
                 is_active=True,
                 style=style,
+                kanban_display=kanban_display,
                 validation_rules=None,
                 recommended_rules=None
             )

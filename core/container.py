@@ -241,6 +241,8 @@ from src.shared_bc.customization.workflow.infrastructure.repositories import Wor
 
 # CandidateApplicationWorkflow Infrastructure
 from src.shared_bc.customization.workflow.infrastructure.repositories.workflow_stage_repository import WorkflowStageRepository
+# Domain Services
+from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
 
 # New Customization Infrastructure
 from src.shared_bc.customization.entity_customization.infrastructure.repositories.entity_customization_repository import EntityCustomizationRepository
@@ -549,6 +551,13 @@ class Container(containers.DeclarativeContainer):
     workflow_stage_repository = providers.Factory(
         WorkflowStageRepository,
         database=database
+    )
+
+    # Domain Services
+    stage_phase_validation_service = providers.Factory(
+        StagePhaseValidationService,
+        workflow_repository=workflow_repository,
+        stage_repository=workflow_stage_repository
     )
 
     # New Customization Repositories
@@ -1322,7 +1331,8 @@ class Container(containers.DeclarativeContainer):
         CreateCompanyCandidateCommandHandler,
         repository=company_candidate_repository,
         workflow_repository=workflow_repository,
-        stage_repository=workflow_stage_repository
+        stage_repository=workflow_stage_repository,
+        validation_service=stage_phase_validation_service
     )
 
     update_company_candidate_command_handler = providers.Factory(
@@ -1352,14 +1362,16 @@ class Container(containers.DeclarativeContainer):
 
     assign_workflow_command_handler = providers.Factory(
         AssignWorkflowCommandHandler,
-        repository=company_candidate_repository
+        repository=company_candidate_repository,
+        validation_service=stage_phase_validation_service
     )
 
     change_stage_command_handler = providers.Factory(
         ChangeStageCommandHandler,
         repository=company_candidate_repository,
         workflow_stage_repository=workflow_stage_repository,
-        workflow_repository=workflow_repository
+        workflow_repository=workflow_repository,
+        validation_service=stage_phase_validation_service
     )
 
     # CandidateComment Repository
@@ -1565,7 +1577,8 @@ class Container(containers.DeclarativeContainer):
         workflow_repository=workflow_repository,
         stage_repository=workflow_stage_repository,
         job_position_stage_repository=job_position_stage_repository,
-        activity_repository=job_position_activity_repository
+        activity_repository=job_position_activity_repository,
+        validation_service=stage_phase_validation_service
     )
 
     update_job_position_custom_fields_command_handler = providers.Factory(
@@ -1576,7 +1589,8 @@ class Container(containers.DeclarativeContainer):
     create_job_position_comment_command_handler = providers.Factory(
         CreateJobPositionCommentCommandHandler,
         comment_repository=job_position_comment_repository,
-        activity_repository=job_position_activity_repository
+        activity_repository=job_position_activity_repository,
+        workflow_repository=workflow_repository
     )
 
     update_job_position_comment_command_handler = providers.Factory(

@@ -22,6 +22,8 @@ from src.company_bc.job_position.domain.infrastructure.job_position_activity_rep
     JobPositionActivityRepositoryInterface
 )
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 
 
 @dataclass(frozen=True)
@@ -45,9 +47,11 @@ class CreateJobPositionCommentCommandHandler(CommandHandler[CreateJobPositionCom
         self,
         comment_repository: JobPositionCommentRepositoryInterface,
         activity_repository: JobPositionActivityRepositoryInterface,
+        workflow_repository: WorkflowRepositoryInterface,
     ):
         self._comment_repository = comment_repository
         self._activity_repository = activity_repository
+        self._workflow_repository = workflow_repository
 
     def execute(self, command: CreateJobPositionCommentCommand) -> None:
         """
@@ -61,26 +65,19 @@ class CreateJobPositionCommentCommandHandler(CommandHandler[CreateJobPositionCom
         job_position_id = JobPositionId.from_string(command.job_position_id)
         created_by_user_id = CompanyUserId.from_string(command.created_by_user_id)
         
-        # Validate workflow_id exists in job_position_workflows before using it
-        # If workflow_id doesn't exist in job_position_workflows, ignore it (set to None)
+        # Validate workflow_id exists in shared workflows system before using it
+        # If workflow_id doesn't exist, ignore it (set to None)
         workflow_id = None
         if command.workflow_id:
             try:
-                # Try to parse as JobPositionWorkflowId
-                workflow_id_vo = JobPositionWorkflowId.from_string(command.workflow_id)
-                # Verify it exists in job_position_workflows table
-                from core.database import SQLAlchemyDatabase
-                from src.company_bc.job_position.infrastructure.models.job_position_workflow_model import JobPositionWorkflowModel
+                # Convert to WorkflowId and verify it exists in shared workflows table
+                workflow_id_shared = WorkflowId.from_string(command.workflow_id)
+                workflow = self._workflow_repository.get_by_id(workflow_id_shared)
                 
-                database = SQLAlchemyDatabase()
-                with database.get_session() as session:
-                    workflow_model = session.query(JobPositionWorkflowModel).filter(
-                        JobPositionWorkflowModel.id == str(workflow_id_vo)
-                    ).first()
-                    
-                    if workflow_model:
-                        workflow_id = workflow_id_vo
-                    # If not found, workflow_id remains None (ignore invalid workflow_id)
+                if workflow:
+                    # Convert back to JobPositionWorkflowId for the comment entity
+                    workflow_id = JobPositionWorkflowId.from_string(command.workflow_id)
+                # If not found, workflow_id remains None (ignore invalid workflow_id)
             except (ValueError, Exception):
                 # Invalid workflow_id format or doesn't exist, ignore it
                 workflow_id = None
