@@ -73,6 +73,7 @@ class CompanyCandidateResponseMapper:
             # Include workflow and stage info from read model
             stage_name=read_model.stage_name,
             workflow_name=read_model.workflow_name,
+            stage_style=read_model.stage_style,
             # Include phase info from read model
             phase_name=read_model.phase_name,
             # Include custom field values if provided

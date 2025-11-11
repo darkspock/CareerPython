@@ -49,6 +49,7 @@ class CompanyCandidateWithCandidateReadModel:
     # Workflow and stage info (from workflow and stage JOINs)
     workflow_name: Optional[str] = None
     stage_name: Optional[str] = None
+    stage_style: Optional[Dict] = None  # Stage style with icon, color, background_color
     # Phase info (from phase JOIN)
     phase_name: Optional[str] = None
     # Comment counts

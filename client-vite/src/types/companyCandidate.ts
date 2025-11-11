@@ -30,7 +30,8 @@ export interface CompanyCandidate {
   tags: string[];
   internal_notes: string | null;
   visibility_settings: VisibilitySettings;
-  current_workflow_id: string | null;
+  workflow_id: string | null;  // Backend returns workflow_id
+  current_workflow_id?: string | null;  // Legacy field, use workflow_id instead
   current_stage_id: string | null;
   phase_id: string | null;  // Phase 12: current recruitment phase
   added_by_user_id: string;
@@ -47,6 +48,12 @@ export interface CompanyCandidate {
   candidate_phone?: string;
   workflow_name?: string;
   stage_name?: string;
+  stage_style?: {
+    icon?: string;
+    color?: string;  // Frontend uses 'color', backend uses 'text_color'
+    text_color?: string;  // Backend field name
+    background_color?: string;
+  };
   phase_name?: string;
   // Job position data (from candidate_application)
   job_position_id?: string;

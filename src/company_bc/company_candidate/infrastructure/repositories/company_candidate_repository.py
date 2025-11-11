@@ -309,6 +309,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
             JobPositionModel.title,
             WorkflowModel.name.label('workflow_name'),
             WorkflowStageModel.name.label('stage_name'),
+            WorkflowStageModel.style.label('stage_style'),
             func.coalesce(pending_comments_subquery.c.pending_count, 0).label('pending_comments_count')
         ).join(
             CandidateModel,
@@ -334,7 +335,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
 
         # Convert to read models
         read_models = []
-        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name, pending_comments_count in results:
+        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name, stage_style, pending_comments_count in results:
             read_model = CompanyCandidateWithCandidateReadModel(
                 id=cc_model.id,
                 company_id=cc_model.company_id,
@@ -372,6 +373,7 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
                 # Workflow and stage info from JOINs
                 workflow_name=workflow_name,
                 stage_name=stage_name,
+                stage_style=stage_style,
                 # Phase info from JOIN (temporarily disabled)
                 phase_name=None,
                 # Comment counts

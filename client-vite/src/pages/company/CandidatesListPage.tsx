@@ -412,24 +412,35 @@ export default function CandidatesListPage() {
                           >
                             {candidate.job_position_title}
                           </button>
-                          {candidate.application_status && (
-                            <div className="text-xs text-gray-500">
-                              Status: {candidate.application_status}
-                            </div>
-                          )}
-                          {candidate.current_workflow_id && candidate.current_stage_id && (
-                            <div className="text-xs text-gray-500">
-                              {candidate.stage_name} - {candidate.workflow_name}
+                          {(candidate.workflow_name || candidate.stage_name) && (
+                            <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                              {candidate.stage_style?.icon && (
+                                <span 
+                                  className="text-sm"
+                                  dangerouslySetInnerHTML={{ __html: candidate.stage_style.icon }}
+                                />
+                              )}
+                              <span style={{ color: candidate.stage_style?.color || candidate.stage_style?.text_color || undefined }}>
+                                {candidate.workflow_name || 'No workflow'} - {candidate.stage_name || 'No stage'}
+                              </span>
                             </div>
                           )}
                         </>
-                      ) : candidate.current_workflow_id && candidate.current_stage_id ? (
+                      ) : (candidate.workflow_name || candidate.stage_name) ? (
                         <>
-                          <div className="text-sm text-gray-900">
-                            {candidate.stage_name || 'No stage'}
+                          <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                            {candidate.stage_style?.icon && (
+                              <span 
+                                className="text-base"
+                                dangerouslySetInnerHTML={{ __html: candidate.stage_style.icon }}
+                              />
+                            )}
+                            <span style={{ color: candidate.stage_style?.color || candidate.stage_style?.text_color || undefined }}>
+                              {candidate.workflow_name || 'No workflow'}
+                            </span>
                           </div>
                           <div className="text-xs text-gray-500">
-                            {candidate.workflow_name || ''}
+                            {candidate.stage_name || 'No stage'}
                           </div>
                         </>
                       ) : (

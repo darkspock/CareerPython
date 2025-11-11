@@ -36,6 +36,7 @@ class CompanyCandidateResponse(BaseModel):
     # Workflow and stage info (optional, populated when needed)
     stage_name: Optional[str] = None
     workflow_name: Optional[str] = None
+    stage_style: Optional[Dict[str, Any]] = None  # Stage style with icon, color, background_color
     # Phase info (optional, populated when needed)
     phase_name: Optional[str] = None
     # Custom field values (optional, populated when needed)
