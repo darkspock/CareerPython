@@ -15,3 +15,9 @@ class InterviewTypeEnum(Enum):
     COMPANY_ONBOARDING = "COMPANY_ONBOARDING"
     PREMIUM_ONBOARDING = "PREMIUM_ONBOARDING"
     CUSTOM = "CUSTOM"
+
+
+class InterviewModeEnum(str, Enum):
+    """Enum for interview execution mode"""
+    AUTOMATIC = "AUTOMATIC"  # Interview is automatically created/scheduled
+    MANUAL = "MANUAL"  # Interview must be manually created/scheduled

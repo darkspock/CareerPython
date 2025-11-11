@@ -23,6 +23,7 @@ class UpdateStageRequest(BaseModel):
     style: Optional[dict] = Field(None, description="Visual styling: {background_color, text_color, icon}")
     validation_rules: Optional[dict] = Field(None, description="JsonLogic validation rules that must pass")
     recommended_rules: Optional[dict] = Field(None, description="JsonLogic recommendation rules")
+    interview_configurations: Optional[List[dict]] = Field(None, description="List of interview configurations: [{\"template_id\": str, \"mode\": \"AUTOMATIC\" | \"MANUAL\"}]")
 
     class Config:
         json_schema_extra = {

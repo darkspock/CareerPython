@@ -10,6 +10,7 @@ from src.shared_bc.customization.workflow.domain.enums.workflow_type import Work
 from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
 
 
 class WorkflowStageRepository(WorkflowStageRepositoryInterface):
@@ -24,7 +25,10 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
         with self._database.get_session() as session:
             existing = session.query(WorkflowStageModel).filter_by(id=str(stage.id)).first()
             if existing:
-                session.merge(model)
+                # Update all fields explicitly to ensure JSON fields are updated
+                for key, value in model.__dict__.items():
+                    if key != '_sa_instance_state':
+                        setattr(existing, key, value)
             else:
                 session.add(model)
             session.commit()
@@ -98,6 +102,13 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
         # Handle JSON fields that can be lists or None
         default_role_ids = cast(list[str], model.default_role_ids) if model.default_role_ids else []
         default_assigned_users = cast(list[str], model.default_assigned_users) if model.default_assigned_users else []
+        
+        # Convert interview_configurations from JSON to list of InterviewConfiguration objects
+        interview_configurations = None
+        if model.interview_configurations is not None:
+            interview_configurations = []
+            for config_dict in cast(list[dict], model.interview_configurations):
+                interview_configurations.append(InterviewConfiguration.from_dict(config_dict))
 
         return WorkflowStage(
             id=WorkflowStageId.from_string(model.id),
@@ -124,6 +135,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             ),
             validation_rules=cast(dict, model.validation_rules) if model.validation_rules else None,
             recommended_rules=cast(dict, model.recommended_rules) if model.recommended_rules else None,
+            interview_configurations=interview_configurations if interview_configurations is not None else None,
             created_at=model.created_at,
             updated_at=model.updated_at
         )
@@ -155,6 +167,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             } if entity.style else None,
             validation_rules=entity.validation_rules,
             recommended_rules=entity.recommended_rules,
+            interview_configurations=[config.to_dict() for config in entity.interview_configurations] if entity.interview_configurations is not None else None,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

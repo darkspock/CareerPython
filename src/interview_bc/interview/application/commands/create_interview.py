@@ -13,6 +13,7 @@ from src.interview_bc.interview.domain.infrastructure.interview_repository_inter
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.framework.application.command_bus import Command, CommandHandler
 
 
@@ -23,6 +24,7 @@ class CreateInterviewCommand(Command):
     job_position_id: Optional[str] = None
     application_id: Optional[str] = None
     interview_template_id: Optional[str] = None
+    workflow_stage_id: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
     scheduled_at: Optional[str] = None  # ISO datetime string
@@ -54,6 +56,10 @@ class CreateInterviewCommandHandler(CommandHandler[CreateInterviewCommand]):
         if command.interview_template_id:
             interview_template_id = InterviewTemplateId.from_string(command.interview_template_id)
 
+        workflow_stage_id = None
+        if command.workflow_stage_id:
+            workflow_stage_id = WorkflowStageId.from_string(command.workflow_stage_id)
+
         # Convert interview type
         interview_type = InterviewTypeEnum(command.interview_type)
 
@@ -70,6 +76,7 @@ class CreateInterviewCommandHandler(CommandHandler[CreateInterviewCommand]):
             job_position_id=job_position_id,
             application_id=application_id,
             interview_template_id=interview_template_id,
+            workflow_stage_id=workflow_stage_id,
             title=command.title,
             description=command.description,
             scheduled_at=scheduled_at,

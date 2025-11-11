@@ -17,6 +17,9 @@ from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_st
 
 if TYPE_CHECKING:
     from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+    from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
+else:
+    from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
 
 
 @dataclass
@@ -53,6 +56,9 @@ class WorkflowStage:
     validation_rules: Optional[dict]  # JsonLogic rules that must pass to proceed
     recommended_rules: Optional[dict]  # JsonLogic rules that are recommended but not required
 
+    # Interview configuration
+    interview_configurations: Optional[List[InterviewConfiguration]]  # List of interview configurations (template_id + mode) for this stage
+
     created_at: datetime
     updated_at: datetime
 
@@ -78,7 +84,8 @@ class WorkflowStage:
         kanban_display: KanbanDisplayEnum = KanbanDisplayEnum.COLUMN,
         style: Optional[WorkflowStageStyle] = None,
         validation_rules: Optional[dict] = None,
-        recommended_rules: Optional[dict] = None
+        recommended_rules: Optional[dict] = None,
+        interview_configurations: Optional[List[InterviewConfiguration]] = None
     ) -> "WorkflowStage":
         """Factory method to create a new workflow stage"""
         if not name:
@@ -127,6 +134,7 @@ class WorkflowStage:
             style=style,
             validation_rules=validation_rules,
             recommended_rules=recommended_rules,
+            interview_configurations=interview_configurations or [],
             created_at=now,
             updated_at=now
         )
@@ -148,7 +156,8 @@ class WorkflowStage:
         style: Optional[WorkflowStageStyle] = None,
         kanban_display: Optional[KanbanDisplayEnum] = None,
         validation_rules: Optional[dict] = None,
-        recommended_rules: Optional[dict] = None
+        recommended_rules: Optional[dict] = None,
+        interview_configurations: Optional[List[InterviewConfiguration]] = None
     ) -> None:
         """Update stage information"""
         if not name:
@@ -181,6 +190,7 @@ class WorkflowStage:
         self.style = style if style is not None else self.style
         self.validation_rules = validation_rules if validation_rules is not None else self.validation_rules
         self.recommended_rules = recommended_rules if recommended_rules is not None else self.recommended_rules
+        self.interview_configurations = interview_configurations if interview_configurations is not None else self.interview_configurations
         self.updated_at = datetime.utcnow()
 
     def reorder(self, new_order: int) -> None:

@@ -26,6 +26,7 @@ class WorkflowStageResponse(BaseModel):
     style: dict  # Visual styling: {background_color, text_color, icon}
     validation_rules: Optional[dict] = None  # JsonLogic validation rules
     recommended_rules: Optional[dict] = None  # JsonLogic recommendation rules
+    interview_configurations: Optional[List[dict]] = None  # List of interview configurations: [{"template_id": str, "mode": str}]
     created_at: datetime
     updated_at: datetime
 

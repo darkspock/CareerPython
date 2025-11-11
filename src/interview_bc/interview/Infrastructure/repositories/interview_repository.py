@@ -12,6 +12,7 @@ from src.interview_bc.interview.domain.infrastructure.interview_repository_inter
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.framework.infrastructure.repositories.base import BaseRepository
 
 
@@ -36,6 +37,10 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         if model.interview_template_id:
             interview_template_id = InterviewTemplateId.from_string(model.interview_template_id)
 
+        workflow_stage_id = None
+        if model.workflow_stage_id:
+            workflow_stage_id = WorkflowStageId.from_string(model.workflow_stage_id)
+
         interviewers_list = model.interviewers or []
 
         return Interview(
@@ -44,6 +49,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             job_position_id=job_position_id,
             application_id=application_id,
             interview_template_id=interview_template_id,
+            workflow_stage_id=workflow_stage_id,
             interview_type=model.interview_type,
             status=model.status,
             title=model.title,
@@ -76,12 +82,17 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         if domain.interview_template_id:
             interview_template_id = domain.interview_template_id.value
 
+        workflow_stage_id = None
+        if domain.workflow_stage_id:
+            workflow_stage_id = str(domain.workflow_stage_id)
+
         return InterviewModel(
             id=domain.id.value,
             candidate_id=domain.candidate_id.value,
             job_position_id=job_position_id,
             application_id=application_id,
             interview_template_id=interview_template_id,
+            workflow_stage_id=workflow_stage_id,
             interview_type=domain.interview_type,
             status=domain.status,
             title=domain.title,
@@ -124,6 +135,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 model.job_position_id = interview.job_position_id.value if interview.job_position_id else None
                 model.application_id = interview.application_id.value if interview.application_id else None
                 model.interview_template_id = interview.interview_template_id.value if interview.interview_template_id else None
+                model.workflow_stage_id = str(interview.workflow_stage_id) if interview.workflow_stage_id else None
                 model.interview_type = interview.interview_type
                 model.status = interview.status
                 model.title = interview.title

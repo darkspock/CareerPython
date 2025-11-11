@@ -15,6 +15,14 @@ export const KanbanDisplay = {
 } as const;
 export type KanbanDisplay = typeof KanbanDisplay[keyof typeof KanbanDisplay];
 
+// Interview configuration types
+export type InterviewMode = 'AUTOMATIC' | 'MANUAL';
+
+export interface InterviewConfiguration {
+  template_id: string;
+  mode: InterviewMode;
+}
+
 export interface CandidateApplicationWorkflow {
   id: string;
   company_id: string;
@@ -55,6 +63,9 @@ export interface WorkflowStage {
   next_phase_id?: string | null; // Phase 12: Phase transition
   kanban_display: KanbanDisplay; // Kanban display configuration
   style: StageStyle; // Visual styling
+  validation_rules?: Record<string, any> | null; // JsonLogic validation rules
+  recommended_rules?: Record<string, any> | null; // JsonLogic recommendation rules
+  interview_configurations?: InterviewConfiguration[] | null; // List of interview configurations
   created_at: string;
   updated_at: string;
 
@@ -95,6 +106,11 @@ export interface CreateStageRequest {
   deadline_days?: number;
   estimated_cost?: string;
   next_phase_id?: string | null; // Phase 12: Phase transition
+  kanban_display?: string; // Kanban display mode: 'column', 'row', or 'none'
+  style?: StageStyle; // Visual styling
+  validation_rules?: Record<string, any>; // JsonLogic validation rules
+  recommended_rules?: Record<string, any>; // JsonLogic recommendation rules
+  interview_configurations?: InterviewConfiguration[]; // List of interview configurations
 }
 
 export interface UpdateStageRequest {
@@ -113,6 +129,10 @@ export interface UpdateStageRequest {
   estimated_cost?: string;
   next_phase_id?: string | null; // Phase 12: Phase transition
   kanban_display?: string; // Kanban display mode: 'column', 'row', or 'none'
+  style?: StageStyle; // Visual styling
+  validation_rules?: Record<string, any>; // JsonLogic validation rules
+  recommended_rules?: Record<string, any>; // JsonLogic recommendation rules
+  interview_configurations?: InterviewConfiguration[]; // List of interview configurations
 }
 
 export interface ReorderStagesRequest {

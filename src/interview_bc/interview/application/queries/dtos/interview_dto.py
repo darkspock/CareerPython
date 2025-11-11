@@ -9,6 +9,7 @@ from src.interview_bc.interview.domain.entities.interview import Interview
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects import JobPositionId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass
@@ -18,6 +19,7 @@ class InterviewDto:
     job_position_id: Optional[JobPositionId]
     application_id: Optional[CandidateApplicationId]
     interview_template_id: Optional[InterviewTemplateId]
+    workflow_stage_id: Optional[WorkflowStageId]
     interview_type: str
     status: str
     title: Optional[str]
@@ -44,6 +46,7 @@ class InterviewDto:
             job_position_id=entity.job_position_id,
             application_id=entity.application_id,
             interview_template_id=entity.interview_template_id,
+            workflow_stage_id=entity.workflow_stage_id,
             interview_type=entity.interview_type.value,
             status=entity.status.value,
             title=entity.title,

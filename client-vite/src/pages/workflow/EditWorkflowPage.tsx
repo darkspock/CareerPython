@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, X, Trash2, ArrowUp, ArrowDown, Settings } from 'lucide-react';
+import { ArrowLeft, Save, Plus, X, Trash2, ArrowUp, ArrowDown, Settings, Palette } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { phaseService } from '../../services/phaseService.ts';
+import { companyInterviewTemplateService, type InterviewTemplate } from '../../services/companyInterviewTemplateService.ts';
 import { api } from '../../lib/api.ts';
-import type { CompanyWorkflow, WorkflowStage, StageType } from '../../types/workflow.ts';
+import type { CompanyWorkflow, WorkflowStage, StageType, InterviewConfiguration } from '../../types/workflow.ts';
 import type { CompanyRole } from '../../types/company.ts';
 import type { Phase } from '../../types/phase.ts';
 import type { UpdateStageStyleRequest } from '../../types/stageStyle.ts';
@@ -35,6 +36,7 @@ interface StageFormData {
     color: string;
     background_color: string;
   };
+  interview_configurations?: InterviewConfiguration[];
 }
 
 export default function EditWorkflowPage() {
@@ -46,6 +48,8 @@ export default function EditWorkflowPage() {
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [phases, setPhases] = useState<Phase[]>([]);
   const [loadingPhases, setLoadingPhases] = useState(true);
+  const [interviewTemplates, setInterviewTemplates] = useState<InterviewTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
 
   const [workflow, setWorkflow] = useState<CompanyWorkflow | null>(null);
   const [workflowName, setWorkflowName] = useState('');
@@ -122,23 +126,36 @@ export default function EditWorkflowPage() {
 
       // Load stages
       const stagesData = await companyWorkflowService.listStagesByWorkflow(workflowId);
-      const formattedStages: StageFormData[] = stagesData.map((stage) => ({
-        id: stage.id,
-        name: stage.name,
-        description: stage.description || '',
-        stage_type: stage.stage_type,
-        order: stage.order,
-        is_active: stage.is_active,
-        isNew: false,
-        allow_skip: stage.allow_skip,
-        estimated_duration_days: stage.estimated_duration_days || undefined,
-        default_role_ids: stage.default_role_ids || undefined,
-        deadline_days: stage.deadline_days || undefined,
-        estimated_cost: stage.estimated_cost || undefined,
-        next_phase_id: stage.next_phase_id || undefined,
-        kanban_display: stage.kanban_display || 'column',
-        style: stage.style,
-      }));
+      const formattedStages: StageFormData[] = stagesData.map((stage) => {
+        // Convert interview_configurations from backend format to frontend format
+        let interviewConfigs: InterviewConfiguration[] | undefined = undefined;
+        if (stage.interview_configurations && Array.isArray(stage.interview_configurations)) {
+          interviewConfigs = stage.interview_configurations.map((config: any) => ({
+            template_id: config.template_id || config.templateId || '',
+            mode: (config.mode || 'AUTOMATIC') as 'AUTOMATIC' | 'MANUAL',
+          }));
+          console.log('Loaded interview_configurations for stage', stage.id, ':', interviewConfigs);
+        }
+        
+        return {
+          id: stage.id,
+          name: stage.name,
+          description: stage.description || '',
+          stage_type: stage.stage_type,
+          order: stage.order,
+          is_active: stage.is_active,
+          isNew: false,
+          allow_skip: stage.allow_skip,
+          estimated_duration_days: stage.estimated_duration_days || undefined,
+          default_role_ids: stage.default_role_ids || undefined,
+          deadline_days: stage.deadline_days || undefined,
+          estimated_cost: stage.estimated_cost || undefined,
+          next_phase_id: stage.next_phase_id || undefined,
+          kanban_display: stage.kanban_display || 'column',
+          style: stage.style,
+          interview_configurations: interviewConfigs,
+        };
+      });
       setStages(formattedStages);
     } catch (err: any) {
       toast.error(err.message || 'Failed to load workflow');
@@ -218,9 +235,39 @@ export default function EditWorkflowPage() {
     setStages(newStages);
   };
 
-  const openAdvancedSettings = (index: number) => {
+  const loadInterviewTemplates = async () => {
+    const companyId = getCompanyId();
+    if (!companyId) {
+      console.error('Company ID not found');
+      return;
+    }
+
+    try {
+      setLoadingTemplates(true);
+      // Load all templates (ENABLED and DRAFT) - don't filter by status
+      const templates = await companyInterviewTemplateService.listTemplates({
+        page_size: 100,
+      });
+      console.log('Loaded interview templates:', templates);
+      setInterviewTemplates(templates);
+      
+      if (templates.length === 0) {
+        console.warn('No interview templates found for company:', companyId);
+      }
+    } catch (err: any) {
+      console.error('Failed to load interview templates:', err);
+      const errorMessage = err?.message || 'Failed to load interview templates';
+      toast.error(errorMessage);
+      setInterviewTemplates([]);
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  const openAdvancedSettings = async (index: number) => {
     setSelectedStageIndex(index);
     setAdvancedModalOpen(true);
+    await loadInterviewTemplates();
   };
 
   const closeAdvancedSettings = () => {
@@ -336,9 +383,22 @@ export default function EditWorkflowPage() {
 
       // Update or create stages
       for (const stageData of stages) {
+        // Filter out empty interview configurations (template_id is empty)
+        // Always send the field if it exists (even if empty array) so backend can update it
+        let interviewConfigsToSend: InterviewConfiguration[] | undefined = undefined;
+        if (stageData.interview_configurations !== undefined) {
+          const validInterviewConfigs = stageData.interview_configurations.filter(
+            config => config.template_id && config.template_id.trim() !== ''
+          );
+          // Always send array (even if empty) when field was modified
+          interviewConfigsToSend = validInterviewConfigs;
+          console.log(`Stage ${stageData.id || 'NEW'} - Original configs:`, stageData.interview_configurations);
+          console.log(`Stage ${stageData.id || 'NEW'} - Valid configs to send:`, interviewConfigsToSend);
+        }
+
         if (stageData.isNew) {
           // Create new stage
-          await companyWorkflowService.createStage({
+          const createData = {
             workflow_id: workflowId,
             name: stageData.name,
             description: stageData.description,
@@ -351,10 +411,13 @@ export default function EditWorkflowPage() {
             deadline_days: stageData.deadline_days,
             estimated_cost: stageData.estimated_cost,
             next_phase_id: stageData.next_phase_id,
-          });
+            interview_configurations: interviewConfigsToSend,
+          };
+          console.log('Creating stage with data:', JSON.stringify(createData, null, 2));
+          await companyWorkflowService.createStage(createData);
         } else if (stageData.id) {
           // Update existing stage
-          await companyWorkflowService.updateStage(stageData.id, {
+          const updateData = {
             name: stageData.name,
             description: stageData.description,
             stage_type: stageData.stage_type,
@@ -367,7 +430,10 @@ export default function EditWorkflowPage() {
             estimated_cost: stageData.estimated_cost,
             next_phase_id: stageData.next_phase_id,
             kanban_display: stageData.kanban_display,
-          });
+            interview_configurations: interviewConfigsToSend,
+          };
+          console.log('Updating stage', stageData.id, 'with data:', JSON.stringify(updateData, null, 2));
+          await companyWorkflowService.updateStage(stageData.id, updateData);
         }
       }
 
@@ -570,9 +636,10 @@ export default function EditWorkflowPage() {
                         <button
                           type="button"
                           onClick={() => handleEditStageStyle(index)}
-                          className="p-1 text-blue-600 hover:text-blue-800"
+                          className="p-1 text-purple-600 hover:text-purple-800"
+                          title="Edit stage style"
                         >
-                          <Settings className="w-4 h-4" />
+                          <Palette className="w-4 h-4" />
                         </button>
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-10">
                           Edit stage style
@@ -744,7 +811,7 @@ export default function EditWorkflowPage() {
                     >
                       <Settings className="w-4 h-4" />
                       Advanced Settings
-                      {(stage.allow_skip || stage.default_role_ids?.length || stage.estimated_duration_days || stage.deadline_days || stage.estimated_cost) && (
+                      {(stage.allow_skip || stage.default_role_ids?.length || stage.estimated_duration_days || stage.deadline_days || stage.estimated_cost || stage.interview_configurations?.length) && (
                         <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">Configured</span>
                       )}
                     </button>
@@ -786,7 +853,7 @@ export default function EditWorkflowPage() {
             ></div>
 
             {/* Modal panel */}
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
               <div className="bg-white px-6 py-6">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
@@ -807,46 +874,62 @@ export default function EditWorkflowPage() {
                   </div>
                 </div>
 
-                {/* Advanced Settings Form */}
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {/* Allow Skip */}
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <input
-                      type="checkbox"
-                      id={`modal_allow_skip`}
-                      checked={stages[selectedStageIndex].allow_skip || false}
-                      onChange={(e) => handleStageChange(selectedStageIndex, 'allow_skip', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor={`modal_allow_skip`} className="text-sm font-medium text-gray-700">
-                      Allow skipping this stage (optional)
-                    </label>
+                {/* Advanced Settings Form - Reorganized in columns */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-h-[600px] overflow-y-auto pr-2">
+                  {/* Left Column */}
+                  <div className="space-y-4">
+                  {/* Allow Skip and Active Toggle */}
+                  <div className="flex items-center gap-6 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id={`modal_allow_skip`}
+                        checked={stages[selectedStageIndex].allow_skip || false}
+                        onChange={(e) => handleStageChange(selectedStageIndex, 'allow_skip', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <label htmlFor={`modal_allow_skip`} className="text-sm font-medium text-gray-700">
+                        Allow skipping this stage (optional)
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id={`modal_is_active`}
+                        checked={stages[selectedStageIndex].is_active}
+                        onChange={(e) => handleStageChange(selectedStageIndex, 'is_active', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <label htmlFor={`modal_is_active`} className="text-sm font-medium text-gray-700">
+                        Stage is active
+                      </label>
+                    </div>
                   </div>
 
-                  {/* Estimated Duration Days */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Duration (days)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={stages[selectedStageIndex].estimated_duration_days || ''}
-                      onChange={(e) => handleStageChange(selectedStageIndex, 'estimated_duration_days', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., 3"
-                    />
-                  </div>
-
-                  {/* Deadline Days */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Deadline (days)</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={stages[selectedStageIndex].deadline_days || ''}
-                      onChange={(e) => handleStageChange(selectedStageIndex, 'deadline_days', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., 5"
-                    />
+                  {/* Estimated Duration and Deadline Days */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Duration (days)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={stages[selectedStageIndex].estimated_duration_days || ''}
+                        onChange={(e) => handleStageChange(selectedStageIndex, 'estimated_duration_days', e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="e.g., 3"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Deadline (days)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={stages[selectedStageIndex].deadline_days || ''}
+                        onChange={(e) => handleStageChange(selectedStageIndex, 'deadline_days', e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="e.g., 5"
+                      />
+                    </div>
                   </div>
 
                   {/* Estimated Cost */}
@@ -927,19 +1010,97 @@ export default function EditWorkflowPage() {
                       </p>
                     </div>
                   )}
+                  </div>
 
-                  {/* Active Toggle */}
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <input
-                      type="checkbox"
-                      id={`modal_is_active`}
-                      checked={stages[selectedStageIndex].is_active}
-                      onChange={(e) => handleStageChange(selectedStageIndex, 'is_active', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor={`modal_is_active`} className="text-sm font-medium text-gray-700">
-                      Stage is active
-                    </label>
+                  {/* Right Column */}
+                  <div className="space-y-4">
+                    {/* Interview Configurations */}
+                    <div className="border border-gray-200 rounded-lg p-4 bg-blue-50">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3">Interview Templates</h4>
+                      <p className="text-xs text-gray-600 mb-4">
+                        Configure which interview templates should be used in this stage. Interviews can be created automatically or manually.
+                      </p>
+                      
+                      {loadingTemplates ? (
+                        <div className="text-sm text-gray-500 py-4">Loading templates...</div>
+                      ) : interviewTemplates.length === 0 ? (
+                        <div className="text-sm text-gray-500 py-4 space-y-2">
+                          <p>No interview templates available.</p>
+                          <p>
+                            <a href="/company/interview-templates" className="text-blue-600 hover:underline font-medium">
+                              Create templates first
+                            </a>
+                          </p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            (Check browser console for details)
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {(stages[selectedStageIndex].interview_configurations || []).map((config, configIndex) => (
+                            <div key={configIndex} className="flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg">
+                              <div className="flex-1">
+                                <select
+                                  value={config.template_id}
+                                  onChange={(e) => {
+                                    const currentConfigs = stages[selectedStageIndex].interview_configurations || [];
+                                    const newConfigs = [...currentConfigs];
+                                    newConfigs[configIndex] = { ...config, template_id: e.target.value };
+                                    handleStageChange(selectedStageIndex, 'interview_configurations', newConfigs);
+                                  }}
+                                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                  <option value="">Select template...</option>
+                                  {interviewTemplates.map((template) => (
+                                    <option key={template.id} value={template.id}>
+                                      {template.name} ({template.type})
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <select
+                                value={config.mode}
+                                onChange={(e) => {
+                                  const currentConfigs = stages[selectedStageIndex].interview_configurations || [];
+                                  const newConfigs = [...currentConfigs];
+                                  newConfigs[configIndex] = { ...config, mode: e.target.value as 'AUTOMATIC' | 'MANUAL' };
+                                  handleStageChange(selectedStageIndex, 'interview_configurations', newConfigs);
+                                }}
+                                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              >
+                                <option value="AUTOMATIC">Automatic</option>
+                                <option value="MANUAL">Manual</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const currentConfigs = stages[selectedStageIndex].interview_configurations || [];
+                                  const newConfigs = currentConfigs.filter((_, i) => i !== configIndex);
+                                  // Always set as array (empty array if no configs) so backend can process it
+                                  handleStageChange(selectedStageIndex, 'interview_configurations', newConfigs);
+                                }}
+                                className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentConfigs = stages[selectedStageIndex].interview_configurations || [];
+                              const newConfigs = [...currentConfigs, { template_id: '', mode: 'AUTOMATIC' as const }];
+                              handleStageChange(selectedStageIndex, 'interview_configurations', newConfigs);
+                            }}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Interview Template
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

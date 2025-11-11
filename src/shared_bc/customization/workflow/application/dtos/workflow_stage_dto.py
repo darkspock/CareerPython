@@ -27,5 +27,6 @@ class WorkflowStageDto:
     style: Dict[str, Any]  # WorkflowStageStyle as dict
     validation_rules: Optional[Dict[str, Any]]  # JsonLogic validation rules
     recommended_rules: Optional[Dict[str, Any]]  # JsonLogic recommendation rules
+    interview_configurations: Optional[List[Dict[str, str]]]  # List of interview configurations: [{"template_id": str, "mode": str}]
     created_at: datetime
     updated_at: datetime

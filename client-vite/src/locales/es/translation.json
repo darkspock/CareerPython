@@ -384,7 +384,7 @@
         "description": "Organiza el reclutamiento en fases de alto nivel"
       },
       "workflowSettings": {
-        "title": "Configuración de Flujos de Trabajo",
+        "title": "Flujos de reclutamiento",
         "description": "Gestiona los flujos de trabajo y etapas de reclutamiento"
       },
       "companyRoles": {

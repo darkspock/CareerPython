@@ -26,6 +26,8 @@ from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum 
 from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewModeEnum
 
 
 class WorkflowStageController:
@@ -48,6 +50,19 @@ class WorkflowStageController:
                 icon=request.style.get("icon", "")
             )
 
+        # Convert interview_configurations from dicts to InterviewConfiguration objects
+        # Handle both None (field not provided) and empty list (field provided but empty)
+        interview_configurations = None
+        if request.interview_configurations is not None:
+            if len(request.interview_configurations) > 0:
+                interview_configurations = [
+                    InterviewConfiguration.from_dict(config_dict)
+                    for config_dict in request.interview_configurations
+                ]
+            else:
+                # Empty list means clear the field
+                interview_configurations = []
+
         command = CreateStageCommand(
             id=stage_id,
             workflow_id=WorkflowId.from_string(request.workflow_id),
@@ -68,7 +83,8 @@ class WorkflowStageController:
             kanban_display=KanbanDisplayEnum(request.kanban_display) if request.kanban_display else KanbanDisplayEnum.COLUMN,
             style=style,
             validation_rules=request.validation_rules,
-            recommended_rules=request.recommended_rules
+            recommended_rules=request.recommended_rules,
+            interview_configurations=interview_configurations
         )
 
         self._command_bus.dispatch(command)
@@ -141,6 +157,19 @@ class WorkflowStageController:
                 icon=request.style.get("icon", "")
             )
 
+        # Convert interview_configurations from dicts to InterviewConfiguration objects
+        # Handle both None (field not provided) and empty list (field provided but empty)
+        interview_configurations = None
+        if request.interview_configurations is not None:
+            if len(request.interview_configurations) > 0:
+                interview_configurations = [
+                    InterviewConfiguration.from_dict(config_dict)
+                    for config_dict in request.interview_configurations
+                ]
+            else:
+                # Empty list means clear the field
+                interview_configurations = []
+
         command = UpdateStageCommand(
             id=stage_id_vo,
             name=request.name,
@@ -158,7 +187,8 @@ class WorkflowStageController:
             kanban_display=KanbanDisplayEnum(request.kanban_display) if request.kanban_display else None,
             style=style,
             validation_rules=request.validation_rules,
-            recommended_rules=request.recommended_rules
+            recommended_rules=request.recommended_rules,
+            interview_configurations=interview_configurations
         )
 
         self._command_bus.dispatch(command)

@@ -33,6 +33,7 @@ class WorkflowStageMapper:
             },
             validation_rules=entity.validation_rules,
             recommended_rules=entity.recommended_rules,
+            interview_configurations=[config.to_dict() for config in entity.interview_configurations] if entity.interview_configurations else None,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

@@ -40,8 +40,27 @@ export const companyInterviewTemplateService = {
     if (filters?.page_size) queryParams.append('page_size', filters.page_size.toString());
 
     const endpoint = `/api/company/interview-templates${queryParams.toString() ? `?${queryParams}` : ''}`;
-    const response = await ApiClient.authenticatedRequest<InterviewTemplate[]>(endpoint);
-    return Array.isArray(response) ? response : [];
+    try {
+      const response = await ApiClient.authenticatedRequest<InterviewTemplate[]>(endpoint);
+      console.log('[companyInterviewTemplateService] Raw response:', response);
+      
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response;
+      } else if (response && typeof response === 'object' && 'items' in response) {
+        // Handle paginated response
+        return (response as any).items || [];
+      } else if (response && typeof response === 'object' && 'templates' in response) {
+        // Handle wrapped response
+        return (response as any).templates || [];
+      }
+      
+      console.warn('[companyInterviewTemplateService] Unexpected response format:', response);
+      return [];
+    } catch (error) {
+      console.error('[companyInterviewTemplateService] Error fetching templates:', error);
+      throw error;
+    }
   },
 
   /**

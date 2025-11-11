@@ -12,6 +12,7 @@ from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum 
 from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
 from src.framework.application.command_bus import Command, CommandHandler
 
 
@@ -39,6 +40,7 @@ class CreateStageCommand(Command):
     style: Optional[WorkflowStageStyle] = None  # Visual styling
     validation_rules: Optional[Dict[str, Any]] = None  # JsonLogic validation rules
     recommended_rules: Optional[Dict[str, Any]] = None  # JsonLogic recommendation rules
+    interview_configurations: Optional[List[InterviewConfiguration]] = None  # Interview configurations for this stage
 
 
 class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
@@ -97,7 +99,8 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
             kanban_display=command.kanban_display,
             style=command.style,
             validation_rules=command.validation_rules,
-            recommended_rules=command.recommended_rules
+            recommended_rules=command.recommended_rules,
+            interview_configurations=command.interview_configurations
         )
 
         self.repository.save(stage)

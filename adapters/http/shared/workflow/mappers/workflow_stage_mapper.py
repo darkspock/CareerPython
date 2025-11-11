@@ -27,6 +27,9 @@ class WorkflowStageResponseMapper:
             next_phase_id=dto.next_phase_id,
             kanban_display=dto.kanban_display,
             style=dto.style,
+            validation_rules=dto.validation_rules,
+            recommended_rules=dto.recommended_rules,
+            interview_configurations=dto.interview_configurations,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )

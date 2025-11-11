@@ -26,6 +26,7 @@ class InterviewModel(Base):
     job_position_id: Mapped[Optional[str]] = mapped_column(String, index=True)
     application_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("candidate_applications.id"), index=True)
     interview_template_id: Mapped[Optional[str]] = mapped_column(String, index=True)
+    workflow_stage_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("workflow_stages.id", ondelete="SET NULL"), index=True, nullable=True)
     interview_type: Mapped[InterviewTypeEnum] = mapped_column(Enum(InterviewTypeEnum),
                                                               default=InterviewTypeEnum.JOB_POSITION)
     status: Mapped[InterviewStatusEnum] = mapped_column(Enum(InterviewStatusEnum), default=InterviewStatusEnum.ENABLED)

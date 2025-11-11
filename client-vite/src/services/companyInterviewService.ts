@@ -12,6 +12,7 @@ export type Interview = {
   job_position_id?: string;
   application_id?: string;
   interview_template_id?: string;
+  workflow_stage_id?: string; // ID of the workflow stage where this interview is conducted
   title?: string;
   description?: string;
   scheduled_at?: string;
@@ -74,6 +75,7 @@ export type CreateInterviewRequest = {
   job_position_id?: string;
   application_id?: string;
   interview_template_id?: string;
+  workflow_stage_id?: string; // ID of the workflow stage where this interview is conducted
   title?: string;
   description?: string;
   scheduled_at?: string;

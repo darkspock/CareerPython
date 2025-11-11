@@ -8,6 +8,7 @@ from src.interview_bc.interview.domain.enums.interview_enums import InterviewSta
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass
@@ -20,6 +21,7 @@ class Interview:
     job_position_id: Optional[JobPositionId] = None
     application_id: Optional[CandidateApplicationId] = None
     interview_template_id: Optional[InterviewTemplateId] = None
+    workflow_stage_id: Optional[WorkflowStageId] = None  # Stage where this interview is conducted
     interview_type: InterviewTypeEnum = InterviewTypeEnum.JOB_POSITION
     status: InterviewStatusEnum = InterviewStatusEnum.ENABLED
     title: Optional[str] = None
@@ -135,6 +137,7 @@ class Interview:
             job_position_id: Optional[JobPositionId] = None,
             application_id: Optional[CandidateApplicationId] = None,
             interview_template_id: Optional[InterviewTemplateId] = None,
+            workflow_stage_id: Optional[WorkflowStageId] = None,
             updated_by: Optional[str] = None
     ) -> None:
         """Update interview details"""
@@ -150,6 +153,8 @@ class Interview:
             self.application_id = application_id
         if interview_template_id is not None:
             self.interview_template_id = interview_template_id
+        if workflow_stage_id is not None:
+            self.workflow_stage_id = workflow_stage_id
 
         self.updated_at = datetime.utcnow()
         if updated_by:
@@ -194,6 +199,7 @@ class Interview:
             job_position_id: Optional[JobPositionId] = None,
             application_id: Optional[CandidateApplicationId] = None,
             interview_template_id: Optional[InterviewTemplateId] = None,
+            workflow_stage_id: Optional[WorkflowStageId] = None,
             title: Optional[str] = None,
             description: Optional[str] = None,
             scheduled_at: Optional[datetime] = None,
@@ -207,6 +213,7 @@ class Interview:
             job_position_id=job_position_id,
             application_id=application_id,
             interview_template_id=interview_template_id,
+            workflow_stage_id=workflow_stage_id,
             interview_type=interview_type,
             status=InterviewStatusEnum.ENABLED,
             title=title,

@@ -53,5 +53,8 @@ class WorkflowStageModel(Base):
     validation_rules: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # JsonLogic rules that must pass
     recommended_rules: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # JsonLogic rules that are recommended
 
+    # Interview configuration
+    interview_configurations: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # List of interview configurations: [{"template_id": str, "mode": str}]
+
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

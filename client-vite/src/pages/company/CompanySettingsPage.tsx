@@ -101,7 +101,7 @@ export default function CompanySettingsPage() {
       color: 'orange',
     },
     {
-      title: 'Job Position Workflows',
+      title: 'Flujos de publicación de ofertas',
       description: 'Gestiona workflows para posiciones de trabajo',
       icon: Briefcase,
       path: '/company/settings/job-position-workflows',

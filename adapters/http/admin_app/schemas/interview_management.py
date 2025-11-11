@@ -17,6 +17,7 @@ class InterviewCreateRequest(BaseModel):
     job_position_id: Optional[str] = Field(None, description="ID of the job position")
     application_id: Optional[str] = Field(None, description="ID of the candidate application")
     interview_template_id: Optional[str] = Field(None, description="ID of the interview template")
+    workflow_stage_id: Optional[str] = Field(None, description="ID of the workflow stage where this interview is conducted")
     title: Optional[str] = Field(None, description="Interview title")
     description: Optional[str] = Field(None, description="Interview description")
     scheduled_at: Optional[str] = Field(None, description="Scheduled datetime (ISO format)")
@@ -41,6 +42,7 @@ class InterviewManagementResponse(BaseModel):
     job_position_id: Optional[str] = Field(None, description="Job position ID")
     application_id: Optional[str] = Field(None, description="Application ID")
     interview_template_id: Optional[str] = Field(None, description="Interview template ID")
+    workflow_stage_id: Optional[str] = Field(None, description="Workflow stage ID where this interview is conducted")
     interview_type: str = Field(..., description="Interview type")
     status: str = Field(..., description="Interview status")
     title: Optional[str] = Field(None, description="Interview title")
@@ -73,6 +75,9 @@ class InterviewManagementResponse(BaseModel):
             interview_template_id=dto.interview_template_id.value
             if dto.interview_template_id and hasattr(dto.interview_template_id, 'value') else str(
                 dto.interview_template_id) if dto.interview_template_id else None,
+            workflow_stage_id=dto.workflow_stage_id.value
+            if dto.workflow_stage_id and hasattr(dto.workflow_stage_id, 'value') else str(
+                dto.workflow_stage_id) if dto.workflow_stage_id else None,
             interview_type=dto.interview_type,
             status=dto.status,
             title=dto.title,
