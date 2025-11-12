@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Plus, ChevronUp, ChevronDown, Edit, MessageSquare, Power, PowerOff, Trash2, X, FileText } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Button } from '@/components/ui/button';
@@ -63,6 +64,7 @@ interface InterviewTemplateSection {
 }
 
 const InterviewTemplateEditor: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { templateId } = useParams<{ templateId?: string }>();
   const isEditing = !!templateId;
@@ -108,21 +110,21 @@ const InterviewTemplateEditor: React.FC = () => {
   const [showQuestionsModal, setShowQuestionsModal] = useState(false);
 
   const templateTypes = [
-    { value: 'EXTENDED_PROFILE', label: 'Durante la inscripción a la oferta' },
-    { value: 'POSITION_INTERVIEW', label: 'Durante el proceso de selección' }
+    { value: 'EXTENDED_PROFILE', label: t('company.interviewTemplateEditor.templateTypes.EXTENDED_PROFILE') },
+    { value: 'POSITION_INTERVIEW', label: t('company.interviewTemplateEditor.templateTypes.POSITION_INTERVIEW') }
   ];
 
   const jobCategories = [
-    { value: 'all', label: 'All' },
-    { value: 'Technology', label: 'Technology' },
-    { value: 'Operations', label: 'Operations' },
-    { value: 'Sales', label: 'Sales' },
-    { value: 'Marketing', label: 'Marketing' },
-    { value: 'Administration', label: 'Administration' },
-    { value: 'Human Resources', label: 'Human Resources' },
-    { value: 'Finance', label: 'Finance' },
-    { value: 'Customer Service', label: 'Customer Service' },
-    { value: 'Other', label: 'Other' }
+    { value: 'all', label: t('company.interviewTemplateEditor.jobCategories.all') },
+    { value: 'Technology', label: t('company.interviewTemplateEditor.jobCategories.Technology') },
+    { value: 'Operations', label: t('company.interviewTemplateEditor.jobCategories.Operations') },
+    { value: 'Sales', label: t('company.interviewTemplateEditor.jobCategories.Sales') },
+    { value: 'Marketing', label: t('company.interviewTemplateEditor.jobCategories.Marketing') },
+    { value: 'Administration', label: t('company.interviewTemplateEditor.jobCategories.Administration') },
+    { value: 'Human Resources', label: t('company.interviewTemplateEditor.jobCategories.Human Resources') },
+    { value: 'Finance', label: t('company.interviewTemplateEditor.jobCategories.Finance') },
+    { value: 'Customer Service', label: t('company.interviewTemplateEditor.jobCategories.Customer Service') },
+    { value: 'Other', label: t('company.interviewTemplateEditor.jobCategories.Other') }
   ];
 
   useEffect(() => {
@@ -155,7 +157,7 @@ const InterviewTemplateEditor: React.FC = () => {
         setSections(sortedSections);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch template');
+      setError(err.message || t('company.interviewTemplateEditor.errors.loadTemplate'));
     } finally {
       setLoading(false);
     }
@@ -191,7 +193,7 @@ const InterviewTemplateEditor: React.FC = () => {
 
       navigate(basePath);
     } catch (err: any) {
-      setError(err.message || 'Failed to save template');
+      setError(err.message || t('company.interviewTemplateEditor.errors.saveTemplate'));
     } finally {
       setSaving(false);
     }
@@ -213,7 +215,7 @@ const InterviewTemplateEditor: React.FC = () => {
   };
 
   const handleDeleteSection = async (sectionId: string) => {
-    if (confirm('Are you sure you want to permanently delete this section? This action cannot be undone.')) {
+    if (confirm(t('company.interviewTemplateEditor.confirmations.deleteSection'))) {
       try {
         // If it's a real section (not temp), call API to delete
         if (!sectionId.startsWith('temp-')) {
@@ -229,7 +231,7 @@ const InterviewTemplateEditor: React.FC = () => {
 
         setSections(sections.filter(s => s.id !== sectionId));
       } catch (err: any) {
-        setError(err.message || 'Failed to delete section');
+        setError(err.message || t('company.interviewTemplateEditor.errors.deleteSection'));
       }
     }
   };
@@ -297,7 +299,7 @@ const InterviewTemplateEditor: React.FC = () => {
       setShowSectionForm(false);
       setEditingSection(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to save section');
+      setError(err.message || t('company.interviewTemplateEditor.errors.saveSection'));
     }
   };
 
@@ -334,12 +336,12 @@ const InterviewTemplateEditor: React.FC = () => {
       // Update local state
       setSections(sections.map(s => s.id === sectionId ? { ...s, status: 'ENABLED' } : s));
     } catch (err: any) {
-      setError(err.message || 'Failed to enable section');
+      setError(err.message || t('company.interviewTemplateEditor.errors.enableSection'));
     }
   };
 
   const handleDisableSection = async (sectionId: string) => {
-    if (!confirm('Are you sure you want to disable this section?')) return;
+    if (!confirm(t('company.interviewTemplateEditor.confirmations.disableSection'))) return;
 
     try {
       // If it's a real section (not temp), call API to disable
@@ -357,7 +359,7 @@ const InterviewTemplateEditor: React.FC = () => {
       // Update local state
       setSections(sections.map(s => s.id === sectionId ? { ...s, status: 'DISABLED' } : s));
     } catch (err: any) {
-      setError(err.message || 'Failed to disable section');
+      setError(err.message || t('company.interviewTemplateEditor.errors.disableSection'));
     }
   };
 
@@ -389,7 +391,7 @@ const InterviewTemplateEditor: React.FC = () => {
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to move section up');
+      setError(err.message || t('company.interviewTemplateEditor.errors.moveSectionUp'));
     }
   };
 
@@ -421,7 +423,7 @@ const InterviewTemplateEditor: React.FC = () => {
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to move section down');
+      setError(err.message || t('company.interviewTemplateEditor.errors.moveSectionDown'));
     }
   };
 
@@ -451,19 +453,19 @@ const InterviewTemplateEditor: React.FC = () => {
                 </Button>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
-                    {isEditing ? 'Edit Template' : 'Create New Template'}
+                    {isEditing ? t('company.interviewTemplateEditor.title.edit') : t('company.interviewTemplateEditor.title.create')}
                   </h1>
                   <p className="text-sm text-gray-500">
-                    {isEditing ? 'Modify interview template settings and content' : 'Create a new interview template'}
+                    {isEditing ? t('company.interviewTemplateEditor.subtitle.edit') : t('company.interviewTemplateEditor.subtitle.create')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Button variant="outline" onClick={handleCancel}>
-                  Cancel
+                  {t('company.interviewTemplateEditor.buttons.cancel')}
                 </Button>
                 <Button onClick={handleSave} disabled={saving}>
-                  {saving ? 'Saving...' : (isEditing ? 'Update Template' : 'Create Template')}
+                  {saving ? t('company.interviewTemplateEditor.buttons.save') : (isEditing ? t('company.interviewTemplateEditor.buttons.update') : t('company.interviewTemplateEditor.buttons.create'))}
                 </Button>
               </div>
             </div>
@@ -494,22 +496,22 @@ const InterviewTemplateEditor: React.FC = () => {
             {/* Basic Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle>{t('company.interviewTemplateEditor.sections.basicInfo')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Template Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.templateName')} *</label>
                     <Input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Enter template name"
+                      placeholder={t('company.interviewTemplateEditor.placeholders.templateName')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.visibility')}</label>
                     <Select
                       value={formData.type}
                       onValueChange={(value) => setFormData({ ...formData, type: value as 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' })}
@@ -525,7 +527,7 @@ const InterviewTemplateEditor: React.FC = () => {
                     </Select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Job Category</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.jobCategory')}</label>
                     <Select
                       value={formData.job_category || 'all'}
                       onValueChange={(value) => setFormData({ ...formData, job_category: value === 'all' ? null : value })}
@@ -541,12 +543,12 @@ const InterviewTemplateEditor: React.FC = () => {
                     </Select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.tags')}</label>
                     <Input
                       type="text"
                       value={formData.tags.join(', ')}
                       onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(', ').filter(tag => tag.trim() !== '') })}
-                      placeholder="Enter tags separated by commas"
+                      placeholder={t('company.interviewTemplateEditor.placeholders.tags')}
                     />
                   </div>
                 </div>
@@ -556,40 +558,25 @@ const InterviewTemplateEditor: React.FC = () => {
             {/* Content */}
             <Card>
               <CardHeader>
-                <CardTitle>Template Content</CardTitle>
+                <CardTitle>{t('company.interviewTemplateEditor.sections.content')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Introduction</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.introduction')}</label>
                   <Textarea
                     value={formData.intro}
                     onChange={(e) => setFormData({ ...formData, intro: e.target.value })}
                     rows={4}
-                    placeholder="Introduction text that will be shown to candidates before the interview"
+                    placeholder={t('company.interviewTemplateEditor.placeholders.introduction')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Goal/Objective</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.goal')}</label>
                   <Textarea
                     value={formData.goal}
                     onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
                     rows={4}
-                    placeholder="What should this interview template achieve? What insights should it provide?"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">AI Prompt</label>
-                  <Textarea
-                    value={formData.prompt}
-                    onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-                    className="font-mono text-sm"
-                    rows={12}
-                    placeholder="Detailed prompt for AI to generate interview questions. Be specific about:
-- Question types and difficulty level
-- Topics to cover
-- Desired response format
-- Evaluation criteria
-- Any special instructions"
+                    placeholder={t('company.interviewTemplateEditor.placeholders.goal')}
                   />
                 </div>
                 <div>
@@ -603,23 +590,35 @@ const InterviewTemplateEditor: React.FC = () => {
                       htmlFor="allow_ai_questions"
                       className="text-sm font-medium text-gray-700 cursor-pointer"
                     >
-                      Allow AI to generate additional questions
+                      {t('company.interviewTemplateEditor.labels.allowAIQuestions')}
                     </label>
                   </div>
                   <p className="mt-1 text-xs text-gray-500 ml-6">
-                    If enabled, AI can create additional questions beyond the predefined ones
+                    {t('company.interviewTemplateEditor.labels.allowAIQuestionsDescription')}
                   </p>
                 </div>
+                {formData.allow_ai_questions && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.aiPrompt')}</label>
+                    <Textarea
+                      value={formData.prompt}
+                      onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
+                      className="font-mono text-sm"
+                      rows={12}
+                      placeholder={t('company.interviewTemplateEditor.placeholders.aiPrompt')}
+                    />
+                  </div>
+                )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Legal Notice</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.legalNotice')}</label>
                   <Textarea
                     value={formData.legal_notice}
                     onChange={(e) => setFormData({ ...formData, legal_notice: e.target.value })}
                     rows={4}
-                    placeholder="Legal text that will be displayed to users for compliance purposes (GDPR, data processing, etc.)"
+                    placeholder={t('company.interviewTemplateEditor.placeholders.legalNotice')}
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    This text will be shown to candidates before starting the interview
+                    {t('company.interviewTemplateEditor.labels.legalNoticeDescription')}
                   </p>
                 </div>
               </CardContent>
@@ -629,14 +628,14 @@ const InterviewTemplateEditor: React.FC = () => {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Template Sections</CardTitle>
+                  <CardTitle>{t('company.interviewTemplateEditor.sections.templateSections')}</CardTitle>
                   <Button
                     type="button"
                     onClick={handleAddSection}
                     className="flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    Add Section
+                    {t('company.interviewTemplateEditor.sectionsList.addSection')}
                   </Button>
                 </div>
               </CardHeader>

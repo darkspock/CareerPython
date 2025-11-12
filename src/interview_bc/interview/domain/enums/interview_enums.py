@@ -10,14 +10,18 @@ class InterviewStatusEnum(Enum):
 
 
 class InterviewTypeEnum(Enum):
-    JOB_POSITION = "JOB_POSITION"
-    PLATFORM_ONBOARDING = "PLATFORM_ONBOARDING"
-    COMPANY_ONBOARDING = "COMPANY_ONBOARDING"
-    PREMIUM_ONBOARDING = "PREMIUM_ONBOARDING"
+    EXTENDED_PROFILE = "EXTENDED_PROFILE"
+    POSITION_INTERVIEW = "POSITION_INTERVIEW"
     CUSTOM = "CUSTOM"
+    # Legacy values - kept for backward compatibility, deprecated
+    JOB_POSITION = "JOB_POSITION"  # Deprecated: use POSITION_INTERVIEW
+    PLATFORM_ONBOARDING = "PLATFORM_ONBOARDING"  # Deprecated
+    COMPANY_ONBOARDING = "COMPANY_ONBOARDING"  # Deprecated
+    PREMIUM_ONBOARDING = "PREMIUM_ONBOARDING"  # Deprecated
 
 
 class InterviewModeEnum(str, Enum):
     """Enum for interview execution mode"""
     AUTOMATIC = "AUTOMATIC"  # Interview is automatically created/scheduled
+    AI = "AI"  # Interview is automatically created/scheduled
     MANUAL = "MANUAL"  # Interview must be manually created/scheduled

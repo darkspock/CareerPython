@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from src.interview_bc.interview.application.commands.create_interview import CreateInterviewCommand
 from src.interview_bc.interview.application.commands.finish_interview import FinishInterviewCommand
 from src.interview_bc.interview.application.commands.start_interview import StartInterviewCommand
+from src.interview_bc.interview.application.commands.generate_interview_link import GenerateInterviewLinkCommand
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQuery
 from src.interview_bc.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQuery, \
@@ -17,9 +18,17 @@ from src.interview_bc.interview.application.queries.get_interview_score_summary 
 from src.interview_bc.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQuery
 from src.interview_bc.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQuery
 from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQuery
+from src.interview_bc.interview.application.queries.get_pending_interviews_by_candidate_and_stage import GetPendingInterviewsByCandidateAndStageQuery
+from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQuery
+from src.interview_bc.interview.application.commands.invite_interviewer import InviteInterviewerCommand
+from src.interview_bc.interview.application.commands.accept_interviewer_invitation import AcceptInterviewerInvitationCommand
+from src.interview_bc.interview.application.queries.get_interviewers_by_interview import GetInterviewersByInterviewQuery
+from src.interview_bc.interview.application.queries.dtos.interview_interviewer_dto import InterviewInterviewerDto
 from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum
+from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewPermissionDeniedError
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
+from core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -221,3 +230,159 @@ class InterviewController:
         except Exception as e:
             logger.error(f"Error getting score summary for interview {interview_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to retrieve interview score summary")
+
+    def generate_interview_link(
+            self,
+            interview_id: str,
+            expires_in_days: int = 30,
+            generated_by: Optional[str] = None
+    ) -> dict:
+        """Generate a shareable link for an interview"""
+        try:
+            command = GenerateInterviewLinkCommand(
+                interview_id=interview_id,
+                expires_in_days=expires_in_days,
+                generated_by=generated_by
+            )
+
+            self._command_bus.execute(command)
+
+            # Get the updated interview to retrieve the link
+            interview = self.get_interview_by_id(interview_id)
+            shareable_link = None
+            if interview.link_token:
+                shareable_link = f"{settings.FRONTEND_URL}/interviews/{interview.id.value}/access?token={interview.link_token}"
+
+            return {
+                "message": "Interview link generated successfully",
+                "status": "success",
+                "interview_id": interview_id,
+                "link": shareable_link,
+                "expires_in_days": expires_in_days,
+                "expires_at": interview.link_expires_at.isoformat() if interview.link_expires_at else None
+            }
+
+        except Exception as e:
+            logger.error(f"Error generating link for interview {interview_id}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to generate interview link")
+
+    def get_pending_interviews_by_candidate_and_stage(
+            self,
+            candidate_id: str,
+            workflow_stage_id: str
+    ) -> List[InterviewDto]:
+        """Get pending interviews for a candidate in a specific workflow stage"""
+        try:
+            query = GetPendingInterviewsByCandidateAndStageQuery(
+                candidate_id=candidate_id,
+                workflow_stage_id=workflow_stage_id
+            )
+
+            interviews: List[InterviewDto] = self._query_bus.query(query)
+            return interviews
+
+        except Exception as e:
+            logger.error(f"Error getting pending interviews for candidate {candidate_id} in stage {workflow_stage_id}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to retrieve pending interviews")
+
+    def get_interview_by_token(
+            self,
+            interview_id: str,
+            token: str
+    ) -> InterviewDto:
+        """Get interview by ID and token for secure link access"""
+        try:
+            query = GetInterviewByTokenQuery(
+                interview_id=interview_id,
+                token=token
+            )
+
+            interview: InterviewDto = self._query_bus.query(query)
+            return interview
+
+        except Exception as e:
+            logger.error(f"Error getting interview {interview_id} by token: {e}")
+            raise HTTPException(status_code=404, detail="Interview not found or token is invalid/expired")
+
+    def invite_interviewer(
+            self,
+            interview_id: str,
+            user_id: str,
+            company_id: str,
+            name: Optional[str] = None,
+            is_external: bool = False,
+            invited_by: Optional[str] = None
+    ) -> dict:
+        """Invite an interviewer to an interview"""
+        try:
+            command = InviteInterviewerCommand(
+                interview_id=interview_id,
+                user_id=user_id,
+                company_id=company_id,
+                name=name,
+                is_external=is_external,
+                invited_by=invited_by
+            )
+
+            self._command_bus.execute(command)
+
+            return {
+                "message": "Interviewer invited successfully",
+                "status": "success",
+                "interview_id": interview_id,
+                "user_id": user_id
+            }
+
+        except ValueError as e:
+            logger.error(f"Error inviting interviewer: {e}")
+            raise HTTPException(status_code=400, detail=str(e))
+        except InterviewPermissionDeniedError as e:
+            logger.error(f"Permission denied inviting interviewer: {e}")
+            raise HTTPException(status_code=403, detail=str(e))
+        except Exception as e:
+            logger.error(f"Error inviting interviewer: {e}")
+            raise HTTPException(status_code=500, detail="Failed to invite interviewer")
+
+    def accept_interviewer_invitation(
+            self,
+            interviewer_id: str,
+            accepted_by: Optional[str] = None
+    ) -> dict:
+        """Accept an interviewer invitation"""
+        try:
+            command = AcceptInterviewerInvitationCommand(
+                interviewer_id=interviewer_id,
+                accepted_by=accepted_by
+            )
+
+            self._command_bus.execute(command)
+
+            return {
+                "message": "Invitation accepted successfully",
+                "status": "success",
+                "interviewer_id": interviewer_id
+            }
+
+        except ValueError as e:
+            logger.error(f"Error accepting invitation: {e}")
+            raise HTTPException(status_code=400, detail=str(e))
+        except InterviewPermissionDeniedError as e:
+            logger.error(f"Permission denied accepting invitation: {e}")
+            raise HTTPException(status_code=403, detail=str(e))
+        except Exception as e:
+            logger.error(f"Error accepting invitation: {e}")
+            raise HTTPException(status_code=500, detail="Failed to accept invitation")
+
+    def get_interviewers_by_interview(
+            self,
+            interview_id: str
+    ) -> List[InterviewInterviewerDto]:
+        """Get all interviewers for an interview"""
+        try:
+            query = GetInterviewersByInterviewQuery(interview_id=interview_id)
+            interviewers: List[InterviewInterviewerDto] = self._query_bus.query(query)
+            return interviewers
+
+        except Exception as e:
+            logger.error(f"Error getting interviewers for interview {interview_id}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to retrieve interviewers")

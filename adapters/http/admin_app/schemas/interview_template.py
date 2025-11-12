@@ -6,7 +6,12 @@ from src.interview_bc.interview_template.application.queries.dtos.interview_temp
     InterviewTemplateListDto
 from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import \
     InterviewTemplateSectionDto, InterviewTemplateFullDto
-from src.interview_bc.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum, InterviewTemplateSectionEnum
+from src.interview_bc.interview_template.domain.enums import (
+    InterviewTemplateTypeEnum,
+    InterviewTemplateStatusEnum,
+    InterviewTemplateSectionEnum,
+    ScoringModeEnum
+)
 from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
@@ -20,6 +25,7 @@ class InterviewTemplateBase(BaseModel):
     type: InterviewTemplateTypeEnum
     job_category: Optional[JobCategoryEnum] = None
     allow_ai_questions: Optional[bool] = False
+    scoring_mode: Optional[ScoringModeEnum] = None
     legal_notice: Optional[str] = None
     tags: Optional[List[str]] = None
     template_metadata: Optional[Dict[str, Any]] = None
@@ -62,6 +68,7 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             company_id=dto.company_id.value if dto.company_id and hasattr(dto.company_id, 'value') else (str(dto.company_id) if dto.company_id else None),
             job_category=dto.job_category,
             allow_ai_questions=dto.allow_ai_questions,
+            scoring_mode=dto.scoring_mode,
             legal_notice=dto.legal_notice,
             tags=dto.tags,
             template_metadata=dto.metadata
@@ -85,6 +92,7 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             company_id=dto.company_id,  # Already a string in FullDto
             job_category=dto.job_category,
             allow_ai_questions=dto.allow_ai_questions,
+            scoring_mode=dto.scoring_mode,
             legal_notice=dto.legal_notice,
             tags=dto.tags,
             template_metadata=dto.metadata,

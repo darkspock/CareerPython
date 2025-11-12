@@ -5,7 +5,9 @@ from typing import List, Optional, Dict, Any
 from src.interview_bc.interview_template.domain import InterviewTemplateQuestion, InterviewTemplateSection
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum,
-    InterviewTemplateTypeEnum, InterviewTemplateSectionEnum
+    InterviewTemplateTypeEnum,
+    InterviewTemplateSectionEnum,
+    ScoringModeEnum
 )
 from src.interview_bc.interview_template.domain.enums.interview_template_question import (
     InterviewTemplateQuestionStatusEnum,
@@ -103,6 +105,7 @@ class InterviewTemplateFullDto:
     template_type: InterviewTemplateTypeEnum
     job_category: Optional[JobCategoryEnum]
     allow_ai_questions: bool
+    scoring_mode: Optional[ScoringModeEnum]
     legal_notice: Optional[str]
 
     # Extended properties

@@ -18,6 +18,7 @@ from adapters.http.admin_app.routes.admin_router import router as admin_router
 from adapters.http.candidate_app.routers.landing_router import router as landing_router
 from adapters.http.candidate_app.routers.candidate_router import candidate_router
 from adapters.http.candidate_app.routers.resume_router import router as resume_router
+from adapters.http.candidate_app.routers.interview_router import router as candidate_interview_router
 from adapters.http.candidate_app.routers.file_router import file_router
 from adapters.http.candidate_app.routers.job_router import job_router
 from adapters.http.company_app.company.routers.company_router import router as company_router
@@ -110,6 +111,7 @@ app.include_router(public_company_page_router)  # Public company pages
 app.include_router(file_attachment_router)  # File attachment management
 app.include_router(phase_router)  # Phase 12: Phase management
 app.include_router(candidate_router)
+app.include_router(candidate_interview_router)  # Candidate interview access by token
 app.include_router(user_router)
 app.include_router(invitation_router)  # Public invitation endpoints
 app.include_router(ai_test_router)  # Direct AI testing

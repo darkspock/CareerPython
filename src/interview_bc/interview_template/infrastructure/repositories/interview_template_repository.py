@@ -40,6 +40,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
                     type=template.template_type,
                     job_category=template.job_category,
                     allow_ai_questions=template.allow_ai_questions,
+                    scoring_mode=template.scoring_mode,
                     legal_notice=template.legal_notice,
                     company_id=template.company_id.value if template.company_id else None,
                     created_by=getattr(template, 'created_by', None),
@@ -95,6 +96,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             db_template.type = template.template_type
             db_template.job_category = template.job_category
             db_template.allow_ai_questions = template.allow_ai_questions
+            db_template.scoring_mode = template.scoring_mode
             db_template.legal_notice = template.legal_notice
             db_template.company_id = template.company_id.value if template.company_id else None
             db_template.tags = template.tags or []
@@ -244,6 +246,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             template_type=db_template.type,
             job_category=db_template.job_category,
             allow_ai_questions=db_template.allow_ai_questions,
+            scoring_mode=db_template.scoring_mode,
             legal_notice=db_template.legal_notice,
             tags=db_template.tags or [],
             metadata=db_template.template_metadata or {},
@@ -270,6 +273,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             template_type=original.template_type,
             job_category=original.job_category,
             allow_ai_questions=original.allow_ai_questions,
+            scoring_mode=original.scoring_mode,
             legal_notice=original.legal_notice,
             tags=(original.tags or []) + ['cloned'],
             metadata={

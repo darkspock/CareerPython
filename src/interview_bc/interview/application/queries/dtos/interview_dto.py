@@ -22,20 +22,23 @@ class InterviewDto:
     workflow_stage_id: Optional[WorkflowStageId]
     interview_type: str
     status: str
-    title: Optional[str]
-    description: Optional[str]
-    scheduled_at: Optional[datetime]
-    started_at: Optional[datetime]
-    finished_at: Optional[datetime]
-    duration_minutes: Optional[int]
     interviewers: List[str]
-    interviewer_notes: Optional[str]
-    candidate_notes: Optional[str]
-    score: Optional[float]
-    feedback: Optional[str]
-    free_answers: Optional[str]
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
+    interview_mode: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    interviewer_notes: Optional[str] = None
+    candidate_notes: Optional[str] = None
+    score: Optional[float] = None
+    feedback: Optional[str] = None
+    free_answers: Optional[str] = None
+    link_token: Optional[str] = None
+    link_expires_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     @classmethod
     def from_entity(cls, entity: Interview) -> "InterviewDto":
@@ -48,6 +51,7 @@ class InterviewDto:
             interview_template_id=entity.interview_template_id,
             workflow_stage_id=entity.workflow_stage_id,
             interview_type=entity.interview_type.value,
+            interview_mode=entity.interview_mode.value if entity.interview_mode else None,
             status=entity.status.value,
             title=entity.title,
             description=entity.description,
@@ -61,6 +65,8 @@ class InterviewDto:
             score=entity.score,
             feedback=entity.feedback,
             free_answers=entity.free_answers,
+            link_token=entity.link_token,
+            link_expires_at=entity.link_expires_at,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )

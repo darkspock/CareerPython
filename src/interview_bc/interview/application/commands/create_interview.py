@@ -7,7 +7,7 @@ from core.event_bus import EventBus
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.interview_bc.interview.domain.entities.interview import Interview
-from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum, InterviewModeEnum
 from src.interview_bc.interview.domain.events.interview_events import InterviewCreatedEvent
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
@@ -21,6 +21,7 @@ from src.framework.application.command_bus import Command, CommandHandler
 class CreateInterviewCommand(Command):
     candidate_id: str
     interview_type: str = InterviewTypeEnum.JOB_POSITION.value
+    interview_mode: Optional[str] = None
     job_position_id: Optional[str] = None
     application_id: Optional[str] = None
     interview_template_id: Optional[str] = None
@@ -63,6 +64,11 @@ class CreateInterviewCommandHandler(CommandHandler[CreateInterviewCommand]):
         # Convert interview type
         interview_type = InterviewTypeEnum(command.interview_type)
 
+        # Convert interview mode
+        interview_mode = None
+        if command.interview_mode:
+            interview_mode = InterviewModeEnum(command.interview_mode)
+
         # Parse scheduled datetime
         scheduled_at = None
         if command.scheduled_at:
@@ -73,6 +79,7 @@ class CreateInterviewCommandHandler(CommandHandler[CreateInterviewCommand]):
             id=interview_id,
             candidate_id=candidate_id,
             interview_type=interview_type,
+            interview_mode=interview_mode,
             job_position_id=job_position_id,
             application_id=application_id,
             interview_template_id=interview_template_id,

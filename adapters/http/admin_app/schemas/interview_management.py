@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum
+from core.config import settings
 
 
 class InterviewCreateRequest(BaseModel):
@@ -44,6 +45,7 @@ class InterviewManagementResponse(BaseModel):
     interview_template_id: Optional[str] = Field(None, description="Interview template ID")
     workflow_stage_id: Optional[str] = Field(None, description="Workflow stage ID where this interview is conducted")
     interview_type: str = Field(..., description="Interview type")
+    interview_mode: Optional[str] = Field(None, description="Interview mode (AUTOMATIC, AI, MANUAL)")
     status: str = Field(..., description="Interview status")
     title: Optional[str] = Field(None, description="Interview title")
     description: Optional[str] = Field(None, description="Interview description")
@@ -57,6 +59,9 @@ class InterviewManagementResponse(BaseModel):
     score: Optional[float] = Field(None, description="Interview score")
     feedback: Optional[str] = Field(None, description="Interview feedback")
     free_answers: Optional[str] = Field(None, description="Free text answers")
+    link_token: Optional[str] = Field(None, description="Unique token for secure interview link access")
+    link_expires_at: Optional[datetime] = Field(None, description="Expiration date for the interview link")
+    shareable_link: Optional[str] = Field(None, description="Shareable link for the interview (computed)")
     created_at: Optional[datetime] = Field(None, description="Created datetime")
     updated_at: Optional[datetime] = Field(None, description="Updated datetime")
 
@@ -79,6 +84,7 @@ class InterviewManagementResponse(BaseModel):
             if dto.workflow_stage_id and hasattr(dto.workflow_stage_id, 'value') else str(
                 dto.workflow_stage_id) if dto.workflow_stage_id else None,
             interview_type=dto.interview_type,
+            interview_mode=dto.interview_mode,
             status=dto.status,
             title=dto.title,
             description=dto.description,
@@ -92,9 +98,19 @@ class InterviewManagementResponse(BaseModel):
             score=dto.score,
             feedback=dto.feedback,
             free_answers=dto.free_answers,
+            link_token=dto.link_token,
+            link_expires_at=dto.link_expires_at,
+            shareable_link=cls._generate_shareable_link(dto.id.value if hasattr(dto.id, 'value') else str(dto.id), dto.link_token) if dto.link_token else None,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
+
+    @staticmethod
+    def _generate_shareable_link(interview_id: str, link_token: Optional[str]) -> Optional[str]:
+        """Generate shareable link for interview"""
+        if not link_token:
+            return None
+        return f"{settings.FRONTEND_URL}/interviews/{interview_id}/access?token={link_token}"
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -88,6 +88,7 @@ from src.interview_bc.interview.application.commands.finish_interview import Fin
 from src.interview_bc.interview.application.commands.create_interview_answer import CreateInterviewAnswerCommandHandler
 from src.interview_bc.interview.application.commands.update_interview_answer import UpdateInterviewAnswerCommandHandler
 from src.interview_bc.interview.application.commands.score_interview_answer import ScoreInterviewAnswerCommandHandler
+from src.interview_bc.interview.application.commands.generate_interview_link import GenerateInterviewLinkCommandHandler
 from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQueryHandler
 from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQueryHandler
 from src.interview_bc.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQueryHandler
@@ -95,10 +96,17 @@ from src.interview_bc.interview.application.queries.get_scheduled_interviews imp
 from src.interview_bc.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQueryHandler
 from src.interview_bc.interview.application.queries.get_answers_by_interview import GetAnswersByInterviewQueryHandler
 from src.interview_bc.interview.application.queries.get_interview_answer_by_id import GetInterviewAnswerByIdQueryHandler
+from src.interview_bc.interview.application.queries.get_pending_interviews_by_candidate_and_stage import GetPendingInterviewsByCandidateAndStageQueryHandler
+from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQueryHandler
+from src.interview_bc.interview.application.commands.invite_interviewer import InviteInterviewerCommandHandler
+from src.interview_bc.interview.application.commands.accept_interviewer_invitation import AcceptInterviewerInvitationCommandHandler
+from src.interview_bc.interview.application.queries.get_interviewers_by_interview import GetInterviewersByInterviewQueryHandler
+from src.interview_bc.interview.application.services.interview_permission_service import InterviewPermissionService
 
 # Interview Management Infrastructure
 from src.interview_bc.interview.Infrastructure.repositories.interview_repository import SQLAlchemyInterviewRepository as InterviewRepository
 from src.interview_bc.interview.Infrastructure.repositories.interview_answer_repository import SQLAlchemyInterviewAnswerRepository as InterviewAnswerRepository
+from src.interview_bc.interview.Infrastructure.repositories.interview_interviewer_repository import SQLAlchemyInterviewInterviewerRepository as InterviewInterviewerRepository
 
 # Company Application Layer - Commands
 from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommandHandler
@@ -270,6 +278,7 @@ from src.shared_bc.customization.field_validation.application.queries.list_valid
 
 # FieldValidation Application Layer - Services
 from src.shared_bc.customization.field_validation.application.services.field_validation_service import FieldValidationService
+from src.shared_bc.customization.field_validation.application.services.interview_validation_service import InterviewValidationService
 
 # CandidateApplication Application Layer - Services
 from src.company_bc.candidate_application.application.services.stage_permission_service import StagePermissionService
@@ -512,6 +521,11 @@ class Container(containers.DeclarativeContainer):
 
     interview_answer_repository = providers.Factory(
         InterviewAnswerRepository,
+        database=database
+    )
+
+    interview_interviewer_repository = providers.Factory(
+        InterviewInterviewerRepository,
         database=database
     )
 
@@ -763,8 +777,9 @@ class Container(containers.DeclarativeContainer):
 
     get_interview_score_summary_query_handler = providers.Factory(
         GetInterviewScoreSummaryQueryHandler,
+        answer_repository=interview_answer_repository,
         interview_repository=interview_repository,
-        interview_answer_repository=interview_answer_repository
+        template_repository=interview_template_repository
     )
 
     get_answers_by_interview_query_handler = providers.Factory(
@@ -775,6 +790,43 @@ class Container(containers.DeclarativeContainer):
     get_interview_answer_by_id_query_handler = providers.Factory(
         GetInterviewAnswerByIdQueryHandler,
         interview_answer_repository=interview_answer_repository
+    )
+
+    get_pending_interviews_by_candidate_and_stage_query_handler = providers.Factory(
+        GetPendingInterviewsByCandidateAndStageQueryHandler,
+        interview_repository=interview_repository
+    )
+
+    get_interview_by_token_query_handler = providers.Factory(
+        GetInterviewByTokenQueryHandler,
+        interview_repository=interview_repository
+    )
+
+    interview_permission_service = providers.Factory(
+        InterviewPermissionService,
+        company_user_repository=company_user_repository,
+        interviewer_repository=interview_interviewer_repository,
+        company_candidate_repository=company_candidate_repository,
+        job_position_repository=job_position_repository
+    )
+
+    invite_interviewer_command_handler = providers.Factory(
+        InviteInterviewerCommandHandler,
+        interview_repository=interview_repository,
+        interviewer_repository=interview_interviewer_repository,
+        permission_service=interview_permission_service,
+        event_bus=event_bus
+    )
+
+    accept_interviewer_invitation_command_handler = providers.Factory(
+        AcceptInterviewerInvitationCommandHandler,
+        interviewer_repository=interview_interviewer_repository,
+        permission_service=interview_permission_service
+    )
+
+    get_interviewers_by_interview_query_handler = providers.Factory(
+        GetInterviewersByInterviewQueryHandler,
+        interviewer_repository=interview_interviewer_repository
     )
 
     # Company Query Handlers
@@ -1212,7 +1264,16 @@ class Container(containers.DeclarativeContainer):
 
     score_interview_answer_command_handler = providers.Factory(
         ScoreInterviewAnswerCommandHandler,
-        interview_answer_repository=interview_answer_repository
+        answer_repository=interview_answer_repository,
+        interview_repository=interview_repository,
+        template_repository=interview_template_repository,
+        event_bus=event_bus
+    )
+
+    generate_interview_link_command_handler = providers.Factory(
+        GenerateInterviewLinkCommandHandler,
+        interview_repository=interview_repository,
+        event_bus=event_bus
     )
 
     # Company Command Handlers
@@ -1371,7 +1432,8 @@ class Container(containers.DeclarativeContainer):
         repository=company_candidate_repository,
         workflow_stage_repository=workflow_stage_repository,
         workflow_repository=workflow_repository,
-        validation_service=stage_phase_validation_service
+        validation_service=stage_phase_validation_service,
+        interview_validation_service=interview_validation_service
     )
 
     # CandidateComment Repository
@@ -1533,6 +1595,12 @@ class Container(containers.DeclarativeContainer):
         FieldValidationService,
         validation_rule_repository=validation_rule_repository,
         custom_field_repository=new_custom_field_repository
+    )
+
+    # InterviewValidation Service
+    interview_validation_service = providers.Factory(
+        InterviewValidationService,
+        interview_repository=interview_repository
     )
 
     # StagePermission Service (Phase 5)

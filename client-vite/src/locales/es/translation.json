@@ -224,6 +224,198 @@
       "searchAllCandidates": "Buscar Todos los Candidatos",
       "workflowBoard": "Tablero de Flujo"
     },
+    "interviewTemplateEditor": {
+        "title": {
+          "edit": "Editar Plantilla",
+          "create": "Crear Nueva Plantilla"
+        },
+        "subtitle": {
+          "edit": "Modifica la configuración y contenido de la plantilla de entrevista",
+          "create": "Crea una nueva plantilla de entrevista"
+        },
+        "buttons": {
+          "cancel": "Cancelar",
+          "save": "Guardando...",
+          "update": "Actualizar Plantilla",
+          "create": "Crear Plantilla"
+        },
+        "sections": {
+          "basicInfo": "Información Básica",
+          "content": "Contenido de la Plantilla",
+          "templateSections": "Secciones de la Plantilla"
+        },
+        "fields": {
+          "templateName": "Nombre de la Plantilla",
+          "visibility": "Visibilidad",
+          "jobCategory": "Aplicar a Categoría de Trabajo",
+          "tags": "Etiquetas",
+          "introduction": "Introducción",
+          "goal": "Objetivo/Meta",
+          "aiPrompt": "Prompt de IA",
+          "legalNotice": "Aviso Legal"
+        },
+        "placeholders": {
+          "templateName": "Ingresa el nombre de la plantilla",
+          "tags": "Ingresa etiquetas separadas por comas",
+          "introduction": "Texto de introducción que se mostrará a los candidatos antes de la entrevista",
+          "goal": "¿Qué debe lograr esta plantilla de entrevista? ¿Qué información debe proporcionar?",
+          "aiPrompt": "Prompt detallado para que la IA genere preguntas de entrevista. Sé específico sobre:\n- Tipos de preguntas y nivel de dificultad\n- Temas a cubrir\n- Formato de respuesta deseado\n- Criterios de evaluación\n- Cualquier instrucción especial",
+          "legalNotice": "Texto legal que se mostrará a los usuarios para cumplimiento (GDPR, procesamiento de datos, etc.)"
+        },
+        "labels": {
+          "allowAIQuestions": "Permitir que la IA genere preguntas adicionales",
+          "allowAIQuestionsDescription": "Si está habilitado, la IA puede crear preguntas adicionales más allá de las predefinidas",
+          "legalNoticeDescription": "Este texto se mostrará a los candidatos antes de comenzar la entrevista"
+        },
+        "errors": {
+          "loadTemplate": "Error al cargar la plantilla",
+          "saveTemplate": "Error al guardar la plantilla",
+          "deleteSection": "Error al eliminar la sección",
+          "saveSection": "Error al guardar la sección",
+          "enableSection": "Error al activar la sección",
+          "disableSection": "Error al desactivar la sección",
+          "moveSectionUp": "Error al mover la sección hacia arriba",
+          "moveSectionDown": "Error al mover la sección hacia abajo"
+        },
+        "confirmations": {
+          "deleteSection": "¿Estás seguro de que quieres eliminar permanentemente esta sección? Esta acción no se puede deshacer.",
+          "disableSection": "¿Estás seguro de que quieres desactivar esta sección?"
+        },
+        "sectionForm": {
+          "title": {
+            "edit": "Editar Sección",
+            "create": "Añadir Nueva Sección"
+          },
+          "subtitle": {
+            "edit": "Modifica los detalles y configuración de la sección",
+            "create": "Crea una nueva sección para esta plantilla de entrevista"
+          },
+          "fields": {
+            "sectionName": "Nombre de la Sección",
+            "sectionType": "Tipo de Sección",
+            "introduction": "Introducción",
+            "goal": "Objetivo/Meta",
+            "aiPrompt": "Prompt de IA",
+            "legalNotice": "Aviso Legal"
+          },
+          "placeholders": {
+            "sectionName": "Ingresa el nombre de la sección",
+            "introduction": "Texto de introducción para esta sección",
+            "goal": "¿Qué debe lograr esta sección?",
+            "aiPrompt": "Prompt de IA para generar preguntas en esta sección",
+            "legalNotice": "Texto legal específico para esta sección (si es necesario)"
+          },
+          "labels": {
+            "allowAIQuestions": "Permitir que la IA genere preguntas adicionales",
+            "allowAIQuestionsDescription": "La IA puede crear preguntas adicionales para esta sección",
+            "allowAIOverride": "Permitir que la IA reformule preguntas existentes",
+            "allowAIOverrideDescription": "La IA puede modificar y mejorar la redacción de las preguntas predefinidas",
+            "legalNoticeDescription": "Aviso legal opcional que se mostrará para esta sección"
+          },
+          "buttons": {
+            "cancel": "Cancelar",
+            "update": "Actualizar Sección",
+            "add": "Añadir Sección"
+          }
+        },
+        "sectionsList": {
+          "addSection": "Añadir Sección",
+          "noSections": "No se han añadido secciones aún",
+          "noSectionsDescription": "Haz clic en \"Añadir Sección\" para crear tu primera sección",
+          "tooltips": {
+            "moveUp": "Mover sección hacia arriba en la lista",
+            "moveDown": "Mover sección hacia abajo en la lista",
+            "edit": "Editar detalles, introducción y objetivos de la sección",
+            "manageQuestions": "Gestionar preguntas para esta sección",
+            "disable": "Desactivar sección - no se usará en entrevistas",
+            "enable": "Activar sección - hacerla activa para entrevistas",
+            "delete": "Eliminar permanentemente esta sección y todas sus preguntas",
+            "alreadyTop": "Ya está en la parte superior",
+            "alreadyBottom": "Ya está en la parte inferior"
+          }
+        },
+        "questionsModal": {
+          "title": "Preguntas para \"{sectionName}\"",
+          "subtitle": "Gestiona las preguntas para esta sección",
+          "addQuestion": "Añadir Pregunta",
+          "noQuestions": "No se han añadido preguntas aún",
+          "noQuestionsDescription": "Haz clic en \"Añadir Pregunta\" para crear tu primera pregunta",
+          "questionsCount": "Preguntas ({count})",
+          "tooltips": {
+            "moveUp": "Mover pregunta hacia arriba en la lista",
+            "moveDown": "Mover pregunta hacia abajo en la lista",
+            "edit": "Editar texto, tipo y configuración de la pregunta",
+            "delete": "Eliminar permanentemente esta pregunta",
+            "alreadyTop": "Ya está en la parte superior",
+            "alreadyBottom": "Ya está en la parte inferior"
+          },
+          "close": "Cerrar",
+          "errors": {
+            "loadQuestions": "Error al cargar las preguntas",
+            "saveQuestion": "Error al guardar la pregunta",
+            "deleteQuestion": "Error al eliminar la pregunta",
+            "moveUp": "Error al mover la pregunta hacia arriba",
+            "moveDown": "Error al mover la pregunta hacia abajo"
+          },
+          "confirmations": {
+            "deleteQuestion": "¿Estás seguro de que quieres eliminar esta pregunta? Esta acción no se puede deshacer."
+          }
+        },
+        "questionForm": {
+          "title": {
+            "edit": "Editar Pregunta",
+            "create": "Añadir Nueva Pregunta"
+          },
+          "subtitle": {
+            "edit": "Modifica los detalles y configuración de la pregunta",
+            "create": "Crea una nueva pregunta para esta sección"
+          },
+          "fields": {
+            "questionName": "Nombre de la Pregunta",
+            "description": "Descripción",
+            "scope": "Alcance",
+            "dataType": "Tipo de Dato",
+            "questionCode": "Código de Pregunta (opcional)"
+          },
+          "placeholders": {
+            "questionName": "Ingresa el nombre de la pregunta",
+            "description": "Describe la pregunta",
+            "questionCode": "Código único para la pregunta (opcional)"
+          },
+          "labels": {
+            "allowAIFollowup": "Permitir que la IA genere preguntas de seguimiento",
+            "allowAIFollowupDescription": "La IA puede crear preguntas de seguimiento adicionales basadas en las respuestas del candidato"
+          },
+          "buttons": {
+            "cancel": "Cancelar",
+            "update": "Actualizar Pregunta",
+            "add": "Añadir Pregunta"
+          }
+        },
+        "sectionTypes": {
+          "EXPERIENCE": "Experiencia",
+          "EDUCATION": "Educación",
+          "PROJECT": "Proyecto",
+          "SOFT_SKILL": "Habilidad Blanda",
+          "GENERAL": "General"
+        },
+        "templateTypes": {
+          "EXTENDED_PROFILE": "Durante la inscripción a la oferta",
+          "POSITION_INTERVIEW": "Durante el proceso de selección"
+        },
+        "jobCategories": {
+          "all": "Todas",
+          "Technology": "Tecnología",
+          "Operations": "Operaciones",
+          "Sales": "Ventas",
+          "Marketing": "Marketing",
+          "Administration": "Administración",
+          "Human Resources": "Recursos Humanos",
+          "Finance": "Finanzas",
+          "Customer Service": "Atención al Cliente",
+          "Other": "Otras"
+        }
+    },
     "userSettings": {
       "title": "Configuración de Usuario",
       "myAccount": "Mi Cuenta",

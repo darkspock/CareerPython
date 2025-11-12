@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List
 
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum, InterviewModeEnum
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
@@ -22,7 +22,8 @@ class Interview:
     application_id: Optional[CandidateApplicationId] = None
     interview_template_id: Optional[InterviewTemplateId] = None
     workflow_stage_id: Optional[WorkflowStageId] = None  # Stage where this interview is conducted
-    interview_type: InterviewTypeEnum = InterviewTypeEnum.JOB_POSITION
+    interview_type: InterviewTypeEnum = InterviewTypeEnum.POSITION_INTERVIEW
+    interview_mode: Optional[InterviewModeEnum] = None  # Mode: AUTOMATIC, AI, MANUAL
     status: InterviewStatusEnum = InterviewStatusEnum.ENABLED
     title: Optional[str] = None
     description: Optional[str] = None
@@ -36,6 +37,8 @@ class Interview:
     score: Optional[float] = None  # Overall interview score (0-100)
     feedback: Optional[str] = None
     free_answers: Optional[str] = None  # Free text answers from candidate
+    link_token: Optional[str] = None  # Unique token for secure interview link access
+    link_expires_at: Optional[datetime] = None  # Expiration date for the interview link
 
     def start(self, started_by: Optional[str] = None) -> None:
         """Start the interview"""
@@ -191,11 +194,33 @@ class Interview:
 
         return None
 
+    def generate_link_token(self, expires_in_days: int = 30) -> None:
+        """Generate a unique token for secure interview link access"""
+        import secrets
+        self.link_token = secrets.token_urlsafe(32)  # 32 bytes = 43 characters base64
+        self.link_expires_at = datetime.utcnow() + timedelta(days=expires_in_days)
+        self.updated_at = datetime.utcnow()
+
+    def get_shareable_link(self, base_url: str) -> Optional[str]:
+        """Get the shareable link for this interview"""
+        if not self.link_token:
+            return None
+        return f"{base_url}/interviews/{self.id.value}/access?token={self.link_token}"
+
+    def is_link_valid(self) -> bool:
+        """Check if the interview link is still valid"""
+        if not self.link_token:
+            return False
+        if self.link_expires_at and self.link_expires_at < datetime.utcnow():
+            return False
+        return True
+
     @staticmethod
     def create(
             id: InterviewId,
             candidate_id: CandidateId,
-            interview_type: InterviewTypeEnum = InterviewTypeEnum.JOB_POSITION,
+            interview_type: InterviewTypeEnum = InterviewTypeEnum.POSITION_INTERVIEW,
+            interview_mode: Optional[InterviewModeEnum] = None,
             job_position_id: Optional[JobPositionId] = None,
             application_id: Optional[CandidateApplicationId] = None,
             interview_template_id: Optional[InterviewTemplateId] = None,
@@ -215,6 +240,7 @@ class Interview:
             interview_template_id=interview_template_id,
             workflow_stage_id=workflow_stage_id,
             interview_type=interview_type,
+            interview_mode=interview_mode,
             status=InterviewStatusEnum.ENABLED,
             title=title,
             description=description,

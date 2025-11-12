@@ -6,3 +6,4 @@ class CompanyUserRole(str, Enum):
     ADMIN = "admin"
     RECRUITER = "recruiter"
     VIEWER = "viewer"
+    GUEST = "guest"  # External interviewer role for interviews

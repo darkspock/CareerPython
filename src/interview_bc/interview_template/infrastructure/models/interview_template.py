@@ -6,7 +6,11 @@ from sqlalchemy import String, Enum, Text, DateTime, Index, JSON, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
-from src.interview_bc.interview_template.domain.enums import InterviewTemplateTypeEnum, InterviewTemplateStatusEnum
+from src.interview_bc.interview_template.domain.enums import (
+    InterviewTemplateTypeEnum,
+    InterviewTemplateStatusEnum,
+    ScoringModeEnum
+)
 from src.framework.domain.entities.base import generate_id
 from src.framework.domain.enums.job_category import JobCategoryEnum
 
@@ -30,6 +34,7 @@ class InterviewTemplateModel(Base):
                                                                 default=InterviewTemplateStatusEnum.DRAFT, index=True)
     job_category: Mapped[Optional[JobCategoryEnum]] = mapped_column(Enum(JobCategoryEnum), nullable=True, index=True)
     allow_ai_questions: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # Allow AI to generate additional questions
+    scoring_mode: Mapped[Optional[ScoringModeEnum]] = mapped_column(Enum(ScoringModeEnum), nullable=True, index=True)  # Scoring mode: DISTANCE or ABSOLUTE
     legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for compliance
 
     # Extended metadata

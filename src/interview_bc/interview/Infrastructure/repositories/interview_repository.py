@@ -51,6 +51,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             interview_template_id=interview_template_id,
             workflow_stage_id=workflow_stage_id,
             interview_type=model.interview_type,
+            interview_mode=model.interview_mode,
             status=model.status,
             title=model.title,
             description=model.description,
@@ -64,6 +65,8 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             score=model.score,
             feedback=model.feedback,
             free_answers=model.free_answers,
+            link_token=model.link_token,
+            link_expires_at=model.link_expires_at,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -94,6 +97,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             interview_template_id=interview_template_id,
             workflow_stage_id=workflow_stage_id,
             interview_type=domain.interview_type,
+            interview_mode=domain.interview_mode,
             status=domain.status,
             title=domain.title,
             description=domain.description,
@@ -107,6 +111,8 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             score=domain.score,
             feedback=domain.feedback,
             free_answers=domain.free_answers,
+            link_token=domain.link_token,
+            link_expires_at=domain.link_expires_at,
             created_at=domain.created_at,
             updated_at=domain.updated_at,
         )
@@ -150,6 +156,8 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 model.score = interview.score
                 model.feedback = interview.feedback
                 model.free_answers = interview.free_answers
+                model.link_token = interview.link_token
+                model.link_expires_at = interview.link_expires_at
                 model.updated_at = interview.updated_at or datetime.now()
                 model.updated_by = interview.updated_by
 
@@ -269,3 +277,32 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         """Count interviews for a candidate"""
         with self.database.get_session() as session:
             return session.query(InterviewModel).filter(InterviewModel.candidate_id == candidate_id).count()
+
+    def get_pending_interviews_by_candidate_and_stage(
+            self,
+            candidate_id: str,
+            workflow_stage_id: str
+    ) -> List[Interview]:
+        """Get pending interviews for a candidate in a specific workflow stage"""
+        with self.database.get_session() as session:
+            models = session.query(InterviewModel).filter(
+                InterviewModel.candidate_id == candidate_id,
+                InterviewModel.workflow_stage_id == workflow_stage_id,
+                InterviewModel.status == InterviewStatusEnum.ENABLED  # ENABLED = "PENDING" (see enum definition)
+            ).order_by(InterviewModel.created_at.desc()).all()
+            return [self._to_domain(model) for model in models]
+
+    def get_by_token(self, interview_id: str, token: str) -> Optional[Interview]:
+        """Get interview by ID and token for secure link access"""
+        with self.database.get_session() as session:
+            model = session.query(InterviewModel).filter(
+                InterviewModel.id == interview_id,
+                InterviewModel.link_token == token
+            ).first()
+            if not model:
+                return None
+            interview = self._to_domain(model)
+            # Validate that the link is still valid
+            if not interview.is_link_valid():
+                return None
+            return interview

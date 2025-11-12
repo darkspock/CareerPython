@@ -3,7 +3,11 @@ from typing import Optional, List, Dict, Any
 
 from src.company_bc.company.domain.value_objects import CompanyId
 from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
-from src.interview_bc.interview_template.domain.enums import InterviewTemplateStatusEnum, InterviewTemplateTypeEnum
+from src.interview_bc.interview_template.domain.enums import (
+    InterviewTemplateStatusEnum,
+    InterviewTemplateTypeEnum,
+    ScoringModeEnum
+)
 from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import \
     InterviewTemplateRepositoryInterface
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
@@ -22,6 +26,7 @@ class CreateInterviewTemplateCommand(Command):
     template_type: InterviewTemplateTypeEnum = InterviewTemplateTypeEnum.EXTENDED_PROFILE
     job_category: Optional[JobCategoryEnum] = None
     allow_ai_questions: bool = False
+    scoring_mode: Optional[ScoringModeEnum] = None
     legal_notice: Optional[str] = None
     created_by: str = ""
     tags: Optional[List[str]] = None
@@ -43,6 +48,7 @@ class CreateInterviewTemplateCommandHandler(CommandHandler[CreateInterviewTempla
             template_type=command.template_type,
             job_category=command.job_category,
             allow_ai_questions=command.allow_ai_questions,
+            scoring_mode=command.scoring_mode,
             legal_notice=command.legal_notice,
             tags=command.tags or [],
             metadata=command.template_metadata or {},

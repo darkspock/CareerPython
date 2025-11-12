@@ -39,3 +39,8 @@ class InterviewAlreadyFinishedError(InterviewDomainException):
 class InterviewNotStartedError(InterviewDomainException):
     """Raised when trying to perform actions on non-started interview"""
     pass
+
+
+class InterviewPermissionDeniedError(InterviewDomainException):
+    """Raised when user doesn't have permission to perform an action on an interview"""
+    pass

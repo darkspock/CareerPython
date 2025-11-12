@@ -13,6 +13,8 @@ from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
+from src.shared_bc.customization.field_validation.application.services.interview_validation_service import InterviewValidationService
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 
 
 @dataclass(frozen=True)
@@ -30,12 +32,14 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
         repository: CompanyCandidateRepositoryInterface,
         workflow_stage_repository: WorkflowStageRepositoryInterface,
         workflow_repository: WorkflowRepositoryInterface,
-        validation_service: StagePhaseValidationService
+        validation_service: StagePhaseValidationService,
+        interview_validation_service: InterviewValidationService
     ):
         self._repository = repository
         self._workflow_stage_repository = workflow_stage_repository
         self._workflow_repository = workflow_repository
         self._validation_service = validation_service
+        self._interview_validation_service = interview_validation_service
 
     def execute(self, command: ChangeStageCommand) -> None:
         """Handle the change stage command with automatic phase transition
@@ -54,6 +58,24 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
         target_stage = self._workflow_stage_repository.get_by_id(command.new_stage_id)
         if not target_stage:
             raise ValueError(f"Stage {command.new_stage_id.value} not found")
+
+        # Validate no pending interviews in current stage before allowing stage change
+        current_stage_id = company_candidate.current_stage_id
+        if current_stage_id:
+            candidate_id = CandidateId.from_string(company_candidate.candidate_id.value)
+            has_pending = self._interview_validation_service.has_pending_interviews(
+                candidate_id=candidate_id,
+                workflow_stage_id=current_stage_id
+            )
+            if has_pending:
+                pending_count = self._interview_validation_service.get_pending_interviews_count(
+                    candidate_id=candidate_id,
+                    workflow_stage_id=current_stage_id
+                )
+                raise ValueError(
+                    f"Cannot change stage: There are {pending_count} pending interview(s) in the current stage. "
+                    "Please complete or cancel all pending interviews before changing stages."
+                )
 
         # Validate workflow has phase_id using Domain Service
         try:

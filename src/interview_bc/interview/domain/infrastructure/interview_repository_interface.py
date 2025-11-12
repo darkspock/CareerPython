@@ -90,3 +90,17 @@ class InterviewRepositoryInterface(ABC):
     def count_by_candidate(self, candidate_id: str) -> int:
         """Count interviews for a candidate"""
         pass
+
+    @abstractmethod
+    def get_pending_interviews_by_candidate_and_stage(
+            self,
+            candidate_id: str,
+            workflow_stage_id: str
+    ) -> List[Interview]:
+        """Get pending interviews for a candidate in a specific workflow stage"""
+        pass
+
+    @abstractmethod
+    def get_by_token(self, interview_id: str, token: str) -> Optional[Interview]:
+        """Get interview by ID and token for secure link access"""
+        pass
