@@ -133,7 +133,8 @@ class InterviewController:
     def create_interview(
             self,
             candidate_id: str,
-            interview_type: str = InterviewTypeEnum.JOB_POSITION.value,
+            interview_type: str,
+            interview_mode: str,
             job_position_id: Optional[str] = None,
             application_id: Optional[str] = None,
             interview_template_id: Optional[str] = None,
@@ -147,6 +148,7 @@ class InterviewController:
         try:
             command = CreateInterviewCommand(
                 candidate_id=candidate_id,
+                interview_mode=interview_mode,
                 interview_type=interview_type,
                 job_position_id=job_position_id,
                 application_id=application_id,
@@ -166,8 +168,9 @@ class InterviewController:
             }
 
         except Exception as e:
-            logger.error(f"Error creating interview: {e}")
-            raise HTTPException(status_code=500, detail="Failed to create interview")
+            logger.error(f"Error creating interview: {e}", exc_info=True)
+            error_message = str(e) if str(e) else "Failed to create interview"
+            raise HTTPException(status_code=500, detail=error_message)
 
     def start_interview(
             self,

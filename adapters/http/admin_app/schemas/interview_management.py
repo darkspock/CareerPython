@@ -15,6 +15,7 @@ class InterviewCreateRequest(BaseModel):
     """Request schema for creating an interview"""
     candidate_id: str = Field(..., description="ID of the candidate")
     interview_type: str = Field(default=InterviewTypeEnum.JOB_POSITION.value, description="Type of interview")
+    interview_mode: str = Field(..., description="Interview mode (AUTOMATIC, AI, MANUAL)")
     job_position_id: Optional[str] = Field(None, description="ID of the job position")
     application_id: Optional[str] = Field(None, description="ID of the candidate application")
     interview_template_id: Optional[str] = Field(None, description="ID of the interview template")

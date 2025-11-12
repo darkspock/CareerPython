@@ -20,8 +20,8 @@ from src.framework.application.command_bus import Command, CommandHandler
 @dataclass
 class CreateInterviewCommand(Command):
     candidate_id: str
+    interview_mode: str  # Required field
     interview_type: str = InterviewTypeEnum.JOB_POSITION.value
-    interview_mode: Optional[str] = None
     job_position_id: Optional[str] = None
     application_id: Optional[str] = None
     interview_template_id: Optional[str] = None
@@ -62,12 +62,14 @@ class CreateInterviewCommandHandler(CommandHandler[CreateInterviewCommand]):
             workflow_stage_id = WorkflowStageId.from_string(command.workflow_stage_id)
 
         # Convert interview type
-        interview_type = InterviewTypeEnum(command.interview_type)
+        # Handle RESUME_ENHANCEMENT as alias for EXTENDED_PROFILE
+        interview_type_str = command.interview_type
+        if interview_type_str == "RESUME_ENHANCEMENT":
+            interview_type_str = "EXTENDED_PROFILE"
+        interview_type = InterviewTypeEnum(interview_type_str)
 
-        # Convert interview mode
-        interview_mode = None
-        if command.interview_mode:
-            interview_mode = InterviewModeEnum(command.interview_mode)
+        # Convert interview mode (required)
+        interview_mode = InterviewModeEnum(command.interview_mode)
 
         # Parse scheduled datetime
         scheduled_at = None

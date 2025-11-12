@@ -574,6 +574,12 @@ class Container(containers.DeclarativeContainer):
         stage_repository=workflow_stage_repository
     )
 
+    # InterviewValidation Service (needed by change_stage_command_handler)
+    interview_validation_service = providers.Factory(
+        InterviewValidationService,
+        interview_repository=interview_repository
+    )
+
     # New Customization Repositories
     entity_customization_repository = providers.Factory(
         EntityCustomizationRepository,
@@ -1595,12 +1601,6 @@ class Container(containers.DeclarativeContainer):
         FieldValidationService,
         validation_rule_repository=validation_rule_repository,
         custom_field_repository=new_custom_field_repository
-    )
-
-    # InterviewValidation Service
-    interview_validation_service = providers.Factory(
-        InterviewValidationService,
-        interview_repository=interview_repository
     )
 
     # StagePermission Service (Phase 5)

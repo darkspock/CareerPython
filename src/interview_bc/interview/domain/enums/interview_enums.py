@@ -13,6 +13,9 @@ class InterviewTypeEnum(Enum):
     EXTENDED_PROFILE = "EXTENDED_PROFILE"
     POSITION_INTERVIEW = "POSITION_INTERVIEW"
     CUSTOM = "CUSTOM"
+    TECHNICAL = "TECHNICAL"
+    BEHAVIORAL = "BEHAVIORAL"
+    CULTURAL_FIT = "CULTURAL_FIT"
     # Legacy values - kept for backward compatibility, deprecated
     JOB_POSITION = "JOB_POSITION"  # Deprecated: use POSITION_INTERVIEW
     PLATFORM_ONBOARDING = "PLATFORM_ONBOARDING"  # Deprecated

@@ -798,6 +798,7 @@ const InterviewTemplateEditor: React.FC = () => {
               section={editingSection}
               onSave={handleSaveSection}
               onCancel={handleCancelSectionForm}
+              templateAllowAIQuestions={formData.allow_ai_questions}
             />
           </Dialog>
 
@@ -822,9 +823,10 @@ interface SectionFormModalProps {
   section: InterviewTemplateSection | null;
   onSave: (sectionData: Omit<InterviewTemplateSection, 'id' | 'interview_template_id'>) => void;
   onCancel: () => void;
+  templateAllowAIQuestions: boolean;
 }
 
-const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, onCancel }) => {
+const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, onCancel, templateAllowAIQuestions }) => {
   const [formData, setFormData] = useState({
     name: section?.name || '',
     intro: section?.intro || '',
@@ -910,56 +912,60 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">AI Prompt</label>
-          <Textarea
-            value={formData.prompt}
-            onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-            className="font-mono text-sm"
-            rows={6}
-            placeholder="AI prompt for generating questions in this section"
-          />
-        </div>
-
-        <div className="space-y-3">
-          <div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="allow_ai_questions"
-                checked={formData.allow_ai_questions}
-                onCheckedChange={(checked) => setFormData({ ...formData, allow_ai_questions: checked === true })}
+        {templateAllowAIQuestions && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">AI Prompt</label>
+              <Textarea
+                value={formData.prompt}
+                onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
+                className="font-mono text-sm"
+                rows={6}
+                placeholder="AI prompt for generating questions in this section"
               />
-              <label
-                htmlFor="allow_ai_questions"
-                className="text-sm font-medium text-gray-700 cursor-pointer"
-              >
-                Allow AI to generate additional questions
-              </label>
             </div>
-            <p className="mt-1 text-xs text-gray-500 ml-6">
-              AI can create additional questions for this section
-            </p>
-          </div>
 
-          <div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="allow_ai_override_questions"
-                checked={formData.allow_ai_override_questions}
-                onCheckedChange={(checked) => setFormData({ ...formData, allow_ai_override_questions: checked === true })}
-              />
-              <label
-                htmlFor="allow_ai_override_questions"
-                className="text-sm font-medium text-gray-700 cursor-pointer"
-              >
-                Allow AI to reformulate existing questions
-              </label>
+            <div className="space-y-3">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allow_ai_questions"
+                    checked={formData.allow_ai_questions}
+                    onCheckedChange={(checked) => setFormData({ ...formData, allow_ai_questions: checked === true })}
+                  />
+                  <label
+                    htmlFor="allow_ai_questions"
+                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                  >
+                    Allow AI to generate additional questions
+                  </label>
+                </div>
+                <p className="mt-1 text-xs text-gray-500 ml-6">
+                  AI can create additional questions for this section
+                </p>
+              </div>
+
+              <div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allow_ai_override_questions"
+                    checked={formData.allow_ai_override_questions}
+                    onCheckedChange={(checked) => setFormData({ ...formData, allow_ai_override_questions: checked === true })}
+                  />
+                  <label
+                    htmlFor="allow_ai_override_questions"
+                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                  >
+                    Allow AI to reformulate existing questions
+                  </label>
+                </div>
+                <p className="mt-1 text-xs text-gray-500 ml-6">
+                  AI can modify and improve the wording of predefined questions
+                </p>
+              </div>
             </div>
-            <p className="mt-1 text-xs text-gray-500 ml-6">
-              AI can modify and improve the wording of predefined questions
-            </p>
-          </div>
-        </div>
+          </>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Legal Notice</label>

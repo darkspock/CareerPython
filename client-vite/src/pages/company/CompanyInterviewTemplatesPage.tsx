@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, Search, Edit, Trash2, Eye, Power, PowerOff } from 'lucide-react';
 import { companyInterviewTemplateService } from '../../services/companyInterviewTemplateService';
 import type { InterviewTemplate, TemplateFilters } from '../../services/companyInterviewTemplateService';
@@ -32,6 +33,7 @@ import { toast } from 'react-toastify';
 
 const CompanyInterviewTemplatesPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [templates, setTemplates] = useState<InterviewTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,9 +43,15 @@ const CompanyInterviewTemplatesPage: React.FC = () => {
   });
 
   const templateTypes = [
-    { value: 'EXTENDED_PROFILE', label: 'Extended Profile' },
-    { value: 'POSITION_INTERVIEW', label: 'Position Interview' }
+    { value: 'EXTENDED_PROFILE', label: t('company.interviewTemplateEditor.templateTypes.EXTENDED_PROFILE') },
+    { value: 'POSITION_INTERVIEW', label: t('company.interviewTemplateEditor.templateTypes.POSITION_INTERVIEW') }
   ];
+  
+  // Helper function to get label for template type
+  const getTemplateTypeLabel = (type: string) => {
+    const templateType = templateTypes.find(t => t.value === type);
+    return templateType ? templateType.label : type;
+  };
 
   const statusOptions = [
     { value: 'ENABLED', label: 'Enabled' },
@@ -234,7 +242,7 @@ const CompanyInterviewTemplatesPage: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {template.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        {getTemplateTypeLabel(template.type)}
                       </Badge>
                     </TableCell>
                     <TableCell>

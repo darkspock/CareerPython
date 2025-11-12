@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Eye, Calendar, User, Briefcase, Clock, CheckCircle2 } from 'lucide-react';
 import { companyInterviewService } from '../../services/companyInterviewService';
 import type { Interview, InterviewFilters, InterviewStatsResponse } from '../../services/companyInterviewService';
+import { companyCandidateService } from '../../services/companyCandidateService';
+import { PositionService } from '../../services/positionService';
+import { companyInterviewTemplateService } from '../../services/companyInterviewTemplateService';
+import type { CompanyCandidate } from '../../types/companyCandidate';
+import type { Position } from '../../types/position';
+import type { InterviewTemplate } from '../../services/companyInterviewTemplateService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -34,15 +40,95 @@ const CompanyInterviewsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
 
+  // Maps for candidate, position, and template names (using objects instead of Maps for React state)
+  const [candidateMap, setCandidateMap] = useState<Record<string, string>>({});
+  const [positionMap, setPositionMap] = useState<Record<string, string>>({});
+  const [templateMap, setTemplateMap] = useState<Record<string, string>>({});
+
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
+  const getCompanyId = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.company_id;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     loadInterviews();
     loadStats();
+    loadCandidateAndPositionData();
   }, [currentPage, statusFilter, typeFilter]);
+
+  const loadCandidateAndPositionData = async () => {
+    const companyId = getCompanyId();
+    if (!companyId) return;
+
+    try {
+      // Load candidates
+      const candidates = await companyCandidateService.listByCompany(companyId);
+      const candidateMapData: Record<string, string> = {};
+      candidates.forEach((candidate) => {
+        if (candidate.candidate_name && candidate.candidate_id) {
+          candidateMapData[candidate.candidate_id] = candidate.candidate_name;
+        }
+      });
+      console.log('Candidate map loaded:', candidateMapData);
+      setCandidateMap(candidateMapData);
+
+      // Load positions (both active and inactive to cover all interviews)
+      // Load in batches since max page_size is 100
+      const positionMapData: Record<string, string> = {};
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const positionsData = await PositionService.getPositions({
+          company_id: companyId,
+          page: page,
+          page_size: 100, // Max allowed page size
+        });
+        
+        positionsData.positions.forEach((position) => {
+          if (position.id && position.title) {
+            positionMapData[position.id] = position.title;
+          }
+        });
+        
+        // Check if there are more pages
+        hasMore = positionsData.positions.length === 100 && page * 100 < positionsData.total;
+        page++;
+      }
+      
+      console.log('Position map loaded:', positionMapData);
+      console.log('Total positions in map:', Object.keys(positionMapData).length);
+      setPositionMap(positionMapData);
+
+      // Load interview templates (load all, not just enabled, to cover all interviews)
+      const templatesData = await companyInterviewTemplateService.listTemplates({
+        page_size: 100, // Max allowed page size
+      });
+      const templateMapData: Record<string, string> = {};
+      templatesData.forEach((template) => {
+        if (template.id && template.name) {
+          templateMapData[template.id] = template.name;
+        }
+      });
+      console.log('Template map loaded:', templateMapData);
+      console.log('Total templates in map:', Object.keys(templateMapData).length);
+      setTemplateMap(templateMapData);
+    } catch (err) {
+      console.error('Error loading candidate/position/template data:', err);
+      // Don't show error, just log it
+    }
+  };
 
   const loadInterviews = async () => {
     try {
@@ -65,6 +151,13 @@ const CompanyInterviewsPage: React.FC = () => {
       const response = await companyInterviewService.listInterviews(filters);
       setInterviews(response.interviews);
       setTotal(response.total);
+      
+      // Debug: log interview data
+      console.log('Interviews loaded:', response.interviews.map(i => ({ 
+        id: i.id, 
+        title: i.title,
+        job_position_id: i.job_position_id 
+      })));
     } catch (err: any) {
       setError(err.message || 'Error al cargar las entrevistas');
       console.error('Error loading interviews:', err);
@@ -291,6 +384,7 @@ const CompanyInterviewsPage: React.FC = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Candidato</TableHead>
+                    <TableHead>Entrevista</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Programada</TableHead>
@@ -305,7 +399,20 @@ const CompanyInterviewsPage: React.FC = () => {
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-gray-400" />
-                          {interview.candidate_id}
+                          {candidateMap[interview.candidate_id] || interview.candidate_id}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          {interview.title && interview.title.trim() ? (
+                            <span className="font-medium text-gray-900">{interview.title}</span>
+                          ) : interview.interview_template_id && templateMap[interview.interview_template_id] ? (
+                            <span className="text-sm text-gray-500 italic">
+                              {templateMap[interview.interview_template_id]}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400 italic">Sin título</span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -324,7 +431,7 @@ const CompanyInterviewsPage: React.FC = () => {
                         {interview.job_position_id ? (
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Briefcase className="w-4 h-4" />
-                            {interview.job_position_id}
+                            {positionMap[interview.job_position_id] || interview.job_position_id}
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400">N/A</span>

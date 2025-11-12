@@ -75,6 +75,7 @@ import CompanyInterviewTemplatesPage from './pages/company/CompanyInterviewTempl
 import CompanyInterviewsPage from './pages/company/CompanyInterviewsPage';
 import CompanyInterviewDetailPage from './pages/company/CompanyInterviewDetailPage';
 import CreateInterviewPage from './pages/company/CreateInterviewPage';
+import EditInterviewPage from './pages/company/EditInterviewPage';
 import PositionsListPage from './pages/company/PositionsListPage';
 import JobPositionWorkflowsSettingsPage from './pages/company/JobPositionWorkflowsSettingsPage.tsx';
 import CreateJobPositionWorkflowPage from './pages/company/CreateJobPositionWorkflowPage';
@@ -249,7 +250,7 @@ function App() {
                           <Route path="interviews" element={<CompanyInterviewsPage />} />
                           <Route path="interviews/:interviewId" element={<CompanyInterviewDetailPage />} />
                           <Route path="interviews/create" element={<CreateInterviewPage />} />
-                          <Route path="interviews/:interviewId/edit" element={<div>Edit Interview (Coming Soon)</div>} />
+                          <Route path="interviews/:interviewId/edit" element={<EditInterviewPage />} />
                           <Route path="users" element={<UsersManagementPage />} />
                           <Route index element={<CompanyDashboardPage />} />
                         </Route>

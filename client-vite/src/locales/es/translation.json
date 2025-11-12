@@ -246,7 +246,7 @@
         },
         "fields": {
           "templateName": "Nombre de la Plantilla",
-          "visibility": "Visibilidad",
+          "visibility": "Tipo",
           "jobCategory": "Aplicar a Categoría de Trabajo",
           "tags": "Etiquetas",
           "introduction": "Introducción",
@@ -400,8 +400,8 @@
           "GENERAL": "General"
         },
         "templateTypes": {
-          "EXTENDED_PROFILE": "Durante la inscripción a la oferta",
-          "POSITION_INTERVIEW": "Durante el proceso de selección"
+          "EXTENDED_PROFILE": "Mejora de CV",
+          "POSITION_INTERVIEW": "Proceso de selección"
         },
         "jobCategories": {
           "all": "Todas",

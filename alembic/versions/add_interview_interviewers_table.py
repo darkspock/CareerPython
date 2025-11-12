@@ -25,6 +25,10 @@ def upgrade() -> None:
     inspector = inspect(conn)
     
     # Create interview_interviewers table
+    # Check that interviews table exists first
+    if 'interviews' not in inspector.get_table_names():
+        raise Exception("Cannot create interview_interviewers table: interviews table does not exist. Please run migration 4072171060a4 first.")
+    
     if 'interview_interviewers' not in inspector.get_table_names():
         op.create_table(
             'interview_interviewers',

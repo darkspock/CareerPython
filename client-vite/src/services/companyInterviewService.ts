@@ -2,7 +2,7 @@
 import { ApiClient } from '../lib/api';
 
 export type InterviewStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PENDING';
-export type InterviewType = 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'TECHNICAL' | 'BEHAVIORAL' | 'CULTURAL_FIT';
+export type InterviewType = 'RESUME_ENHANCEMENT' | 'POSITION_INTERVIEW' | 'TECHNICAL' | 'BEHAVIORAL' | 'CULTURAL_FIT';
 
 export type Interview = {
   id: string;
@@ -69,9 +69,12 @@ export type InterviewFilters = {
   offset?: number;
 };
 
+export type InterviewMode = 'AUTOMATIC' | 'AI' | 'MANUAL';
+
 export type CreateInterviewRequest = {
   candidate_id: string;
   interview_type: InterviewType;
+  interview_mode: InterviewMode;
   job_position_id?: string;
   application_id?: string;
   interview_template_id?: string;

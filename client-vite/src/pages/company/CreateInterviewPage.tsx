@@ -32,6 +32,7 @@ export default function CreateInterviewPage() {
   const [formData, setFormData] = useState<CreateInterviewRequest>({
     candidate_id: '',
     interview_type: 'POSITION_INTERVIEW',
+    interview_mode: 'MANUAL',
     job_position_id: undefined,
     interview_template_id: undefined,
     title: '',
@@ -48,10 +49,16 @@ export default function CreateInterviewPage() {
 
   const interviewTypes = [
     { value: 'POSITION_INTERVIEW', label: 'Job Position Interview' },
-    { value: 'EXTENDED_PROFILE', label: 'Extended Profile' },
+    { value: 'RESUME_ENHANCEMENT', label: 'Resume Enhancement' },
     { value: 'TECHNICAL', label: 'Technical Interview' },
     { value: 'BEHAVIORAL', label: 'Behavioral Interview' },
     { value: 'CULTURAL_FIT', label: 'Cultural Fit Interview' },
+  ];
+
+  const interviewModes = [
+    { value: 'AUTOMATIC', label: 'Automático' },
+    { value: 'AI', label: 'IA' },
+    { value: 'MANUAL', label: 'Manual' },
   ];
 
   const getCompanyId = () => {
@@ -134,6 +141,11 @@ export default function CreateInterviewPage() {
 
     if (!formData.interview_type) {
       setError('El tipo de entrevista es requerido');
+      return;
+    }
+
+    if (!formData.interview_mode) {
+      setError('El modo de entrevista es requerido');
       return;
     }
 
@@ -239,6 +251,29 @@ export default function CreateInterviewPage() {
                   {interviewTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="interview_mode" className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4" />
+                Modo de Entrevista *
+              </Label>
+              <Select
+                value={formData.interview_mode}
+                onValueChange={(value) => setFormData({ ...formData, interview_mode: value as 'AUTOMATIC' | 'AI' | 'MANUAL' })}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un modo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {interviewModes.map((mode) => (
+                    <SelectItem key={mode.value} value={mode.value}>
+                      {mode.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
