@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, Calendar, User, Briefcase, Clock, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, Eye, Calendar, User, Briefcase, Clock, CheckCircle2, ExternalLink, Copy } from 'lucide-react';
 import { companyInterviewService } from '../../services/companyInterviewService';
 import type { Interview, InterviewFilters, InterviewStatsResponse } from '../../services/companyInterviewService';
 import { companyCandidateService } from '../../services/companyCandidateService';
@@ -28,6 +28,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'react-toastify';
 
 const CompanyInterviewsPage: React.FC = () => {
@@ -190,6 +196,61 @@ const CompanyInterviewsPage: React.FC = () => {
     navigate('/company/interviews/create');
   };
 
+  const handleGenerateAndOpenLink = async (interviewId: string) => {
+    try {
+      const response = await companyInterviewService.generateInterviewLink(interviewId);
+      let linkToOpen: string;
+      
+      if (response.link_token) {
+        // Construct the link using the answer page route
+        const baseUrl = window.location.origin;
+        linkToOpen = `${baseUrl}/interviews/${interviewId}/answer?token=${response.link_token}`;
+      } else if (response.link) {
+        // Backend returns link with /access, convert to /answer
+        linkToOpen = response.link.replace('/access', '/answer');
+      } else {
+        toast.error('No se pudo generar el link');
+        return;
+      }
+      
+      window.open(linkToOpen, '_blank');
+      toast.success('Link generado y abierto');
+    } catch (err: any) {
+      toast.error(err.message || 'Error al generar el link');
+      console.error('Error generating link:', err);
+    }
+  };
+
+  const handleCopyLink = async (interviewId: string, linkToken?: string) => {
+    try {
+      let linkToCopy: string;
+      
+      if (linkToken) {
+        const baseUrl = window.location.origin;
+        linkToCopy = `${baseUrl}/interviews/${interviewId}/answer?token=${linkToken}`;
+      } else {
+        // Generate link first
+        const response = await companyInterviewService.generateInterviewLink(interviewId);
+        if (response.link_token) {
+          const baseUrl = window.location.origin;
+          linkToCopy = `${baseUrl}/interviews/${interviewId}/answer?token=${response.link_token}`;
+        } else if (response.link) {
+          // Backend returns link with /access, convert to /answer
+          linkToCopy = response.link.replace('/access', '/answer');
+        } else {
+          toast.error('No se pudo generar el link');
+          return;
+        }
+      }
+      
+      await navigator.clipboard.writeText(linkToCopy);
+      toast.success('Link copiado al portapapeles');
+    } catch (err: any) {
+      toast.error(err.message || 'Error al copiar el link');
+      console.error('Error copying link:', err);
+    }
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     try {
@@ -226,7 +287,8 @@ const CompanyInterviewsPage: React.FC = () => {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <TooltipProvider delayDuration={100} skipDelayDuration={50}>
+      <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -448,15 +510,55 @@ const CompanyInterviewsPage: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewInterview(interview.id)}
-                          className="flex items-center gap-2"
-                        >
-                          <Eye className="w-4 h-4" />
-                          Ver
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewInterview(interview.id)}
+                                className="flex items-center justify-center"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Ver entrevista</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleGenerateAndOpenLink(interview.id)}
+                                className="flex items-center justify-center"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Responder entrevista</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          {interview.link_token && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopyLink(interview.id, interview.link_token)}
+                                  className="flex items-center justify-center"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Copiar link</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -489,7 +591,8 @@ const CompanyInterviewsPage: React.FC = () => {
           )}
         </>
       )}
-    </div>
+      </div>
+    </TooltipProvider>
   );
 };
 

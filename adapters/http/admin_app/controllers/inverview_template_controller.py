@@ -130,6 +130,7 @@ class InterviewTemplateController:
             template_type=template_data.type,
             job_category=template_data.job_category,
             allow_ai_questions=template_data.allow_ai_questions or False,
+            scoring_mode=template_data.scoring_mode,
             legal_notice=template_data.legal_notice,
             created_by=current_admin_id,
             tags=template_data.tags,
@@ -213,6 +214,7 @@ class InterviewTemplateController:
                     template_type=template_data.type,
                     job_category=template_data.job_category,
                     allow_ai_questions=template_data.allow_ai_questions or False,
+                    scoring_mode=template_data.scoring_mode,
                     legal_notice=template_data.legal_notice
                 )
                 template_repo.update(existing_template)
@@ -227,6 +229,7 @@ class InterviewTemplateController:
             type=template_data.type,
             job_category=template_data.job_category,
             allow_ai_questions=template_data.allow_ai_questions,
+            scoring_mode=template_data.scoring_mode,
             legal_notice=template_data.legal_notice,
             tags=template_data.tags,
             template_metadata=template_data.template_metadata

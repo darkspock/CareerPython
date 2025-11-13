@@ -125,6 +125,7 @@ class InterviewTemplateSectionBase(BaseModel):
     intro: Optional[str] = None
     prompt: Optional[str] = None
     goal: Optional[str] = None
+    section: Optional[InterviewTemplateSectionEnum] = None
     sort_order: int = 0
     allow_ai_questions: Optional[bool] = False
     allow_ai_override_questions: Optional[bool] = False
@@ -161,6 +162,7 @@ class InterviewTemplateSectionResponse(InterviewTemplateSectionBase):
             intro=dto.intro,
             prompt=dto.prompt,
             goal=dto.goal,
+            section=dto.section,
             sort_order=dto.sort_order,
             allow_ai_questions=dto.allow_ai_questions,
             allow_ai_override_questions=dto.allow_ai_override_questions,

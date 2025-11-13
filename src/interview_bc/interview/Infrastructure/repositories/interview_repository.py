@@ -133,9 +133,14 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
 
     def update(self, interview: Interview) -> Interview:
         """Update an existing interview"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         with self.database.get_session() as session:
             model = session.query(InterviewModel).filter(InterviewModel.id == interview.id.value).first()
             if model:
+                logger.debug(f"Updating interview {interview.id.value}. Link token before: {model.link_token}, after: {interview.link_token}")
+                
                 # Update all fields from the entity
                 model.candidate_id = interview.candidate_id.value
                 model.job_position_id = interview.job_position_id.value if interview.job_position_id else None
@@ -159,10 +164,15 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 model.link_token = interview.link_token
                 model.link_expires_at = interview.link_expires_at
                 model.updated_at = interview.updated_at or datetime.now()
-                model.updated_by = interview.updated_by
+                # Handle updated_by safely - it may not exist in the entity
+                if hasattr(interview, 'updated_by'):
+                    model.updated_by = interview.updated_by
+                # Keep existing updated_by if entity doesn't have it
+                # (don't overwrite with None)
 
                 session.commit()
                 session.refresh(model)
+                logger.debug(f"Interview {interview.id.value} updated. Link token in DB: {model.link_token}")
                 return self._to_domain(model)
             raise ValueError(f"Interview with id {interview.id.value} not found")
 
@@ -294,15 +304,29 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
 
     def get_by_token(self, interview_id: str, token: str) -> Optional[Interview]:
         """Get interview by ID and token for secure link access"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         with self.database.get_session() as session:
+            # First check if interview exists
             model = session.query(InterviewModel).filter(
-                InterviewModel.id == interview_id,
-                InterviewModel.link_token == token
+                InterviewModel.id == interview_id
             ).first()
+            
             if not model:
+                logger.warning(f"Interview {interview_id} not found")
                 return None
+            
+            # Check if token matches
+            if model.link_token != token:
+                logger.warning(f"Token mismatch for interview {interview_id}. Expected: {model.link_token}, Got: {token}")
+                return None
+            
             interview = self._to_domain(model)
+            
             # Validate that the link is still valid
             if not interview.is_link_valid():
+                logger.warning(f"Link expired for interview {interview_id}. Expires at: {interview.link_expires_at}")
                 return None
+            
             return interview

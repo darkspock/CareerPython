@@ -12,6 +12,7 @@ class InterviewTemplateQuestionDataTypeEnum(Enum):
     DATE = "date"
     SHORT_STRING = "short_string"
     LARGE_STRING = "large_string"
+    SCORING = "scoring"
 
 
 class InterviewTemplateQuestionScopeEnum(Enum):

@@ -25,6 +25,8 @@ export type Interview = {
   created_at: string;
   updated_at: string;
   created_by?: string;
+  link_token?: string;
+  shareable_link?: string;
 };
 
 export type InterviewListResponse = {
@@ -219,6 +221,21 @@ export const companyInterviewService = {
   async getInterviewScoreSummary(interviewId: string): Promise<InterviewScoreSummaryResponse> {
     return ApiClient.authenticatedRequest<InterviewScoreSummaryResponse>(
       `/api/company/interviews/${interviewId}/score-summary`
+    );
+  },
+
+  /**
+   * Generate a shareable link for an interview
+   */
+  async generateInterviewLink(
+    interviewId: string,
+    expiresInDays: number = 30
+  ): Promise<{ message: string; status: string; link?: string; link_token?: string; interview_id?: string; expires_in_days?: number; expires_at?: string }> {
+    return ApiClient.authenticatedRequest<{ message: string; status: string; link?: string; link_token?: string; interview_id?: string; expires_in_days?: number; expires_at?: string }>(
+      `/api/company/interviews/${interviewId}/generate-link?expires_in_days=${expiresInDays}`,
+      {
+        method: 'POST',
+      }
     );
   },
 };

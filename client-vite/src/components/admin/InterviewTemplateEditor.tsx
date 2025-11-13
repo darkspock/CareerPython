@@ -40,10 +40,11 @@ interface InterviewTemplate {
   prompt?: string;
   goal?: string;
   status: 'ENABLED' | 'DRAFT' | 'DISABLED';
-  type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW';
+  type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
   job_category: string | null;
   tags?: string[];
   allow_ai_questions?: boolean;
+  scoring_mode?: 'DISTANCE' | 'ABSOLUTE' | null;
   legal_notice?: string;
   sections?: InterviewTemplateSection[];
 }
@@ -83,10 +84,11 @@ const InterviewTemplateEditor: React.FC = () => {
     intro: string;
     prompt: string;
     goal: string;
-    type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW';
+    type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
     job_category: string | null;
     tags: string[];
     allow_ai_questions: boolean;
+    scoring_mode: 'DISTANCE' | 'ABSOLUTE' | null;
     legal_notice: string;
   }>({
     name: '',
@@ -97,6 +99,7 @@ const InterviewTemplateEditor: React.FC = () => {
     job_category: null,
     tags: [],
     allow_ai_questions: false,
+    scoring_mode: null,
     legal_notice: ''
   });
 
@@ -111,7 +114,9 @@ const InterviewTemplateEditor: React.FC = () => {
 
   const templateTypes = [
     { value: 'EXTENDED_PROFILE', label: t('company.interviewTemplateEditor.templateTypes.EXTENDED_PROFILE') },
-    { value: 'POSITION_INTERVIEW', label: t('company.interviewTemplateEditor.templateTypes.POSITION_INTERVIEW') }
+    { value: 'POSITION_INTERVIEW', label: t('company.interviewTemplateEditor.templateTypes.POSITION_INTERVIEW') },
+    { value: 'SCREENING', label: t('company.interviewTemplateEditor.templateTypes.SCREENING') || 'Screening' },
+    { value: 'CUSTOM', label: t('company.interviewTemplateEditor.templateTypes.CUSTOM') || 'Custom' }
   ];
 
   const jobCategories = [
@@ -126,6 +131,17 @@ const InterviewTemplateEditor: React.FC = () => {
     { value: 'Customer Service', label: t('company.interviewTemplateEditor.jobCategories.Customer Service') },
     { value: 'Other', label: t('company.interviewTemplateEditor.jobCategories.Other') }
   ];
+
+  const getSectionTypeLabel = (sectionType?: string): string => {
+    const sectionTypeMap: Record<string, string> = {
+      'EXPERIENCE': 'Experience',
+      'EDUCATION': 'Education',
+      'PROJECT': 'Project',
+      'SOFT_SKILL': 'Soft Skill',
+      'GENERAL': 'General'
+    };
+    return sectionType ? (sectionTypeMap[sectionType] || sectionType) : '';
+  };
 
   useEffect(() => {
     if (isEditing && templateId) {
@@ -147,6 +163,7 @@ const InterviewTemplateEditor: React.FC = () => {
         job_category: template.job_category ?? null,
         tags: template.tags || [],
         allow_ai_questions: template.allow_ai_questions || false,
+        scoring_mode: template.scoring_mode || null,
         legal_notice: template.legal_notice || ''
       });
 
@@ -169,11 +186,20 @@ const InterviewTemplateEditor: React.FC = () => {
       setSaving(true);
       setError(null);
 
+      // Validate scoring_mode is required for SCREENING type
+      if (formData.type === 'SCREENING' && !formData.scoring_mode) {
+        setError(t('company.interviewTemplateEditor.errors.scoringModeRequired') || 'El modo de scoring es obligatorio para plantillas de tipo Screening');
+        setSaving(false);
+        return;
+      }
+
       // Save template data (template + sections will be handled by backend)
       // Convert "all" to null for job_category
+      // Only include scoring_mode if type is SCREENING
       const templateDataWithSections = {
         ...formData,
         job_category: formData.job_category === 'all' || formData.job_category === null ? null : formData.job_category,
+        scoring_mode: formData.type === 'SCREENING' ? formData.scoring_mode : null,
         sections: sections
       };
 
@@ -267,7 +293,7 @@ const InterviewTemplateEditor: React.FC = () => {
 
         if (templateId) {
           try {
-            const createdSection = await api.authenticatedRequest<InterviewTemplateSection>('/api/company/interview-templates/sections', {
+            const response = await api.authenticatedRequest<any>('/api/company/interview-templates/sections', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -275,26 +301,42 @@ const InterviewTemplateEditor: React.FC = () => {
                 interview_template_id: templateId
               })
             });
-            newSection = createdSection;
+            // API might return only {message, id} or the full section
+            // If it's missing required fields, construct from form data
+            if (response.id && (!response.name || !response.intro || !response.goal)) {
+              newSection = {
+                id: response.id,
+                interview_template_id: templateId,
+                ...sectionDataWithOrder,
+                status: sectionDataWithOrder.status || 'DRAFT'
+              } as InterviewTemplateSection;
+            } else {
+              newSection = response as InterviewTemplateSection;
+            }
           } catch (err) {
             // If API fails, create locally with temp ID
             console.warn('Failed to create section via API, creating locally');
             newSection = {
               id: `temp-${Date.now()}`,
               interview_template_id: templateId,
-              ...sectionDataWithOrder
-            };
+              ...sectionDataWithOrder,
+              status: sectionDataWithOrder.status || 'DRAFT'
+            } as InterviewTemplateSection;
           }
         } else {
           // No template ID yet, create with temp ID
           newSection = {
             id: `temp-${Date.now()}`,
             interview_template_id: '',
-            ...sectionDataWithOrder
-          };
+            ...sectionDataWithOrder,
+            status: sectionDataWithOrder.status || 'DRAFT'
+          } as InterviewTemplateSection;
         }
 
-        setSections([...sections, newSection]);
+        const updatedSections = [...sections, newSection];
+        // Sort sections by sort_order to ensure proper display order
+        const sortedSections = updatedSections.sort((a, b) => a.sort_order - b.sort_order);
+        setSections(sortedSections);
       }
       setShowSectionForm(false);
       setEditingSection(null);
@@ -514,7 +556,15 @@ const InterviewTemplateEditor: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.visibility')}</label>
                     <Select
                       value={formData.type}
-                      onValueChange={(value) => setFormData({ ...formData, type: value as 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' })}
+                      onValueChange={(value) => {
+                        const newType = value as 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
+                        // Reset scoring_mode if type is not SCREENING
+                        setFormData({ 
+                          ...formData, 
+                          type: newType,
+                          scoring_mode: newType === 'SCREENING' ? formData.scoring_mode : null
+                        });
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -526,6 +576,39 @@ const InterviewTemplateEditor: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                  {formData.type === 'SCREENING' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {t('company.interviewTemplateEditor.fields.scoringMode') || 'Modo de Scoring'} *
+                      </label>
+                      <Select
+                        value={formData.scoring_mode || ''}
+                        onValueChange={(value) => setFormData({ ...formData, scoring_mode: value as 'DISTANCE' | 'ABSOLUTE' })}
+                        required
+                      >
+                        <SelectTrigger className={!formData.scoring_mode ? 'border-red-500' : ''}>
+                          <SelectValue placeholder={t('company.interviewTemplateEditor.placeholders.scoringMode') || 'Selecciona un modo de scoring'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="DISTANCE">{t('company.interviewTemplateEditor.scoringModes.DISTANCE') || 'Distancia'}</SelectItem>
+                          <SelectItem value="ABSOLUTE">{t('company.interviewTemplateEditor.scoringModes.ABSOLUTE') || 'Absoluto'}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {!formData.scoring_mode && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {t('company.interviewTemplateEditor.errors.scoringModeRequired') || 'El modo de scoring es obligatorio para plantillas de tipo Screening'}
+                        </p>
+                      )}
+                      {formData.scoring_mode && (
+                        <p className="mt-1 text-xs text-gray-500">
+                          {formData.scoring_mode === 'DISTANCE' 
+                            ? (t('company.interviewTemplateEditor.scoringModes.DISTANCE_DESCRIPTION') || 'Es mejor cuanto más próximo a los requisitos es')
+                            : (t('company.interviewTemplateEditor.scoringModes.ABSOLUTE_DESCRIPTION') || 'Es mejor cuanto más alto es')
+                          }
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.jobCategory')}</label>
                     <Select
@@ -643,7 +726,7 @@ const InterviewTemplateEditor: React.FC = () => {
 
                 {/* Sections List */}
                 <div className="space-y-4">
-                  {sections.map((section, index) => (
+                  {[...sections].sort((a, b) => a.sort_order - b.sort_order).map((section, index) => (
                     <Card key={section.id}>
                       <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
@@ -657,7 +740,7 @@ const InterviewTemplateEditor: React.FC = () => {
                                 {section.status}
                               </Badge>
                               {section.section && (
-                                <Badge variant="outline">{section.section}</Badge>
+                                <Badge variant="outline">{getSectionTypeLabel(section.section)}</Badge>
                               )}
                             </div>
                             <p className="text-sm text-gray-600 mb-2">{section.intro}</p>
@@ -807,6 +890,8 @@ const InterviewTemplateEditor: React.FC = () => {
             {editingQuestions && (
               <QuestionsModal
                 section={editingQuestions}
+                templateType={formData.type}
+                scoringMode={formData.scoring_mode}
                 onClose={handleCancelQuestionsModal}
                 apiBasePath={apiBasePath}
               />
@@ -839,6 +924,38 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
     allow_ai_override_questions: section?.allow_ai_override_questions || false,
     legal_notice: section?.legal_notice || ''
   });
+
+  // Update form data when section prop changes
+  useEffect(() => {
+    if (section) {
+      setFormData({
+        name: section.name || '',
+        intro: section.intro || '',
+        prompt: section.prompt || '',
+        goal: section.goal || '',
+        section: section.section || 'GENERAL' as 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL',
+        sort_order: section.sort_order || 0,
+        status: section.status || 'DRAFT' as 'ENABLED' | 'DRAFT' | 'DISABLED',
+        allow_ai_questions: section.allow_ai_questions || false,
+        allow_ai_override_questions: section.allow_ai_override_questions || false,
+        legal_notice: section.legal_notice || ''
+      });
+    } else {
+      // Reset form when creating new section
+      setFormData({
+        name: '',
+        intro: '',
+        prompt: '',
+        goal: '',
+        section: 'GENERAL' as 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL',
+        sort_order: 0,
+        status: 'DRAFT' as 'ENABLED' | 'DRAFT' | 'DISABLED',
+        allow_ai_questions: false,
+        allow_ai_override_questions: false,
+        legal_notice: ''
+      });
+    }
+  }, [section]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -996,11 +1113,13 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
 // Questions Modal Component
 interface QuestionsModalProps {
   section: InterviewTemplateSection;
+  templateType?: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
+  scoringMode?: 'DISTANCE' | 'ABSOLUTE' | null;
   onClose: () => void;
   apiBasePath: string;
 }
 
-const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, onClose, apiBasePath }) => {
+const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, scoringMode, onClose, apiBasePath }) => {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1268,6 +1387,9 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, onClose, apiBa
           <QuestionFormModal
             question={editingQuestion}
             sectionId={section.id}
+            sectionType={section.section}
+            templateType={templateType}
+            scoringMode={scoringMode}
             onSave={handleSaveQuestion}
             onCancel={handleCancelQuestionForm}
           />
@@ -1281,38 +1403,97 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, onClose, apiBa
 interface QuestionFormModalProps {
   question: any | null;
   sectionId: string;
+  sectionType?: 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL';
+  templateType?: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
+  scoringMode?: 'DISTANCE' | 'ABSOLUTE' | null;
   onSave: (questionData: any) => void;
   onCancel: () => void;
 }
 
-const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, sectionId, onSave, onCancel }) => {
+const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, sectionId, sectionType, templateType, scoringMode, onSave, onCancel }) => {
+  // For GENERAL and SOFT_SKILL sections, scope is always 'global' and should not be shown
+  const isScopeFixed = sectionType === 'GENERAL' || sectionType === 'SOFT_SKILL';
+  const defaultScope = isScopeFixed ? 'global' : (question?.scope || 'global');
+  
   const [formData, setFormData] = useState({
     name: question?.name || '',
     description: question?.description || '',
     code: question?.code || '',
     sort_order: question?.sort_order || 0,
-    scope: question?.scope || 'global',
+    scope: defaultScope,
     data_type: question?.data_type || 'short_string',
     allow_ai_followup: question?.allow_ai_followup || false,
-    legal_notice: question?.legal_notice || ''
+    legal_notice: question?.legal_notice || '',
+    scoring_values: question?.scoring_values || [], // Array of {label: string, scoring: number}
+    scoring: question?.scoring || null
   });
+
+  // Predefined distance options for DISTANCE mode
+  const distanceOptions = [
+    { label: 'Cerca', scoring: 10 },
+    { label: 'Medio', scoring: 6 },
+    { label: 'Lejos', scoring: 3 },
+    { label: 'Muy Lejos', scoring: 1 }
+  ];
 
   const scopeOptions = [
     { value: 'global', label: 'Global' },
     { value: 'item', label: 'Item' }
   ];
 
+  const isScreeningTemplate = templateType === 'SCREENING';
+  const isDistanceMode = scoringMode === 'DISTANCE';
+  
   const dataTypeOptions = [
     { value: 'short_string', label: 'Short String' },
     { value: 'large_string', label: 'Large String' },
     { value: 'int', label: 'Integer' },
-    { value: 'date', label: 'Date' }
+    { value: 'date', label: 'Date' },
+    ...(isScreeningTemplate ? [{ value: 'scoring', label: 'Scoring' }] : [])
   ];
+  
+  const isScoringType = formData.data_type === 'scoring';
+
+  // Update scope when question or sectionType changes
+  useEffect(() => {
+    const newScope = isScopeFixed ? 'global' : (question?.scope || 'global');
+    setFormData(prev => ({ ...prev, scope: newScope }));
+  }, [question, sectionType, isScopeFixed]);
+
+  // Initialize or reset scoring fields when data_type or scoringMode changes
+  useEffect(() => {
+    if (formData.data_type === 'scoring') {
+      // For both DISTANCE and ABSOLUTE modes, ensure values are in object format
+      if (formData.scoring_values.length === 0) {
+        setFormData(prev => ({ ...prev, scoring_values: [] }));
+      } else {
+        // Convert string values to object format if needed
+        const convertedValues = formData.scoring_values.map((v: any) => {
+          if (typeof v === 'string') {
+            return { label: v, scoring: isDistanceMode ? 10 : 1 };
+          }
+          return v;
+        });
+        setFormData(prev => ({ ...prev, scoring_values: convertedValues }));
+      }
+    } else {
+      // Clear scoring fields when not scoring type
+      setFormData(prev => {
+        if (prev.scoring_values.length > 0 || prev.scoring !== null) {
+          return { ...prev, scoring_values: [], scoring: null };
+        }
+        return prev;
+      });
+    }
+  }, [formData.data_type, isDistanceMode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Ensure scope is 'global' for GENERAL and SOFT_SKILL sections
+    const finalScope = isScopeFixed ? 'global' : formData.scope;
     onSave({
       ...formData,
+      scope: finalScope,
       interview_template_section_id: sectionId
     });
   };
@@ -1348,23 +1529,25 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Scope</label>
-            <Select
-              value={formData.scope}
-              onValueChange={(value) => setFormData({ ...formData, scope: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {scopeOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className={`grid grid-cols-1 ${isScopeFixed ? '' : 'md:grid-cols-2'} gap-4`}>
+          {!isScopeFixed && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Scope</label>
+              <Select
+                value={formData.scope}
+                onValueChange={(value) => setFormData({ ...formData, scope: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {scopeOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Data Type</label>
@@ -1384,15 +1567,114 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Question Code (optional)</label>
-          <Input
-            type="text"
-            value={formData.code}
-            onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-            placeholder="Unique code for the question (optional)"
-          />
-        </div>
+
+        {isScoringType && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Valores de Scoring</label>
+            <div className="space-y-3">
+              {formData.scoring_values.map((value: {label: string, scoring: number} | string, index: number) => {
+                // Handle both old format (string) and new format (object)
+                const label = typeof value === 'string' ? value : (value?.label || '');
+                const scoring = typeof value === 'string' ? null : (value?.scoring || null);
+                
+                // Find the distance option that matches the scoring value (for DISTANCE mode)
+                const selectedDistance = isDistanceMode && scoring !== null
+                  ? distanceOptions.find(opt => opt.scoring === scoring)
+                  : null;
+                
+                return (
+                  <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={label}
+                        onChange={(e) => {
+                          const newValues = [...formData.scoring_values];
+                          const currentScoring = typeof value === 'string' ? (isDistanceMode ? 10 : 1) : (value?.scoring || (isDistanceMode ? 10 : 1));
+                          newValues[index] = { label: e.target.value, scoring: currentScoring };
+                          setFormData({ ...formData, scoring_values: newValues });
+                        }}
+                        placeholder={`Etiqueta ${index + 1}`}
+                      />
+                    </div>
+                    {isDistanceMode ? (
+                      <div className="w-48">
+                        <Select
+                          value={selectedDistance?.label || ''}
+                          onValueChange={(selectedLabel) => {
+                            const selectedOption = distanceOptions.find(opt => opt.label === selectedLabel);
+                            if (selectedOption) {
+                              const newValues = [...formData.scoring_values];
+                              newValues[index] = { label: label, scoring: selectedOption.scoring };
+                              setFormData({ ...formData, scoring_values: newValues });
+                            }
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona distancia" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {distanceOptions.map((option) => (
+                              <SelectItem key={option.label} value={option.label}>
+                                {option.label} (scoring: {option.scoring})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : (
+                      <div className="w-32">
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={scoring || ''}
+                          onChange={(e) => {
+                            const scoreValue = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                            if (scoreValue === null || (scoreValue >= 1 && scoreValue <= 10)) {
+                              const newValues = [...formData.scoring_values];
+                              newValues[index] = { label: label, scoring: scoreValue || 1 };
+                              setFormData({ ...formData, scoring_values: newValues });
+                            }
+                          }}
+                          placeholder="1-10"
+                        />
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const newValues = formData.scoring_values.filter((_, i) => i !== index);
+                        setFormData({ ...formData, scoring_values: newValues });
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                );
+              })}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const defaultScoring = isDistanceMode ? 10 : 1;
+                  setFormData({ ...formData, scoring_values: [...formData.scoring_values, { label: '', scoring: defaultScoring }] });
+                }}
+                className="w-full"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar Valor
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              {isDistanceMode 
+                ? 'En modo Distancia, cada valor tiene una etiqueta y una distancia seleccionada del dropdown.'
+                : 'Define los valores posibles para esta pregunta de scoring. Cada valor tiene una etiqueta y un scoring del 1 al 10.'}
+            </p>
+          </div>
+        )}
 
         <div>
           <div className="flex items-center space-x-2">

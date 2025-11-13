@@ -20,6 +20,8 @@ from src.interview_bc.interview.application.queries.get_scheduled_interviews imp
 from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQuery
 from src.interview_bc.interview.application.queries.get_pending_interviews_by_candidate_and_stage import GetPendingInterviewsByCandidateAndStageQuery
 from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQuery
+from src.interview_bc.interview.application.queries.get_interview_questions_by_token import GetInterviewQuestionsByTokenQuery, InterviewQuestionsResponse
+from src.interview_bc.interview.application.commands.submit_interview_answer_by_token import SubmitInterviewAnswerByTokenCommand
 from src.interview_bc.interview.application.commands.invite_interviewer import InviteInterviewerCommand
 from src.interview_bc.interview.application.commands.accept_interviewer_invitation import AcceptInterviewerInvitationCommand
 from src.interview_bc.interview.application.queries.get_interviewers_by_interview import GetInterviewersByInterviewQuery
@@ -254,20 +256,24 @@ class InterviewController:
             interview = self.get_interview_by_id(interview_id)
             shareable_link = None
             if interview.link_token:
-                shareable_link = f"{settings.FRONTEND_URL}/interviews/{interview.id.value}/access?token={interview.link_token}"
+                # Use interview_id directly (it's already a string)
+                shareable_link = f"{settings.FRONTEND_URL}/interviews/{interview_id}/answer?token={interview.link_token}"
 
             return {
                 "message": "Interview link generated successfully",
                 "status": "success",
                 "interview_id": interview_id,
                 "link": shareable_link,
+                "link_token": interview.link_token,
                 "expires_in_days": expires_in_days,
                 "expires_at": interview.link_expires_at.isoformat() if interview.link_expires_at else None
             }
 
+        except HTTPException:
+            raise
         except Exception as e:
-            logger.error(f"Error generating link for interview {interview_id}: {e}")
-            raise HTTPException(status_code=500, detail="Failed to generate interview link")
+            logger.error(f"Error generating link for interview {interview_id}: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Failed to generate interview link: {str(e)}")
 
     def get_pending_interviews_by_candidate_and_stage(
             self,
@@ -389,3 +395,45 @@ class InterviewController:
         except Exception as e:
             logger.error(f"Error getting interviewers for interview {interview_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to retrieve interviewers")
+
+    def get_interview_questions_by_token(
+            self,
+            interview_id: str,
+            token: str
+    ) -> InterviewQuestionsResponse:
+        """Get interview questions by token for public access"""
+        try:
+            query = GetInterviewQuestionsByTokenQuery(
+                interview_id=interview_id,
+                token=token
+            )
+            result: InterviewQuestionsResponse = self._query_bus.query(query)
+            return result
+
+        except Exception as e:
+            logger.error(f"Error getting interview questions for interview {interview_id} by token: {e}")
+            raise HTTPException(status_code=404, detail="Interview not found or token is invalid/expired")
+
+    def submit_interview_answer_by_token(
+            self,
+            interview_id: str,
+            token: str,
+            question_id: str,
+            answer_text: Optional[str] = None,
+            question_text: Optional[str] = None
+    ) -> dict:
+        """Submit interview answer by token for public access"""
+        try:
+            command = SubmitInterviewAnswerByTokenCommand(
+                interview_id=interview_id,
+                token=token,
+                question_id=question_id,
+                answer_text=answer_text,
+                question_text=question_text
+            )
+            self._command_bus.dispatch(command)
+            return {"message": "Answer submitted successfully", "status": "success"}
+
+        except Exception as e:
+            logger.error(f"Error submitting answer for interview {interview_id} by token: {e}")
+            raise HTTPException(status_code=400, detail=str(e))

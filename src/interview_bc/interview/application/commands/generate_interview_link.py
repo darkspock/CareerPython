@@ -1,4 +1,5 @@
 """Generate interview link command"""
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
@@ -7,6 +8,8 @@ from src.interview_bc.interview.domain.exceptions.interview_exceptions import In
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.framework.application.command_bus import Command, CommandHandler
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -30,9 +33,11 @@ class GenerateInterviewLinkCommandHandler(CommandHandler[GenerateInterviewLinkCo
 
         # Generate link token
         interview.generate_link_token(expires_in_days=command.expires_in_days)
+        logger.info(f"Generated link token for interview {command.interview_id}: {interview.link_token[:10]}... (expires: {interview.link_expires_at})")
 
         # Save updated interview
-        self.interview_repository.update(interview)
+        updated_interview = self.interview_repository.update(interview)
+        logger.info(f"Updated interview {command.interview_id}. Token saved: {updated_interview.link_token[:10] if updated_interview.link_token else 'None'}...")
 
         # Note: We could dispatch an event here if needed, but for now we'll keep it simple
 

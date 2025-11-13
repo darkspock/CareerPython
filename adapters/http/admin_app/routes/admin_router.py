@@ -1183,6 +1183,7 @@ def create_interview(
     result = controller.create_interview(
         candidate_id=interview_data.candidate_id,
         interview_type=interview_data.interview_type,
+        interview_mode=interview_data.interview_mode,
         job_position_id=interview_data.job_position_id,
         application_id=interview_data.application_id,
         interview_template_id=interview_data.interview_template_id,

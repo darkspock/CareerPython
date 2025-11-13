@@ -98,6 +98,8 @@ from src.interview_bc.interview.application.queries.get_answers_by_interview imp
 from src.interview_bc.interview.application.queries.get_interview_answer_by_id import GetInterviewAnswerByIdQueryHandler
 from src.interview_bc.interview.application.queries.get_pending_interviews_by_candidate_and_stage import GetPendingInterviewsByCandidateAndStageQueryHandler
 from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQueryHandler
+from src.interview_bc.interview.application.queries.get_interview_questions_by_token import GetInterviewQuestionsByTokenQueryHandler
+from src.interview_bc.interview.application.commands.submit_interview_answer_by_token import SubmitInterviewAnswerByTokenCommandHandler
 from src.interview_bc.interview.application.commands.invite_interviewer import InviteInterviewerCommandHandler
 from src.interview_bc.interview.application.commands.accept_interviewer_invitation import AcceptInterviewerInvitationCommandHandler
 from src.interview_bc.interview.application.queries.get_interviewers_by_interview import GetInterviewersByInterviewQueryHandler
@@ -1282,6 +1284,13 @@ class Container(containers.DeclarativeContainer):
         event_bus=event_bus
     )
 
+    submit_interview_answer_by_token_command_handler = providers.Factory(
+        SubmitInterviewAnswerByTokenCommandHandler,
+        interview_repository=interview_repository,
+        answer_repository=interview_answer_repository,
+        event_bus=event_bus
+    )
+
     # Company Command Handlers
 
 
@@ -1738,6 +1747,14 @@ class Container(containers.DeclarativeContainer):
     # Buses - MOVED BEFORE HANDLERS
     query_bus = providers.Factory(QueryBus)
     command_bus = providers.Factory(CommandBus)
+
+    # Interview Query Handlers that need query_bus
+    get_interview_questions_by_token_query_handler = providers.Factory(
+        GetInterviewQuestionsByTokenQueryHandler,
+        interview_repository=interview_repository,
+        answer_repository=interview_answer_repository,
+        query_bus=query_bus
+    )
 
     # Candidate Query Handlers
     # get_candidate_by_id_query_handler = providers.Factory(

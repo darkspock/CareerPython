@@ -98,6 +98,7 @@ import CompanyPublicPositionsPage from './pages/public/CompanyPublicPositionsPag
 import AcceptInvitationPage from './pages/public/AcceptInvitationPage';
 import CompanyLandingPage from './pages/public/CompanyLandingPage';
 import CompanyRegisterPage from './pages/public/CompanyRegisterPage';
+import InterviewAnswerPage from './pages/public/InterviewAnswerPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import UsersManagement from './components/admin/UsersManagement';
 import CandidatesManagement from './components/admin/CandidatesManagement';
@@ -145,6 +146,7 @@ function App() {
                         <Route path="/positions/:slugOrId" element={<PublicPositionDetailPage />} />
                         <Route path="/companies/:companySlug/open-positions" element={<CompanyPublicPositionsPage />} />
                         <Route path="/invitations/accept" element={<AcceptInvitationPage />} />
+                        <Route path="/interviews/:interviewId/answer" element={<InterviewAnswerPage />} />
                         <Route path="/company/landing" element={<CompanyLandingPage />} />
                         <Route path="/company/register" element={<CompanyRegisterPage />} />
                         <Route path="/candidate/dashboard" element={<HomePage />} />

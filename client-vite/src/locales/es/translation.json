@@ -252,6 +252,7 @@
           "introduction": "Introducción",
           "goal": "Objetivo/Meta",
           "aiPrompt": "Prompt de IA",
+          "scoringMode": "Modo de Scoring",
           "legalNotice": "Aviso Legal"
         },
         "placeholders": {
@@ -260,6 +261,7 @@
           "introduction": "Texto de introducción que se mostrará a los candidatos antes de la entrevista",
           "goal": "¿Qué debe lograr esta plantilla de entrevista? ¿Qué información debe proporcionar?",
           "aiPrompt": "Prompt detallado para que la IA genere preguntas de entrevista. Sé específico sobre:\n- Tipos de preguntas y nivel de dificultad\n- Temas a cubrir\n- Formato de respuesta deseado\n- Criterios de evaluación\n- Cualquier instrucción especial",
+          "scoringMode": "Selecciona un modo de scoring",
           "legalNotice": "Texto legal que se mostrará a los usuarios para cumplimiento (GDPR, procesamiento de datos, etc.)"
         },
         "labels": {
@@ -275,7 +277,8 @@
           "enableSection": "Error al activar la sección",
           "disableSection": "Error al desactivar la sección",
           "moveSectionUp": "Error al mover la sección hacia arriba",
-          "moveSectionDown": "Error al mover la sección hacia abajo"
+          "moveSectionDown": "Error al mover la sección hacia abajo",
+          "scoringModeRequired": "El modo de scoring es obligatorio para plantillas de tipo Screening"
         },
         "confirmations": {
           "deleteSection": "¿Estás seguro de que quieres eliminar permanentemente esta sección? Esta acción no se puede deshacer.",
@@ -401,7 +404,15 @@
         },
         "templateTypes": {
           "EXTENDED_PROFILE": "Mejora de CV",
-          "POSITION_INTERVIEW": "Proceso de selección"
+          "POSITION_INTERVIEW": "Proceso de selección",
+          "SCREENING": "Screening",
+          "CUSTOM": "Personalizada"
+        },
+        "scoringModes": {
+          "DISTANCE": "Distancia",
+          "ABSOLUTE": "Absoluto",
+          "DISTANCE_DESCRIPTION": "Es mejor cuanto más próximo a los requisitos es",
+          "ABSOLUTE_DESCRIPTION": "Es mejor cuanto más alto es"
         },
         "jobCategories": {
           "all": "Todas",

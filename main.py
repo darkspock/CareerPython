@@ -177,6 +177,7 @@ container.wire(modules=[
     "adapters.http.company_app.company_page.routers.company_page_router",  # Company Pages management
     "adapters.http.company_app.company_page.routers.public_company_page_router",  # Public Company Pages
     "adapters.http.candidate_app.routers.file_attachment_router",  # File attachment management
+    "adapters.http.candidate_app.routers.interview_router",  # Candidate interview access by token
     "adapters.http.auth.routes.user_router",
     "adapters.http.auth.invitations.routers.invitation_router",
 ])
