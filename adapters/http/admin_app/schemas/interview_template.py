@@ -179,6 +179,7 @@ class InterviewTemplateQuestionBase(BaseModel):
     sort_order: int
     allow_ai_followup: Optional[bool] = False
     legal_notice: Optional[str] = None
+    scoring_values: Optional[List[Dict[str, Any]]] = None  # Array of {label: string, scoring: number}
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -205,5 +206,6 @@ class InterviewTemplateQuestionResponse(InterviewTemplateQuestionBase):
     scope: str
     data_type: str
     status: str
+    scoring_values: Optional[List[Dict[str, Any]]] = None  # Array of {label: string, scoring: number}
 
     model_config = ConfigDict(from_attributes=True)

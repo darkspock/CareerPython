@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, ChevronUp, ChevronDown, Edit, MessageSquare, Power, PowerOff, Trash2, X, FileText } from 'lucide-react';
+import { ArrowLeft, Plus, ChevronUp, ChevronDown, Edit, MessageSquare, Power, PowerOff, Trash2, X, FileText, Star } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -1443,6 +1443,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
 
   const isScreeningTemplate = templateType === 'SCREENING';
   const isDistanceMode = scoringMode === 'DISTANCE';
+  const isAbsoluteMode = scoringMode === 'ABSOLUTE';
   
   const dataTypeOptions = [
     { value: 'short_string', label: 'Short String' },
@@ -1582,6 +1583,32 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                   ? distanceOptions.find(opt => opt.scoring === scoring)
                   : null;
                 
+                // Convert scoring to star rating (0-5 stars, each worth 2 points) for ABSOLUTE mode
+                const getStarRatingFromScoring = (score: number | null): number => {
+                  if (score === null) return 0;
+                  return Math.round(score / 2);
+                };
+                
+                // Convert star rating (0-5) to score (0-10) for ABSOLUTE mode
+                const getScoringFromStarRating = (stars: number): number => {
+                  return stars * 2;
+                };
+                
+                const currentStarRating = isAbsoluteMode ? getStarRatingFromScoring(scoring) : 0;
+                
+                const handleStarClick = (starIndex: number, valueIndex: number) => {
+                  if (!isAbsoluteMode) return;
+                  const clickedRating = starIndex + 1;
+                  const newRating = clickedRating === currentStarRating ? 0 : clickedRating;
+                  const newScore = getScoringFromStarRating(newRating);
+                  
+                  const newValues = [...formData.scoring_values];
+                  const currentValue = newValues[valueIndex];
+                  const currentLabel = typeof currentValue === 'string' ? currentValue : (currentValue?.label || '');
+                  newValues[valueIndex] = { label: currentLabel, scoring: newScore };
+                  setFormData({ ...formData, scoring_values: newValues });
+                };
+                
                 return (
                   <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
                     <div className="flex-1">
@@ -1590,7 +1617,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                         value={label}
                         onChange={(e) => {
                           const newValues = [...formData.scoring_values];
-                          const currentScoring = typeof value === 'string' ? (isDistanceMode ? 10 : 1) : (value?.scoring || (isDistanceMode ? 10 : 1));
+                          const currentScoring = typeof value === 'string' ? (isDistanceMode ? 10 : (isAbsoluteMode ? 2 : 1)) : (value?.scoring || (isDistanceMode ? 10 : (isAbsoluteMode ? 2 : 1)));
                           newValues[index] = { label: e.target.value, scoring: currentScoring };
                           setFormData({ ...formData, scoring_values: newValues });
                         }}
@@ -1622,25 +1649,35 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                           </SelectContent>
                         </Select>
                       </div>
-                    ) : (
-                      <div className="w-32">
-                        <Input
-                          type="number"
-                          min="1"
-                          max="10"
-                          value={scoring || ''}
-                          onChange={(e) => {
-                            const scoreValue = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                            if (scoreValue === null || (scoreValue >= 1 && scoreValue <= 10)) {
-                              const newValues = [...formData.scoring_values];
-                              newValues[index] = { label: label, scoring: scoreValue || 1 };
-                              setFormData({ ...formData, scoring_values: newValues });
-                            }
-                          }}
-                          placeholder="1-10"
-                        />
+                    ) : isAbsoluteMode ? (
+                      <div className="flex items-center gap-1">
+                        {[0, 1, 2, 3, 4].map((starIndex) => {
+                          const isFilled = starIndex < currentStarRating;
+                          return (
+                            <button
+                              key={starIndex}
+                              type="button"
+                              onClick={() => handleStarClick(starIndex, index)}
+                              className={`transition-colors ${
+                                isFilled
+                                  ? 'text-yellow-400 hover:text-yellow-500'
+                                  : 'text-gray-300 hover:text-gray-400'
+                              }`}
+                              aria-label={`Rate ${starIndex + 1} out of 5 stars`}
+                            >
+                              <Star
+                                className="w-5 h-5"
+                                fill={isFilled ? 'currentColor' : 'none'}
+                                strokeWidth={isFilled ? 0 : 1.5}
+                              />
+                            </button>
+                          );
+                        })}
+                        {scoring !== null && (
+                          <span className="text-xs text-gray-500 ml-2">({scoring}/10)</span>
+                        )}
                       </div>
-                    )}
+                    ) : null}
                     <Button
                       type="button"
                       variant="ghost"
@@ -1659,7 +1696,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  const defaultScoring = isDistanceMode ? 10 : 1;
+                  const defaultScoring = isDistanceMode ? 10 : (isAbsoluteMode ? 2 : 1);
                   setFormData({ ...formData, scoring_values: [...formData.scoring_values, { label: '', scoring: defaultScoring }] });
                 }}
                 className="w-full"
@@ -1671,7 +1708,9 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
             <p className="mt-1 text-xs text-gray-500">
               {isDistanceMode 
                 ? 'En modo Distancia, cada valor tiene una etiqueta y una distancia seleccionada del dropdown.'
-                : 'Define los valores posibles para esta pregunta de scoring. Cada valor tiene una etiqueta y un scoring del 1 al 10.'}
+                : isAbsoluteMode
+                ? 'En modo Absoluto, cada valor tiene una etiqueta y se selecciona el scoring con estrellas (cada estrella = 2 puntos).'
+                : 'Define los valores posibles para esta pregunta de scoring.'}
             </p>
           </div>
         )}

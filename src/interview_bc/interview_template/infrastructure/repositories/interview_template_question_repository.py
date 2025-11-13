@@ -40,7 +40,8 @@ class InterviewTemplateQuestionRepository(InterviewTemplateQuestionRepositoryInt
             scope=model.scope,
             code=str(model.code),
             allow_ai_followup=model.allow_ai_followup,
-            legal_notice=model.legal_notice
+            legal_notice=model.legal_notice,
+            scoring_values=model.scoring_values if model.scoring_values else []
         )
 
     def _to_model(self, domain: InterviewTemplateQuestion) -> InterviewTemplateQuestionModel:
@@ -56,7 +57,8 @@ class InterviewTemplateQuestionRepository(InterviewTemplateQuestionRepositoryInt
             scope=domain.scope,
             code=domain.code,
             allow_ai_followup=domain.allow_ai_followup,
-            legal_notice=domain.legal_notice
+            legal_notice=domain.legal_notice,
+            scoring_values=domain.scoring_values if domain.scoring_values else None
         )
 
     def create(self, interview_template_question: InterviewTemplateQuestion) -> InterviewTemplateQuestion:
@@ -103,6 +105,7 @@ class InterviewTemplateQuestionRepository(InterviewTemplateQuestionRepositoryInt
             db_question.code = question.code
             db_question.allow_ai_followup = question.allow_ai_followup
             db_question.legal_notice = question.legal_notice
+            db_question.scoring_values = question.scoring_values if question.scoring_values else None
 
             session.commit()
 

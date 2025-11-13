@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List, Dict, Any
 
-from sqlalchemy import String, Integer, Enum, ForeignKey, Boolean, Text
+from sqlalchemy import String, Integer, Enum, ForeignKey, Boolean, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
@@ -36,6 +36,7 @@ class InterviewTemplateQuestionModel(Base):
     code: Mapped[str] = mapped_column(String)
     allow_ai_followup: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # Allow AI to generate follow-up questions
     legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for this question
+    scoring_values: Mapped[Optional[List[Dict[str, Any]]]] = mapped_column(JSON, nullable=True)  # Array of {label: string, scoring: number}
 
     section: Mapped["InterviewTemplateSectionModel"] = relationship("InterviewTemplateSectionModel",
                                                                     back_populates="questions")

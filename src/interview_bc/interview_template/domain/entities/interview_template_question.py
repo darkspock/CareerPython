@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
 from src.interview_bc.interview_template.domain.enums.interview_template_question import \
     InterviewTemplateQuestionStatusEnum, \
@@ -23,6 +23,7 @@ class InterviewTemplateQuestion:
     status: InterviewTemplateQuestionStatusEnum = InterviewTemplateQuestionStatusEnum.DRAFT
     allow_ai_followup: bool = False  # If True, AI can generate follow-up questions based on this question
     legal_notice: Optional[str] = None  # Legal text displayed to users for compliance
+    scoring_values: Optional[List[Dict[str, Any]]] = field(default_factory=list)  # Array of {label: string, scoring: number}
 
     @staticmethod
     def create(id: InterviewTemplateQuestionId, interview_template_section_id: InterviewTemplateSectionId,
@@ -31,7 +32,8 @@ class InterviewTemplateQuestion:
                code: str,
                status: InterviewTemplateQuestionStatusEnum = InterviewTemplateQuestionStatusEnum.DRAFT,
                allow_ai_followup: bool = False,
-               legal_notice: Optional[str] = None) -> 'InterviewTemplateQuestion':
+               legal_notice: Optional[str] = None,
+               scoring_values: Optional[List[Dict[str, Any]]] = None) -> 'InterviewTemplateQuestion':
         return InterviewTemplateQuestion(
             id=id,
             interview_template_section_id=interview_template_section_id,
@@ -43,7 +45,8 @@ class InterviewTemplateQuestion:
             scope=scope,
             code=code,
             allow_ai_followup=allow_ai_followup,
-            legal_notice=legal_notice
+            legal_notice=legal_notice,
+            scoring_values=scoring_values or []
         )
 
     def update_details(self, interview_template_section_id: InterviewTemplateSectionId,
@@ -54,7 +57,8 @@ class InterviewTemplateQuestion:
                        scope: InterviewTemplateQuestionScopeEnum,
                        code: str,
                        allow_ai_followup: bool = False,
-                       legal_notice: Optional[str] = None) -> None:
+                       legal_notice: Optional[str] = None,
+                       scoring_values: Optional[List[Dict[str, Any]]] = None) -> None:
         self.sort_order = sort_order
         self.name = name
         self.description = description
@@ -64,6 +68,8 @@ class InterviewTemplateQuestion:
         self.interview_template_section_id = interview_template_section_id
         self.allow_ai_followup = allow_ai_followup
         self.legal_notice = legal_notice
+        if scoring_values is not None:
+            self.scoring_values = scoring_values
 
     def enable(self) -> None:
         """Enable this interview template question"""

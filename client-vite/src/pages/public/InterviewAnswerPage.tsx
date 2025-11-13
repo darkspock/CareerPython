@@ -51,6 +51,20 @@ export default function InterviewAnswerPage() {
       setLoading(true);
       setError(null);
       const response = await publicInterviewService.getInterviewQuestions(interviewId, token);
+      console.log('Interview questions loaded:', response);
+      console.log('Template scoring_mode:', response.template?.scoring_mode);
+      if (response.template?.sections) {
+        response.template.sections.forEach((section, sIdx) => {
+          console.log(`Section ${sIdx} (${section.name}):`, section.questions.length, 'questions');
+          section.questions.forEach((q, qIdx) => {
+            console.log(`  Question ${qIdx}:`, {
+              id: q.id,
+              name: q.name,
+              data_type: q.data_type
+            });
+          });
+        });
+      }
       setData(response);
     } catch (err: any) {
       setError(err.message || 'Failed to load interview questions');
@@ -102,15 +116,33 @@ export default function InterviewAnswerPage() {
   };
 
   const renderQuestion = (question: InterviewQuestion, section: InterviewSection) => {
+    console.log('renderQuestion called for:', question.id, question.name, 'data_type:', question.data_type);
+    
     const answerText = answers[question.id] || '';
     const isSaving = saving[question.id] || false;
     const isSaved = saved[question.id] || false;
     
     // Check if this is a scoring question and determine the mode
     const scoringMode = data?.template?.scoring_mode?.toUpperCase();
-    const isScoringQuestion = question.data_type?.toLowerCase() === 'scoring';
+    const questionDataType = question.data_type?.toLowerCase();
+    const isScoringQuestion = questionDataType === 'scoring';
     const isDistanceMode = isScoringQuestion && scoringMode === 'DISTANCE';
-    const isAbsoluteMode = isScoringQuestion && scoringMode === 'ABSOLUTE';
+    const isAbsoluteMode = isScoringQuestion && (scoringMode === 'ABSOLUTE' || !scoringMode || scoringMode === 'NULL');
+    
+    // Debug logging
+    console.log('Question render:', {
+      questionId: question.id,
+      questionName: question.name,
+      dataType: question.data_type,
+      questionDataType,
+      scoringMode,
+      templateScoringMode: data?.template?.scoring_mode,
+      isScoringQuestion,
+      isDistanceMode,
+      isAbsoluteMode,
+      fullData: data,
+      template: data?.template
+    });
     
     // Distance mode options: Cerca (10), Medio (6), Lejos (3), Muy Lejos (1)
     const distanceOptions = [

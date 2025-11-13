@@ -34,6 +34,7 @@ class InterviewTemplateQuestionDto:
     status: InterviewTemplateQuestionStatusEnum
     allow_ai_followup: bool
     legal_notice: Optional[str]
+    scoring_values: Optional[List[Dict[str, Any]]] = None  # Array of {label: string, scoring: number}
 
     @classmethod
     def from_entity(cls, entity: InterviewTemplateQuestion) -> 'InterviewTemplateQuestionDto':
@@ -49,7 +50,8 @@ class InterviewTemplateQuestionDto:
             code=entity.code,
             status=entity.status,
             allow_ai_followup=entity.allow_ai_followup,
-            legal_notice=entity.legal_notice
+            legal_notice=entity.legal_notice,
+            scoring_values=getattr(entity, 'scoring_values', None)  # Get from entity if exists, otherwise None
         )
 
 

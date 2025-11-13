@@ -1221,7 +1221,7 @@ class Container(containers.DeclarativeContainer):
 
     update_interview_template_question_command_handler = providers.Factory(
         UpdateInterviewTemplateQuestionCommandHandler,
-        interview_template_question_repository=interview_template_question_repository
+        question_repository=interview_template_question_repository
     )
 
     enable_interview_template_question_command_handler = providers.Factory(

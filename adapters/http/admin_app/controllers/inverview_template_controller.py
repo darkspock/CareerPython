@@ -502,7 +502,8 @@ class InterviewTemplateController:
                 data_type=dto.data_type.value if dto.data_type else "",
                 status=dto.status.value if dto.status else "",
                 allow_ai_followup=dto.allow_ai_followup,
-                legal_notice=dto.legal_notice
+                legal_notice=dto.legal_notice,
+                scoring_values=dto.scoring_values
             )
             for dto in questions_dtos
         ]
@@ -528,7 +529,8 @@ class InterviewTemplateController:
             code=question_data.code,
             data_type=InterviewTemplateQuestionDataTypeEnum(question_data.data_type),
             allow_ai_followup=getattr(question_data, 'allow_ai_followup', False),
-            legal_notice=getattr(question_data, 'legal_notice', None)
+            legal_notice=getattr(question_data, 'legal_notice', None),
+            scoring_values=getattr(question_data, 'scoring_values', None) or []
         )
         self.command_bus.dispatch(command)
         return {"message": "Interview template question created successfully", "id": str(question_id)}
@@ -554,6 +556,7 @@ class InterviewTemplateController:
             data_type=InterviewTemplateQuestionDataTypeEnum(question_data.data_type),
             allow_ai_followup=getattr(question_data, 'allow_ai_followup', None),
             legal_notice=getattr(question_data, 'legal_notice', None),
+            scoring_values=getattr(question_data, 'scoring_values', None),
             updated_by=current_admin_id
         )
         self.command_bus.dispatch(command)

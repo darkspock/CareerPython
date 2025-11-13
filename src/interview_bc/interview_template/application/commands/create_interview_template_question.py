@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
 from src.interview_bc.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
 from src.interview_bc.interview_template.domain.enums.interview_template_question import \
@@ -25,6 +25,7 @@ class CreateInterviewTemplateQuestionCommand(Command):
     data_type: InterviewTemplateQuestionDataTypeEnum
     allow_ai_followup: bool = False
     legal_notice: Optional[str] = None
+    scoring_values: Optional[List[Dict[str, Any]]] = field(default_factory=list)
 
 
 class CreateInterviewTemplateQuestionCommandHandler:
@@ -42,6 +43,7 @@ class CreateInterviewTemplateQuestionCommandHandler:
             code=command.code,
             scope=command.scope,
             allow_ai_followup=command.allow_ai_followup,
-            legal_notice=command.legal_notice
+            legal_notice=command.legal_notice,
+            scoring_values=command.scoring_values
         )
         self.interview_template_question_repository.create(new_interview_template_question)

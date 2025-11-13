@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateQuestionDataTypeEnum,
@@ -29,6 +29,7 @@ class UpdateInterviewTemplateQuestionCommand(Command):
     sort_order: int
     allow_ai_followup: Optional[bool] = None
     legal_notice: Optional[str] = None
+    scoring_values: Optional[List[Dict[str, Any]]] = None
     updated_by: Optional[str] = None
 
 
@@ -53,7 +54,8 @@ class UpdateInterviewTemplateQuestionCommandHandler:
             code=command.code,
             description=command.description,
             allow_ai_followup=command.allow_ai_followup if command.allow_ai_followup is not None else question.allow_ai_followup,
-            legal_notice=command.legal_notice if command.legal_notice is not None else question.legal_notice
+            legal_notice=command.legal_notice if command.legal_notice is not None else question.legal_notice,
+            scoring_values=command.scoring_values if command.scoring_values is not None else question.scoring_values
         )
 
         self.question_repository.update(question)
