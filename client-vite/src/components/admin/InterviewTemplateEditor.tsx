@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, ChevronUp, ChevronDown, Edit, MessageSquare, Power, PowerOff, Trash2, X, FileText, Star } from 'lucide-react';
+import { ArrowLeft, Plus, ChevronUp, ChevronDown, Pencil, MessageSquare, Power, PowerOff, Trash2, X, FileText, Star } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +31,8 @@ import {
 } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface InterviewTemplate {
   id: string;
@@ -108,9 +109,8 @@ const InterviewTemplateEditor: React.FC = () => {
   const [editingSection, setEditingSection] = useState<InterviewTemplateSection | null>(null);
   const [showSectionForm, setShowSectionForm] = useState(false);
 
-  // Questions state
-  const [editingQuestions, setEditingQuestions] = useState<InterviewTemplateSection | null>(null);
-  const [showQuestionsModal, setShowQuestionsModal] = useState(false);
+  // Questions state - track which sections have questions expanded
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const templateTypes = [
     { value: 'EXTENDED_PROFILE', label: t('company.interviewTemplateEditor.templateTypes.EXTENDED_PROFILE') },
@@ -351,14 +351,16 @@ const InterviewTemplateEditor: React.FC = () => {
   };
 
   // Questions management functions
-  const handleEditQuestions = (section: InterviewTemplateSection) => {
-    setEditingQuestions(section);
-    setShowQuestionsModal(true);
-  };
-
-  const handleCancelQuestionsModal = () => {
-    setShowQuestionsModal(false);
-    setEditingQuestions(null);
+  const toggleQuestionsExpanded = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
   };
 
   const handleEnableSection = async (sectionId: string) => {
@@ -472,7 +474,7 @@ const InterviewTemplateEditor: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -543,8 +545,9 @@ const InterviewTemplateEditor: React.FC = () => {
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.templateName')} *</label>
+                    <Label htmlFor="templateName" className="mb-2">{t('company.interviewTemplateEditor.fields.templateName')} *</Label>
                     <Input
+                      id="templateName"
                       type="text"
                       required
                       value={formData.name}
@@ -553,7 +556,7 @@ const InterviewTemplateEditor: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.visibility')}</label>
+                    <Label htmlFor="templateType" className="mb-2">{t('company.interviewTemplateEditor.fields.visibility')}</Label>
                     <Select
                       value={formData.type}
                       onValueChange={(value) => {
@@ -578,9 +581,9 @@ const InterviewTemplateEditor: React.FC = () => {
                   </div>
                   {formData.type === 'SCREENING' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Label htmlFor="scoringMode" className="mb-2">
                         {t('company.interviewTemplateEditor.fields.scoringMode') || 'Modo de Scoring'} *
-                      </label>
+                      </Label>
                       <Select
                         value={formData.scoring_mode || ''}
                         onValueChange={(value) => setFormData({ ...formData, scoring_mode: value as 'DISTANCE' | 'ABSOLUTE' })}
@@ -610,7 +613,7 @@ const InterviewTemplateEditor: React.FC = () => {
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.jobCategory')}</label>
+                    <Label htmlFor="jobCategory" className="mb-2">{t('company.interviewTemplateEditor.fields.jobCategory')}</Label>
                     <Select
                       value={formData.job_category || 'all'}
                       onValueChange={(value) => setFormData({ ...formData, job_category: value === 'all' ? null : value })}
@@ -626,7 +629,7 @@ const InterviewTemplateEditor: React.FC = () => {
                     </Select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.tags')}</label>
+                    <Label htmlFor="tags" className="mb-2">{t('company.interviewTemplateEditor.fields.tags')}</Label>
                     <Input
                       type="text"
                       value={formData.tags.join(', ')}
@@ -645,7 +648,7 @@ const InterviewTemplateEditor: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.introduction')}</label>
+                  <Label htmlFor="intro" className="mb-2">{t('company.interviewTemplateEditor.fields.introduction')}</Label>
                   <Textarea
                     value={formData.intro}
                     onChange={(e) => setFormData({ ...formData, intro: e.target.value })}
@@ -654,7 +657,7 @@ const InterviewTemplateEditor: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.goal')}</label>
+                  <Label htmlFor="goal" className="mb-2">{t('company.interviewTemplateEditor.fields.goal')}</Label>
                   <Textarea
                     value={formData.goal}
                     onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
@@ -682,7 +685,7 @@ const InterviewTemplateEditor: React.FC = () => {
                 </div>
                 {formData.allow_ai_questions && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.aiPrompt')}</label>
+                    <Label htmlFor="aiPrompt" className="mb-2">{t('company.interviewTemplateEditor.fields.aiPrompt')}</Label>
                     <Textarea
                       value={formData.prompt}
                       onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
@@ -693,7 +696,7 @@ const InterviewTemplateEditor: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('company.interviewTemplateEditor.fields.legalNotice')}</label>
+                  <Label htmlFor="legalNotice" className="mb-2">{t('company.interviewTemplateEditor.fields.legalNotice')}</Label>
                   <Textarea
                     value={formData.legal_notice}
                     onChange={(e) => setFormData({ ...formData, legal_notice: e.target.value })}
@@ -790,7 +793,7 @@ const InterviewTemplateEditor: React.FC = () => {
                                   size="icon"
                                   onClick={() => handleEditSection(section)}
                                 >
-                                  <Edit className="w-4 h-4" />
+                                  <Pencil className="w-4 h-4" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>Edit section details, intro, and goals</TooltipContent>
@@ -802,12 +805,16 @@ const InterviewTemplateEditor: React.FC = () => {
                                   type="button"
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => handleEditQuestions(section)}
+                                  onClick={() => toggleQuestionsExpanded(section.id)}
                                 >
                                   <MessageSquare className="w-4 h-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Manage questions for this section</TooltipContent>
+                              <TooltipContent>
+                                {expandedSections.has(section.id) 
+                                  ? t('company.interviewTemplateEditor.sectionsList.tooltips.hideQuestions')
+                                  : t('company.interviewTemplateEditor.sectionsList.tooltips.showQuestions')}
+                              </TooltipContent>
                             </Tooltip>
 
                             {/* Enable/Disable buttons */}
@@ -854,11 +861,23 @@ const InterviewTemplateEditor: React.FC = () => {
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Permanently delete this section and all its questions</TooltipContent>
+                                <TooltipContent>{t('company.interviewTemplateEditor.sectionsList.tooltips.delete')}</TooltipContent>
                               </Tooltip>
                             )}
                           </div>
                         </div>
+                        
+                        {/* Questions List - shown when expanded */}
+                        {expandedSections.has(section.id) && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <QuestionsList
+                              section={section}
+                              templateType={formData.type}
+                              scoringMode={formData.scoring_mode}
+                              apiBasePath={apiBasePath}
+                            />
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -885,18 +904,6 @@ const InterviewTemplateEditor: React.FC = () => {
             />
           </Dialog>
 
-          {/* Questions Modal */}
-          <Dialog open={showQuestionsModal} onOpenChange={(open) => !open && handleCancelQuestionsModal()}>
-            {editingQuestions && (
-              <QuestionsModal
-                section={editingQuestions}
-                templateType={formData.type}
-                scoringMode={formData.scoring_mode}
-                onClose={handleCancelQuestionsModal}
-                apiBasePath={apiBasePath}
-              />
-            )}
-          </Dialog>
         </div>
       </div>
     </TooltipProvider>
@@ -982,8 +989,9 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Section Name *</label>
+          <Label htmlFor="sectionName" className="mb-2">Section Name *</Label>
           <Input
+            id="sectionName"
             type="text"
             required
             value={formData.name}
@@ -993,7 +1001,7 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Section Type</label>
+          <Label htmlFor="sectionType" className="mb-2">Section Type</Label>
           <Select
             value={formData.section}
             onValueChange={(value) => setFormData({ ...formData, section: value as any })}
@@ -1010,8 +1018,9 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Introduction</label>
+          <Label htmlFor="sectionIntro" className="mb-2">Introduction</Label>
           <Textarea
+            id="sectionIntro"
             value={formData.intro}
             onChange={(e) => setFormData({ ...formData, intro: e.target.value })}
             rows={3}
@@ -1020,8 +1029,9 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Goal/Objective</label>
+          <Label htmlFor="sectionGoal" className="mb-2">Goal/Objective</Label>
           <Textarea
+            id="sectionGoal"
             value={formData.goal}
             onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
             rows={3}
@@ -1032,7 +1042,7 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
         {templateAllowAIQuestions && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">AI Prompt</label>
+              <Label htmlFor="sectionAIPrompt" className="mb-2">AI Prompt</Label>
               <Textarea
                 value={formData.prompt}
                 onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
@@ -1085,8 +1095,9 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Legal Notice</label>
+          <Label htmlFor="sectionLegalNotice" className="mb-2">Legal Notice</Label>
           <Textarea
+            id="sectionLegalNotice"
             value={formData.legal_notice}
             onChange={(e) => setFormData({ ...formData, legal_notice: e.target.value })}
             rows={3}
@@ -1110,16 +1121,16 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
   );
 };
 
-// Questions Modal Component
-interface QuestionsModalProps {
+// Questions List Component (inline, no modal)
+interface QuestionsListProps {
   section: InterviewTemplateSection;
   templateType?: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
   scoringMode?: 'DISTANCE' | 'ABSOLUTE' | null;
-  onClose: () => void;
   apiBasePath: string;
 }
 
-const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, scoringMode, onClose, apiBasePath }) => {
+const QuestionsList: React.FC<QuestionsListProps> = ({ section, templateType, scoringMode, apiBasePath }) => {
+  const { t } = useTranslation();
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1137,7 +1148,7 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
       const response = await api.authenticatedRequest<unknown[]>(`${apiBasePath}/sections/${section.id}/questions`);
       setQuestions(Array.isArray(response) ? response : []);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch questions');
+      setError(err.message || t('company.interviewTemplateEditor.questionsModal.errors.loadQuestions'));
     } finally {
       setLoading(false);
     }
@@ -1188,12 +1199,12 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
       // Refresh questions list from backend
       await fetchQuestions();
     } catch (err: any) {
-      setError(err.message || 'Failed to save question');
+      setError(err.message || t('company.interviewTemplateEditor.questionsModal.errors.saveQuestion'));
     }
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
-    if (confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
+    if (confirm(t('company.interviewTemplateEditor.questionsModal.confirmations.deleteQuestion'))) {
       try {
         await api.authenticatedRequest(`${apiBasePath}/questions/${questionId}`, {
           method: 'DELETE'
@@ -1202,7 +1213,7 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
         // Refresh questions list from backend
         await fetchQuestions();
       } catch (err: any) {
-        setError(err.message || 'Failed to delete question');
+        setError(err.message || t('company.interviewTemplateEditor.questionsModal.errors.deleteQuestion'));
       }
     }
   };
@@ -1230,7 +1241,7 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
         // });
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to move question up');
+      setError(err.message || t('company.interviewTemplateEditor.questionsModal.errors.moveUp'));
     }
   };
 
@@ -1257,17 +1268,12 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
         // });
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to move question down');
+      setError(err.message || t('company.interviewTemplateEditor.questionsModal.errors.moveDown'));
     }
   };
 
   return (
-    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-      <DialogHeader>
-        <DialogTitle>Questions for "{section.name}"</DialogTitle>
-        <DialogDescription>Manage questions for this section</DialogDescription>
-      </DialogHeader>
-
+    <div className="space-y-4">
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
@@ -1278,23 +1284,34 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
       {loading ? (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-gray-600">Loading questions...</span>
+          <span className="ml-2 text-gray-600">{t('common.loading')}</span>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h4 className="text-lg font-medium text-gray-900">Questions ({questions.length})</h4>
-            <Button onClick={handleAddQuestion} className="flex items-center gap-2">
+            <h5 className="text-base font-medium text-gray-900">
+              {t('company.interviewTemplateEditor.questionsModal.questionsCount', { count: questions.length })}
+            </h5>
+            <Button 
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAddQuestion();
+              }} 
+              variant="link" 
+              className="flex items-center gap-2 p-0 h-auto"
+            >
               <Plus className="w-4 h-4" />
-              Add Question
+              {t('company.interviewTemplateEditor.questionsModal.addQuestion')}
             </Button>
           </div>
 
           {questions.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>No questions added yet</p>
-              <p className="text-sm">Click "Add Question" to create your first question</p>
+              <p>{t('company.interviewTemplateEditor.questionsModal.noQuestions')}</p>
+              <p className="text-sm">{t('company.interviewTemplateEditor.questionsModal.noQuestionsDescription')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -1320,7 +1337,9 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {index === 0 ? "Already at the top" : "Move question up in the list"}
+                            {index === 0 
+                              ? t('company.interviewTemplateEditor.questionsModal.tooltips.alreadyTop')
+                              : t('company.interviewTemplateEditor.questionsModal.tooltips.moveUp')}
                           </TooltipContent>
                         </Tooltip>
 
@@ -1336,7 +1355,9 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {index >= questions.length - 1 ? "Already at the bottom" : "Move question down in the list"}
+                            {index >= questions.length - 1 
+                              ? t('company.interviewTemplateEditor.questionsModal.tooltips.alreadyBottom')
+                              : t('company.interviewTemplateEditor.questionsModal.tooltips.moveDown')}
                           </TooltipContent>
                         </Tooltip>
 
@@ -1347,10 +1368,10 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
                               size="icon"
                               onClick={() => handleEditQuestion(question)}
                             >
-                              <Edit className="w-4 h-4" />
+                              <Pencil className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Edit question text, type, and settings</TooltipContent>
+                          <TooltipContent>{t('company.interviewTemplateEditor.questionsModal.tooltips.edit')}</TooltipContent>
                         </Tooltip>
 
                         <Tooltip>
@@ -1363,7 +1384,7 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Permanently delete this question</TooltipContent>
+                          <TooltipContent>{t('company.interviewTemplateEditor.questionsModal.tooltips.delete')}</TooltipContent>
                         </Tooltip>
                       </div>
                     </div>
@@ -1375,15 +1396,16 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
         </div>
       )}
 
-      <DialogFooter>
-        <Button variant="outline" onClick={onClose}>
-          Close
-        </Button>
-      </DialogFooter>
-
       {/* Question Form Modal */}
       {showQuestionForm && (
-        <Dialog open={showQuestionForm} onOpenChange={(open) => !open && handleCancelQuestionForm()}>
+        <Dialog 
+          open={showQuestionForm} 
+          onOpenChange={(open) => {
+            if (!open) {
+              handleCancelQuestionForm();
+            }
+          }}
+        >
           <QuestionFormModal
             question={editingQuestion}
             sectionId={section.id}
@@ -1395,7 +1417,7 @@ const QuestionsModal: React.FC<QuestionsModalProps> = ({ section, templateType, 
           />
         </Dialog>
       )}
-    </DialogContent>
+    </div>
   );
 };
 
@@ -1411,6 +1433,7 @@ interface QuestionFormModalProps {
 }
 
 const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, sectionId, sectionType, templateType, scoringMode, onSave, onCancel }) => {
+  const { t } = useTranslation();
   // For GENERAL and SOFT_SKILL sections, scope is always 'global' and should not be shown
   const isScopeFixed = sectionType === 'GENERAL' || sectionType === 'SOFT_SKILL';
   const defaultScope = isScopeFixed ? 'global' : (question?.scope || 'global');
@@ -1430,15 +1453,15 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
 
   // Predefined distance options for DISTANCE mode
   const distanceOptions = [
-    { label: 'Cerca', scoring: 10 },
-    { label: 'Medio', scoring: 6 },
-    { label: 'Lejos', scoring: 3 },
-    { label: 'Muy Lejos', scoring: 1 }
+    { label: t('company.interviewTemplateEditor.questionForm.distanceOptions.cerca'), scoring: 10 },
+    { label: t('company.interviewTemplateEditor.questionForm.distanceOptions.medio'), scoring: 6 },
+    { label: t('company.interviewTemplateEditor.questionForm.distanceOptions.lejos'), scoring: 3 },
+    { label: t('company.interviewTemplateEditor.questionForm.distanceOptions.muyLejos'), scoring: 1 }
   ];
 
   const scopeOptions = [
-    { value: 'global', label: 'Global' },
-    { value: 'item', label: 'Item' }
+    { value: 'global', label: t('company.interviewTemplateEditor.questionForm.scopeOptions.global') },
+    { value: 'item', label: t('company.interviewTemplateEditor.questionForm.scopeOptions.item') }
   ];
 
   const isScreeningTemplate = templateType === 'SCREENING';
@@ -1446,11 +1469,11 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
   const isAbsoluteMode = scoringMode === 'ABSOLUTE';
   
   const dataTypeOptions = [
-    { value: 'short_string', label: 'Short String' },
-    { value: 'large_string', label: 'Large String' },
-    { value: 'int', label: 'Integer' },
-    { value: 'date', label: 'Date' },
-    ...(isScreeningTemplate ? [{ value: 'scoring', label: 'Scoring' }] : [])
+    { value: 'short_string', label: t('company.interviewTemplateEditor.questionForm.dataTypeOptions.shortString') },
+    { value: 'large_string', label: t('company.interviewTemplateEditor.questionForm.dataTypeOptions.largeString') },
+    { value: 'int', label: t('company.interviewTemplateEditor.questionForm.dataTypeOptions.int') },
+    { value: 'date', label: t('company.interviewTemplateEditor.questionForm.dataTypeOptions.date') },
+    ...(isScreeningTemplate ? [{ value: 'scoring', label: t('company.interviewTemplateEditor.questionForm.dataTypeOptions.scoring') }] : [])
   ];
   
   const isScoringType = formData.data_type === 'scoring';
@@ -1502,38 +1525,40 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
   return (
     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>{question ? 'Edit Question' : 'Add New Question'}</DialogTitle>
+        <DialogTitle>{question ? t('company.interviewTemplateEditor.questionForm.title.edit') : t('company.interviewTemplateEditor.questionForm.title.create')}</DialogTitle>
         <DialogDescription>
-          {question ? 'Modify question details and settings' : 'Create a new question for this section'}
+          {question ? t('company.interviewTemplateEditor.questionForm.subtitle.edit') : t('company.interviewTemplateEditor.questionForm.subtitle.create')}
         </DialogDescription>
       </DialogHeader>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Question Name *</label>
+          <Label htmlFor="questionName" className="mb-2">{t('company.interviewTemplateEditor.questionForm.fields.questionName')} *</Label>
           <Input
+            id="questionName"
             type="text"
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Enter question name"
+            placeholder={t('company.interviewTemplateEditor.questionForm.placeholders.questionName')}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <Label htmlFor="questionDescription" className="mb-2">{t('company.interviewTemplateEditor.questionForm.fields.description')}</Label>
           <Textarea
+            id="questionDescription"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows={3}
-            placeholder="Describe the question"
+            placeholder={t('company.interviewTemplateEditor.questionForm.placeholders.description')}
           />
         </div>
 
         <div className={`grid grid-cols-1 ${isScopeFixed ? '' : 'md:grid-cols-2'} gap-4`}>
           {!isScopeFixed && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Scope</label>
+              <Label htmlFor="questionScope" className="mb-2">{t('company.interviewTemplateEditor.questionForm.fields.scope')}</Label>
               <Select
                 value={formData.scope}
                 onValueChange={(value) => setFormData({ ...formData, scope: value })}
@@ -1551,7 +1576,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Data Type</label>
+            <Label htmlFor="questionDataType" className="mb-2">{t('company.interviewTemplateEditor.questionForm.fields.dataType')}</Label>
             <Select
               value={formData.data_type}
               onValueChange={(value) => setFormData({ ...formData, data_type: value })}
@@ -1571,7 +1596,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
 
         {isScoringType && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Valores de Scoring</label>
+            <Label htmlFor="scoringValues" className="mb-2">{t('company.interviewTemplateEditor.questionForm.fields.scoringValues')}</Label>
             <div className="space-y-3">
               {formData.scoring_values.map((value: {label: string, scoring: number} | string, index: number) => {
                 // Handle both old format (string) and new format (object)
@@ -1621,7 +1646,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                           newValues[index] = { label: e.target.value, scoring: currentScoring };
                           setFormData({ ...formData, scoring_values: newValues });
                         }}
-                        placeholder={`Etiqueta ${index + 1}`}
+                        placeholder={t('company.interviewTemplateEditor.questionForm.placeholders.scoringLabel')}
                       />
                     </div>
                     {isDistanceMode ? (
@@ -1638,12 +1663,12 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                           }}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona distancia" />
+                            <SelectValue placeholder={t('company.interviewTemplateEditor.questionForm.placeholders.scoringLabel')} />
                           </SelectTrigger>
                           <SelectContent>
                             {distanceOptions.map((option) => (
                               <SelectItem key={option.label} value={option.label}>
-                                {option.label} (scoring: {option.scoring})
+                                {option.label} ({t('company.interviewTemplateEditor.questionForm.labels.score')}: {option.scoring})
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1682,10 +1707,10 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                       type="button"
                       variant="ghost"
                       size="icon"
-                      onClick={() => {
-                        const newValues = formData.scoring_values.filter((_, i) => i !== index);
-                        setFormData({ ...formData, scoring_values: newValues });
-                      }}
+                        onClick={() => {
+                          const newValues = formData.scoring_values.filter((_: any, i: number) => i !== index);
+                          setFormData({ ...formData, scoring_values: newValues });
+                        }}
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -1702,15 +1727,15 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                 className="w-full"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Agregar Valor
+                {t('company.interviewTemplateEditor.questionForm.labels.addValue')}
               </Button>
             </div>
             <p className="mt-1 text-xs text-gray-500">
               {isDistanceMode 
-                ? 'En modo Distancia, cada valor tiene una etiqueta y una distancia seleccionada del dropdown.'
+                ? t('company.interviewTemplateEditor.questionForm.labels.scoringValuesDescription.distance')
                 : isAbsoluteMode
-                ? 'En modo Absoluto, cada valor tiene una etiqueta y se selecciona el scoring con estrellas (cada estrella = 2 puntos).'
-                : 'Define los valores posibles para esta pregunta de scoring.'}
+                ? t('company.interviewTemplateEditor.questionForm.labels.scoringValuesDescription.absolute')
+                : t('company.interviewTemplateEditor.questionForm.labels.scoringValuesDescription.default')}
             </p>
           </div>
         )}
@@ -1726,33 +1751,41 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
               htmlFor="allow_ai_followup"
               className="text-sm font-medium text-gray-700 cursor-pointer"
             >
-              Allow AI to generate follow-up questions
+              {t('company.interviewTemplateEditor.questionForm.labels.allowAIFollowup')}
             </label>
           </div>
           <p className="mt-1 text-xs text-gray-500 ml-6">
-            AI can create additional follow-up questions based on candidate responses
+            {t('company.interviewTemplateEditor.questionForm.labels.allowAIFollowupDescription')}
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Legal Notice</label>
+          <Label htmlFor="questionLegalNotice" className="mb-2">{t('company.interviewTemplateEditor.questionForm.fields.legalNotice')}</Label>
           <Textarea
+            id="questionLegalNotice"
             value={formData.legal_notice}
             onChange={(e) => setFormData({ ...formData, legal_notice: e.target.value })}
             rows={3}
-            placeholder="Legal text specific to this question (if needed)"
+            placeholder={t('company.interviewTemplateEditor.questionForm.placeholders.legalNotice')}
           />
           <p className="mt-1 text-xs text-gray-500">
-            Optional legal notice for sensitive questions (background checks, personal data, etc.)
+            {t('company.interviewTemplateEditor.questionForm.labels.legalNoticeDescription')}
           </p>
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {t('company.interviewTemplateEditor.questionForm.buttons.cancel')}
           </Button>
-          <Button type="submit">
-            {question ? 'Update Question' : 'Add Question'}
+          <Button 
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSubmit(e as any);
+            }}
+          >
+            {question ? t('company.interviewTemplateEditor.questionForm.buttons.update') : t('company.interviewTemplateEditor.questionForm.buttons.add')}
           </Button>
         </DialogFooter>
       </form>

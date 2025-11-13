@@ -330,6 +330,8 @@
             "moveDown": "Mover sección hacia abajo en la lista",
             "edit": "Editar detalles, introducción y objetivos de la sección",
             "manageQuestions": "Gestionar preguntas para esta sección",
+            "showQuestions": "Mostrar preguntas",
+            "hideQuestions": "Ocultar preguntas",
             "disable": "Desactivar sección - no se usará en entrevistas",
             "enable": "Activar sección - hacerla activa para entrevistas",
             "delete": "Eliminar permanentemente esta sección y todas sus preguntas",
@@ -343,7 +345,7 @@
           "addQuestion": "Añadir Pregunta",
           "noQuestions": "No se han añadido preguntas aún",
           "noQuestionsDescription": "Haz clic en \"Añadir Pregunta\" para crear tu primera pregunta",
-          "questionsCount": "Preguntas ({count})",
+          "questionsCount": "Preguntas ({{count}})",
           "tooltips": {
             "moveUp": "Mover pregunta hacia arriba en la lista",
             "moveDown": "Mover pregunta hacia abajo en la lista",
@@ -378,16 +380,45 @@
             "description": "Descripción",
             "scope": "Alcance",
             "dataType": "Tipo de Dato",
-            "questionCode": "Código de Pregunta (opcional)"
+            "questionCode": "Código de Pregunta (opcional)",
+            "scoringValues": "Valores de Scoring",
+            "legalNotice": "Aviso Legal"
           },
           "placeholders": {
             "questionName": "Ingresa el nombre de la pregunta",
             "description": "Describe la pregunta",
-            "questionCode": "Código único para la pregunta (opcional)"
+            "questionCode": "Código único para la pregunta (opcional)",
+            "scoringLabel": "Etiqueta",
+            "legalNotice": "Texto legal específico para esta pregunta (si es necesario)"
           },
           "labels": {
             "allowAIFollowup": "Permitir que la IA genere preguntas de seguimiento",
-            "allowAIFollowupDescription": "La IA puede crear preguntas de seguimiento adicionales basadas en las respuestas del candidato"
+            "allowAIFollowupDescription": "La IA puede crear preguntas de seguimiento adicionales basadas en las respuestas del candidato",
+            "addValue": "Agregar Valor",
+            "score": "Score",
+            "scoringValuesDescription": {
+              "distance": "En modo Distancia, cada valor tiene una etiqueta y una distancia seleccionada del dropdown.",
+              "absolute": "En modo Absoluto, cada valor tiene una etiqueta y se selecciona el scoring con estrellas (cada estrella = 2 puntos).",
+              "default": "Define los valores posibles para esta pregunta de scoring."
+            },
+            "legalNoticeDescription": "Aviso legal opcional para preguntas sensibles (verificaciones de antecedentes, datos personales, etc.)"
+          },
+          "scopeOptions": {
+            "global": "Global",
+            "item": "Item"
+          },
+          "dataTypeOptions": {
+            "shortString": "Texto Corto",
+            "largeString": "Texto Largo",
+            "int": "Entero",
+            "date": "Fecha",
+            "scoring": "Scoring"
+          },
+          "distanceOptions": {
+            "cerca": "Cerca",
+            "medio": "Medio",
+            "lejos": "Lejos",
+            "muyLejos": "Muy Lejos"
           },
           "buttons": {
             "cancel": "Cancelar",
