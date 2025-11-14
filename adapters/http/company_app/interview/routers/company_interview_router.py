@@ -98,7 +98,7 @@ def list_interviews(
     interviewer_user_id: Optional[str] = Query(None, description="Filter by interviewer user ID"),
     from_date: Optional[datetime] = Query(None, description="Filter from date"),
     to_date: Optional[datetime] = Query(None, description="Filter to date"),
-    filter_by: Optional[str] = Query(None, description="Filter by 'scheduled' or 'deadline' date field"),
+    filter_by: Optional[str] = Query(None, description="Filter by date field: 'scheduled', 'deadline', or 'unscheduled' (interviews without scheduled_at or interviewers)"),
     limit: int = Query(50, ge=1, le=100, description="Limit results"),
     offset: int = Query(0, ge=0, description="Offset for pagination")
 ) -> InterviewListResponse:
@@ -172,7 +172,7 @@ def get_interview_calendar(
     company_id: str = Depends(get_company_id_from_token),
     from_date: datetime = Query(..., description="Start date for calendar range"),
     to_date: datetime = Query(..., description="End date for calendar range"),
-    filter_by: Optional[str] = Query('scheduled', description="Filter by 'scheduled' or 'deadline'")
+    filter_by: Optional[str] = Query('scheduled', description="Filter by date field: 'scheduled', 'deadline', or 'unscheduled' (interviews without scheduled_at or interviewers)")
 ) -> List[InterviewManagementResponse]:
     """Get interviews within a date range for calendar view"""
     try:

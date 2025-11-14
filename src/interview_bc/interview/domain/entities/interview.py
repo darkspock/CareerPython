@@ -117,6 +117,27 @@ class Interview:
         if scheduled_by:
             self.updated_by = scheduled_by
 
+    def update_scheduled_at(self, scheduled_at: datetime, updated_by: Optional[str] = None, allow_past: bool = False) -> None:
+        """Update scheduled_at date, optionally allowing past dates (for editing existing interviews)"""
+        if allow_past:
+            # When allow_past=True, allow any date (for editing existing interviews)
+            # This allows keeping past dates or updating other fields without date validation
+            self.scheduled_at = scheduled_at
+        else:
+            # When allow_past=False, validate that we're not scheduling in the past
+            if scheduled_at <= datetime.utcnow():
+                # Prevent scheduling new interviews in the past
+                if self.scheduled_at is None:
+                    raise ValueError("Cannot schedule interview in the past")
+                # Prevent moving to an earlier past date
+                elif self.scheduled_at and scheduled_at < self.scheduled_at:
+                    raise ValueError("Cannot reschedule interview to an earlier past date")
+            self.scheduled_at = scheduled_at
+        
+        self.updated_at = datetime.utcnow()
+        if updated_by:
+            self.updated_by = updated_by
+
     def set_deadline(self, deadline_date: datetime, set_by: Optional[str] = None) -> None:
         """Set the deadline date for the interview"""
         if deadline_date <= datetime.utcnow():

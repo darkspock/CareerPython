@@ -81,15 +81,45 @@ class InterviewController:
             # Convert string enums to enum values for count query
             interview_type_enum = None
             if interview_type:
-                interview_type_enum = InterviewTypeEnum(interview_type)
+                try:
+                    interview_type_enum = InterviewTypeEnum(interview_type)
+                except ValueError:
+                    interview_type_enum = None
 
             process_type_enum = None
             if process_type:
-                process_type_enum = InterviewProcessTypeEnum(process_type)
+                try:
+                    process_type_enum = InterviewProcessTypeEnum(process_type)
+                except ValueError:
+                    process_type_enum = None
 
             status_enum = None
+            has_scheduled_filter = False  # Special filter for "SCHEDULED" status
             if status:
-                status_enum = InterviewStatusEnum(status)
+                status_upper = status.upper()
+                # Handle "SCHEDULED" as a special case - means interviews with scheduled_at and interviewers
+                if status_upper == "SCHEDULED":
+                    has_scheduled_filter = True
+                    status_enum = None  # Don't filter by status enum, use scheduled filter instead
+                else:
+                    try:
+                        # Try direct conversion first (works for "PENDING", "IN_PROGRESS", etc.)
+                        status_enum = InterviewStatusEnum(status_upper)
+                    except ValueError:
+                        # Handle legacy or mismatched values
+                        # Map "ENABLED" to ENABLED enum (which has value "PENDING")
+                        if status_upper == "ENABLED":
+                            status_enum = InterviewStatusEnum.ENABLED
+                        elif status_upper == "DISABLED":
+                            status_enum = InterviewStatusEnum.DISCARDED
+                        elif status_upper == "PENDING":
+                            status_enum = InterviewStatusEnum.ENABLED  # PENDING maps to ENABLED enum
+                        else:
+                            # Try to find enum member by name
+                            try:
+                                status_enum = InterviewStatusEnum[status_upper]
+                            except (KeyError, ValueError):
+                                status_enum = None  # Invalid status, ignore filter
 
             # Get total count
             container = Container()
@@ -106,7 +136,8 @@ class InterviewController:
                 created_by=created_by,
                 from_date=from_date,
                 to_date=to_date,
-                filter_by=filter_by
+                filter_by=filter_by,
+                has_scheduled_at_and_interviewers=has_scheduled_filter
             )
 
             # Get paginated results
@@ -501,8 +532,9 @@ class InterviewController:
             stats: InterviewStatisticsDto = self._query_bus.query(query)
             return stats
         except Exception as e:
-            logger.error(f"Error getting interview statistics: {e}")
-            raise HTTPException(status_code=500, detail="Failed to retrieve interview statistics")
+            logger.error(f"Error getting interview statistics: {e}", exc_info=True)
+            error_message = str(e) if str(e) else "Failed to retrieve interview statistics"
+            raise HTTPException(status_code=500, detail=error_message)
 
     def get_interviewers_by_interview(
             self,

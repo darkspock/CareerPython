@@ -84,6 +84,7 @@ class InterviewRepositoryInterface(ABC):
             from_date: Optional[datetime] = None,
             to_date: Optional[datetime] = None,
             filter_by: Optional[str] = None,  # 'scheduled' or 'deadline'
+            has_scheduled_at_and_interviewers: bool = False,  # Special filter for "SCHEDULED" status
             limit: int = 50,
             offset: int = 0
     ) -> List[Interview]:
@@ -104,7 +105,8 @@ class InterviewRepositoryInterface(ABC):
             created_by: Optional[str] = None,
             from_date: Optional[datetime] = None,
             to_date: Optional[datetime] = None,
-            filter_by: Optional[str] = None  # 'scheduled' or 'deadline'
+            filter_by: Optional[str] = None,  # 'scheduled' or 'deadline'
+            has_scheduled_at_and_interviewers: bool = False  # Special filter for "SCHEDULED" status
     ) -> int:
         """Count interviews matching the filters (for pagination)"""
         pass

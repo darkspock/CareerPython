@@ -94,6 +94,9 @@ from src.interview_bc.interview.application.queries.list_interviews import ListI
 from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQueryHandler
 from src.interview_bc.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQueryHandler
 from src.interview_bc.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQueryHandler
+from src.interview_bc.interview.application.queries.get_interviews_by_date_range import GetInterviewsByDateRangeQueryHandler
+from src.interview_bc.interview.application.queries.get_overdue_interviews import GetOverdueInterviewsQueryHandler
+from src.interview_bc.interview.application.queries.get_interview_statistics import GetInterviewStatisticsQueryHandler
 from src.interview_bc.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQueryHandler
 from src.interview_bc.interview.application.queries.get_answers_by_interview import GetAnswersByInterviewQueryHandler
 from src.interview_bc.interview.application.queries.get_interview_answer_by_id import GetInterviewAnswerByIdQueryHandler
@@ -808,6 +811,21 @@ class Container(containers.DeclarativeContainer):
 
     get_interview_by_token_query_handler = providers.Factory(
         GetInterviewByTokenQueryHandler,
+        interview_repository=interview_repository
+    )
+
+    get_interviews_by_date_range_query_handler = providers.Factory(
+        GetInterviewsByDateRangeQueryHandler,
+        interview_repository=interview_repository
+    )
+
+    get_overdue_interviews_query_handler = providers.Factory(
+        GetOverdueInterviewsQueryHandler,
+        interview_repository=interview_repository
+    )
+
+    get_interview_statistics_query_handler = providers.Factory(
+        GetInterviewStatisticsQueryHandler,
         interview_repository=interview_repository
     )
 

@@ -64,7 +64,7 @@ const CompanyInterviewsPage: React.FC = () => {
   const [interviewerFilter, setInterviewerFilter] = useState<string>('all');
   const [fromDateFilter, setFromDateFilter] = useState<string>('');
   const [toDateFilter, setToDateFilter] = useState<string>('');
-  const [dateFilterBy, setDateFilterBy] = useState<'scheduled' | 'deadline'>('scheduled');
+  const [dateFilterBy, setDateFilterBy] = useState<'scheduled' | 'deadline' | 'unscheduled'>('scheduled');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Calendar state
@@ -195,7 +195,12 @@ const CompanyInterviewsPage: React.FC = () => {
     }
   };
 
-  const loadInterviews = async () => {
+  const loadInterviews = async (overrideFilters?: {
+    status?: string;
+    fromDate?: string;
+    toDate?: string;
+    filterBy?: 'scheduled' | 'deadline' | 'unscheduled';
+  }) => {
     try {
       setLoading(true);
       setError(null);
@@ -209,8 +214,10 @@ const CompanyInterviewsPage: React.FC = () => {
         filters.candidate_name = candidateNameFilter;
       }
 
-      if (statusFilter !== 'all') {
-        filters.status = statusFilter as any;
+      // Use override filters if provided, otherwise use state
+      const effectiveStatus = overrideFilters?.status ?? statusFilter;
+      if (effectiveStatus !== 'all') {
+        filters.status = effectiveStatus as any;
       }
 
       if (typeFilter !== 'all') {
@@ -233,13 +240,25 @@ const CompanyInterviewsPage: React.FC = () => {
         filters.interviewer_user_id = interviewerFilter;
       }
 
-      if (fromDateFilter) {
-        filters.from_date = fromDateFilter;
-        filters.filter_by = dateFilterBy;
-      }
-
-      if (toDateFilter) {
-        filters.to_date = toDateFilter;
+      // Set filter_by if we have date filters or if it's explicitly set (e.g., for deadline or unscheduled filtering)
+      const effectiveFromDate = overrideFilters?.fromDate ?? fromDateFilter;
+      const effectiveToDate = overrideFilters?.toDate ?? toDateFilter;
+      const effectiveFilterBy = overrideFilters?.filterBy ?? dateFilterBy;
+      
+      // Set filter_by if we have date filters OR if it's explicitly provided in overrides (e.g., 'unscheduled' or 'deadline')
+      if (effectiveFromDate || effectiveToDate) {
+        filters.filter_by = effectiveFilterBy;
+        if (effectiveFromDate) {
+          filters.from_date = effectiveFromDate;
+        }
+        if (effectiveToDate) {
+          filters.to_date = effectiveToDate;
+        }
+      } else if (overrideFilters?.filterBy) {
+        // Set filter_by from overrides if explicitly provided (e.g., 'unscheduled' or 'deadline' filtering)
+        filters.filter_by = overrideFilters.filterBy;
+      } else if (dateFilterBy && (dateFilterBy === 'unscheduled' || dateFilterBy === 'deadline')) {
+        // Also set filter_by if it's a special filter type even without dates
         filters.filter_by = dateFilterBy;
       }
 
@@ -279,6 +298,7 @@ const CompanyInterviewsPage: React.FC = () => {
 
   const handleFilterByMetric = (filterType: string) => {
     setCurrentPage(1);
+    
     // Reset all filters first
     setStatusFilter('all');
     setTypeFilter('all');
@@ -289,15 +309,30 @@ const CompanyInterviewsPage: React.FC = () => {
     setFromDateFilter('');
     setToDateFilter('');
     setCandidateNameFilter('');
+    setDateFilterBy('scheduled'); // Reset to default
+
+    // Prepare filter overrides to pass directly to loadInterviews
+    // This avoids timing issues with state updates
+    let filterOverrides: {
+      status?: string;
+      fromDate?: string;
+      toDate?: string;
+      filterBy?: 'scheduled' | 'deadline' | 'unscheduled';
+    } = {};
 
     switch (filterType) {
       case 'pending_to_plan':
         // No scheduled_at or no interviewers
+        // Use filter_by=unscheduled to filter interviews without scheduled_at or interviewers
         setStatusFilter('ENABLED');
+        setDateFilterBy('unscheduled');
+        filterOverrides.status = 'ENABLED';
+        filterOverrides.filterBy = 'unscheduled';
         break;
       case 'planned':
         // Have scheduled_at and interviewers
         setStatusFilter('SCHEDULED');
+        filterOverrides.status = 'SCHEDULED';
         break;
       case 'in_progress':
         // scheduled_at = today
@@ -307,26 +342,41 @@ const CompanyInterviewsPage: React.FC = () => {
         setFromDateFilter(todayStart);
         setToDateFilter(todayEnd);
         setDateFilterBy('scheduled');
+        filterOverrides.fromDate = todayStart;
+        filterOverrides.toDate = todayEnd;
+        filterOverrides.filterBy = 'scheduled';
         break;
       case 'recently_finished':
         // finished_at in last 30 days
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        setFromDateFilter(thirtyDaysAgo.toISOString().split('T')[0]);
+        const fromDateStr = thirtyDaysAgo.toISOString().split('T')[0];
+        setFromDateFilter(fromDateStr);
         setDateFilterBy('scheduled');
+        filterOverrides.fromDate = fromDateStr;
+        filterOverrides.filterBy = 'scheduled';
         break;
       case 'overdue':
         // deadline_date < now and not finished
+        // Set to_date to now to filter overdue interviews
+        const now = new Date();
         setStatusFilter('ENABLED');
         setDateFilterBy('deadline');
+        setToDateFilter(now.toISOString());
+        setFromDateFilter(''); // No from_date, just get all past deadlines
+        filterOverrides.status = 'ENABLED';
+        filterOverrides.toDate = now.toISOString();
+        filterOverrides.filterBy = 'deadline';
         break;
       case 'pending_feedback':
         // finished but no score or feedback
         setStatusFilter('COMPLETED');
+        filterOverrides.status = 'COMPLETED';
         break;
     }
     
-    setTimeout(() => loadInterviews(), 100);
+    // Load interviews immediately with filter overrides, avoiding state timing issues
+    loadInterviews(filterOverrides);
   };
 
   const handleDateClick = (date: Date) => {
@@ -911,7 +961,12 @@ const CompanyInterviewsPage: React.FC = () => {
                       <TableCell>
                         {interview.scheduled_at ? (
                           <button
-                            onClick={() => navigate(`/company/interviews/${interview.id}/edit`)}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              navigate(`/company/interviews/${interview.id}/edit`);
+                            }}
                             className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                           >
                             <Clock className="w-4 h-4" />
@@ -919,14 +974,11 @@ const CompanyInterviewsPage: React.FC = () => {
                           </button>
                         ) : (
                           <button
-                            onClick={() => {
-                              const today = new Date();
-                              const dateStr = today.toISOString().split('T')[0];
-                              setFromDateFilter(dateStr);
-                              setToDateFilter(dateStr);
-                              setDateFilterBy('scheduled');
-                              setCurrentPage(1);
-                              setTimeout(() => loadInterviews(), 100);
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              navigate(`/company/interviews/${interview.id}/edit`);
                             }}
                             className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-600 transition-colors"
                           >
@@ -938,7 +990,12 @@ const CompanyInterviewsPage: React.FC = () => {
                       <TableCell>
                         {interview.deadline_date ? (
                           <button
-                            onClick={() => navigate(`/company/interviews/${interview.id}/edit`)}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              navigate(`/company/interviews/${interview.id}/edit`);
+                            }}
                             className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                           >
                             <Clock className="w-4 h-4" />

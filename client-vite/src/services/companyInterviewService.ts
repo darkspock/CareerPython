@@ -89,7 +89,7 @@ export type InterviewFilters = {
   interviewer_user_id?: string; // Filter by interviewer (CompanyUserId)
   from_date?: string;
   to_date?: string;
-  filter_by?: 'scheduled' | 'deadline'; // Which date field to filter
+  filter_by?: 'scheduled' | 'deadline' | 'unscheduled'; // Which date field to filter
   limit?: number;
   offset?: number;
 };

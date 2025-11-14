@@ -1,4 +1,5 @@
 """List interviews query"""
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
@@ -11,6 +12,8 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
 )
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -40,15 +43,45 @@ class ListInterviewsQueryHandler(QueryHandler[ListInterviewsQuery, List[Intervie
         # Convert string enums to actual enum values
         interview_type = None
         if query.interview_type:
-            interview_type = InterviewTypeEnum(query.interview_type)
+            try:
+                interview_type = InterviewTypeEnum(query.interview_type)
+            except ValueError:
+                interview_type = None
 
         process_type = None
         if query.process_type:
-            process_type = InterviewProcessTypeEnum(query.process_type)
+            try:
+                process_type = InterviewProcessTypeEnum(query.process_type)
+            except ValueError:
+                process_type = None
 
         status = None
+        use_scheduled_filter = False  # Special filter for "SCHEDULED" status
         if query.status:
-            status = InterviewStatusEnum(query.status)
+            status_upper = query.status.upper()
+            # Handle "SCHEDULED" as a special case - means interviews with scheduled_at and interviewers
+            if status_upper == "SCHEDULED":
+                use_scheduled_filter = True
+                status = None  # Don't filter by status enum, use scheduled filter instead
+            else:
+                try:
+                    # Try direct conversion first (works for "PENDING", "IN_PROGRESS", etc.)
+                    status = InterviewStatusEnum(status_upper)
+                except ValueError:
+                    # Handle legacy or mismatched values
+                    # Map "ENABLED" to ENABLED enum (which has value "PENDING")
+                    if status_upper == "ENABLED":
+                        status = InterviewStatusEnum.ENABLED
+                    elif status_upper == "DISABLED":
+                        status = InterviewStatusEnum.DISCARDED
+                    elif status_upper == "PENDING":
+                        status = InterviewStatusEnum.ENABLED  # PENDING maps to ENABLED enum
+                    else:
+                        # Try to find enum member by name
+                        try:
+                            status = InterviewStatusEnum[status_upper]
+                        except (KeyError, ValueError):
+                            status = None  # Invalid status, ignore filter
 
         interviews = self.interview_repository.find_by_filters(
             candidate_id=query.candidate_id,
@@ -63,6 +96,7 @@ class ListInterviewsQueryHandler(QueryHandler[ListInterviewsQuery, List[Intervie
             from_date=query.from_date,
             to_date=query.to_date,
             filter_by=query.filter_by,
+            has_scheduled_at_and_interviewers=use_scheduled_filter,  # Special filter for "SCHEDULED" status
             limit=query.limit,
             offset=query.offset
         )

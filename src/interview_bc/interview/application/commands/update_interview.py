@@ -80,9 +80,16 @@ class UpdateInterviewCommandHandler(CommandHandler[UpdateInterviewCommand]):
             updated_by=command.updated_by
         )
 
-        # Update scheduled_at using schedule method if provided
-        if scheduled_at_datetime:
-            interview.schedule(scheduled_at_datetime, scheduled_by=command.updated_by)
+        # Update scheduled_at if provided
+        # Allow updating past dates when editing existing interviews (allow_past=True)
+        # Only prevent scheduling NEW interviews in the past
+        if scheduled_at_datetime is not None:
+            # Check if the date is actually changing
+            if interview.scheduled_at != scheduled_at_datetime:
+                # Use update_scheduled_at which allows past dates for editing
+                # Only prevent if scheduling a new interview (no existing scheduled_at) to the past
+                allow_past = interview.scheduled_at is not None  # Allow past if already had a date
+                interview.update_scheduled_at(scheduled_at_datetime, updated_by=command.updated_by, allow_past=allow_past)
 
         # Update required roles if provided
         if command.required_roles is not None:

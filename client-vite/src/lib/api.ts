@@ -901,17 +901,25 @@ export const api = {
   },
 
   // User Language Preference
-  getUserLanguagePreference: () =>
-    ApiClient.authenticatedRequest('/user/me/language'),
+  getUserLanguagePreference: () => {
+    // Check if we're in company context by checking current URL
+    const isCompanyContext = typeof window !== 'undefined' && window.location.pathname.startsWith('/company/');
+    const endpoint = isCompanyContext ? '/company/me/language' : '/user/me/language';
+    return ApiClient.authenticatedRequest(endpoint);
+  },
 
-  updateUserLanguagePreference: (languageCode: string) =>
-    ApiClient.authenticatedRequest('/user/me/language', {
+  updateUserLanguagePreference: (languageCode: string) => {
+    // Check if we're in company context by checking current URL
+    const isCompanyContext = typeof window !== 'undefined' && window.location.pathname.startsWith('/company/');
+    const endpoint = isCompanyContext ? '/company/me/language' : '/user/me/language';
+    return ApiClient.authenticatedRequest(endpoint, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ language_code: languageCode }),
-    }),
+    });
+  },
 
   // Company Roles API
   listCompanyRoles: (companyId: string, activeOnly: boolean = false) =>

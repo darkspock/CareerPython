@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { User, LogOut, Globe, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
+import { isTokenExpired } from '../../utils/jwt';
 
 interface UserSettingsMenuProps {
   onLogout: () => void;
@@ -38,6 +39,21 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
   // Load user's language preference on mount
   useEffect(() => {
     const loadUserLanguagePreference = async () => {
+      // Only try to load from database if user might be authenticated
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        // Use i18n default detection
+        setCurrentLanguage(i18n.language);
+        return;
+      }
+
+      // Check if token is expired before making the request
+      if (isTokenExpired(token)) {
+        console.warn('Token is expired, skipping language preference load');
+        setCurrentLanguage(i18n.language);
+        return;
+      }
+
       try {
         const response = await api.getUserLanguagePreference() as { preferred_language?: string; language_code?: string };
         const preferredLanguage = response.preferred_language || response.language_code;
@@ -48,8 +64,14 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
         } else {
           setCurrentLanguage(i18n.language);
         }
-      } catch (error) {
-        console.warn('Failed to load user language preference:', error);
+      } catch (error: any) {
+        // Check if it's a 401 error (unauthorized/expired token)
+        if (error?.message?.includes('401') || error?.message?.includes('Unauthorized')) {
+          console.warn('Token expired or invalid, skipping language preference load');
+        } else {
+          console.warn('Failed to load user language preference:', error);
+        }
+        // Fallback to localStorage/browser detection which i18n already handles
         setCurrentLanguage(i18n.language);
       }
     };
@@ -62,11 +84,19 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
       await i18n.changeLanguage(languageCode);
       setCurrentLanguage(languageCode);
 
-      // Save language preference to user profile in database
-      try {
-        await api.updateUserLanguagePreference(languageCode);
-      } catch (apiError) {
-        console.warn('Failed to save language preference to database:', apiError);
+      // Save language preference to user profile in database (only if authenticated and token valid)
+      const token = localStorage.getItem('access_token');
+      if (token && !isTokenExpired(token)) {
+        try {
+          await api.updateUserLanguagePreference(languageCode);
+        } catch (apiError: any) {
+          // Silently fail - token might be expired or user not authenticated
+          if (apiError?.message?.includes('401') || apiError?.message?.includes('Unauthorized')) {
+            console.warn('Token expired or invalid, language preference saved only to localStorage');
+          } else {
+            console.warn('Failed to save language preference to database:', apiError);
+          }
+        }
       }
 
       // Also save in localStorage as fallback

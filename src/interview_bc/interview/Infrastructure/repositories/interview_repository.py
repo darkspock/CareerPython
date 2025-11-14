@@ -1,9 +1,13 @@
 """Interview repository implementation"""
+import logging
 from datetime import datetime
 from typing import Optional, List
 
 from core.database import DatabaseInterface
-from sqlalchemy import or_, func
+from sqlalchemy import or_, and_, func
+from sqlalchemy.dialects import postgresql
+
+logger = logging.getLogger(__name__)
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.interview_bc.interview.Infrastructure.models.interview_model import InterviewModel
@@ -59,11 +63,49 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         # Convert string enums to enum objects
         process_type_enum = None
         if model.process_type:
-            process_type_enum = InterviewProcessTypeEnum(model.process_type)
+            try:
+                process_type_enum = InterviewProcessTypeEnum(model.process_type)
+            except ValueError:
+                # Handle invalid enum values gracefully
+                process_type_enum = None
         
-        interview_type_enum = InterviewTypeEnum(model.interview_type) if model.interview_type else InterviewTypeEnum.CUSTOM
-        interview_mode_enum = InterviewModeEnum(model.interview_mode) if model.interview_mode else None
-        status_enum = InterviewStatusEnum(model.status) if model.status else InterviewStatusEnum.ENABLED
+        interview_type_enum = InterviewTypeEnum.CUSTOM
+        if model.interview_type:
+            try:
+                interview_type_enum = InterviewTypeEnum(model.interview_type)
+            except ValueError:
+                interview_type_enum = InterviewTypeEnum.CUSTOM
+        
+        interview_mode_enum = None
+        if model.interview_mode:
+            try:
+                interview_mode_enum = InterviewModeEnum(model.interview_mode)
+            except ValueError:
+                interview_mode_enum = None
+        
+        # Handle status enum conversion
+        # Note: InterviewStatusEnum.ENABLED has value "PENDING", so we need to handle both cases
+        status_enum = InterviewStatusEnum.ENABLED  # Default
+        if model.status:
+            status_upper = model.status.upper()
+            try:
+                # Try direct conversion first (works for "PENDING", "IN_PROGRESS", etc.)
+                status_enum = InterviewStatusEnum(model.status)
+            except ValueError:
+                # Handle legacy or mismatched values
+                # Map "ENABLED" to ENABLED enum (which has value "PENDING")
+                if status_upper == "ENABLED":
+                    status_enum = InterviewStatusEnum.ENABLED
+                elif status_upper == "DISABLED":
+                    status_enum = InterviewStatusEnum.DISCARDED
+                elif status_upper == "PENDING":
+                    status_enum = InterviewStatusEnum.ENABLED  # PENDING maps to ENABLED enum
+                else:
+                    # Try to find enum member by name
+                    try:
+                        status_enum = InterviewStatusEnum[status_upper]
+                    except (KeyError, ValueError):
+                        status_enum = InterviewStatusEnum.ENABLED  # Default fallback
 
         return Interview(
             id=InterviewId.from_string(model.id),
@@ -296,12 +338,14 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             created_by: Optional[str] = None,
             from_date: Optional[datetime] = None,
             to_date: Optional[datetime] = None,
-            filter_by: Optional[str] = None,  # 'scheduled' or 'deadline'
+            filter_by: Optional[str] = None,  # 'scheduled', 'deadline', or 'unscheduled'
+            has_scheduled_at_and_interviewers: bool = False,  # Special filter for "SCHEDULED" status
             limit: int = 50,
             offset: int = 0
     ) -> List[Interview]:
         """Find interviews by multiple filters"""
         from sqlalchemy import text
+        
         
         with self.database.get_session() as session:
             query = session.query(InterviewModel)
@@ -335,6 +379,16 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 status_str = status.value if hasattr(status, 'value') else str(status)
                 query = query.filter(InterviewModel.status == status_str)
             
+            # Special filter for "SCHEDULED" status: must have scheduled_at and interviewers
+            if has_scheduled_at_and_interviewers:
+                # interviewers is JSON (not JSONB), so we need to cast it to JSONB for jsonb_array_length
+                # Or use a simpler check: verify it's not null and not an empty array
+                query = query.filter(
+                    InterviewModel.scheduled_at.isnot(None),
+                    InterviewModel.interviewers.isnot(None),
+                    func.jsonb_array_length(func.cast(InterviewModel.interviewers, postgresql.JSONB)) > 0
+                )
+            
             if required_role_id:
                 # Filter using JSONB operator: check if required_roles contains the role_id
                 query = query.filter(
@@ -353,17 +407,29 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 query = query.filter(InterviewModel.created_by == created_by)
             
             # Date filtering - support both scheduled_at and deadline_date
-            if from_date or to_date:
-                if filter_by == 'deadline':
-                    if from_date:
-                        query = query.filter(InterviewModel.deadline_date >= from_date)
-                    if to_date:
-                        query = query.filter(InterviewModel.deadline_date <= to_date)
-                else:  # Default to scheduled_at
-                    if from_date:
-                        query = query.filter(InterviewModel.scheduled_at >= from_date)
-                    if to_date:
-                        query = query.filter(InterviewModel.scheduled_at <= to_date)
+            # If filter_by is 'deadline', always exclude null deadline_date
+            if filter_by == 'deadline':
+                query = query.filter(InterviewModel.deadline_date.isnot(None))
+                if from_date:
+                    query = query.filter(InterviewModel.deadline_date >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.deadline_date <= to_date)
+            elif filter_by == 'unscheduled':
+                # Filter for interviews without scheduled_at or without interviewers
+                # This is for "pending_to_plan" - interviews that need to be scheduled
+                query = query.filter(
+                    or_(
+                        InterviewModel.scheduled_at.is_(None),
+                        InterviewModel.interviewers.is_(None),
+                        func.jsonb_array_length(func.cast(InterviewModel.interviewers, postgresql.JSONB)) == 0
+                    )
+                )
+            elif from_date or to_date:
+                # Default to scheduled_at when filter_by is not 'deadline' or 'unscheduled'
+                if from_date:
+                    query = query.filter(InterviewModel.scheduled_at >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.scheduled_at <= to_date)
             else:
                 # If no filter_by specified, use created_at as fallback
                 if from_date:
@@ -390,7 +456,8 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             created_by: Optional[str] = None,
             from_date: Optional[datetime] = None,
             to_date: Optional[datetime] = None,
-            filter_by: Optional[str] = None  # 'scheduled' or 'deadline'
+            filter_by: Optional[str] = None,  # 'scheduled', 'deadline', or 'unscheduled'
+            has_scheduled_at_and_interviewers: bool = False  # Special filter for "SCHEDULED" status
     ) -> int:
         """Count interviews matching the filters (for pagination)"""
         from sqlalchemy import text
@@ -426,6 +493,16 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 status_str = status.value if hasattr(status, 'value') else str(status)
                 query = query.filter(InterviewModel.status == status_str)
             
+            # Special filter for "SCHEDULED" status: must have scheduled_at and interviewers
+            if has_scheduled_at_and_interviewers:
+                # interviewers is JSON (not JSONB), so we need to cast it to JSONB for jsonb_array_length
+                # Or use a simpler check: verify it's not null and not an empty array
+                query = query.filter(
+                    InterviewModel.scheduled_at.isnot(None),
+                    InterviewModel.interviewers.isnot(None),
+                    func.jsonb_array_length(func.cast(InterviewModel.interviewers, postgresql.JSONB)) > 0
+                )
+            
             if required_role_id:
                 query = query.filter(
                     InterviewModel.required_roles.contains([required_role_id])
@@ -440,17 +517,29 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 query = query.filter(InterviewModel.created_by == created_by)
             
             # Date filtering - support both scheduled_at and deadline_date
-            if from_date or to_date:
-                if filter_by == 'deadline':
-                    if from_date:
-                        query = query.filter(InterviewModel.deadline_date >= from_date)
-                    if to_date:
-                        query = query.filter(InterviewModel.deadline_date <= to_date)
-                else:  # Default to scheduled_at
-                    if from_date:
-                        query = query.filter(InterviewModel.scheduled_at >= from_date)
-                    if to_date:
-                        query = query.filter(InterviewModel.scheduled_at <= to_date)
+            # If filter_by is 'deadline', always exclude null deadline_date
+            if filter_by == 'deadline':
+                query = query.filter(InterviewModel.deadline_date.isnot(None))
+                if from_date:
+                    query = query.filter(InterviewModel.deadline_date >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.deadline_date <= to_date)
+            elif filter_by == 'unscheduled':
+                # Filter for interviews without scheduled_at or without interviewers
+                # This is for "pending_to_plan" - interviews that need to be scheduled
+                query = query.filter(
+                    or_(
+                        InterviewModel.scheduled_at.is_(None),
+                        InterviewModel.interviewers.is_(None),
+                        func.jsonb_array_length(func.cast(InterviewModel.interviewers, postgresql.JSONB)) == 0
+                    )
+                )
+            elif from_date or to_date:
+                # Default to scheduled_at when filter_by is not 'deadline' or 'unscheduled'
+                if from_date:
+                    query = query.filter(InterviewModel.scheduled_at >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.scheduled_at <= to_date)
             else:
                 # If no filter_by specified, use created_at as fallback
                 if from_date:
