@@ -5,7 +5,7 @@
  * with candidate-specific logic and services.
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart, Globe, AlertCircle, MessageSquare } from 'lucide-react';
 import ReviewForm from './ReviewForm';
 import ReviewsList from './ReviewsList';

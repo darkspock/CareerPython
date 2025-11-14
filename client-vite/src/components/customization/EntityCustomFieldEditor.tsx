@@ -3,7 +3,7 @@ import type {
   CustomField,
   FieldType,
   CreateCustomFieldRequest,
-  UpdateCustomFieldRequest,
+  // UpdateCustomFieldRequest,
   EntityCustomizationType
 } from '../../types/customization';
 import { getFieldTypeLabel } from '../../types/customization';

@@ -78,7 +78,7 @@ import CreateInterviewPage from './pages/company/CreateInterviewPage';
 import EditInterviewPage from './pages/company/EditInterviewPage';
 import PositionsListPage from './pages/company/PositionsListPage';
 import JobPositionWorkflowsSettingsPage from './pages/company/JobPositionWorkflowsSettingsPage.tsx';
-import CreateJobPositionWorkflowPage from './pages/company/CreateJobPositionWorkflowPage';
+// import CreateJobPositionWorkflowPage from './pages/company/CreateJobPositionWorkflowPage';
 import WorkflowBoardPage from './pages/workflow/WorkflowBoardPage.tsx';
 import CreatePositionPage from './pages/company/CreatePositionPage';
 import CreateWorkflowPage from './pages/workflow/CreateWorkflowPage.tsx';

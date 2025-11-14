@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Search, Edit, Trash2, Eye, Power, PowerOff } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { companyInterviewTemplateService } from '../../services/companyInterviewTemplateService';
 import type { InterviewTemplate, TemplateFilters } from '../../services/companyInterviewTemplateService';
 import { Button } from '@/components/ui/button';

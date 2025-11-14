@@ -115,7 +115,7 @@ export default function InterviewAnswerPage() {
     }
   };
 
-  const renderQuestion = (question: InterviewQuestion, section: InterviewSection) => {
+  const renderQuestion = (question: InterviewQuestion, _section: InterviewSection) => {
     console.log('renderQuestion called for:', question.id, question.name, 'data_type:', question.data_type);
     
     const answerText = answers[question.id] || '';

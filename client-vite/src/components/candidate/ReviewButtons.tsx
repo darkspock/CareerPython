@@ -65,7 +65,7 @@ export default function ReviewButtons({
 
   return (
     <div className="flex items-center gap-2">
-      {(Object.keys(scoreConfig) as ReviewScore[]).map((score) => {
+      {([0, 3, 6, 10] as ReviewScore[]).map((score) => {
         const config = scoreConfig[score];
         const isSelected = currentScore === score;
 

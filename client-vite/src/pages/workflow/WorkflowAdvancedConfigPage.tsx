@@ -203,7 +203,7 @@ export default function WorkflowAdvancedConfigPage() {
             <ValidationRuleEditor
               workflowId={workflowId!}
               stages={stages}
-              customFields={customFields}
+              customFields={customFields as any}
             />
           </div>
         )}

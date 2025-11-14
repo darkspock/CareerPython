@@ -306,7 +306,7 @@ export default function CompanyRegisterPage() {
               formData={formData}
               onChange={handleFieldChange}
               errors={errors}
-              onDomainValidation={(isValid, error) => {
+              onDomainValidation={(_isValid, error) => {
                 if (error) {
                   setErrors(prev => ({ ...prev, domain: error }));
                 } else {

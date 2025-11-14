@@ -68,7 +68,7 @@ export default function CandidateDetailPage() {
   // Comments state
   const [allComments, setAllComments] = useState<CandidateComment[]>([]);
   const [pendingCommentsCount, setPendingCommentsCount] = useState(0);
-  const [loadingComments, setLoadingComments] = useState(false);
+  const [_loadingComments, setLoadingComments] = useState(false);
   const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
 
   // Workflow tabs state
@@ -149,20 +149,20 @@ export default function CandidateDetailPage() {
   const loadWorkflowStages = async (workflowId: string, currentStageId?: string) => {
     try {
       // Use companyWorkflowService to get full stage data including kanban_display
-      const stages = await companyWorkflowService.getStagesByWorkflow(workflowId);
-      setAvailableStages(stages);
+      const stages = await companyWorkflowService.listStagesByWorkflow(workflowId);
+      setAvailableStages(stages as any);
 
       // Find current stage order
-      const currentStage = stages.find(stage => stage.id === currentStageId);
+      const currentStage = stages.find((stage: any) => stage.id === currentStageId);
       const currentOrder = currentStage?.order || 0;
 
       // Get next stage
       const next = await workflowStageService.getNextStage(workflowId, currentOrder);
-      setNextStage(next);
+      setNextStage(next as any);
 
       // Get fail stages
       const fail = await workflowStageService.getFailStages(workflowId);
-      setFailStages(fail);
+      setFailStages(fail as any);
     } catch (err) {
       console.error('Error loading workflow stages:', err);
     }
@@ -526,9 +526,7 @@ export default function CandidateDetailPage() {
                 if (!s.is_active || s.id === candidate.current_stage_id) return false;
                 const display = s.kanban_display;
                 return display === KanbanDisplay.ROW || 
-                       display === 'row' ||
-                       display === KanbanDisplay.NONE || 
-                       display === 'none';
+                       display === KanbanDisplay.NONE;
               });
               
               // Combine next stage and hidden/row stages, removing duplicates

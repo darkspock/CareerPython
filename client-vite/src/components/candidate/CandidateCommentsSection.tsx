@@ -5,7 +5,7 @@
  * with candidate-specific logic and services.
  */
 
-import React from 'react';
+// import React from 'react';
 import { CommentsSection, type CommentTab, type CommentFormData } from '../shared/comments';
 import { candidateCommentService } from '../../services/candidateCommentService';
 import type { CandidateComment } from '../../types/candidateComment';

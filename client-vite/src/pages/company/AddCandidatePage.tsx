@@ -5,7 +5,7 @@ import { companyCandidateService } from '../../services/companyCandidateService'
 import { PositionService } from '../../services/positionService';
 import type { Priority } from '../../types/companyCandidate';
 import type { Position } from '../../types/position';
-import { getStatusFromStage } from '../../types/position';
+// import { getStatusFromStage } from '../../types/position';
 
 export default function AddCandidatePage() {
   const navigate = useNavigate();

@@ -5,7 +5,7 @@ import type {
   CustomField,
   CreateEntityCustomizationRequest,
   UpdateEntityCustomizationRequest,
-  CreateCustomFieldRequest,
+  // CreateCustomFieldRequest,
   EntityCustomizationType
 } from '../types/customization';
 

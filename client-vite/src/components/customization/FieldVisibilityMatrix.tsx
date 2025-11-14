@@ -29,7 +29,7 @@ interface MatrixCell {
 export const FieldVisibilityMatrix: React.FC<FieldVisibilityMatrixProps> = ({
   entityType,
   entityId,
-  contextType,
+  contextType: _contextType, // Not used currently but part of interface
   contexts,
   fields,
   onConfigurationsChange

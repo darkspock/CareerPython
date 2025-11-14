@@ -8,7 +8,7 @@
  * - Actions (toggle review, delete)
  */
 
-import React from 'react';
+// import React from 'react';
 import { Trash2, CheckCircle, Clock, MessageSquare, Globe, Eye, EyeOff } from 'lucide-react';
 
 export interface BaseComment {

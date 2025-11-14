@@ -13,7 +13,7 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Kanban, User, AlertCircle, RefreshCw, List, ChevronDown, Move, Plus } from 'lucide-react';
+import { Kanban, User, AlertCircle, RefreshCw, List, ChevronDown, Move } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { companyCandidateService } from '../../services/companyCandidateService.ts';
 import { phaseService } from '../../services/phaseService.ts';
@@ -287,7 +287,7 @@ export default function WorkflowBoardPage() {
   const [stages, setStages] = useState<WorkflowStage[]>([]);
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
   const [nextPhaseCandidates, setNextPhaseCandidates] = useState<Map<string, CompanyCandidate[]>>(new Map()); // Map: next_phase_id -> candidates in initial stage
-  const [nextPhaseInitialStages, setNextPhaseInitialStages] = useState<Map<string, string>>(new Map()); // Map: next_phase_id -> initial_stage_id
+  const [_nextPhaseInitialStages, setNextPhaseInitialStages] = useState<Map<string, string>>(new Map()); // Map: next_phase_id -> initial_stage_id
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
