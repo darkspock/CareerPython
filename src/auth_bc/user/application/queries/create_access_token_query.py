@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, Dict, Optional
 
-from src.framework.application.query_bus import Query, QueryHandler
 from src.auth_bc.user.application.queries.dtos.auth_dto import TokenDto
 from src.auth_bc.user.domain.services.token_service import TokenService
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)

@@ -1,12 +1,17 @@
 """CandidateStage repository implementation"""
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
-from src.company_bc.candidate_application_stage.domain.entities.candidate_application_stage import CandidateApplicationStage
-from src.company_bc.candidate_application_stage.domain.value_objects.candidate_application_stage_id import CandidateApplicationStageId
-from src.company_bc.candidate_application_stage.domain.infrastructure.candidate_application_stage_repository_interface import CandidateStageRepositoryInterface
-from src.company_bc.candidate_application_stage.infrastructure.models.candidate_stage_model import CandidateApplicationStageModel
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.company_bc.candidate_application_stage.domain.entities.candidate_application_stage import \
+    CandidateApplicationStage
+from src.company_bc.candidate_application_stage.domain.infrastructure.candidate_application_stage_repository_interface import \
+    CandidateStageRepositoryInterface
+from src.company_bc.candidate_application_stage.domain.value_objects.candidate_application_stage_id import \
+    CandidateApplicationStageId
+from src.company_bc.candidate_application_stage.infrastructure.models.candidate_stage_model import \
+    CandidateApplicationStageModel
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
@@ -64,8 +69,8 @@ class CandidateApplicationStageRepository(CandidateStageRepositoryInterface):
         return self._to_domain(model) if model else None
 
     def list_by_candidate_application(
-        self,
-        candidate_application_id: CandidateApplicationId
+            self,
+            candidate_application_id: CandidateApplicationId
     ) -> List[CandidateApplicationStage]:
         """Get all stages for a candidate application, ordered by started_at"""
         models = (
@@ -87,8 +92,8 @@ class CandidateApplicationStageRepository(CandidateStageRepositoryInterface):
         return [self._to_domain(model) for model in models]
 
     def get_current_stage(
-        self,
-        candidate_application_id: CandidateApplicationId
+            self,
+            candidate_application_id: CandidateApplicationId
     ) -> Optional[CandidateApplicationStage]:
         """Get the current (most recent uncompleted) stage for a candidate application"""
         model = (

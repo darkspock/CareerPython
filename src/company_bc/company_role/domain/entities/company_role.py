@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company_bc.company.domain.value_objects import CompanyId
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 
 
 @dataclass(frozen=True)
@@ -20,11 +20,11 @@ class CompanyRole:
 
     @staticmethod
     def create(
-        id: CompanyRoleId,
-        company_id: CompanyId,
-        name: str,
-        description: Optional[str] = None,
-        is_active: bool = True
+            id: CompanyRoleId,
+            company_id: CompanyId,
+            name: str,
+            description: Optional[str] = None,
+            is_active: bool = True
     ) -> "CompanyRole":
         """Factory method to create a new company role."""
         if not name or not name.strip():
@@ -45,9 +45,9 @@ class CompanyRole:
         )
 
     def update(
-        self,
-        name: str,
-        description: Optional[str] = None
+            self,
+            name: str,
+            description: Optional[str] = None
     ) -> "CompanyRole":
         """Update role information."""
         if not name or not name.strip():

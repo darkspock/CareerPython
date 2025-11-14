@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any
+
 from sqlalchemy import String, ForeignKey, Index, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base
 
@@ -33,4 +34,3 @@ class CustomFieldValueModel(Base):
         Index('ix_custom_field_values_entity_type_id', 'entity_type', 'entity_id'),
         Index('ix_custom_field_values_company_candidate_id', 'company_candidate_id'),
     )
-

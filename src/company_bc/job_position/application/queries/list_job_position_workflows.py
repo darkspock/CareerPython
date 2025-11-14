@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import List
 
+from src.company_bc.company.domain.value_objects import CompanyId
 from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.shared_bc.customization.workflow.application.mappers.workflow_mapper import WorkflowMapper
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.company_bc.company.domain.value_objects import CompanyId
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
     WorkflowRepositoryInterface
 

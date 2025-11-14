@@ -7,11 +7,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
     WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.workflow_analytics.application.dtos import StageBottleneckDto
 
 if TYPE_CHECKING:
@@ -62,7 +63,8 @@ class GetStageBottlenecksQueryHandler(QueryHandler[GetStageBottlenecksQuery, Lis
         bottlenecks: List[StageBottleneckDto] = []
 
         with self._database.get_session() as session:
-            from src.company_bc.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+            from src.company_bc.company_candidate.infrastructure.models.company_candidate_model import \
+                CompanyCandidateModel
 
             # Base query with date filtering
             base_query = session.query(CompanyCandidateModel).filter(

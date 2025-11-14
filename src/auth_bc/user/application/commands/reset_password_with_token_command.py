@@ -1,9 +1,9 @@
 import logging
 from dataclasses import dataclass
 
-from src.framework.application.command_bus import Command, CommandHandler
 from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.auth_bc.user.domain.services.password_service import PasswordService
+from src.framework.application.command_bus import Command, CommandHandler
 
 log = logging.getLogger(__name__)
 

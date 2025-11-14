@@ -1,7 +1,7 @@
 import logging
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
@@ -23,7 +23,8 @@ class SMTPEmailService(EmailServiceInterface):
 
         self.logger = logging.getLogger(__name__)
         # Go up 4 levels: services -> infrastructure -> notification -> src, then go to shared
-        self.template_dir = Path(__file__).parent.parent.parent.parent / "shared" / "infrastructure" / "services" / "email_templates"
+        self.template_dir = Path(
+            __file__).parent.parent.parent.parent / "shared" / "infrastructure" / "services" / "email_templates"
 
     async def send_password_reset(self, email: str, reset_token: str) -> bool:
         """Send password reset email to user"""
@@ -155,12 +156,12 @@ class SMTPEmailService(EmailServiceInterface):
         return []
 
     async def send_user_invitation(
-        self,
-        email: str,
-        company_name: str,
-        invitation_link: str,
-        inviter_name: Optional[str] = None,
-        custom_message: Optional[str] = None
+            self,
+            email: str,
+            company_name: str,
+            invitation_link: str,
+            inviter_name: Optional[str] = None,
+            custom_message: Optional[str] = None
     ) -> bool:
         """Send user invitation email to join a company"""
         try:
@@ -173,7 +174,7 @@ class SMTPEmailService(EmailServiceInterface):
                 <p class="custom-message">{custom_message}</p>
             </div>
             """
-            
+
             template_data = {
                 "company_name": company_name,
                 "invitation_link": invitation_link,

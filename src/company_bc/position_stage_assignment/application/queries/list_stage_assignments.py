@@ -2,8 +2,9 @@
 from dataclasses import dataclass
 from typing import List
 
+from src.company_bc.position_stage_assignment.application.queries.position_stage_assignment_dto import \
+    PositionStageAssignmentDto
 from src.company_bc.position_stage_assignment.domain import PositionStageAssignmentRepositoryInterface
-from src.company_bc.position_stage_assignment.application.queries.position_stage_assignment_dto import PositionStageAssignmentDto
 from src.framework.application.query_bus import Query, QueryHandler
 
 

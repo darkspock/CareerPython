@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
-from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
-from src.framework.application.query_bus import Query, QueryHandler
 from core.database import SQLAlchemyDatabase
-from src.shared_bc.customization.entity_customization.infrastructure.models.custom_field_value_model import CustomFieldValueModel
+from src.framework.application.query_bus import Query, QueryHandler
+from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import \
+    EntityCustomizationTypeEnum
+from src.shared_bc.customization.entity_customization.infrastructure.models.custom_field_value_model import \
+    CustomFieldValueModel
 
 
 @dataclass(frozen=True)
@@ -27,8 +29,7 @@ class GetCustomFieldValuesByEntityQueryHandler(QueryHandler[GetCustomFieldValues
                 entity_type=query.entity_type.value,
                 entity_id=query.entity_id
             ).first()
-            
+
             if model and model.values:
                 return model.values
             return {}
-

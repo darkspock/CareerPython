@@ -1,5 +1,21 @@
 """Interview application module - exports queries and commands"""
 
+# Commands
+from .commands.create_interview import CreateInterviewCommand, CreateInterviewCommandHandler
+from .commands.create_interview_answer import (
+    CreateInterviewAnswerCommand,
+    CreateInterviewAnswerCommandHandler,
+)
+from .commands.finish_interview import FinishInterviewCommand, FinishInterviewCommandHandler
+from .commands.score_interview_answer import (
+    ScoreInterviewAnswerCommand,
+    ScoreInterviewAnswerCommandHandler,
+)
+from .commands.start_interview import StartInterviewCommand, StartInterviewCommandHandler
+from .commands.update_interview_answer import (
+    UpdateInterviewAnswerCommand,
+    UpdateInterviewAnswerCommandHandler,
+)
 # Queries
 from .queries.get_answers_by_interview import (
     GetAnswersByInterviewQuery,
@@ -23,23 +39,6 @@ from .queries.get_scheduled_interviews import (
     GetScheduledInterviewsQueryHandler,
 )
 from .queries.list_interviews import ListInterviewsQuery, ListInterviewsQueryHandler
-
-# Commands
-from .commands.create_interview import CreateInterviewCommand, CreateInterviewCommandHandler
-from .commands.create_interview_answer import (
-    CreateInterviewAnswerCommand,
-    CreateInterviewAnswerCommandHandler,
-)
-from .commands.finish_interview import FinishInterviewCommand, FinishInterviewCommandHandler
-from .commands.score_interview_answer import (
-    ScoreInterviewAnswerCommand,
-    ScoreInterviewAnswerCommandHandler,
-)
-from .commands.start_interview import StartInterviewCommand, StartInterviewCommandHandler
-from .commands.update_interview_answer import (
-    UpdateInterviewAnswerCommand,
-    UpdateInterviewAnswerCommandHandler,
-)
 
 __all__ = [
     # Queries
@@ -71,4 +70,3 @@ __all__ = [
     "UpdateInterviewAnswerCommand",
     "UpdateInterviewAnswerCommandHandler",
 ]
-

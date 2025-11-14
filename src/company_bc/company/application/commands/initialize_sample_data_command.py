@@ -1,37 +1,39 @@
+import random
 from dataclasses import dataclass
 from datetime import date
 from typing import Optional
-import random
+
 from sqlalchemy import text
 
+from core.database import SQLAlchemyDatabase
+from src.auth_bc.user.application.commands.create_user_command import CreateUserCommand
+from src.auth_bc.user.domain.value_objects.UserId import UserId
+from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommand
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company_bc.candidate_application.application.commands.create_candidate_application import \
+    CreateCandidateApplicationCommand
+from src.company_bc.company.application.commands.add_company_user_command import AddCompanyUserCommand
+from src.company_bc.company.domain.enums.company_user_role import CompanyUserRole
 from src.company_bc.company.domain.value_objects import CompanyId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
-from src.company_bc.company.domain.enums.company_user_role import CompanyUserRole
-from src.auth_bc.user.domain.value_objects.UserId import UserId
-from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_bc.company_candidate.domain.enums import CandidatePriority
-from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
-from src.framework.application.command_bus import Command, CommandHandler, CommandBus
-from src.auth_bc.user.application.commands.create_user_command import CreateUserCommand
-from src.company_bc.company.application.commands.add_company_user_command import AddCompanyUserCommand
-from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommand
-from src.company_bc.company_candidate.application.commands.create_company_candidate_command import (
-    CreateCompanyCandidateCommand
-)
 from src.company_bc.company_candidate.application.commands.assign_workflow_command import (
     AssignWorkflowCommand
 )
+from src.company_bc.company_candidate.application.commands.create_company_candidate_command import (
+    CreateCompanyCandidateCommand
+)
+from src.company_bc.company_candidate.domain.enums import CandidatePriority
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_bc.job_position.application.commands.create_job_position import CreateJobPositionCommand
+from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
 from src.company_bc.job_position.domain.value_objects import JobPositionId
 from src.company_bc.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.company_bc.job_position.domain.value_objects.stage_id import StageId
-from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
+from src.framework.application.command_bus import Command, CommandHandler, CommandBus
 from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.company_bc.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
-from core.database import SQLAlchemyDatabase
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass(frozen=True)
@@ -53,10 +55,10 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
         self._database = database
 
     def _create_sample_users(
-        self,
-        company_id: CompanyId,
-        num_recruiters: int,
-        num_viewers: int
+            self,
+            company_id: CompanyId,
+            num_recruiters: int,
+            num_viewers: int
     ) -> None:
         """Create sample users with different roles"""
         # Create recruiters
@@ -165,7 +167,8 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
         ]
 
         cities = [
-            "San Francisco", "New York", "Austin", "Seattle", "Boston", "Los Angeles", "Chicago", "Denver", "Miami", "Portland"
+            "San Francisco", "New York", "Austin", "Seattle", "Boston", "Los Angeles", "Chicago", "Denver", "Miami",
+            "Portland"
         ]
 
         countries = ["USA", "Canada", "Mexico", "UK", "Germany"]
@@ -218,8 +221,8 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
         return candidate_ids
 
     def _create_active_job_position(
-        self,
-        company_id: CompanyId
+            self,
+            company_id: CompanyId
     ) -> Optional[JobPositionId]:
         """Create one job position in an active stage"""
         # Get job position workflow and find an active stage
@@ -228,12 +231,11 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
             # Note: The workflow_type is stored as the enum name, not the value
             workflow_result = session.execute(
                 text("""
-                    SELECT w.id
-                    FROM workflows w
-                    WHERE w.company_id = :company_id
-                    AND w.workflow_type = :workflow_type
-                    LIMIT 1
-                """),
+                     SELECT w.id
+                     FROM workflows w
+                     WHERE w.company_id = :company_id
+                       AND w.workflow_type = :workflow_type LIMIT 1
+                     """),
                 {
                     "company_id": company_id.value,
                     "workflow_type": WorkflowTypeEnum.JOB_POSITION_OPENING.name
@@ -250,14 +252,13 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
             # For job positions, PROGRESS stages typically map to 'active' status
             active_stage_result = session.execute(
                 text("""
-                    SELECT id
-                    FROM workflow_stages
-                    WHERE workflow_id = :workflow_id
-                    AND stage_type = 'PROGRESS'
-                    AND is_active = true
-                    ORDER BY "order" ASC
-                    LIMIT 1
-                """),
+                     SELECT id
+                     FROM workflow_stages
+                     WHERE workflow_id = :workflow_id
+                       AND stage_type = 'PROGRESS'
+                       AND is_active = true
+                     ORDER BY "order" ASC LIMIT 1
+                     """),
                 {"workflow_id": workflow_id}
             ).fetchone()
 
@@ -265,38 +266,36 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
                 # If no PROGRESS stage found, try SUCCESS (Published/Closed)
                 success_stage_result = session.execute(
                     text("""
-                        SELECT id
-                        FROM workflow_stages
-                        WHERE workflow_id = :workflow_id
-                        AND stage_type = 'SUCCESS'
-                        AND is_active = true
-                        ORDER BY "order" ASC
-                        LIMIT 1
-                    """),
+                         SELECT id
+                         FROM workflow_stages
+                         WHERE workflow_id = :workflow_id
+                           AND stage_type = 'SUCCESS'
+                           AND is_active = true
+                         ORDER BY "order" ASC LIMIT 1
+                         """),
                     {"workflow_id": workflow_id}
                 ).fetchone()
-                
+
                 if success_stage_result:
                     stage_id = success_stage_result[0]
                 else:
                     # If no active stage found, use initial stage as fallback
                     initial_stage_result = session.execute(
                         text("""
-                            SELECT id
-                            FROM workflow_stages
-                            WHERE workflow_id = :workflow_id
-                            AND stage_type = 'INITIAL'
-                            AND is_active = true
-                            ORDER BY "order" ASC
-                            LIMIT 1
-                        """),
+                             SELECT id
+                             FROM workflow_stages
+                             WHERE workflow_id = :workflow_id
+                               AND stage_type = 'INITIAL'
+                               AND is_active = true
+                             ORDER BY "order" ASC LIMIT 1
+                             """),
                         {"workflow_id": workflow_id}
                     ).fetchone()
-                    
+
                     if not initial_stage_result:
                         print(f"Warning: No active stage found for workflow {workflow_id}")
                         return None
-                    
+
                     stage_id = initial_stage_result[0]
             else:
                 stage_id = active_stage_result[0]
@@ -307,7 +306,7 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
         # Create one job position in active stage
         try:
             job_position_id = JobPositionId.generate()
-            
+
             create_job_position_cmd = CreateJobPositionCommand(
                 id=job_position_id,
                 company_id=company_id,
@@ -328,11 +327,11 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
             return None
 
     def _create_company_candidates(
-        self,
-        company_id: CompanyId,
-        company_user_id: CompanyUserId,
-        candidate_ids: list[CandidateId],
-        active_job_position_id: Optional[JobPositionId] = None
+            self,
+            company_id: CompanyId,
+            company_user_id: CompanyUserId,
+            candidate_ids: list[CandidateId],
+            active_job_position_id: Optional[JobPositionId] = None
     ) -> None:
         """Create company-candidate relationships with random workflow assignments and link to active job position"""
         # Get workflows for the company
@@ -340,10 +339,11 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
             # Get phases for the company
             phases_result = session.execute(
                 text("""
-                    SELECT id FROM company_phases
-                    WHERE company_id = :company_id
-                    ORDER BY sort_order ASC
-                """),
+                     SELECT id
+                     FROM company_phases
+                     WHERE company_id = :company_id
+                     ORDER BY sort_order ASC
+                     """),
                 {"company_id": company_id.value}
             ).fetchall()
 
@@ -357,20 +357,20 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
             for phase_id in phases:
                 workflow_result = session.execute(
                     text("""
-                        SELECT w.id, ws.id as initial_stage_id
-                        FROM workflows w
-                        LEFT JOIN workflow_stages ws ON w.id = ws.workflow_id
-                        WHERE w.phase_id = :phase_id
-                        AND ws.stage_type = 'INITIAL'
-                        ORDER BY ws."order" ASC
-                        LIMIT 1
-                    """),
+                         SELECT w.id, ws.id as initial_stage_id
+                         FROM workflows w
+                                  LEFT JOIN workflow_stages ws ON w.id = ws.workflow_id
+                         WHERE w.phase_id = :phase_id
+                           AND ws.stage_type = 'INITIAL'
+                         ORDER BY ws."order" ASC LIMIT 1
+                         """),
                     {"phase_id": phase_id}
                 ).fetchone()
 
                 if workflow_result:
                     workflows_info[workflow_result[0]] = {
-                        'initial_stage_id': WorkflowStageId.from_string(workflow_result[1]) if workflow_result[1] else None
+                        'initial_stage_id': WorkflowStageId.from_string(workflow_result[1]) if workflow_result[
+                            1] else None
                     }
 
             if not workflows_info:
@@ -424,9 +424,9 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
                     continue
 
     def _create_sample_job_positions(
-        self,
-        company_id: CompanyId,
-        num_job_positions: int
+            self,
+            company_id: CompanyId,
+            num_job_positions: int
     ) -> None:
         """Create sample job positions"""
         job_titles = [
@@ -477,15 +477,14 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
             # Get the job position workflow (JOB_POSITION_OPENING type)
             workflow_result = session.execute(
                 text("""
-                    SELECT w.id, ws.id as initial_stage_id
-                    FROM workflows w
-                    LEFT JOIN workflow_stages ws ON w.id = ws.workflow_id
-                    WHERE w.company_id = :company_id
-                    AND w.workflow_type = :workflow_type
-                    AND ws.stage_type = 'initial'
-                    ORDER BY ws."order" ASC
-                    LIMIT 1
-                """),
+                     SELECT w.id, ws.id as initial_stage_id
+                     FROM workflows w
+                              LEFT JOIN workflow_stages ws ON w.id = ws.workflow_id
+                     WHERE w.company_id = :company_id
+                       AND w.workflow_type = :workflow_type
+                       AND ws.stage_type = 'initial'
+                     ORDER BY ws."order" ASC LIMIT 1
+                     """),
                 {
                     "company_id": company_id.value,
                     "workflow_type": WorkflowTypeEnum.JOB_POSITION_OPENING.name
@@ -509,7 +508,7 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
                 title = random.choice(job_titles)
                 description = random.choice(job_descriptions)
                 category = random.choice(job_categories)
-                
+
                 # Random visibility (mostly public, some internal)
                 visibility = random.choice([
                     JobPositionVisibilityEnum.PUBLIC,
@@ -533,4 +532,3 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
             except Exception:
                 # Skip job positions that fail to create
                 continue
-

@@ -2,13 +2,13 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from src.company_bc.company.domain.value_objects import CompanyId
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum,
     InterviewTemplateTypeEnum,
     ScoringModeEnum
 )
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 @dataclass

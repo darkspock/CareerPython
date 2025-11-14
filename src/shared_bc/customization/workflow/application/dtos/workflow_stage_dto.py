@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, List, Dict, Any
 from decimal import Decimal
+from typing import Optional, List, Dict, Any
 
 
 @dataclass
@@ -27,6 +27,7 @@ class WorkflowStageDto:
     style: Dict[str, Any]  # WorkflowStageStyle as dict
     validation_rules: Optional[Dict[str, Any]]  # JsonLogic validation rules
     recommended_rules: Optional[Dict[str, Any]]  # JsonLogic recommendation rules
-    interview_configurations: Optional[List[Dict[str, str]]]  # List of interview configurations: [{"template_id": str, "mode": str}]
+    interview_configurations: Optional[
+        List[Dict[str, str]]]  # List of interview configurations: [{"template_id": str, "mode": str}]
     created_at: datetime
     updated_at: datetime

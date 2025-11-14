@@ -1,12 +1,12 @@
 from typing import List
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import \
     InterviewTemplateQuestionDto
 from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_question_repository import \
     InterviewTemplateQuestionRepository
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 class GetQuestionsBySectionQuery(Query):

@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.interview_bc.interview.domain.entities.interview_interviewer import InterviewInterviewer
-from src.interview_bc.interview.domain.value_objects.interview_interviewer_id import InterviewInterviewerId
-from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.auth_bc.user.domain.value_objects.UserId import UserId
+from src.interview_bc.interview.domain.entities.interview_interviewer import InterviewInterviewer
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview.domain.value_objects.interview_interviewer_id import InterviewInterviewerId
 
 
 @dataclass
@@ -35,4 +35,3 @@ class InterviewInterviewerDto:
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )
-

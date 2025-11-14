@@ -2,13 +2,13 @@
 
 from dataclasses import dataclass
 
+from src.auth_bc.user.domain.value_objects.user_asset_id import UserAssetId
 from src.candidate_bc.candidate.domain.value_objects import CandidateId
 from src.framework.application.command_bus import Command, CommandHandler
 from src.framework.domain.entities.async_job import AsyncJobId
 from src.framework.domain.enums.async_job import AsyncJobType
 from src.framework.infrastructure.actors.pdf_analysis_actor import analyze_pdf_resume
 from src.framework.infrastructure.jobs.async_job_service import AsyncJobService
-from src.auth_bc.user.domain.value_objects.user_asset_id import UserAssetId
 
 
 @dataclass

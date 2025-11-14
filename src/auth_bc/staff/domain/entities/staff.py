@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from src.framework.domain.entities.base import generate_id
 from src.auth_bc.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
+from src.framework.domain.entities.base import generate_id
 
 
 @dataclass

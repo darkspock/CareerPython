@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.framework.application.query_bus import Query, QueryHandler
 from src.auth_bc.staff.infrastructure.repositories.staff_repository import StaffRepositoryInterface
 from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
 from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass

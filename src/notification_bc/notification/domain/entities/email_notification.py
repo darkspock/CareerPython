@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Dict, Any
 
-from src.notification_bc.notification.domain.enums.notification_type import NotificationTypeEnum, NotificationStatusEnum
 from src.framework.domain.value_objects.base_id import BaseId
+from src.notification_bc.notification.domain.enums.notification_type import NotificationTypeEnum, NotificationStatusEnum
 
 
 @dataclass(frozen=True)

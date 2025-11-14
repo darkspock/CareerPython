@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional, Dict
 
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.company_bc.company.domain.entities.company_user import CompanyUser
 from src.company_bc.company.domain.enums import CompanyUserRole
+from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError
+from src.company_bc.company.domain.infrastructure.company_user_repository_interface import \
+    CompanyUserRepositoryInterface
 from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
 from src.company_bc.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
-from src.company_bc.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
-from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError
 from src.framework.application.command_bus import Command, CommandHandler
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 @dataclass

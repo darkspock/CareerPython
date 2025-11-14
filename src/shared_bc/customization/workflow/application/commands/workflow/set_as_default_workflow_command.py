@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from src.company_bc.company.domain.value_objects import CompanyId
 from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 
 

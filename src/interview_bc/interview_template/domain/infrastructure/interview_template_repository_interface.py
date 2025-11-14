@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Any
 
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
 from src.interview_bc.interview_template.domain.enums import InterviewTemplateTypeEnum
 from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 class InterviewTemplateRepositoryInterface(ABC):

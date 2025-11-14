@@ -1,16 +1,5 @@
 """Talent pool application module - exports queries and commands"""
 
-# Queries
-from .queries.get_talent_pool_entry_by_id_query import (
-    GetTalentPoolEntryByIdQuery,
-    GetTalentPoolEntryByIdQueryHandler,
-)
-from .queries.list_talent_pool_entries_query import (
-    ListTalentPoolEntriesQuery,
-    ListTalentPoolEntriesQueryHandler,
-)
-from .queries.search_talent_pool_query import SearchTalentPoolQuery, SearchTalentPoolQueryHandler
-
 # Commands
 from .commands.add_to_talent_pool_command import (
     AddToTalentPoolCommand,
@@ -28,6 +17,16 @@ from .commands.update_talent_pool_entry_command import (
     UpdateTalentPoolEntryCommand,
     UpdateTalentPoolEntryCommandHandler,
 )
+# Queries
+from .queries.get_talent_pool_entry_by_id_query import (
+    GetTalentPoolEntryByIdQuery,
+    GetTalentPoolEntryByIdQueryHandler,
+)
+from .queries.list_talent_pool_entries_query import (
+    ListTalentPoolEntriesQuery,
+    ListTalentPoolEntriesQueryHandler,
+)
+from .queries.search_talent_pool_query import SearchTalentPoolQuery, SearchTalentPoolQueryHandler
 
 __all__ = [
     # Queries
@@ -47,4 +46,3 @@ __all__ = [
     "UpdateTalentPoolEntryCommand",
     "UpdateTalentPoolEntryCommandHandler",
 ]
-

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from src.framework.application.query_bus import Query, QueryHandler
 from src.auth_bc.user.application.queries.dtos.auth_dto import UserExistsDto
 from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)

@@ -16,4 +16,3 @@ class EntityCustomizationDto:
     metadata: Dict[str, Any]
     created_at: datetime
     updated_at: datetime
-

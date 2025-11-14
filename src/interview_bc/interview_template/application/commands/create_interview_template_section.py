@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.company_bc.company.domain.value_objects import CompanyId
+from src.framework.application.command_bus import Command, CommandHandler
 from src.interview_bc.interview_template.domain.entities.interview_template_section import InterviewTemplateSection
 from src.interview_bc.interview_template.domain.enums import InterviewTemplateSectionEnum
 from src.interview_bc.interview_template.domain.infrastructure.interview_template_section_repository_interface import \
@@ -9,7 +10,6 @@ from src.interview_bc.interview_template.domain.infrastructure.interview_templat
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass

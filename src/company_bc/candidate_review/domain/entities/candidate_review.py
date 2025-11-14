@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
-from src.company_bc.candidate_review.domain.enums.review_status_enum import ReviewStatusEnum
 from src.company_bc.candidate_review.domain.enums.review_score_enum import ReviewScoreEnum
-from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.candidate_review.domain.enums.review_status_enum import ReviewStatusEnum
+from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
@@ -35,15 +35,15 @@ class CandidateReview:
 
     @classmethod
     def create(
-        cls,
-        id: CandidateReviewId,
-        company_candidate_id: CompanyCandidateId,
-        score: ReviewScoreEnum,
-        created_by_user_id: CompanyUserId,
-        comment: Optional[str] = None,
-        workflow_id: Optional[WorkflowId] = None,
-        stage_id: Optional[WorkflowStageId] = None,
-        review_status: ReviewStatusEnum = ReviewStatusEnum.REVIEWED,
+            cls,
+            id: CandidateReviewId,
+            company_candidate_id: CompanyCandidateId,
+            score: ReviewScoreEnum,
+            created_by_user_id: CompanyUserId,
+            comment: Optional[str] = None,
+            workflow_id: Optional[WorkflowId] = None,
+            stage_id: Optional[WorkflowStageId] = None,
+            review_status: ReviewStatusEnum = ReviewStatusEnum.REVIEWED,
     ) -> "CandidateReview":
         """
         Factory method to create a new review
@@ -83,9 +83,9 @@ class CandidateReview:
         )
 
     def update(
-        self,
-        score: Optional[ReviewScoreEnum] = None,
-        comment: Optional[str] = None,
+            self,
+            score: Optional[ReviewScoreEnum] = None,
+            comment: Optional[str] = None,
     ) -> None:
         """
         Update review score or comment
@@ -126,4 +126,3 @@ class CandidateReview:
             bool: True if stage_id is None (global review), False otherwise
         """
         return self.stage_id is None
-

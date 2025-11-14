@@ -6,18 +6,24 @@ automatically transitions them to the next phase when they reach a SUCCESS stage
 from dataclasses import dataclass
 from typing import Optional
 
-from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import CandidateApplicationRepositoryInterface
+from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import \
+    CandidateApplicationRepositoryInterface
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.company_bc.candidate_application_stage.domain.entities.candidate_application_stage import CandidateApplicationStage
-from src.company_bc.candidate_application_stage.domain.infrastructure.candidate_application_stage_repository_interface import CandidateStageRepositoryInterface
-from src.company_bc.candidate_application_stage.domain.value_objects.candidate_application_stage_id import CandidateApplicationStageId
-from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.company_bc.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
+from src.company_bc.candidate_application_stage.domain.entities.candidate_application_stage import \
+    CandidateApplicationStage
+from src.company_bc.candidate_application_stage.domain.infrastructure.candidate_application_stage_repository_interface import \
+    CandidateStageRepositoryInterface
+from src.company_bc.candidate_application_stage.domain.value_objects.candidate_application_stage_id import \
+    CandidateApplicationStageId
+from src.company_bc.job_position.domain.repositories.job_position_repository_interface import \
+    JobPositionRepositoryInterface
 from src.framework.application.command_bus import Command, CommandHandler
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass
@@ -38,11 +44,11 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
     """Handler for moving candidates through workflow stages with automatic phase transitions"""
 
     def __init__(
-        self,
-        candidate_application_repository: CandidateApplicationRepositoryInterface,
-        candidate_stage_repository: CandidateStageRepositoryInterface,
-        workflow_stage_repository: WorkflowStageRepositoryInterface,
-        job_position_repository: JobPositionRepositoryInterface
+            self,
+            candidate_application_repository: CandidateApplicationRepositoryInterface,
+            candidate_stage_repository: CandidateStageRepositoryInterface,
+            workflow_stage_repository: WorkflowStageRepositoryInterface,
+            job_position_repository: JobPositionRepositoryInterface
     ):
         self.candidate_application_repository = candidate_application_repository
         self.candidate_stage_repository = candidate_stage_repository
@@ -116,7 +122,8 @@ class MoveCandidateToStageCommandHandler(CommandHandler[MoveCandidateToStageComm
             next_workflow_stages = self.workflow_stage_repository.list_by_workflow(
                 WorkflowId.from_string(next_phase_workflow_id)
             )
-            initial_stage = next((s for s in next_workflow_stages if s.stage_type == WorkflowStageTypeEnum.INITIAL), None)
+            initial_stage = next((s for s in next_workflow_stages if s.stage_type == WorkflowStageTypeEnum.INITIAL),
+                                 None)
             if not initial_stage:
                 raise ValueError(f"No INITIAL stage found in workflow {next_phase_workflow_id}")
 

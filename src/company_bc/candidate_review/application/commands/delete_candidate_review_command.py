@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 
-from src.framework.application.command_bus import Command, CommandHandler
+from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import \
+    CandidateReviewRepositoryInterface
 from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
-from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import CandidateReviewRepositoryInterface
+from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -20,4 +21,3 @@ class DeleteCandidateReviewCommandHandler(CommandHandler[DeleteCandidateReviewCo
     def execute(self, command: DeleteCandidateReviewCommand) -> None:
         """Handle the delete candidate review command"""
         self._repository.delete(command.review_id)
-

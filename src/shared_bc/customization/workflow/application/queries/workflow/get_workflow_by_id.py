@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.shared_bc.customization.workflow.application.mappers.workflow_mapper import WorkflowMapper
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)

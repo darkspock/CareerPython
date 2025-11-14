@@ -2,7 +2,8 @@ from src.candidate_bc.candidate.application.queries.shared.candidate_project_dto
 from src.candidate_bc.candidate.application.queries.shared.candidate_project_mapper import CandidateProjectMapper
 from src.candidate_bc.candidate.domain.exceptions import CandidateNotFoundError
 from src.candidate_bc.candidate.domain.value_objects.candidate_project_id import CandidateProjectId
-from src.candidate_bc.candidate.infrastructure.repositories.candidate_project_repository import CandidateProjectRepositoryInterface
+from src.candidate_bc.candidate.infrastructure.repositories.candidate_project_repository import \
+    CandidateProjectRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
 
 

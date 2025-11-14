@@ -21,4 +21,3 @@ class GetCandidateByEmailQueryHandler(QueryHandler[GetCandidateByEmailQuery, Opt
         if candidate:
             return CandidateDtoMapper.from_model(candidate)
         return None
-

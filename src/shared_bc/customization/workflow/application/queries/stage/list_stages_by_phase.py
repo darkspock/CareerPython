@@ -3,11 +3,12 @@ from dataclasses import dataclass
 from typing import List
 
 from src.framework.application.query_bus import Query, QueryHandler
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
 from src.shared_bc.customization.workflow.application.mappers.workflow_stage_mapper import WorkflowStageMapper
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
 
 
 @dataclass(frozen=True)
@@ -26,5 +27,5 @@ class ListStagesByPhaseQueryHandler(QueryHandler[ListStagesByPhaseQuery, List[Wo
     def handle(self, query: ListStagesByPhaseQuery) -> List[WorkflowStageDto]:
         """Handle the query."""
         stages = self._repository.list_by_phase(query.phase_id, query.workflow_type)
-        
+
         return [WorkflowStageMapper.entity_to_dto(stage) for stage in stages]

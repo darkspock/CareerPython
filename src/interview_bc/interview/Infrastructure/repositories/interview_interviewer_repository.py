@@ -2,14 +2,14 @@
 from typing import Optional, List
 
 from core.database import DatabaseInterface
+from src.auth_bc.user.domain.value_objects.UserId import UserId
+from src.framework.infrastructure.repositories.base import BaseRepository
+from src.interview_bc.interview.Infrastructure.models.interview_interviewer_model import InterviewInterviewerModel
 from src.interview_bc.interview.domain.entities.interview_interviewer import InterviewInterviewer
 from src.interview_bc.interview.domain.infrastructure.interview_interviewer_repository_interface import \
     InterviewInterviewerRepositoryInterface
-from src.interview_bc.interview.domain.value_objects.interview_interviewer_id import InterviewInterviewerId
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
-from src.auth_bc.user.domain.value_objects.UserId import UserId
-from src.interview_bc.interview.Infrastructure.models.interview_interviewer_model import InterviewInterviewerModel
-from src.framework.infrastructure.repositories.base import BaseRepository
+from src.interview_bc.interview.domain.value_objects.interview_interviewer_id import InterviewInterviewerId
 
 
 class SQLAlchemyInterviewInterviewerRepository(InterviewInterviewerRepositoryInterface):
@@ -102,9 +102,9 @@ class SQLAlchemyInterviewInterviewerRepository(InterviewInterviewerRepositoryInt
             return [self._to_domain(model) for model in models]
 
     def get_by_interview_and_user(
-        self,
-        interview_id: str,
-        user_id: str
+            self,
+            interview_id: str,
+            user_id: str
     ) -> Optional[InterviewInterviewer]:
         """Get specific interviewer relationship by interview and user"""
         with self.database.get_session() as session:
@@ -127,4 +127,3 @@ class SQLAlchemyInterviewInterviewerRepository(InterviewInterviewerRepositoryInt
         """Check if a user is an interviewer for an interview"""
         interviewer = self.get_by_interview_and_user(interview_id, user_id)
         return interviewer is not None and interviewer.is_accepted()
-

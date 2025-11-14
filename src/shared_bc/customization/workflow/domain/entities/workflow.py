@@ -1,15 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-# TYPE_CHECKING to avoid circular imports
 
 from src.company_bc.company.domain.value_objects import CompanyId
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_status_enum import WorkflowStatusEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.shared_bc.customization.workflow.domain.exceptions.invalid_workflow_operation import InvalidWorkFlowOperation
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+
+
+# TYPE_CHECKING to avoid circular imports
 
 
 @dataclass

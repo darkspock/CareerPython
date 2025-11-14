@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from core.database import DatabaseInterface
+from src.framework.infrastructure.repositories.base import BaseRepository
 from src.interview_bc.interview_template.domain.entities.interview_template_question import InterviewTemplateQuestion
 from src.interview_bc.interview_template.domain.enums import InterviewTemplateQuestionStatusEnum
 from src.interview_bc.interview_template.domain.infrastructure.interview_template_question_repository_interface import \
@@ -11,7 +12,6 @@ from src.interview_bc.interview_template.domain.value_objects.interview_template
     InterviewTemplateSectionId
 from src.interview_bc.interview_template.infrastructure.models.interview_template_question import \
     InterviewTemplateQuestionModel
-from src.framework.infrastructure.repositories.base import BaseRepository
 
 
 class InterviewTemplateQuestionRepository(InterviewTemplateQuestionRepositoryInterface):

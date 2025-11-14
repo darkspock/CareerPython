@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 
 from src.company_bc.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
-from src.framework.application.command_bus import Command, CommandHandler
-from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
+    CompanyCandidateRepositoryInterface
 from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.framework.application.command_bus import Command, CommandHandler
+from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import \
+    StagePhaseValidationService
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
 
 
 @dataclass(frozen=True)
@@ -21,9 +23,9 @@ class AssignWorkflowCommandHandler(CommandHandler[AssignWorkflowCommand]):
     """Handler for assigning a workflow to a company candidate"""
 
     def __init__(
-        self,
-        repository: CompanyCandidateRepositoryInterface,
-        validation_service: StagePhaseValidationService
+            self,
+            repository: CompanyCandidateRepositoryInterface,
+            validation_service: StagePhaseValidationService
     ):
         self._repository = repository
         self._validation_service = validation_service

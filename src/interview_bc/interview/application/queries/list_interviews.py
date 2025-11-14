@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewStatusEnum,
@@ -11,7 +12,6 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewProcessTypeEnum
 )
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
-from src.framework.application.query_bus import Query, QueryHandler
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,7 @@
 from typing import List, Optional, Any
 
 from core.database import DatabaseInterface
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.candidate_bc.candidate.domain.entities.candidate import Candidate
 from src.candidate_bc.candidate.domain.enums.candidate_enums import CandidateStatusEnum, LanguageEnum, \
     LanguageLevelEnum, PositionRoleEnum, WorkModalityEnum
@@ -9,7 +10,6 @@ from src.candidate_bc.candidate.domain.value_objects.candidate_id import Candida
 from src.candidate_bc.candidate.infrastructure.models.candidate_model import CandidateModel
 from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
 from src.framework.infrastructure.repositories.base import BaseRepository
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 class SQLAlchemyCandidateRepository(CandidateRepositoryInterface):

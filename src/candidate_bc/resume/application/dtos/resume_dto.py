@@ -144,4 +144,3 @@ class ResumeDto:
             created_at=resume.created_at,
             updated_at=resume.updated_at
         )
-

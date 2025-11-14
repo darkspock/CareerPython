@@ -1,13 +1,18 @@
 """Job Position Comment Repository Implementation."""
 from typing import Optional, List
 
-from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from sqlalchemy.orm import Session
 
+from core.database import SQLAlchemyDatabase
+from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company_bc.job_position.domain.entities.job_position_comment import JobPositionComment
 from src.company_bc.job_position.domain.enums import (
     CommentVisibilityEnum,
     CommentReviewStatusEnum,
+)
+from src.company_bc.job_position.domain.infrastructure.job_position_comment_repository_interface import (
+    JobPositionCommentRepositoryInterface
 )
 from src.company_bc.job_position.domain.value_objects import (
     JobPositionCommentId,
@@ -15,12 +20,7 @@ from src.company_bc.job_position.domain.value_objects import (
     JobPositionWorkflowId,
     JobPositionStageId,
 )
-from src.company_bc.job_position.domain.infrastructure.job_position_comment_repository_interface import (
-    JobPositionCommentRepositoryInterface
-)
 from src.company_bc.job_position.infrastructure.models.job_position_comment_model import JobPositionCommentModel
-from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
-from core.database import SQLAlchemyDatabase
 
 
 class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
@@ -41,7 +41,8 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
             comment=model.comment,
             workflow_id=JobPositionWorkflowId.from_string(model.workflow_id) if model.workflow_id else None,
             stage_id=model.stage_id,  # Keep as string (can be None for global comments)
-            job_position_stage_id=JobPositionStageId.from_string(model.job_position_stage_id) if model.job_position_stage_id else None,
+            job_position_stage_id=JobPositionStageId.from_string(
+                model.job_position_stage_id) if model.job_position_stage_id else None,
             created_by_user_id=CompanyUserId.from_string(model.created_by_user_id),
             review_status=CommentReviewStatusEnum(model.review_status),
             visibility=CommentVisibilityEnum(model.visibility),
@@ -85,9 +86,9 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
         return self._to_domain(model)
 
     def list_by_job_position(
-        self,
-        job_position_id: JobPositionId,
-        current_user_id: Optional[str] = None
+            self,
+            job_position_id: JobPositionId,
+            current_user_id: Optional[str] = None
     ) -> List[JobPositionComment]:
         """
         List all comments for a job position with visibility filtering.
@@ -99,7 +100,7 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
         query = session.query(JobPositionCommentModel).filter(
             JobPositionCommentModel.job_position_id == str(job_position_id)
         )
-        
+
         # Apply visibility filtering if current_user_id is provided
         if current_user_id:
             query = query.filter(
@@ -108,21 +109,21 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
                     JobPositionCommentModel.visibility == CommentVisibilityEnum.SHARED.value,
                     # Show PRIVATE comments only to their creator
                     (
-                        (JobPositionCommentModel.visibility == CommentVisibilityEnum.PRIVATE.value) &
-                        (JobPositionCommentModel.created_by_user_id == current_user_id)
+                            (JobPositionCommentModel.visibility == CommentVisibilityEnum.PRIVATE.value) &
+                            (JobPositionCommentModel.created_by_user_id == current_user_id)
                     )
                 )
             )
-        
+
         models = query.order_by(JobPositionCommentModel.created_at.desc()).all()
         return [self._to_domain(model) for model in models]
 
     def list_by_stage_and_global(
-        self,
-        job_position_id: JobPositionId,
-        stage_id: Optional[str],
-        include_global: bool = True,
-        current_user_id: Optional[str] = None
+            self,
+            job_position_id: JobPositionId,
+            stage_id: Optional[str],
+            include_global: bool = True,
+            current_user_id: Optional[str] = None
     ) -> List[JobPositionComment]:
         """
         List comments for a job position, filtered by stage, and optionally including global comments.
@@ -141,12 +142,12 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
             List[JobPositionComment]: Filtered comments (ordered by created_at DESC)
         """
         session = self._get_session()
-        
+
         # Build query: job_position_id matches
         query = session.query(JobPositionCommentModel).filter(
             JobPositionCommentModel.job_position_id == str(job_position_id)
         )
-        
+
         # Stage filtering
         if stage_id is not None:
             # Filter for specific stage
@@ -164,7 +165,7 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
         else:
             # If stage_id is None, only get global comments
             query = query.filter(JobPositionCommentModel.stage_id.is_(None))
-        
+
         # Visibility filtering
         if current_user_id:
             query = query.filter(
@@ -173,19 +174,19 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
                     JobPositionCommentModel.visibility == CommentVisibilityEnum.SHARED.value,
                     # Show PRIVATE comments only to their creator
                     (
-                        (JobPositionCommentModel.visibility == CommentVisibilityEnum.PRIVATE.value) &
-                        (JobPositionCommentModel.created_by_user_id == current_user_id)
+                            (JobPositionCommentModel.visibility == CommentVisibilityEnum.PRIVATE.value) &
+                            (JobPositionCommentModel.created_by_user_id == current_user_id)
                     )
                 )
             )
-        
+
         models = query.order_by(JobPositionCommentModel.created_at.desc()).all()
-        
+
         return [self._to_domain(model) for model in models]
 
     def list_global_only(
-        self,
-        job_position_id: JobPositionId
+            self,
+            job_position_id: JobPositionId
     ) -> List[JobPositionComment]:
         """List only global comments for a job position"""
         session = self._get_session()
@@ -205,8 +206,8 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
         session.commit()
 
     def count_pending_by_job_position(
-        self,
-        job_position_id: JobPositionId
+            self,
+            job_position_id: JobPositionId
     ) -> int:
         """Count pending comments for a job position"""
         session = self._get_session()
@@ -216,4 +217,3 @@ class JobPositionCommentRepository(JobPositionCommentRepositoryInterface):
         ).count()
 
         return count
-

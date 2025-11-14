@@ -1,33 +1,37 @@
 from dataclasses import dataclass
-from typing import Optional, Dict, List, Any
 from datetime import datetime, timedelta
+from typing import Optional, Dict, List, Any
 
-from src.framework.application.command_bus import Command, CommandHandler
+from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.job_position.domain.entities.job_position_activity import JobPositionActivity
+from src.company_bc.job_position.domain.entities.job_position_stage import JobPositionStage
 from src.company_bc.job_position.domain.exceptions import JobPositionNotFoundException
-from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
-from src.company_bc.job_position.domain.value_objects.job_position_stage_id import JobPositionStageId
-from src.company_bc.job_position.domain.value_objects.job_position_activity_id import JobPositionActivityId
-from src.company_bc.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
-from src.company_bc.job_position.domain.infrastructure.job_position_stage_repository_interface import (
-    JobPositionStageRepositoryInterface
-)
 from src.company_bc.job_position.domain.infrastructure.job_position_activity_repository_interface import (
     JobPositionActivityRepositoryInterface
 )
-from src.company_bc.job_position.domain.entities.job_position_stage import JobPositionStage
-from src.company_bc.job_position.domain.entities.job_position_activity import JobPositionActivity
-from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.job_position.domain.infrastructure.job_position_stage_repository_interface import (
+    JobPositionStageRepositoryInterface
+)
+from src.company_bc.job_position.domain.repositories.job_position_repository_interface import \
+    JobPositionRepositoryInterface
+from src.company_bc.job_position.domain.value_objects.job_position_activity_id import JobPositionActivityId
+from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.company_bc.job_position.domain.value_objects.job_position_stage_id import JobPositionStageId
+from src.company_bc.job_position.domain.value_objects.stage_id import StageId
+from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
     WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import \
+    StagePhaseValidationService
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
-from src.company_bc.job_position.domain.value_objects.stage_id import StageId
 
 
 class JobPositionValidationError(Exception):
     """Exception raised when job position validation fails"""
+
     def __init__(self, message: str, validation_errors: Dict[str, List[str]]):
         super().__init__(message)
         self.validation_errors = validation_errors
@@ -46,13 +50,13 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
     """Handler for moving a job position to a new stage"""
 
     def __init__(
-        self,
-        job_position_repository: JobPositionRepositoryInterface,
-        workflow_repository: WorkflowRepositoryInterface,
-        stage_repository: WorkflowStageRepositoryInterface,
-        job_position_stage_repository: JobPositionStageRepositoryInterface,
-        activity_repository: JobPositionActivityRepositoryInterface,
-        validation_service: StagePhaseValidationService
+            self,
+            job_position_repository: JobPositionRepositoryInterface,
+            workflow_repository: WorkflowRepositoryInterface,
+            stage_repository: WorkflowStageRepositoryInterface,
+            job_position_stage_repository: JobPositionStageRepositoryInterface,
+            activity_repository: JobPositionActivityRepositoryInterface,
+            validation_service: StagePhaseValidationService
     ):
         self.job_position_repository = job_position_repository
         self.workflow_repository = workflow_repository
@@ -192,9 +196,9 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
                 logger.error(f"Failed to create activity for stage move: {e}")
 
     def _validate_with_jsonlogic(
-        self,
-        field_values: Dict[str, Any],
-        validation_rules: Dict[str, Any]
+            self,
+            field_values: Dict[str, Any],
+            validation_rules: Dict[str, Any]
     ) -> Dict[str, List[str]]:
         """
         Validate custom field values against JsonLogic validation rules.
@@ -211,13 +215,13 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
             Dict mapping field names to list of error messages
         """
         errors: Dict[str, List[str]] = {}
-        
+
         # TODO: Implement JsonLogic validation
         # This requires installing a JsonLogic library (e.g., python-json-logic)
         # and evaluating the rules against field_values
         # For now, we skip validation to avoid breaking the flow
         # In production, implement proper JsonLogic evaluation here
-        
+
         return errors
 
     def _calculate_deadline(self, deadline_days: int) -> datetime:

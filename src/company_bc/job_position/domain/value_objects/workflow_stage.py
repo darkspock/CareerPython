@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
-from src.company_bc.job_position.domain.value_objects.stage_id import StageId
-from src.company_bc.job_position.domain.enums.job_position_status import JobPositionStatusEnum
-from src.company_bc.job_position.domain.enums.kanban_display import KanbanDisplayEnum
 from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.job_position.domain.enums.kanban_display import KanbanDisplayEnum
+from src.company_bc.job_position.domain.value_objects.stage_id import StageId
 from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 
 
@@ -41,17 +40,17 @@ class WorkflowStage:
 
     @staticmethod
     def create(
-        id: StageId,
-        name: str,
-        icon: str,
-        background_color: str,
-        text_color: str,
-        status_mapping: WorkflowStageTypeEnum,
-        kanban_display: KanbanDisplayEnum = KanbanDisplayEnum.VERTICAL,
-        role: Optional[CompanyRoleId] = None,
-        field_visibility: Optional[Dict[str, bool]] = None,
-        field_validation: Optional[Dict[str, Any]] = None,
-        field_candidate_visibility: Optional[Dict[str, bool]] = None,
+            id: StageId,
+            name: str,
+            icon: str,
+            background_color: str,
+            text_color: str,
+            status_mapping: WorkflowStageTypeEnum,
+            kanban_display: KanbanDisplayEnum = KanbanDisplayEnum.VERTICAL,
+            role: Optional[CompanyRoleId] = None,
+            field_visibility: Optional[Dict[str, bool]] = None,
+            field_validation: Optional[Dict[str, Any]] = None,
+            field_candidate_visibility: Optional[Dict[str, bool]] = None,
     ) -> "WorkflowStage":
         """
         Factory method to create a new WorkflowStage
@@ -86,17 +85,17 @@ class WorkflowStage:
         )
 
     def update(
-        self,
-        name: Optional[str] = None,
-        icon: Optional[str] = None,
-        background_color: Optional[str] = None,
-        text_color: Optional[str] = None,
-        role: Optional[CompanyRoleId] = None,
-        status_mapping: Optional[WorkflowStageTypeEnum] = None,
-        kanban_display: Optional[KanbanDisplayEnum] = None,
-        field_visibility: Optional[Dict[str, bool]] = None,
-        field_validation: Optional[Dict[str, Any]] = None,
-        field_candidate_visibility: Optional[Dict[str, bool]] = None,
+            self,
+            name: Optional[str] = None,
+            icon: Optional[str] = None,
+            background_color: Optional[str] = None,
+            text_color: Optional[str] = None,
+            role: Optional[CompanyRoleId] = None,
+            status_mapping: Optional[WorkflowStageTypeEnum] = None,
+            kanban_display: Optional[KanbanDisplayEnum] = None,
+            field_visibility: Optional[Dict[str, bool]] = None,
+            field_validation: Optional[Dict[str, Any]] = None,
+            field_candidate_visibility: Optional[Dict[str, bool]] = None,
     ) -> "WorkflowStage":
         """
         Create a new instance with updated values
@@ -118,7 +117,8 @@ class WorkflowStage:
             field_candidate_visibility=field_candidate_visibility if field_candidate_visibility is not None else self.field_candidate_visibility,
         )
 
-    def is_field_visible_to_candidate(self, field_name: str, default_visibility: Optional[Dict[str, bool]] = None) -> bool:
+    def is_field_visible_to_candidate(self, field_name: str,
+                                      default_visibility: Optional[Dict[str, bool]] = None) -> bool:
         """
         Check if a field is visible to candidates
         
@@ -132,11 +132,10 @@ class WorkflowStage:
         # First check stage-specific visibility
         if field_name in self.field_candidate_visibility:
             return self.field_candidate_visibility[field_name]
-        
+
         # Then check default visibility from workflow config
         if default_visibility and field_name in default_visibility:
             return default_visibility[field_name]
-        
+
         # Default to False if not specified
         return False
-

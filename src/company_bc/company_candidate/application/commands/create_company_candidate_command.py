@@ -13,9 +13,11 @@ from src.company_bc.company_candidate.domain.value_objects.visibility_settings i
 from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
     WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import \
+    StagePhaseValidationService
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
 
 
 @dataclass(frozen=True)
@@ -67,7 +69,7 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
             default_workflow = self._workflow_repository.get_default_by_company(command.company_id)
             if default_workflow:
                 workflow_id = WorkflowId.from_string(str(default_workflow.id))
-                
+
                 # Validate workflow has phase_id using Domain Service
                 try:
                     phase_id = self._validation_service.validate_workflow_has_phase(workflow_id)
@@ -81,7 +83,7 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
                     initial_stage = self._stage_repository.get_initial_stage(workflow_id)
                     if initial_stage:
                         initial_stage_id = initial_stage.id
-                        
+
                         # Validate stage belongs to workflow using Domain Service
                         try:
                             self._validation_service.validate_stage_belongs_to_workflow(
@@ -89,7 +91,8 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
                                 workflow_id=workflow_id
                             )
                         except ValueError as e:
-                            print(f"Warning: Initial stage {initial_stage_id.value} does not belong to workflow {workflow_id.value}: {e}")
+                            print(
+                                f"Warning: Initial stage {initial_stage_id.value} does not belong to workflow {workflow_id.value}: {e}")
                             initial_stage_id = None
         except Exception as e:
             # Log the error but don't fail the candidate creation

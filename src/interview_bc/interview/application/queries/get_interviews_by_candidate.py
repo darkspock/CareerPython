@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import List
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass

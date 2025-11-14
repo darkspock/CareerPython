@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.company_bc.company.domain.enums import CompanyUserRole, CompanyUserStatus
 from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError
 from src.company_bc.company.domain.value_objects import CompanyId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company_bc.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 @dataclass

@@ -15,4 +15,3 @@ class CustomFieldDto:
     order_index: int
     created_at: datetime
     updated_at: datetime
-

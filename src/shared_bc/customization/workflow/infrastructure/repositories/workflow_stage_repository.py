@@ -1,16 +1,17 @@
 from typing import Optional, List, Any
 
+from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.domain.entities.workflow_stage import WorkflowStage
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.shared_bc.customization.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
+from src.shared_bc.customization.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
 
 
 class WorkflowStageRepository(WorkflowStageRepositoryInterface):
@@ -71,7 +72,8 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
         with self._database.get_session() as session:
             models = session.query(WorkflowStageModel).filter(
                 WorkflowStageModel.workflow_id == str(workflow_id),
-                WorkflowStageModel.stage_type.in_([WorkflowStageTypeEnum.SUCCESS.value, WorkflowStageTypeEnum.FAIL.value])
+                WorkflowStageModel.stage_type.in_(
+                    [WorkflowStageTypeEnum.SUCCESS.value, WorkflowStageTypeEnum.FAIL.value])
             ).all()
             return [self._to_domain(model) for model in models]
 
@@ -84,10 +86,10 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
                 phase_id=str(phase_id),
                 workflow_type=workflow_type.value
             ).first()
-            
+
             if not workflow:
                 return []
-            
+
             # Then get all stages for that workflow
             models = session.query(WorkflowStageModel).filter_by(
                 workflow_id=str(workflow.id)
@@ -102,7 +104,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
         # Handle JSON fields that can be lists or None
         default_role_ids = cast(list[str], model.default_role_ids) if model.default_role_ids else []
         default_assigned_users = cast(list[str], model.default_assigned_users) if model.default_assigned_users else []
-        
+
         # Convert interview_configurations from JSON to list of InterviewConfiguration objects
         interview_configurations = None
         if model.interview_configurations is not None:

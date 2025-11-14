@@ -1,10 +1,10 @@
 from typing import Optional
 
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
 from src.candidate_bc.candidate.application.queries.shared.candidate_dto_mapper import CandidateDtoMapper
 from src.candidate_bc.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 class GetCandidateByUserIdQuery(Query):

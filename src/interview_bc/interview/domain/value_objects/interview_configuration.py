@@ -24,16 +24,16 @@ class InterviewConfiguration:
 
     @classmethod
     def create(
-        cls,
-        template_id: str,
-        mode: InterviewModeEnum
+            cls,
+            template_id: str,
+            mode: InterviewModeEnum
     ) -> "InterviewConfiguration":
         """Factory method to create a new interview configuration"""
         if not template_id:
             raise ValueError("Template ID cannot be empty")
         if not isinstance(mode, InterviewModeEnum):
             raise ValueError(f"Mode must be an InterviewModeEnum, got {type(mode)}")
-        
+
         return cls(
             template_id=template_id,
             mode=mode
@@ -46,7 +46,7 @@ class InterviewConfiguration:
             raise ValueError("Dictionary must contain 'template_id' key")
         if "mode" not in data:
             raise ValueError("Dictionary must contain 'mode' key")
-        
+
         mode_value = data["mode"]
         if isinstance(mode_value, str):
             mode = InterviewModeEnum(mode_value)
@@ -54,7 +54,7 @@ class InterviewConfiguration:
             mode = mode_value
         else:
             raise ValueError(f"Mode must be a string or InterviewModeEnum, got {type(mode_value)}")
-        
+
         return cls(
             template_id=str(data["template_id"]),
             mode=mode
@@ -76,4 +76,3 @@ class InterviewConfiguration:
     def __hash__(self) -> int:
         """Hash for use in sets and dictionaries"""
         return hash((self.template_id, self.mode.value))
-

@@ -8,11 +8,12 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from typing import TYPE_CHECKING
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
     WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.workflow_analytics.application.dtos import (
     WorkflowAnalyticsDto,
     StageAnalyticsDto,
@@ -67,7 +68,8 @@ class GetWorkflowAnalyticsQueryHandler(QueryHandler[GetWorkflowAnalyticsQuery, W
         # Calculate analytics using raw SQL for performance
         with self._database.get_session() as session:
             # Import models inline to avoid circular dependencies
-            from src.company_bc.company_candidate.infrastructure.models.company_candidate_model import CompanyCandidateModel
+            from src.company_bc.company_candidate.infrastructure.models.company_candidate_model import \
+                CompanyCandidateModel
 
             # Base query with date filtering
             base_query = session.query(CompanyCandidateModel).filter(

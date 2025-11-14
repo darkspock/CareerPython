@@ -6,12 +6,12 @@ Phase 8: Query to get a talent pool entry by ID
 from dataclasses import dataclass
 from typing import Optional
 
-from src.framework.application.query_bus import Query, QueryHandler
-from src.company_bc.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
+from src.company_bc.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEntryDto
 from src.company_bc.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (
     TalentPoolEntryRepositoryInterface,
 )
-from src.company_bc.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEntryDto
+from src.company_bc.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)

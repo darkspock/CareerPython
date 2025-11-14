@@ -6,8 +6,8 @@ from sqlalchemy import String, Enum, DateTime, Text, Integer, JSON, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.base import Base
-from src.framework.domain.entities.base import generate_id
 from src.auth_bc.user.domain.enums.asset_enums import AssetTypeEnum, ProcessingStatusEnum
+from src.framework.domain.entities.base import generate_id
 
 
 @dataclass

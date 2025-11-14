@@ -1,17 +1,18 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, List
 
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.company_bc.company.domain.enums import CompanyUserRole
-from src.company_bc.company.domain.value_objects import CompanyId
-from src.company_bc.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
+from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyNotFoundError
 from src.company_bc.company.domain.infrastructure.company_user_repository_interface import (
     CompanyUserRepositoryInterface
 )
-from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyNotFoundError
-from src.framework.application.command_bus import Command, CommandHandler
-from src.auth_bc.user.domain.value_objects.UserId import UserId
-from src.company_bc.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
+from src.company_bc.company.domain.value_objects import CompanyId
+from src.company_bc.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
+from src.company_bc.company_role.domain.infrastructure.company_role_repository_interface import \
+    CompanyRoleRepositoryInterface
 from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -28,9 +29,9 @@ class AssignRoleToUserCommandHandler(CommandHandler):
     """Handler for assigning a role to a company user"""
 
     def __init__(
-        self, 
-        repository: CompanyUserRepositoryInterface,
-        company_role_repository: CompanyRoleRepositoryInterface
+            self,
+            repository: CompanyUserRepositoryInterface,
+            company_role_repository: CompanyRoleRepositoryInterface
     ):
         self.repository = repository
         self.company_role_repository = company_role_repository
@@ -56,7 +57,7 @@ class AssignRoleToUserCommandHandler(CommandHandler):
                     raise CompanyValidationError(f"Company role {role_id} not found")
                 if role.company_id != company_id:
                     raise CompanyValidationError(f"Company role {role_id} does not belong to company {company_id}")
-            
+
             # Assign company roles
             self.repository.assign_company_roles(company_user.id, command.company_roles)
 
@@ -77,4 +78,3 @@ class AssignRoleToUserCommandHandler(CommandHandler):
 
         # Save updated entity
         self.repository.save(company_user)
-

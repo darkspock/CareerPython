@@ -1,6 +1,7 @@
-from src.shared_bc.customization.entity_customization.domain.entities.entity_customization import EntityCustomization
-from src.shared_bc.customization.entity_customization.application.dtos.entity_customization_dto import EntityCustomizationDto
+from src.shared_bc.customization.entity_customization.application.dtos.entity_customization_dto import \
+    EntityCustomizationDto
 from src.shared_bc.customization.entity_customization.application.mappers.custom_field_mapper import CustomFieldMapper
+from src.shared_bc.customization.entity_customization.domain.entities.entity_customization import EntityCustomization
 
 
 class EntityCustomizationMapper:
@@ -19,4 +20,3 @@ class EntityCustomizationMapper:
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )
-

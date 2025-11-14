@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.framework.application.query_bus import Query, QueryHandler
 from src.company_bc.candidate_review.application.dtos.candidate_review_dto import CandidateReviewDto
 from src.company_bc.candidate_review.application.mappers.candidate_review_mapper import CandidateReviewMapper
+from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import \
+    CandidateReviewRepositoryInterface
 from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
-from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import CandidateReviewRepositoryInterface
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,5 @@ class GetReviewByIdQueryHandler(QueryHandler[GetReviewByIdQuery, Optional[Candid
         review = self._repository.get_by_id(query.review_id)
         if not review:
             return None
-        
-        return CandidateReviewMapper.entity_to_dto(review)
 
+        return CandidateReviewMapper.entity_to_dto(review)

@@ -1,8 +1,8 @@
 """JobPositionStage SQLAlchemy model"""
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Dict, Any
 from decimal import Decimal
+from typing import Optional, Dict, Any
 
 from sqlalchemy import String, DateTime, Text, JSON, Numeric, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
@@ -53,4 +53,3 @@ class JobPositionStageModel(Base):
 
     def __repr__(self) -> str:
         return f"<JobPositionStageModel(id={self.id}, job_position_id={self.job_position_id}, stage_id={self.stage_id})>"
-

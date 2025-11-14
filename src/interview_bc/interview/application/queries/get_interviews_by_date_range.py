@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass
@@ -29,9 +29,8 @@ class GetInterviewsByDateRangeQueryHandler(QueryHandler[GetInterviewsByDateRange
             filter_by=query.filter_by,
             limit=10000  # Get all interviews in the range
         )
-        
+
         # Filter by company if needed
         # TODO: Add company filtering to repository if needed
-        
-        return [InterviewDto.from_entity(interview) for interview in interviews]
 
+        return [InterviewDto.from_entity(interview) for interview in interviews]

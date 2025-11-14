@@ -2,9 +2,9 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
+from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.framework.application.command_bus import Command, CommandHandler
 from src.framework.domain.interfaces.email_service import EmailServiceInterface
-from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 
 log = logging.getLogger(__name__)
 

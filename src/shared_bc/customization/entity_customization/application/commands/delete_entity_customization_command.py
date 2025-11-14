@@ -1,9 +1,12 @@
 from dataclasses import dataclass
 
-from src.shared_bc.customization.entity_customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
-from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.shared_bc.customization.entity_customization.domain.exceptions.entity_customization_not_found import EntityCustomizationNotFound
 from src.framework.application.command_bus import Command, CommandHandler
+from src.shared_bc.customization.entity_customization.domain.exceptions.entity_customization_not_found import \
+    EntityCustomizationNotFound
+from src.shared_bc.customization.entity_customization.domain.interfaces.entity_customization_repository_interface import \
+    EntityCustomizationRepositoryInterface
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import \
+    EntityCustomizationId
 
 
 @dataclass(frozen=True)
@@ -21,9 +24,8 @@ class DeleteEntityCustomizationCommandHandler(CommandHandler[DeleteEntityCustomi
     def execute(self, command: DeleteEntityCustomizationCommand) -> None:
         """Handle the delete entity customization command"""
         entity_customization = self._repository.get_by_id(command.id)
-        
+
         if not entity_customization:
             raise EntityCustomizationNotFound(f"Entity customization with ID '{command.id}' not found")
-        
-        self._repository.delete(command.id)
 
+        self._repository.delete(command.id)

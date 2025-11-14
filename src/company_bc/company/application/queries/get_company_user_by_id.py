@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.company_bc.company.application.dtos.company_user_dto import CompanyUserDto
 from src.company_bc.company.application.mappers.company_user_mapper import CompanyUserMapper
+from src.company_bc.company.domain.infrastructure.company_user_repository_interface import \
+    CompanyUserRepositoryInterface
 from src.company_bc.company.domain.value_objects import CompanyUserId
-from src.company_bc.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
-from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
 
 
@@ -19,9 +20,9 @@ class GetCompanyUserByIdQueryHandler(QueryHandler[GetCompanyUserByIdQuery, Optio
     """Handler for getting a company user by ID - returns DTO"""
 
     def __init__(
-        self, 
-        company_user_repository: CompanyUserRepositoryInterface,
-        user_repository: UserRepositoryInterface
+            self,
+            company_user_repository: CompanyUserRepositoryInterface,
+            user_repository: UserRepositoryInterface
     ):
         self.company_user_repository = company_user_repository
         self.user_repository = user_repository

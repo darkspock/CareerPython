@@ -3,12 +3,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.phase.domain.entities.phase import Phase
 from src.shared_bc.customization.phase.domain.enums.default_view_enum import DefaultView
 from src.shared_bc.customization.phase.domain.enums.phase_status_enum import PhaseStatus
 from src.shared_bc.customization.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass

@@ -15,7 +15,8 @@ class InterviewInterviewerModel(Base):
     __tablename__ = "interview_interviewers"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
-    interview_id: Mapped[str] = mapped_column(String, ForeignKey("interviews.id", ondelete="CASCADE"), index=True, nullable=False)
+    interview_id: Mapped[str] = mapped_column(String, ForeignKey("interviews.id", ondelete="CASCADE"), index=True,
+                                              nullable=False)
     user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
     name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     is_external: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -27,8 +28,8 @@ class InterviewInterviewerModel(Base):
     updated_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # Relationships
-    interview: Mapped["InterviewModel"] = relationship("InterviewModel", back_populates="interviewer_relations")  # type: ignore # noqa: F821
+    interview: Mapped["InterviewModel"] = relationship("InterviewModel",
+                                                       back_populates="interviewer_relations")  # type: ignore # noqa: F821
 
     def __repr__(self) -> str:
         return f"<InterviewInterviewerModel(id={self.id}, interview_id={self.interview_id}, user_id={self.user_id})>"
-

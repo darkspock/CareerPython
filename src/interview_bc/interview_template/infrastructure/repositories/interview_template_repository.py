@@ -5,6 +5,7 @@ from sqlalchemy import desc, asc, or_
 from sqlalchemy.exc import IntegrityError
 
 from core.database import DatabaseInterface
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum, InterviewTemplateTypeEnum
@@ -17,7 +18,6 @@ from src.interview_bc.interview_template.domain.infrastructure.interview_templat
     InterviewTemplateRepositoryInterface
 from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
 from src.interview_bc.interview_template.infrastructure.models.interview_template import InterviewTemplateModel
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):

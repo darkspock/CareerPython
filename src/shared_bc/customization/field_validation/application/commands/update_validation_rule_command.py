@@ -3,10 +3,11 @@ from typing import Optional, Any
 
 from src.framework.application.command_bus import Command
 from src.framework.application.command_bus import CommandHandler
-from src.shared_bc.customization.field_validation.domain.value_objects.validation_rule_id import ValidationRuleId
-from src.shared_bc.customization.field_validation.domain.infrastructure.validation_rule_repository_interface import ValidationRuleRepositoryInterface
 from src.shared_bc.customization.field_validation.domain.enums.comparison_operator import ComparisonOperator
 from src.shared_bc.customization.field_validation.domain.enums.validation_severity import ValidationSeverity
+from src.shared_bc.customization.field_validation.domain.infrastructure.validation_rule_repository_interface import \
+    ValidationRuleRepositoryInterface
+from src.shared_bc.customization.field_validation.domain.value_objects.validation_rule_id import ValidationRuleId
 
 
 @dataclass(frozen=True)

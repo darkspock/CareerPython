@@ -5,7 +5,8 @@ from src.company_bc.company.domain import CompanyId
 from src.company_bc.company_page.application.commands.set_default_page_command import SetDefaultPageCommand
 from src.company_bc.company_page.domain.enums.page_type import PageType
 from src.company_bc.company_page.domain.exceptions.company_page_exceptions import PageNotFoundException
-from src.company_bc.company_page.domain.infrastructure.company_page_repository_interface import CompanyPageRepositoryInterface
+from src.company_bc.company_page.domain.infrastructure.company_page_repository_interface import \
+    CompanyPageRepositoryInterface
 from src.company_bc.company_page.domain.value_objects.page_id import PageId
 from src.framework.application.command_bus import CommandHandler
 

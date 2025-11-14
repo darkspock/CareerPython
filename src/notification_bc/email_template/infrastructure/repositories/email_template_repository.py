@@ -8,7 +8,8 @@ from typing import List, Optional
 from core.database import DatabaseInterface
 from src.notification_bc.email_template.domain.entities.email_template import EmailTemplate
 from src.notification_bc.email_template.domain.enums.trigger_event import TriggerEvent
-from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
+from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import \
+    EmailTemplateRepositoryInterface
 from src.notification_bc.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.notification_bc.email_template.infrastructure.models.email_template_model import EmailTemplateModel
 

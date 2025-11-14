@@ -6,10 +6,11 @@ Phase 7: Command to create a new email template
 from dataclasses import dataclass
 from typing import List, Optional
 
+from src.framework.application.command_bus import Command, CommandHandler
 from src.notification_bc.email_template.domain.entities.email_template import EmailTemplate
 from src.notification_bc.email_template.domain.enums.trigger_event import TriggerEvent
-from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
-from src.framework.application.command_bus import Command, CommandHandler
+from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import \
+    EmailTemplateRepositoryInterface
 
 
 @dataclass(frozen=True)

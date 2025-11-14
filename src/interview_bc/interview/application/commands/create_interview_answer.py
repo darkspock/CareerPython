@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional
 
 from core.event_bus import EventBus
+from src.framework.application.command_bus import Command, CommandHandler
 from src.interview_bc.interview.domain.entities.interview_answer import InterviewAnswer
 from src.interview_bc.interview.domain.events.interview_answer_events import InterviewAnswerCreatedEvent
 from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
@@ -12,7 +13,6 @@ from src.interview_bc.interview.domain.value_objects.interview_answer_id import 
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass

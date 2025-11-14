@@ -3,15 +3,6 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional, Dict, Tuple, Any
 
-from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommand
-from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
-from src.company_bc.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
-from src.notification_bc.notification.application.commands.send_email_command import SendEmailCommand
-from src.candidate_bc.resume.application.commands.analyze_pdf_resume_command import AnalyzePDFResumeCommand
-from src.framework.application.command_bus import Command
-from src.framework.application.command_bus import CommandHandler, CommandBus
-from src.framework.domain.entities.async_job import AsyncJobId
-from src.framework.domain.entities.base import generate_id
 from src.auth_bc.user.domain.entities.user import User
 from src.auth_bc.user.domain.entities.user_asset import UserAsset
 from src.auth_bc.user.domain.enums.asset_enums import AssetTypeEnum
@@ -21,6 +12,16 @@ from src.auth_bc.user.domain.services.password_service import PasswordService
 from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.auth_bc.user.domain.value_objects.user_asset_id import UserAssetId
 from src.auth_bc.user.infrastructure.services.pdf_processing_service import PDFProcessingService
+from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommand
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
+from src.candidate_bc.resume.application.commands.analyze_pdf_resume_command import AnalyzePDFResumeCommand
+from src.company_bc.candidate_application.application.commands.create_candidate_application import \
+    CreateCandidateApplicationCommand
+from src.framework.application.command_bus import Command
+from src.framework.application.command_bus import CommandHandler, CommandBus
+from src.framework.domain.entities.async_job import AsyncJobId
+from src.framework.domain.entities.base import generate_id
+from src.notification_bc.notification.application.commands.send_email_command import SendEmailCommand
 from src.notification_bc.notification.domain.enums.notification_type import NotificationTypeEnum
 
 
@@ -138,7 +139,8 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
             self.logger.error(f"Error creating user from landing: {str(e)}")
             raise
 
-    def _process_pdf(self, user_id: UserId, pdf_bytes: bytes, filename: str) -> Tuple[Optional[Dict[str, str]], Optional[UserAssetId]]:
+    def _process_pdf(self, user_id: UserId, pdf_bytes: bytes, filename: str) -> Tuple[
+        Optional[Dict[str, str]], Optional[UserAssetId]]:
         """Process PDF and extract information"""
         try:
             # Validate PDF
@@ -220,7 +222,8 @@ class CreateUserFromLandingCommandHandler(CommandHandler[CreateUserFromLandingCo
             # Don't raise - PDF analysis failure shouldn't break user creation
             return None
 
-    def _send_password_reset_email(self, email: str, reset_token: str, extracted_data: Optional[Dict[str, str]]) -> None:
+    def _send_password_reset_email(self, email: str, reset_token: str,
+                                   extracted_data: Optional[Dict[str, str]]) -> None:
         """Send password reset email to new user"""
         try:
             name = "User"

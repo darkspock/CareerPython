@@ -9,8 +9,8 @@ class InterviewScoreCalculator:
 
     @staticmethod
     def calculate_score(
-        answer_scores: List[float],
-        scoring_mode: Optional[ScoringModeEnum] = None
+            answer_scores: List[float],
+            scoring_mode: Optional[ScoringModeEnum] = None
     ) -> Optional[float]:
         """
         Calculate interview score based on scoring mode and answer scores.
@@ -88,4 +88,3 @@ class InterviewScoreCalculator:
             return 0.0
 
         return sum(answer_scores) / len(answer_scores)
-

@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.framework.application.command_bus import Command, CommandHandler
-from src.company_bc.company_candidate.domain.entities.candidate_comment import CandidateComment
-from src.company_bc.company_candidate.domain.value_objects import CandidateCommentId, CompanyCandidateId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.company_candidate.domain.entities.candidate_comment import CandidateComment
+from src.company_bc.company_candidate.domain.enums import CommentVisibility, CommentReviewStatus
+from src.company_bc.company_candidate.domain.infrastructure.candidate_comment_repository_interface import \
+    CandidateCommentRepositoryInterface
+from src.company_bc.company_candidate.domain.value_objects import CandidateCommentId, CompanyCandidateId
+from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_bc.company_candidate.domain.enums import CommentVisibility, CommentReviewStatus
-from src.company_bc.company_candidate.domain.infrastructure.candidate_comment_repository_interface import CandidateCommentRepositoryInterface
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,5 @@ class CreateCandidateCommentCommandHandler(CommandHandler[CreateCandidateComment
             visibility=CommentVisibility(command.visibility),
             review_status=CommentReviewStatus(command.review_status),
         )
-        
-        self._repository.save(comment)
 
+        self._repository.save(comment)

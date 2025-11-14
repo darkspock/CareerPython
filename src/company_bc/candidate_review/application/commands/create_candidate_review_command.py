@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.framework.application.command_bus import Command, CommandHandler
 from src.company_bc.candidate_review.domain.entities.candidate_review import CandidateReview
-from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
-from src.company_bc.candidate_review.domain.enums.review_status_enum import ReviewStatusEnum
 from src.company_bc.candidate_review.domain.enums.review_score_enum import ReviewScoreEnum
-from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import CandidateReviewRepositoryInterface
-from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.company_bc.candidate_review.domain.enums.review_status_enum import ReviewStatusEnum
+from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import \
+    CandidateReviewRepositoryInterface
+from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
@@ -45,6 +46,5 @@ class CreateCandidateReviewCommandHandler(CommandHandler[CreateCandidateReviewCo
             stage_id=command.stage_id,
             review_status=command.review_status,
         )
-        
-        self._repository.create(review)
 
+        self._repository.create(review)

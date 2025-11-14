@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Optional, List
 
 from core.event_bus import EventBus
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.framework.application.command_bus import Command, CommandHandler
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewTypeEnum,
     InterviewProcessTypeEnum,
@@ -11,8 +13,6 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
 )
 from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewNotFoundException
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
-from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -89,7 +89,8 @@ class UpdateInterviewCommandHandler(CommandHandler[UpdateInterviewCommand]):
                 # Use update_scheduled_at which allows past dates for editing
                 # Only prevent if scheduling a new interview (no existing scheduled_at) to the past
                 allow_past = interview.scheduled_at is not None  # Allow past if already had a date
-                interview.update_scheduled_at(scheduled_at_datetime, updated_by=command.updated_by, allow_past=allow_past)
+                interview.update_scheduled_at(scheduled_at_datetime, updated_by=command.updated_by,
+                                              allow_past=allow_past)
 
         # Update required roles if provided
         if command.required_roles is not None:
@@ -118,4 +119,3 @@ class UpdateInterviewCommandHandler(CommandHandler[UpdateInterviewCommand]):
         self.interview_repository.update(interview)
 
         # Note: Could dispatch an event here if needed
-

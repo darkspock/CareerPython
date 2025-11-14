@@ -10,7 +10,8 @@ from src.company_bc.candidate_application.domain.enums.task_status import TaskSt
 from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import \
     CandidateApplicationRepositoryInterface
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.company_bc.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
+from src.company_bc.candidate_application.infrastructure.models.candidate_application_model import \
+    CandidateApplicationModel
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.framework.infrastructure.repositories.base import BaseRepository
 

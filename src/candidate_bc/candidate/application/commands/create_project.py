@@ -3,7 +3,8 @@ from datetime import date
 from typing import Optional
 
 from src.candidate_bc.candidate.domain.entities import CandidateProject
-from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import CandidateProjectRepositoryInterface
+from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import \
+    CandidateProjectRepositoryInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.candidate_bc.candidate.domain.value_objects.candidate_project_id import CandidateProjectId
 from src.framework.application.command_bus import Command, CommandHandler

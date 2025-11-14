@@ -7,4 +7,3 @@ class ReviewScoreEnum(int, Enum):
     THREE = 3  # Thumbs down - Not recommended
     SIX = 6  # Thumbs up - Recommended
     TEN = 10  # Favorite - Highly recommended
-

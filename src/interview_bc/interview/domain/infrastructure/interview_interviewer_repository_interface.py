@@ -4,8 +4,6 @@ from typing import Optional, List
 
 from src.interview_bc.interview.domain.entities.interview_interviewer import InterviewInterviewer
 from src.interview_bc.interview.domain.value_objects.interview_interviewer_id import InterviewInterviewerId
-from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 class InterviewInterviewerRepositoryInterface(ABC):
@@ -43,9 +41,9 @@ class InterviewInterviewerRepositoryInterface(ABC):
 
     @abstractmethod
     def get_by_interview_and_user(
-        self,
-        interview_id: str,
-        user_id: str
+            self,
+            interview_id: str,
+            user_id: str
     ) -> Optional[InterviewInterviewer]:
         """Get specific interviewer relationship by interview and user"""
         pass
@@ -59,4 +57,3 @@ class InterviewInterviewerRepositoryInterface(ABC):
     def is_user_interviewer(self, interview_id: str, user_id: str) -> bool:
         """Check if a user is an interviewer for an interview"""
         pass
-

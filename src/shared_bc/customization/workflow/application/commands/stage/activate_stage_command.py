@@ -1,11 +1,11 @@
 """Activate Stage Command."""
 from dataclasses import dataclass
 
+from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.workflow.domain.exceptions.workflow_stage_not_found import WorkflowStageNotFound
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)

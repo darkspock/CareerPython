@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.interview_bc.interview_template.domain.enums import InterviewTemplateSectionEnum
-from src.interview_bc.interview_template.domain.enums.interview_template_section import InterviewTemplateSectionStatusEnum
+from src.interview_bc.interview_template.domain.enums.interview_template_section import \
+    InterviewTemplateSectionStatusEnum
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId

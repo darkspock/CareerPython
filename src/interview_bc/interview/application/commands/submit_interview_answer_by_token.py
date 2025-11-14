@@ -1,12 +1,14 @@
 """Submit interview answer by token command"""
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 from core.event_bus import EventBus
+from src.framework.application.command_bus import Command, CommandHandler
 from src.interview_bc.interview.domain.entities.interview_answer import InterviewAnswer
-from src.interview_bc.interview.domain.events.interview_answer_events import InterviewAnswerCreatedEvent, InterviewAnswerUpdatedEvent
+from src.interview_bc.interview.domain.events.interview_answer_events import InterviewAnswerCreatedEvent, \
+    InterviewAnswerUpdatedEvent
 from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewNotFoundException
-from src.interview_bc.interview.domain.exceptions.interview_answer_exceptions import InterviewAnswerNotFoundException
 from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
     InterviewAnswerRepositoryInterface
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
@@ -14,8 +16,6 @@ from src.interview_bc.interview.domain.value_objects.interview_answer_id import 
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_question_id import \
     InterviewTemplateQuestionId
-from src.framework.application.command_bus import Command, CommandHandler
-from datetime import datetime
 
 
 @dataclass
@@ -29,10 +29,10 @@ class SubmitInterviewAnswerByTokenCommand(Command):
 
 class SubmitInterviewAnswerByTokenCommandHandler(CommandHandler[SubmitInterviewAnswerByTokenCommand]):
     def __init__(
-        self,
-        interview_repository: InterviewRepositoryInterface,
-        answer_repository: InterviewAnswerRepositoryInterface,
-        event_bus: EventBus
+            self,
+            interview_repository: InterviewRepositoryInterface,
+            answer_repository: InterviewAnswerRepositoryInterface,
+            event_bus: EventBus
     ):
         self.interview_repository = interview_repository
         self.answer_repository = answer_repository
@@ -101,4 +101,3 @@ class SubmitInterviewAnswerByTokenCommandHandler(CommandHandler[SubmitInterviewA
                     answered_at=created_answer.answered_at,
                     created_by=created_answer.created_by
                 ))
-

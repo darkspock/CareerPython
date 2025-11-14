@@ -6,9 +6,10 @@ Phase 7: Command to update an existing email template
 from dataclasses import dataclass
 from typing import List, Optional
 
-from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
-from src.notification_bc.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.framework.application.command_bus import Command, CommandHandler
+from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import \
+    EmailTemplateRepositoryInterface
+from src.notification_bc.email_template.domain.value_objects.email_template_id import EmailTemplateId
 
 
 @dataclass(frozen=True)

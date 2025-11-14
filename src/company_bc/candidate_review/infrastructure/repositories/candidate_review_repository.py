@@ -2,21 +2,21 @@ from typing import Optional, List
 
 from sqlalchemy.orm import Session
 
+from core.database import SQLAlchemyDatabase
 from src.company_bc.candidate_review.domain.entities.candidate_review import CandidateReview
 from src.company_bc.candidate_review.domain.enums import (
     ReviewStatusEnum,
     ReviewScoreEnum,
 )
-from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
 from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import (
     CandidateReviewRepositoryInterface
 )
+from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
 from src.company_bc.candidate_review.infrastructure.models.candidate_review_model import CandidateReviewModel
-from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from core.database import SQLAlchemyDatabase
 
 
 class CandidateReviewRepository(CandidateReviewRepositoryInterface):
@@ -72,8 +72,8 @@ class CandidateReviewRepository(CandidateReviewRepositoryInterface):
         return self._to_domain(model)
 
     def get_by_company_candidate(
-        self, 
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> List[CandidateReview]:
         """Get all reviews for a company candidate"""
         session = self._get_session()
@@ -84,9 +84,9 @@ class CandidateReviewRepository(CandidateReviewRepositoryInterface):
         return [self._to_domain(model) for model in models]
 
     def get_by_stage(
-        self, 
-        company_candidate_id: CompanyCandidateId, 
-        stage_id: WorkflowStageId
+            self,
+            company_candidate_id: CompanyCandidateId,
+            stage_id: WorkflowStageId
     ) -> List[CandidateReview]:
         """Get all reviews for a specific stage"""
         session = self._get_session()
@@ -98,8 +98,8 @@ class CandidateReviewRepository(CandidateReviewRepositoryInterface):
         return [self._to_domain(model) for model in models]
 
     def get_global_reviews(
-        self, 
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> List[CandidateReview]:
         """Get all global reviews (stage_id is None)"""
         session = self._get_session()
@@ -134,4 +134,3 @@ class CandidateReviewRepository(CandidateReviewRepositoryInterface):
         if model:
             session.delete(model)
             session.commit()
-

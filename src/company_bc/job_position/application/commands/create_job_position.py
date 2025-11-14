@@ -8,7 +8,8 @@ from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
 from src.company_bc.job_position.domain.value_objects import JobPositionId
 from src.company_bc.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.company_bc.job_position.domain.value_objects.stage_id import StageId
-from src.company_bc.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
+from src.company_bc.job_position.infrastructure.repositories.job_position_repository import \
+    JobPositionRepositoryInterface
 from src.framework.application.command_bus import Command, CommandHandler
 from src.framework.domain.enums.job_category import JobCategoryEnum
 

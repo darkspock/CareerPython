@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
-from src.notification_bc.email_template.domain.value_objects.email_template_id import EmailTemplateId
 from src.notification_bc.email_template.domain.enums.trigger_event import TriggerEvent
+from src.notification_bc.email_template.domain.value_objects.email_template_id import EmailTemplateId
 
 
 @dataclass
@@ -46,11 +46,11 @@ class EmailTemplate:
         self.updated_at = datetime.utcnow()
 
     def update_content(
-        self,
-        template_name: str,
-        subject: str,
-        body_html: str,
-        body_text: Optional[str] = None
+            self,
+            template_name: str,
+            subject: str,
+            body_html: str,
+            body_text: Optional[str] = None
     ) -> None:
         """Update template content"""
         self.template_name = template_name
@@ -170,16 +170,16 @@ class EmailTemplate:
 
     @staticmethod
     def create(
-        workflow_id: str,
-        template_name: str,
-        template_key: str,
-        subject: str,
-        body_html: str,
-        trigger_event: TriggerEvent,
-        available_variables: List[str],
-        stage_id: Optional[str] = None,
-        body_text: Optional[str] = None,
-        is_active: bool = True
+            workflow_id: str,
+            template_name: str,
+            template_key: str,
+            subject: str,
+            body_html: str,
+            trigger_event: TriggerEvent,
+            available_variables: List[str],
+            stage_id: Optional[str] = None,
+            body_text: Optional[str] = None,
+            is_active: bool = True
     ) -> 'EmailTemplate':
         """
         Factory method to create a new email template
@@ -236,19 +236,19 @@ class EmailTemplate:
 
     @staticmethod
     def _from_repository(
-        id: EmailTemplateId,
-        workflow_id: str,
-        stage_id: Optional[str],
-        template_name: str,
-        template_key: str,
-        subject: str,
-        body_html: str,
-        body_text: Optional[str],
-        available_variables: List[str],
-        trigger_event: TriggerEvent,
-        is_active: bool,
-        created_at: datetime,
-        updated_at: datetime
+            id: EmailTemplateId,
+            workflow_id: str,
+            stage_id: Optional[str],
+            template_name: str,
+            template_key: str,
+            subject: str,
+            body_html: str,
+            body_text: Optional[str],
+            available_variables: List[str],
+            trigger_event: TriggerEvent,
+            is_active: bool,
+            created_at: datetime,
+            updated_at: datetime
     ) -> 'EmailTemplate':
         """
         Factory method for repository to reconstruct entity from database

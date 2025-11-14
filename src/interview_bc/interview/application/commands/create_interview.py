@@ -6,20 +6,20 @@ from typing import Optional, List
 from core.event_bus import EventBus
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.framework.application.command_bus import Command, CommandHandler
 from src.interview_bc.interview.domain.entities.interview import Interview
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewTypeEnum,
     InterviewModeEnum,
     InterviewProcessTypeEnum
 )
-from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.interview_bc.interview.domain.events.interview_events import InterviewCreatedEvent
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass

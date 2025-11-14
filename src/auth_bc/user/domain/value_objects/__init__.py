@@ -5,4 +5,3 @@ from .UserId import UserId
 __all__ = [
     "UserId",
 ]
-

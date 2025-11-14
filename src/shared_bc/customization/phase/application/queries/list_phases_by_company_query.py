@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import List
 
 from src.company_bc.company.domain.value_objects import CompanyId
+from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.phase.application.queries.get_phase_by_id_query import PhaseDto
 from src.shared_bc.customization.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass

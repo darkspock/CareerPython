@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
 
-from src.company_bc.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
 from src.company_bc.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
+from src.company_bc.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
 
 
 @dataclass
@@ -39,17 +39,17 @@ class TalentPoolEntry:
 
     @classmethod
     def create(
-        cls,
-        company_id: str,
-        candidate_id: str,
-        added_reason: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        rating: Optional[int] = None,
-        notes: Optional[str] = None,
-        status: TalentPoolStatus = TalentPoolStatus.ACTIVE,
-        source_application_id: Optional[str] = None,
-        source_position_id: Optional[str] = None,
-        added_by_user_id: Optional[str] = None,
+            cls,
+            company_id: str,
+            candidate_id: str,
+            added_reason: Optional[str] = None,
+            tags: Optional[List[str]] = None,
+            rating: Optional[int] = None,
+            notes: Optional[str] = None,
+            status: TalentPoolStatus = TalentPoolStatus.ACTIVE,
+            source_application_id: Optional[str] = None,
+            source_position_id: Optional[str] = None,
+            added_by_user_id: Optional[str] = None,
     ) -> "TalentPoolEntry":
         """
         Factory method to create a new talent pool entry.
@@ -111,20 +111,20 @@ class TalentPoolEntry:
 
     @classmethod
     def _from_repository(
-        cls,
-        id: TalentPoolEntryId,
-        company_id: str,
-        candidate_id: str,
-        source_application_id: Optional[str],
-        source_position_id: Optional[str],
-        added_reason: Optional[str],
-        tags: List[str],
-        rating: Optional[int],
-        notes: Optional[str],
-        status: TalentPoolStatus,
-        added_by_user_id: Optional[str],
-        created_at: datetime,
-        updated_at: datetime,
+            cls,
+            id: TalentPoolEntryId,
+            company_id: str,
+            candidate_id: str,
+            source_application_id: Optional[str],
+            source_position_id: Optional[str],
+            added_reason: Optional[str],
+            tags: List[str],
+            rating: Optional[int],
+            notes: Optional[str],
+            status: TalentPoolStatus,
+            added_by_user_id: Optional[str],
+            created_at: datetime,
+            updated_at: datetime,
     ) -> "TalentPoolEntry":
         """
         Factory method for repository to reconstruct entity from persistence.
@@ -148,11 +148,11 @@ class TalentPoolEntry:
         )
 
     def update(
-        self,
-        added_reason: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        rating: Optional[int] = None,
-        notes: Optional[str] = None,
+            self,
+            added_reason: Optional[str] = None,
+            tags: Optional[List[str]] = None,
+            rating: Optional[int] = None,
+            notes: Optional[str] = None,
     ) -> None:
         """
         Update talent pool entry details.

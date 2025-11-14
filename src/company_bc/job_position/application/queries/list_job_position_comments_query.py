@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
-from src.framework.application.query_bus import Query, QueryHandler
-from src.company_bc.job_position.domain.value_objects import JobPositionId
+from src.company_bc.job_position.application.dtos.job_position_comment_dto import JobPositionCommentDto
 from src.company_bc.job_position.domain.infrastructure.job_position_comment_repository_interface import (
     JobPositionCommentRepositoryInterface
 )
-from src.company_bc.job_position.application.dtos.job_position_comment_dto import JobPositionCommentDto
+from src.company_bc.job_position.domain.value_objects import JobPositionId
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
@@ -43,7 +43,7 @@ class ListJobPositionCommentsQueryHandler(QueryHandler[ListJobPositionCommentsQu
             List[JobPositionCommentDto]: List of comments
         """
         job_position_id = JobPositionId.from_string(query.job_position_id)
-        
+
         # Use the repository method that handles stage and global filtering
         comments = self._repository.list_by_stage_and_global(
             job_position_id=job_position_id,
@@ -69,4 +69,3 @@ class ListJobPositionCommentsQueryHandler(QueryHandler[ListJobPositionCommentsQu
             )
             for comment in comments
         ]
-

@@ -2,7 +2,8 @@ from typing import List, Optional
 
 from core.database import DatabaseInterface
 from src.candidate_bc.candidate.domain.entities import CandidateProject
-from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import CandidateProjectRepositoryInterface
+from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import \
+    CandidateProjectRepositoryInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.candidate_bc.candidate.domain.value_objects.candidate_project_id import CandidateProjectId
 from src.candidate_bc.candidate.infrastructure.models import CandidateProjectModel

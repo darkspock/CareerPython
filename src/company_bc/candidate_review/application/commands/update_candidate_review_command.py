@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.framework.application.command_bus import Command, CommandHandler
-from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
 from src.company_bc.candidate_review.domain.enums.review_score_enum import ReviewScoreEnum
-from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import CandidateReviewRepositoryInterface
+from src.company_bc.candidate_review.domain.infrastructure.candidate_review_repository_interface import \
+    CandidateReviewRepositoryInterface
+from src.company_bc.candidate_review.domain.value_objects.candidate_review_id import CandidateReviewId
+from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,5 @@ class UpdateCandidateReviewCommandHandler(CommandHandler[UpdateCandidateReviewCo
             score=command.score,
             comment=command.comment,
         )
-        
-        self._repository.update(review)
 
+        self._repository.update(review)

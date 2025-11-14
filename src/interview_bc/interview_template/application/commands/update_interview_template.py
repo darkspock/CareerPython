@@ -2,10 +2,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
+from src.framework.application.command_bus import Command, CommandHandler
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateTypeEnum,
-    InterviewTemplateStatusEnum,
     ScoringModeEnum
 )
 from src.interview_bc.interview_template.domain.exceptions.interview_exceptions import (
@@ -17,8 +18,6 @@ from src.interview_bc.interview_template.domain.infrastructure.interview_templat
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_repository import \
     InterviewTemplateRepository
-from src.framework.application.command_bus import Command, CommandHandler
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 @dataclass

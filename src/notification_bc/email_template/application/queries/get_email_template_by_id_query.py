@@ -6,10 +6,11 @@ Phase 7: Query to get an email template by ID
 from dataclasses import dataclass
 from typing import Optional
 
-from src.notification_bc.email_template.application.dtos.email_template_dto import EmailTemplateDto
-from src.notification_bc.email_template.domain.value_objects.email_template_id import EmailTemplateId
-from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
+from src.notification_bc.email_template.application.dtos.email_template_dto import EmailTemplateDto
+from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import \
+    EmailTemplateRepositoryInterface
+from src.notification_bc.email_template.domain.value_objects.email_template_id import EmailTemplateId
 
 
 @dataclass(frozen=True)

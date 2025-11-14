@@ -1,31 +1,29 @@
 """Service for checking user permissions related to interviews"""
-from typing import Optional
 
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.company_bc.company.domain.enums import CompanyUserRole, CompanyUserStatus
-from src.company_bc.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
+from src.company_bc.company.domain.infrastructure.company_user_repository_interface import \
+    CompanyUserRepositoryInterface
 from src.company_bc.company.domain.value_objects.company_id import CompanyId
 from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
     CompanyCandidateRepositoryInterface
 from src.company_bc.job_position.domain.repositories.job_position_repository_interface import \
     JobPositionRepositoryInterface
-from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
-from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.interview_bc.interview.domain.entities.interview import Interview
 from src.interview_bc.interview.domain.entities.interview_interviewer import InterviewInterviewer
 from src.interview_bc.interview.domain.infrastructure.interview_interviewer_repository_interface import \
     InterviewInterviewerRepositoryInterface
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 class InterviewPermissionService:
     """Service for validating user permissions related to interviews"""
 
     def __init__(
-        self,
-        company_user_repository: CompanyUserRepositoryInterface,
-        interviewer_repository: InterviewInterviewerRepositoryInterface,
-        company_candidate_repository: CompanyCandidateRepositoryInterface,
-        job_position_repository: JobPositionRepositoryInterface
+            self,
+            company_user_repository: CompanyUserRepositoryInterface,
+            interviewer_repository: InterviewInterviewerRepositoryInterface,
+            company_candidate_repository: CompanyCandidateRepositoryInterface,
+            job_position_repository: JobPositionRepositoryInterface
     ):
         self.company_user_repository = company_user_repository
         self.interviewer_repository = interviewer_repository
@@ -33,10 +31,10 @@ class InterviewPermissionService:
         self.job_position_repository = job_position_repository
 
     def can_user_invite_interviewer(
-        self,
-        user_id: str,
-        company_id: str,
-        interview: Interview
+            self,
+            user_id: str,
+            company_id: str,
+            interview: Interview
     ) -> bool:
         """Check if a user can invite interviewers to an interview
 
@@ -70,9 +68,9 @@ class InterviewPermissionService:
         return False
 
     def can_user_accept_invitation(
-        self,
-        user_id: str,
-        interviewer: InterviewInterviewer
+            self,
+            user_id: str,
+            interviewer: InterviewInterviewer
     ) -> bool:
         """Check if a user can accept an interviewer invitation
 
@@ -87,10 +85,10 @@ class InterviewPermissionService:
         return str(interviewer.user_id) == user_id
 
     def can_user_access_interview(
-        self,
-        user_id: str,
-        company_id: str,
-        interview: Interview
+            self,
+            user_id: str,
+            company_id: str,
+            interview: Interview
     ) -> bool:
         """Check if a user can access an interview
 
@@ -125,10 +123,10 @@ class InterviewPermissionService:
         return False
 
     def can_user_modify_interview(
-        self,
-        user_id: str,
-        company_id: str,
-        interview: Interview
+            self,
+            user_id: str,
+            company_id: str,
+            interview: Interview
     ) -> bool:
         """Check if a user can modify an interview
 
@@ -158,9 +156,9 @@ class InterviewPermissionService:
         return company_user.role in [CompanyUserRole.ADMIN, CompanyUserRole.RECRUITER]
 
     def is_user_interviewer_for_interview(
-        self,
-        user_id: str,
-        interview_id: str
+            self,
+            user_id: str,
+            interview_id: str
     ) -> bool:
         """Check if a user is an interviewer for an interview
 
@@ -179,9 +177,9 @@ class InterviewPermissionService:
         return interviewer is not None and interviewer.is_accepted()
 
     def does_interview_belong_to_company(
-        self,
-        interview: Interview,
-        company_id: str
+            self,
+            interview: Interview,
+            company_id: str
     ) -> bool:
         """Check if an interview belongs to a specific company
 
@@ -214,10 +212,10 @@ class InterviewPermissionService:
         return False
 
     def can_user_access_interview_by_company(
-        self,
-        user_id: str,
-        company_id: str,
-        interview: Interview
+            self,
+            user_id: str,
+            company_id: str,
+            interview: Interview
     ) -> bool:
         """Check if a user can access an interview, verifying it belongs to the company
 
@@ -237,10 +235,10 @@ class InterviewPermissionService:
         return self.can_user_access_interview(user_id, company_id, interview)
 
     def can_user_modify_interview_by_company(
-        self,
-        user_id: str,
-        company_id: str,
-        interview: Interview
+            self,
+            user_id: str,
+            company_id: str,
+            interview: Interview
     ) -> bool:
         """Check if a user can modify an interview, verifying it belongs to the company
 
@@ -258,4 +256,3 @@ class InterviewPermissionService:
 
         # Then check user permissions
         return self.can_user_modify_interview(user_id, company_id, interview)
-

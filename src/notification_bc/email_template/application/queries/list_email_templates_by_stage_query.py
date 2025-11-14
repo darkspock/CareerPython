@@ -6,9 +6,10 @@ Phase 7: Query to list email templates by stage
 from dataclasses import dataclass
 from typing import List
 
-from src.notification_bc.email_template.application.dtos.email_template_dto import EmailTemplateDto
-from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
+from src.notification_bc.email_template.application.dtos.email_template_dto import EmailTemplateDto
+from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import \
+    EmailTemplateRepositoryInterface
 
 
 @dataclass(frozen=True)

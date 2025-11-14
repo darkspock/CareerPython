@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 
-from src.shared_bc.customization.entity_customization.domain.entities.entity_customization import EntityCustomization
-from src.shared_bc.customization.entity_customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
-from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
-from src.shared_bc.customization.entity_customization.domain.exceptions.entity_customization_not_found import EntityCustomizationNotFound
 from src.framework.application.command_bus import Command, CommandHandler
+from src.shared_bc.customization.entity_customization.domain.exceptions.entity_customization_not_found import \
+    EntityCustomizationNotFound
+from src.shared_bc.customization.entity_customization.domain.interfaces.entity_customization_repository_interface import \
+    EntityCustomizationRepositoryInterface
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import \
+    EntityCustomizationId
 
 
 @dataclass(frozen=True)
@@ -24,12 +26,11 @@ class AddCustomFieldToEntityCommandHandler(CommandHandler[AddCustomFieldToEntity
     def execute(self, command: AddCustomFieldToEntityCommand) -> None:
         """Handle the add custom field command"""
         entity_customization = self._repository.get_by_id(command.entity_customization_id)
-        
+
         if not entity_customization:
             raise EntityCustomizationNotFound(
                 f"Entity customization with ID '{command.entity_customization_id}' not found"
             )
-        
+
         entity_customization.add_field(command.field)
         self._repository.save(entity_customization)
-

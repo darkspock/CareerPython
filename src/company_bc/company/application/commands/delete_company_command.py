@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from src.company_bc.company.domain.value_objects import CompanyId
-from src.company_bc.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company_bc.company.domain.exceptions.company_exceptions import CompanyNotFoundError
+from src.company_bc.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
+from src.company_bc.company.domain.value_objects import CompanyId
 from src.framework.application.command_bus import Command, CommandHandler
 
 

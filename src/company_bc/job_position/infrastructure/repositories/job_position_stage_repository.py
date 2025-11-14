@@ -1,14 +1,16 @@
 """JobPositionStage repository implementation"""
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
-from src.company_bc.job_position.domain.entities.job_position_stage import JobPositionStage
-from src.company_bc.job_position.domain.value_objects.job_position_stage_id import JobPositionStageId
-from src.company_bc.job_position.domain.infrastructure.job_position_stage_repository_interface import JobPositionStageRepositoryInterface
-from src.company_bc.job_position.infrastructure.models.job_position_stage_model import JobPositionStageModel
-from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from core.database import SQLAlchemyDatabase
+from src.company_bc.job_position.domain.entities.job_position_stage import JobPositionStage
+from src.company_bc.job_position.domain.infrastructure.job_position_stage_repository_interface import \
+    JobPositionStageRepositoryInterface
+from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.company_bc.job_position.domain.value_objects.job_position_stage_id import JobPositionStageId
+from src.company_bc.job_position.infrastructure.models.job_position_stage_model import JobPositionStageModel
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 
 
 class JobPositionStageRepository(JobPositionStageRepositoryInterface):
@@ -69,8 +71,8 @@ class JobPositionStageRepository(JobPositionStageRepositoryInterface):
         return self._to_domain(model) if model else None
 
     def list_by_job_position(
-        self,
-        job_position_id: JobPositionId
+            self,
+            job_position_id: JobPositionId
     ) -> List[JobPositionStage]:
         """Get all stages for a job position, ordered by started_at"""
         session = self._get_session()
@@ -94,8 +96,8 @@ class JobPositionStageRepository(JobPositionStageRepositoryInterface):
         return [self._to_domain(model) for model in models]
 
     def get_current_by_job_position(
-        self,
-        job_position_id: JobPositionId
+            self,
+            job_position_id: JobPositionId
     ) -> Optional[JobPositionStage]:
         """Get the current (most recent uncompleted) stage for a job position"""
         session = self._get_session()
@@ -142,4 +144,3 @@ class JobPositionStageRepository(JobPositionStageRepositoryInterface):
             created_at=model.created_at,
             updated_at=model.updated_at
         )
-

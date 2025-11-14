@@ -1,5 +1,12 @@
 """Candidate application module - exports queries and commands"""
 
+# Commands
+from .commands import (
+    CreateCandidateCommand,
+    CreateCandidateCommandHandler,
+    UpdateCandidateCommand,
+    UpdateCandidateCommandHandler,
+)
 # Queries
 from .queries import (
     GetCandidateByIdQuery,
@@ -20,14 +27,6 @@ from .queries import (
     ListCandidateProjectsByCandidateIdQueryHandler,
     ReadCandidateQuery,
     ReadCandidateQueryHandler,
-)
-
-# Commands
-from .commands import (
-    CreateCandidateCommand,
-    CreateCandidateCommandHandler,
-    UpdateCandidateCommand,
-    UpdateCandidateCommandHandler,
 )
 
 __all__ = [
@@ -56,4 +55,3 @@ __all__ = [
     "UpdateCandidateCommand",
     "UpdateCandidateCommandHandler",
 ]
-

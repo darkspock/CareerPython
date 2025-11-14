@@ -10,11 +10,13 @@ from src.company_bc.candidate_application.domain.repositories.candidate_applicat
     CandidateApplicationRepositoryInterface
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared_bc.customization.workflow.domain.entities.workflow_stage import WorkflowStage
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 class CandidateStageTransitionHandler:
@@ -26,19 +28,19 @@ class CandidateStageTransitionHandler:
     """
 
     def __init__(
-        self,
-        application_repository: CandidateApplicationRepositoryInterface,
-        stage_repository: WorkflowStageRepositoryInterface,
-        workflow_repository: WorkflowRepositoryInterface
+            self,
+            application_repository: CandidateApplicationRepositoryInterface,
+            stage_repository: WorkflowStageRepositoryInterface,
+            workflow_repository: WorkflowRepositoryInterface
     ):
         self.application_repository = application_repository
         self.stage_repository = stage_repository
         self.workflow_repository = workflow_repository
 
     def handle_stage_transition(
-        self,
-        application_id: CandidateApplicationId,
-        new_stage_id: str
+            self,
+            application_id: CandidateApplicationId,
+            new_stage_id: str
     ) -> None:
         """Handle a stage transition and check if phase change is needed
 

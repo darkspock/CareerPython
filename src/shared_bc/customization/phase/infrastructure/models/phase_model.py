@@ -7,9 +7,9 @@ from sqlalchemy import String, Integer, Text, DateTime, Enum, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.base import Base
+from src.framework.domain.entities.base import generate_id
 from src.shared_bc.customization.phase.domain.enums.default_view_enum import DefaultView
 from src.shared_bc.customization.phase.domain.enums.phase_status_enum import PhaseStatus
-from src.framework.domain.entities.base import generate_id
 
 
 @dataclass

@@ -6,12 +6,12 @@ Phase 8: Command to add a candidate to company's talent pool
 from dataclasses import dataclass
 from typing import Optional, List
 
-from src.framework.application.command_bus import CommandHandler, Command
 from src.company_bc.talent_pool.domain.entities.talent_pool_entry import TalentPoolEntry
 from src.company_bc.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 from src.company_bc.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (
     TalentPoolEntryRepositoryInterface,
 )
+from src.framework.application.command_bus import CommandHandler, Command
 
 
 @dataclass(frozen=True)

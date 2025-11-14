@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
 from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
 from src.company_bc.job_position.domain.exceptions import JobPositionNotFoundError
-from src.company_bc.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
+from src.company_bc.job_position.infrastructure.repositories.job_position_repository import \
+    JobPositionRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
 
 

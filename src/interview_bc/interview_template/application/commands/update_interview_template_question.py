@@ -1,6 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 
+from src.framework.application.command_bus import Command
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateQuestionDataTypeEnum,
     InterviewTemplateQuestionScopeEnum
@@ -14,7 +15,6 @@ from src.interview_bc.interview_template.domain.value_objects.interview_template
     InterviewTemplateSectionId
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_question_repository import \
     InterviewTemplateQuestionRepository
-from src.framework.application.command_bus import Command
 
 
 @dataclass

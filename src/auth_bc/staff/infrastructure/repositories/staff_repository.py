@@ -2,13 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from core.database import DatabaseInterface
-from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
-from src.framework.infrastructure.repositories.base import BaseRepository
 from src.auth_bc.staff.domain.entities.staff import Staff
 from src.auth_bc.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
 from src.auth_bc.staff.domain.value_objects.staff_id import StaffId
 from src.auth_bc.staff.infrastructure.models.staff_model import StaffModel
 from src.auth_bc.user.domain.value_objects import UserId
+from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
+from src.framework.infrastructure.repositories.base import BaseRepository
 
 
 class StaffRepositoryInterface(ABC):

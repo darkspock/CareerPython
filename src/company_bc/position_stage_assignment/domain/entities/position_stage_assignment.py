@@ -5,8 +5,8 @@ from typing import List, Optional
 
 from src.company_bc.company.domain.value_objects import CompanyUserId
 from src.company_bc.job_position.domain.value_objects import JobPositionId, StageId
-from src.company_bc.position_stage_assignment.domain.value_objects import PositionStageAssignmentId
 from src.company_bc.position_stage_assignment.domain.exceptions import PositionStageAssignmentValidationError
+from src.company_bc.position_stage_assignment.domain.value_objects import PositionStageAssignmentId
 
 
 @dataclass

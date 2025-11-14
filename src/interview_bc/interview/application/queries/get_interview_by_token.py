@@ -1,11 +1,10 @@
 """Get interview by token query"""
 from dataclasses import dataclass
-from typing import Optional
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewNotFoundException
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass
@@ -26,4 +25,3 @@ class GetInterviewByTokenQueryHandler(QueryHandler[GetInterviewByTokenQuery, Int
             )
 
         return InterviewDto.from_entity(interview)
-

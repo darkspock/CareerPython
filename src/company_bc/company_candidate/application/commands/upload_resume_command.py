@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 
-from src.framework.application.command_bus import Command, CommandHandler
-from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
-from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
+    CompanyCandidateRepositoryInterface
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.framework.application.command_bus import Command, CommandHandler
 from src.framework.domain.infrastructure.storage_service_interface import StorageServiceInterface, StorageType
 
 
@@ -21,9 +22,9 @@ class UploadCandidateResumeCommandHandler(CommandHandler):
     """Handler for uploading a resume for a company candidate"""
 
     def __init__(
-        self,
-        repository: CompanyCandidateRepositoryInterface,
-        storage_service: StorageServiceInterface
+            self,
+            repository: CompanyCandidateRepositoryInterface,
+            storage_service: StorageServiceInterface
     ):
         self._repository = repository
         self._storage_service = storage_service

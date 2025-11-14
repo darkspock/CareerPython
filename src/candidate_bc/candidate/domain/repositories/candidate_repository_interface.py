@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List, Any
 
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.candidate_bc.candidate.domain.entities import Candidate
 from src.candidate_bc.candidate.domain.enums import CandidateStatusEnum
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 class CandidateRepositoryInterface(ABC):

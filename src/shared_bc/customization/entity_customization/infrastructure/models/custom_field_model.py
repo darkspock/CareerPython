@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Dict, Any
+
 from sqlalchemy import String, Integer, ForeignKey, Index, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base
 
@@ -30,7 +31,7 @@ class CustomFieldModel(Base):
 
     # Unique constraint: one field_key per entity_customization
     __table_args__ = (
-        UniqueConstraint('entity_customization_id', 'field_key', name='uq_custom_fields_entity_customization_field_key'),
+        UniqueConstraint('entity_customization_id', 'field_key',
+                         name='uq_custom_fields_entity_customization_field_key'),
         Index('ix_custom_fields_entity_customization_id', 'entity_customization_id'),
     )
-

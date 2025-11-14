@@ -8,8 +8,8 @@ from src.company_bc.job_position.domain.exceptions.job_position_exceptions impor
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.company_bc.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.company_bc.job_position.domain.value_objects.stage_id import StageId
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.framework.domain.enums.job_category import JobCategoryEnum
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 
 
 @dataclass
@@ -153,7 +153,7 @@ class JobPosition:
         """
         if stage_id not in self.stage_assignments:
             self.stage_assignments[stage_id] = []
-        
+
         if user_id not in self.stage_assignments[stage_id]:
             self.stage_assignments[stage_id].append(user_id)
             self.updated_at = datetime.utcnow()

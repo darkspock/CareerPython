@@ -3,15 +3,15 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
+from src.company_bc.job_position.domain.enums.comment_review_status import CommentReviewStatusEnum
+from src.company_bc.job_position.domain.enums.comment_visibility import CommentVisibilityEnum
 from src.company_bc.job_position.domain.value_objects import (
     JobPositionCommentId,
     JobPositionId,
     JobPositionWorkflowId,
     JobPositionStageId,
 )
-from src.company_bc.job_position.domain.enums.comment_visibility import CommentVisibilityEnum
-from src.company_bc.job_position.domain.enums.comment_review_status import CommentReviewStatusEnum
-from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
 
 
 @dataclass
@@ -38,16 +38,16 @@ class JobPositionComment:
 
     @classmethod
     def create(
-        cls,
-        id: JobPositionCommentId,
-        job_position_id: JobPositionId,
-        comment: str,
-        created_by_user_id: CompanyUserId,
-        workflow_id: Optional[JobPositionWorkflowId] = None,
-        stage_id: Optional[str] = None,
-        job_position_stage_id: Optional[JobPositionStageId] = None,
-        visibility: CommentVisibilityEnum = CommentVisibilityEnum.SHARED,
-        review_status: CommentReviewStatusEnum = CommentReviewStatusEnum.REVIEWED,
+            cls,
+            id: JobPositionCommentId,
+            job_position_id: JobPositionId,
+            comment: str,
+            created_by_user_id: CompanyUserId,
+            workflow_id: Optional[JobPositionWorkflowId] = None,
+            stage_id: Optional[str] = None,
+            job_position_stage_id: Optional[JobPositionStageId] = None,
+            visibility: CommentVisibilityEnum = CommentVisibilityEnum.SHARED,
+            review_status: CommentReviewStatusEnum = CommentReviewStatusEnum.REVIEWED,
     ) -> "JobPositionComment":
         """
         Factory method to create a new comment
@@ -89,9 +89,9 @@ class JobPositionComment:
         )
 
     def update(
-        self,
-        comment: Optional[str] = None,
-        visibility: Optional[CommentVisibilityEnum] = None,
+            self,
+            comment: Optional[str] = None,
+            visibility: Optional[CommentVisibilityEnum] = None,
     ) -> None:
         """
         Update comment content or visibility
@@ -132,4 +132,3 @@ class JobPositionComment:
             bool: True if stage_id is None (global comment), False otherwise
         """
         return self.stage_id is None
-

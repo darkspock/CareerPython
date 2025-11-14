@@ -1,13 +1,14 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+from src.framework.application.query_bus import Query, QueryHandler
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.shared_bc.customization.workflow.application.mappers.workflow_mapper import WorkflowMapper
 from src.shared_bc.customization.workflow.domain.enums.workflow_status_enum import WorkflowStatusEnum
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.framework.application.query_bus import Query, QueryHandler
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,7 @@ class ListWorkflowsByPhaseQueryHandler(QueryHandler[ListWorkflowsByPhaseQuery, L
     def handle(self, query: ListWorkflowsByPhaseQuery) -> List[WorkflowDto]:
         # Convert status enum to string value if provided
         status_value = query.status.value if query.status else None
-        
+
         # Get workflows for this phase, filtered by workflow_type and optionally by status
         workflows = self._repository.list_by_phase_id(
             query.phase_id,

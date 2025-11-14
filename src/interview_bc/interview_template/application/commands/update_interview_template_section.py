@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.framework.application.command_bus import Command
 from src.interview_bc.interview_template.domain.entities.interview_template_section import InterviewTemplateSection
 from src.interview_bc.interview_template.domain.enums import InterviewTemplateSectionEnum
 from src.interview_bc.interview_template.domain.exceptions.interview_exceptions import (
@@ -10,7 +11,6 @@ from src.interview_bc.interview_template.domain.value_objects.interview_template
     InterviewTemplateSectionId
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_section_repository import \
     InterviewTemplateSectionRepository
-from src.framework.application.command_bus import Command
 
 
 @dataclass

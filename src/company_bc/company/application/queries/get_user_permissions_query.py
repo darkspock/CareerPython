@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
-from src.company_bc.company.domain.value_objects import CompanyId
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.company_bc.company.domain.infrastructure.company_user_repository_interface import (
     CompanyUserRepositoryInterface
 )
+from src.company_bc.company.domain.value_objects import CompanyId
 from src.framework.application.query_bus import Query, QueryHandler
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 @dataclass
@@ -37,4 +37,3 @@ class GetUserPermissionsQueryHandler(QueryHandler[GetUserPermissionsQuery, Optio
             "permissions": company_user.permissions.to_dict(),
             "status": company_user.status.value,
         }
-

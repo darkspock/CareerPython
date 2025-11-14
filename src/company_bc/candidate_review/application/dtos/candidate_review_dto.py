@@ -21,4 +21,3 @@ class CandidateReviewDto:
     stage_name: Optional[str] = None
     created_by_user_name: Optional[str] = None
     created_by_user_email: Optional[str] = None
-

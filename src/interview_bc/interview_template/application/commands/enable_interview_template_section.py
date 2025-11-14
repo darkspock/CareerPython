@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.framework.application.command_bus import Command
 from src.interview_bc.interview_template.application.commands.enable_interview_template_question import (
     EnableInterviewTemplateQuestionCommand,
     EnableInterviewTemplateQuestionCommandHandler
@@ -14,7 +15,6 @@ from src.interview_bc.interview_template.infrastructure.repositories.interview_t
     InterviewTemplateQuestionRepository
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_section_repository import \
     InterviewTemplateSectionRepository
-from src.framework.application.command_bus import Command
 
 
 @dataclass

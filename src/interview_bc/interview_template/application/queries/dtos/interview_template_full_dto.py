@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain import InterviewTemplateQuestion, InterviewTemplateSection
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum,
@@ -14,10 +15,10 @@ from src.interview_bc.interview_template.domain.enums.interview_template_questio
     InterviewTemplateQuestionDataTypeEnum,
     InterviewTemplateQuestionScopeEnum
 )
-from src.interview_bc.interview_template.domain.enums.interview_template_section import InterviewTemplateSectionStatusEnum
+from src.interview_bc.interview_template.domain.enums.interview_template_section import \
+    InterviewTemplateSectionStatusEnum
 from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateQuestionId, \
     InterviewTemplateSectionId, InterviewTemplateId
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 @dataclass

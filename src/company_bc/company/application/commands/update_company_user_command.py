@@ -2,10 +2,11 @@ from dataclasses import dataclass
 from typing import Dict
 
 from src.company_bc.company.domain.enums import CompanyUserRole
+from src.company_bc.company.domain.exceptions.company_exceptions import CompanyNotFoundError, CompanyValidationError
+from src.company_bc.company.domain.infrastructure.company_user_repository_interface import \
+    CompanyUserRepositoryInterface
 from src.company_bc.company.domain.value_objects import CompanyUserId
 from src.company_bc.company.domain.value_objects.company_user_permissions import CompanyUserPermissions
-from src.company_bc.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
-from src.company_bc.company.domain.exceptions.company_exceptions import CompanyNotFoundError, CompanyValidationError
 from src.framework.application.command_bus import Command, CommandHandler
 
 

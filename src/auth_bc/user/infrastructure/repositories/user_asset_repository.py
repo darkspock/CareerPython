@@ -3,13 +3,13 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 
 from core.database import DatabaseInterface
-from src.framework.infrastructure.repositories.base import BaseRepository
 from src.auth_bc.user.domain.entities.user_asset import UserAsset
 from src.auth_bc.user.domain.enums.asset_enums import AssetTypeEnum, ProcessingStatusEnum
 from src.auth_bc.user.domain.repositories.user_asset_repository_interface import UserAssetRepositoryInterface
 from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.auth_bc.user.domain.value_objects.user_asset_id import UserAssetId
 from src.auth_bc.user.infrastructure.models.user_asset_model import UserAssetModel
+from src.framework.infrastructure.repositories.base import BaseRepository
 
 
 class SQLAlchemyUserAssetRepository(UserAssetRepositoryInterface):

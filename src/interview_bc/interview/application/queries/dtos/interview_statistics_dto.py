@@ -11,4 +11,3 @@ class InterviewStatisticsDto:
     recently_finished: int  # finished_at in last 30 days
     overdue: int  # deadline_date < now and not finished
     pending_feedback: int  # finished but no score or feedback
-

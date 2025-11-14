@@ -5,11 +5,11 @@ Phase 8: Command to remove candidate from talent pool
 
 from dataclasses import dataclass
 
-from src.framework.application.command_bus import Command, CommandHandler
-from src.company_bc.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
 from src.company_bc.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (
     TalentPoolEntryRepositoryInterface,
 )
+from src.company_bc.talent_pool.domain.value_objects.talent_pool_entry_id import TalentPoolEntryId
+from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)

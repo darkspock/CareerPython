@@ -1,19 +1,19 @@
 """Create Stage Command."""
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
 from decimal import Decimal
+from typing import Optional, List, Dict, Any
 
+from src.framework.application.command_bus import Command, CommandHandler
+from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.domain.entities.workflow_stage import WorkflowStage
+from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
     WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
-from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -62,7 +62,7 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
         """
         # Validate that only one INITIAL and one SUCCESS stage can exist per workflow
         existing_stages = self.repository.list_by_workflow(command.workflow_id)
-        
+
         if command.stage_type == WorkflowStageTypeEnum.INITIAL:
             initial_stages = [s for s in existing_stages if s.stage_type == WorkflowStageTypeEnum.INITIAL]
             if initial_stages:
@@ -70,7 +70,7 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
                     f"Workflow already has an INITIAL stage ({initial_stages[0].name}). "
                     "Only one INITIAL stage is allowed per workflow."
                 )
-        
+
         if command.stage_type == WorkflowStageTypeEnum.SUCCESS:
             success_stages = [s for s in existing_stages if s.stage_type == WorkflowStageTypeEnum.SUCCESS]
             if success_stages:
@@ -78,7 +78,7 @@ class CreateStageCommandHandler(CommandHandler[CreateStageCommand]):
                     f"Workflow already has a SUCCESS stage ({success_stages[0].name}). "
                     "Only one SUCCESS stage is allowed per workflow."
                 )
-        
+
         stage = WorkflowStage.create(
             id=command.id,
             workflow_id=command.workflow_id,

@@ -1,8 +1,10 @@
 from typing import Dict, Any, Optional, List
 
 from src.shared_bc.customization.entity_customization.domain.interfaces import CustomFieldRepositoryInterface
-from src.shared_bc.customization.field_validation.domain.infrastructure.validation_rule_repository_interface import ValidationRuleRepositoryInterface
-from src.shared_bc.customization.field_validation.application.dtos.stage_validation_result_dto import StageValidationResultDto, ValidationIssueDto
+from src.shared_bc.customization.field_validation.application.dtos.stage_validation_result_dto import \
+    StageValidationResultDto, ValidationIssueDto
+from src.shared_bc.customization.field_validation.domain.infrastructure.validation_rule_repository_interface import \
+    ValidationRuleRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
@@ -10,18 +12,18 @@ class FieldValidationService:
     """Service for validating custom field values against validation rules."""
 
     def __init__(
-        self,
-        validation_rule_repository: ValidationRuleRepositoryInterface,
-        custom_field_repository: CustomFieldRepositoryInterface
+            self,
+            validation_rule_repository: ValidationRuleRepositoryInterface,
+            custom_field_repository: CustomFieldRepositoryInterface
     ):
         self.validation_rule_repository = validation_rule_repository
         self.custom_field_repository = custom_field_repository
 
     def validate_stage_transition(
-        self,
-        stage_id: WorkflowStageId,
-        candidate_field_values: Dict[str, Any],
-        position_data: Optional[Dict[str, Any]] = None
+            self,
+            stage_id: WorkflowStageId,
+            candidate_field_values: Dict[str, Any],
+            position_data: Optional[Dict[str, Any]] = None
     ) -> StageValidationResultDto:
         """
         Validate all custom field values for a stage transition.
@@ -101,11 +103,11 @@ class FieldValidationService:
         return StageValidationResultDto.with_issues(errors=errors, warnings=warnings)
 
     def validate_single_field(
-        self,
-        stage_id: WorkflowStageId,
-        custom_field_id: str,
-        candidate_value: Any,
-        position_data: Optional[Dict[str, Any]] = None
+            self,
+            stage_id: WorkflowStageId,
+            custom_field_id: str,
+            candidate_value: Any,
+            position_data: Optional[Dict[str, Any]] = None
     ) -> StageValidationResultDto:
         """
         Validate a single custom field value.

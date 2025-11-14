@@ -1,18 +1,15 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, List
 from decimal import Decimal
-
+from typing import Optional, List
+# TYPE_CHECKING to avoid circular imports
+from typing import TYPE_CHECKING
 
 from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import \
     WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-
-# TYPE_CHECKING to avoid circular imports
-from typing import TYPE_CHECKING
-
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
 
 if TYPE_CHECKING:
@@ -57,35 +54,36 @@ class WorkflowStage:
     recommended_rules: Optional[dict]  # JsonLogic rules that are recommended but not required
 
     # Interview configuration
-    interview_configurations: Optional[List[InterviewConfiguration]]  # List of interview configurations (template_id + mode) for this stage
+    interview_configurations: Optional[
+        List[InterviewConfiguration]]  # List of interview configurations (template_id + mode) for this stage
 
     created_at: datetime
     updated_at: datetime
 
     @classmethod
     def create(
-        cls,
-        id: WorkflowStageId,
-        workflow_id: WorkflowId,
-        name: str,
-        description: str,
-        stage_type: WorkflowStageTypeEnum,
-        order: int,
-        allow_skip: bool = False,
-        estimated_duration_days: Optional[int] = None,
-        is_active: bool = True,
-        default_role_ids: Optional[List[str]] = None,
-        default_assigned_users: Optional[List[str]] = None,
-        email_template_id: Optional[str] = None,
-        custom_email_text: Optional[str] = None,
-        deadline_days: Optional[int] = None,
-        estimated_cost: Optional[Decimal] = None,
-        next_phase_id: Optional["PhaseId"] = None,
-        kanban_display: KanbanDisplayEnum = KanbanDisplayEnum.COLUMN,
-        style: Optional[WorkflowStageStyle] = None,
-        validation_rules: Optional[dict] = None,
-        recommended_rules: Optional[dict] = None,
-        interview_configurations: Optional[List[InterviewConfiguration]] = None
+            cls,
+            id: WorkflowStageId,
+            workflow_id: WorkflowId,
+            name: str,
+            description: str,
+            stage_type: WorkflowStageTypeEnum,
+            order: int,
+            allow_skip: bool = False,
+            estimated_duration_days: Optional[int] = None,
+            is_active: bool = True,
+            default_role_ids: Optional[List[str]] = None,
+            default_assigned_users: Optional[List[str]] = None,
+            email_template_id: Optional[str] = None,
+            custom_email_text: Optional[str] = None,
+            deadline_days: Optional[int] = None,
+            estimated_cost: Optional[Decimal] = None,
+            next_phase_id: Optional["PhaseId"] = None,
+            kanban_display: KanbanDisplayEnum = KanbanDisplayEnum.COLUMN,
+            style: Optional[WorkflowStageStyle] = None,
+            validation_rules: Optional[dict] = None,
+            recommended_rules: Optional[dict] = None,
+            interview_configurations: Optional[List[InterviewConfiguration]] = None
     ) -> "WorkflowStage":
         """Factory method to create a new workflow stage"""
         if not name:
@@ -140,24 +138,24 @@ class WorkflowStage:
         )
 
     def update(
-        self,
-        name: str,
-        description: str,
-        stage_type: WorkflowStageTypeEnum,
-        allow_skip: bool,
-        estimated_duration_days: Optional[int],
-        default_role_ids: Optional[List[str]] = None,
-        default_assigned_users: Optional[List[str]] = None,
-        email_template_id: Optional[str] = None,
-        custom_email_text: Optional[str] = None,
-        deadline_days: Optional[int] = None,
-        estimated_cost: Optional[Decimal] = None,
-        next_phase_id: Optional["PhaseId"] = None,
-        style: Optional[WorkflowStageStyle] = None,
-        kanban_display: Optional[KanbanDisplayEnum] = None,
-        validation_rules: Optional[dict] = None,
-        recommended_rules: Optional[dict] = None,
-        interview_configurations: Optional[List[InterviewConfiguration]] = None
+            self,
+            name: str,
+            description: str,
+            stage_type: WorkflowStageTypeEnum,
+            allow_skip: bool,
+            estimated_duration_days: Optional[int],
+            default_role_ids: Optional[List[str]] = None,
+            default_assigned_users: Optional[List[str]] = None,
+            email_template_id: Optional[str] = None,
+            custom_email_text: Optional[str] = None,
+            deadline_days: Optional[int] = None,
+            estimated_cost: Optional[Decimal] = None,
+            next_phase_id: Optional["PhaseId"] = None,
+            style: Optional[WorkflowStageStyle] = None,
+            kanban_display: Optional[KanbanDisplayEnum] = None,
+            validation_rules: Optional[dict] = None,
+            recommended_rules: Optional[dict] = None,
+            interview_configurations: Optional[List[InterviewConfiguration]] = None
     ) -> None:
         """Update stage information"""
         if not name:

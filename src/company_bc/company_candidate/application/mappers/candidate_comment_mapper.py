@@ -1,5 +1,5 @@
-from src.company_bc.company_candidate.domain.entities.candidate_comment import CandidateComment
 from src.company_bc.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
+from src.company_bc.company_candidate.domain.entities.candidate_comment import CandidateComment
 
 
 class CandidateCommentMapper:
@@ -20,4 +20,3 @@ class CandidateCommentMapper:
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
-

@@ -1,22 +1,22 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.auth_bc.user.domain.entities.user import User
+from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
+from src.auth_bc.user.domain.services.password_service import PasswordService
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.company_bc.company.domain.entities.company_user import CompanyUser
 from src.company_bc.company.domain.enums import CompanyUserRole
-from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId as CompanyUserEntityId
-from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
+from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError
 from src.company_bc.company.domain.infrastructure.company_user_invitation_repository_interface import (
     CompanyUserInvitationRepositoryInterface
 )
 from src.company_bc.company.domain.infrastructure.company_user_repository_interface import (
     CompanyUserRepositoryInterface
 )
-from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError
+from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId as CompanyUserEntityId
+from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
 from src.framework.application.command_bus import Command, CommandHandler
-from src.auth_bc.user.domain.entities.user import User
-from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
-from src.auth_bc.user.domain.services.password_service import PasswordService
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 @dataclass
@@ -33,10 +33,10 @@ class AcceptUserInvitationCommandHandler(CommandHandler):
     """Handler for accepting a user invitation"""
 
     def __init__(
-        self,
-        invitation_repository: CompanyUserInvitationRepositoryInterface,
-        company_user_repository: CompanyUserRepositoryInterface,
-        user_repository: UserRepositoryInterface
+            self,
+            invitation_repository: CompanyUserInvitationRepositoryInterface,
+            company_user_repository: CompanyUserRepositoryInterface,
+            user_repository: UserRepositoryInterface
     ):
         self.invitation_repository = invitation_repository
         self.company_user_repository = company_user_repository
@@ -90,14 +90,14 @@ class AcceptUserInvitationCommandHandler(CommandHandler):
                 # Note: We don't create Candidate, only User as per requirements
                 user_id = UserId.generate()
                 hashed_password = PasswordService.hash_password(command.password)
-                
+
                 user = User(
                     id=user_id,
                     email=command.email.lower(),
                     hashed_password=hashed_password,
                     is_active=True
                 )
-                
+
                 self.user_repository.create(user)
 
         # Check if user is already a company user for this company
@@ -126,4 +126,3 @@ class AcceptUserInvitationCommandHandler(CommandHandler):
         # Update invitation to accepted
         invitation.accept()
         self.invitation_repository.save(invitation)
-

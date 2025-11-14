@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+
 from sqlalchemy import String, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -45,4 +46,3 @@ class FieldConfigurationModel(Base):
         Index('ix_field_configurations_custom_field_id', 'custom_field_id'),
         Index('ix_field_configurations_context', 'context_type', 'context_id'),
     )
-

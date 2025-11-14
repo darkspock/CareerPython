@@ -21,9 +21,9 @@ class JobPositionActivityRepositoryInterface(ABC):
 
     @abstractmethod
     def list_by_job_position(
-        self,
-        job_position_id: JobPositionId,
-        limit: int = 50
+            self,
+            job_position_id: JobPositionId,
+            limit: int = 50
     ) -> List[JobPositionActivity]:
         """
         List activities for a job position
@@ -36,4 +36,3 @@ class JobPositionActivityRepositoryInterface(ABC):
             List[JobPositionActivity]: Activities ordered by created_at DESC
         """
         pass
-

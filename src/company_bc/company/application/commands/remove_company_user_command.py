@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
-from src.company_bc.company.domain.value_objects import CompanyId
-from src.company_bc.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
-from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyNotFoundError
-from src.framework.application.command_bus import Command, CommandHandler
 from src.auth_bc.user.domain.value_objects.UserId import UserId
+from src.company_bc.company.domain.exceptions.company_exceptions import CompanyValidationError, CompanyNotFoundError
+from src.company_bc.company.domain.infrastructure.company_user_repository_interface import \
+    CompanyUserRepositoryInterface
+from src.company_bc.company.domain.value_objects import CompanyId
+from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass

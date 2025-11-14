@@ -29,7 +29,7 @@ class MixedHelper:
         if value is None:
             raise ValueError("Cannot convert None to integer")
         return int(value)
-    
+
     @staticmethod
     def get_boolean(value: Any) -> bool:
         """Convert any value to boolean"""
@@ -74,14 +74,14 @@ class MixedHelper:
             return [MixedHelper.get_string(item) for item in value]
         # If it's a single value, convert to string and return as single-item list
         return [MixedHelper.get_string(value)]
-    
+
     @staticmethod
     def get_optional_string(value: Any) -> str | None:
         """Convert any value to optional string"""
         if value is None:
             return None
         return MixedHelper.get_string(value)
-    
+
     @classmethod
     def dict_to_list(cls, value: Dict[str, Any]) -> List[Any]:
         """Convert dict values to list"""

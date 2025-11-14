@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import List, Optional, Dict, Any
 
+from src.framework.application.query_bus import Query, QueryHandler
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.application.queries.dtos.interview_template_list_dto import \
     InterviewTemplateListDto
 from src.interview_bc.interview_template.domain.enums import InterviewTemplateStatusEnum, InterviewTemplateTypeEnum
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_repository import \
     InterviewTemplateRepository
-from src.framework.application.query_bus import Query, QueryHandler
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 @dataclass

@@ -23,7 +23,8 @@ class InterviewTemplateQuestion:
     status: InterviewTemplateQuestionStatusEnum = InterviewTemplateQuestionStatusEnum.DRAFT
     allow_ai_followup: bool = False  # If True, AI can generate follow-up questions based on this question
     legal_notice: Optional[str] = None  # Legal text displayed to users for compliance
-    scoring_values: Optional[List[Dict[str, Any]]] = field(default_factory=list)  # Array of {label: string, scoring: number}
+    scoring_values: Optional[List[Dict[str, Any]]] = field(
+        default_factory=list)  # Array of {label: string, scoring: number}
 
     @staticmethod
     def create(id: InterviewTemplateQuestionId, interview_template_section_id: InterviewTemplateSectionId,

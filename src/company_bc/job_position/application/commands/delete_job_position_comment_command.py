@@ -1,11 +1,11 @@
 """Delete Job Position Comment Command."""
 from dataclasses import dataclass
 
-from src.framework.application.command_bus import Command, CommandHandler
-from src.company_bc.job_position.domain.value_objects import JobPositionCommentId
 from src.company_bc.job_position.domain.infrastructure.job_position_comment_repository_interface import (
     JobPositionCommentRepositoryInterface
 )
+from src.company_bc.job_position.domain.value_objects import JobPositionCommentId
+from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)
@@ -32,4 +32,3 @@ class DeleteJobPositionCommentCommandHandler(CommandHandler[DeleteJobPositionCom
         # Delete the comment
         comment_id = JobPositionCommentId.from_string(command.comment_id)
         self._repository.delete(comment_id)
-

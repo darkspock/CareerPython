@@ -6,7 +6,8 @@ from sqlalchemy import String, JSON, Enum, DateTime, Date, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
-from src.company_bc.candidate_application.infrastructure.models.candidate_application_model import CandidateApplicationModel
+from src.company_bc.candidate_application.infrastructure.models.candidate_application_model import \
+    CandidateApplicationModel
 from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
 from src.framework.domain.entities.base import generate_id
 from src.framework.domain.enums.job_category import JobCategoryEnum
@@ -19,11 +20,15 @@ class JobPositionModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     company_id: Mapped[str] = mapped_column(String, index=True)  # Removed ForeignKey
-    job_position_workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)  # Workflow system
+    job_position_workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True,
+                                                                    nullable=True)  # Workflow system
     stage_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)  # Current stage in workflow
-    phase_workflows: Mapped[Optional[Dict[str, str]]] = mapped_column(JSON)  # Phase 12.8: phase_id -> workflow_id mapping
-    stage_assignments: Mapped[Optional[Dict[str, list]]] = mapped_column(JSON, nullable=True)  # Stage assignments: stage_id -> [company_user_id, ...]
-    custom_fields_values: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)  # Custom field values (JSON) - contains all removed fields
+    phase_workflows: Mapped[Optional[Dict[str, str]]] = mapped_column(
+        JSON)  # Phase 12.8: phase_id -> workflow_id mapping
+    stage_assignments: Mapped[Optional[Dict[str, list]]] = mapped_column(JSON,
+                                                                         nullable=True)  # Stage assignments: stage_id -> [company_user_id, ...]
+    custom_fields_values: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON,
+                                                                           nullable=True)  # Custom field values (JSON) - contains all removed fields
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text)  # Job description
     job_category: Mapped[JobCategoryEnum] = mapped_column(Enum(JobCategoryEnum), default=JobCategoryEnum.OTHER)

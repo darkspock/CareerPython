@@ -2,13 +2,14 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List, Dict
 
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.candidate_bc.candidate.domain.entities import Candidate
-from src.candidate_bc.candidate.domain.enums import CandidateStatusEnum, LanguageEnum, LanguageLevelEnum, CandidateTypeEnum, \
+from src.candidate_bc.candidate.domain.enums import CandidateStatusEnum, LanguageEnum, LanguageLevelEnum, \
+    CandidateTypeEnum, \
     WorkModalityEnum
 from src.candidate_bc.candidate.domain.enums.candidate_enums import PositionRoleEnum
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.framework.domain.enums.job_category import JobCategoryEnum
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 @dataclass

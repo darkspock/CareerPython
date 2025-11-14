@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 from src.company_bc.company.domain.exceptions.company_exceptions import CompanyNotFoundError
-from src.company_bc.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
+from src.company_bc.company.domain.infrastructure.company_user_repository_interface import \
+    CompanyUserRepositoryInterface
 from src.company_bc.company.domain.value_objects import CompanyUserId
 from src.framework.application.command_bus import Command, CommandHandler
 

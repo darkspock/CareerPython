@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional
 
 from core.event_bus import EventBus
+from src.framework.application.command_bus import Command, CommandHandler
 from src.interview_bc.interview.domain.events.interview_answer_events import InterviewAnswerScoredEvent
 from src.interview_bc.interview.domain.exceptions.interview_answer_exceptions import InterviewAnswerNotFoundException, \
     InterviewAnswerInvalidScoreException
@@ -12,7 +13,6 @@ from src.interview_bc.interview.domain.infrastructure.interview_answer_repositor
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import \
     InterviewTemplateRepositoryInterface
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -25,11 +25,11 @@ class ScoreInterviewAnswerCommand(Command):
 
 class ScoreInterviewAnswerCommandHandler(CommandHandler[ScoreInterviewAnswerCommand]):
     def __init__(
-        self,
-        answer_repository: InterviewAnswerRepositoryInterface,
-        interview_repository: InterviewRepositoryInterface,
-        template_repository: InterviewTemplateRepositoryInterface,
-        event_bus: EventBus
+            self,
+            answer_repository: InterviewAnswerRepositoryInterface,
+            interview_repository: InterviewRepositoryInterface,
+            template_repository: InterviewTemplateRepositoryInterface,
+            event_bus: EventBus
     ):
         self.answer_repository = answer_repository
         self.interview_repository = interview_repository

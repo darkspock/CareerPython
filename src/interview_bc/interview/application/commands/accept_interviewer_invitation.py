@@ -2,15 +2,14 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.framework.application.command_bus import Command, CommandHandler
+from src.interview_bc.interview.application.services.interview_permission_service import InterviewPermissionService
 from src.interview_bc.interview.domain.exceptions.interview_exceptions import (
     InterviewNotFoundException,
     InterviewPermissionDeniedError
 )
 from src.interview_bc.interview.domain.infrastructure.interview_interviewer_repository_interface import \
     InterviewInterviewerRepositoryInterface
-from src.interview_bc.interview.domain.value_objects.interview_interviewer_id import InterviewInterviewerId
-from src.interview_bc.interview.application.services.interview_permission_service import InterviewPermissionService
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -21,9 +20,9 @@ class AcceptInterviewerInvitationCommand(Command):
 
 class AcceptInterviewerInvitationCommandHandler(CommandHandler[AcceptInterviewerInvitationCommand]):
     def __init__(
-        self,
-        interviewer_repository: InterviewInterviewerRepositoryInterface,
-        permission_service: InterviewPermissionService
+            self,
+            interviewer_repository: InterviewInterviewerRepositoryInterface,
+            permission_service: InterviewPermissionService
     ):
         self.interviewer_repository = interviewer_repository
         self.permission_service = permission_service
@@ -42,8 +41,8 @@ class AcceptInterviewerInvitationCommandHandler(CommandHandler[AcceptInterviewer
             raise ValueError("accepted_by is required")
 
         if not self.permission_service.can_user_accept_invitation(
-            user_id=command.accepted_by,
-            interviewer=interviewer
+                user_id=command.accepted_by,
+                interviewer=interviewer
         ):
             raise InterviewPermissionDeniedError(
                 f"User {command.accepted_by} does not have permission to accept this invitation"
@@ -54,4 +53,3 @@ class AcceptInterviewerInvitationCommandHandler(CommandHandler[AcceptInterviewer
 
         # Update in repository
         self.interviewer_repository.update(interviewer)
-

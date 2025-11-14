@@ -4,4 +4,3 @@ from .candidate_review import CandidateReview
 __all__ = [
     "CandidateReview",
 ]
-

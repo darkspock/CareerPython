@@ -6,13 +6,13 @@ from sqlalchemy import String, Enum, Text, DateTime, Index, JSON, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
+from src.framework.domain.entities.base import generate_id
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateTypeEnum,
     InterviewTemplateStatusEnum,
     ScoringModeEnum
 )
-from src.framework.domain.entities.base import generate_id
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 # Forward reference for mypy
 if TYPE_CHECKING:
@@ -33,14 +33,17 @@ class InterviewTemplateModel(Base):
     status: Mapped[InterviewTemplateStatusEnum] = mapped_column(Enum(InterviewTemplateStatusEnum), nullable=False,
                                                                 default=InterviewTemplateStatusEnum.DRAFT, index=True)
     job_category: Mapped[Optional[JobCategoryEnum]] = mapped_column(Enum(JobCategoryEnum), nullable=True, index=True)
-    allow_ai_questions: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # Allow AI to generate additional questions
-    scoring_mode: Mapped[Optional[ScoringModeEnum]] = mapped_column(Enum(ScoringModeEnum), nullable=True, index=True)  # Scoring mode: DISTANCE or ABSOLUTE
+    allow_ai_questions: Mapped[bool] = mapped_column(Boolean, nullable=False,
+                                                     default=False)  # Allow AI to generate additional questions
+    scoring_mode: Mapped[Optional[ScoringModeEnum]] = mapped_column(Enum(ScoringModeEnum), nullable=True,
+                                                                    index=True)  # Scoring mode: DISTANCE or ABSOLUTE
     legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for compliance
 
     # Extended metadata
     created_by: Mapped[Optional[str]] = mapped_column(String, nullable=True,
                                                       index=True)  # User who created this template
-    company_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)  # Company that owns this template
+    company_id: Mapped[Optional[str]] = mapped_column(String, nullable=True,
+                                                      index=True)  # Company that owns this template
     tags: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)  # List of tags for categorization
     template_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)  # Additional metadata
 

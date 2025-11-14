@@ -1,5 +1,5 @@
-from src.shared_bc.customization.field_validation.domain.entities.validation_rule import ValidationRule
 from src.shared_bc.customization.field_validation.application.dtos.validation_rule_dto import ValidationRuleDto
+from src.shared_bc.customization.field_validation.domain.entities.validation_rule import ValidationRule
 
 
 class ValidationRuleMapper:

@@ -2,13 +2,15 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.framework.application.query_bus import Query, QueryHandler, QueryBus
 from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewNotFoundException
-from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
     InterviewAnswerRepositoryInterface
-from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import InterviewTemplateFullDto
-from src.interview_bc.interview_template.application.queries.get_interview_template_full_by_id import GetInterviewTemplateFullByIdQuery
-from src.framework.application.query_bus import Query, QueryHandler, QueryBus
+from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import \
+    InterviewTemplateFullDto
+from src.interview_bc.interview_template.application.queries.get_interview_template_full_by_id import \
+    GetInterviewTemplateFullByIdQuery
 
 
 @dataclass
@@ -27,12 +29,13 @@ class InterviewQuestionsResponse:
     existing_answers: dict  # question_id -> answer_text mapping
 
 
-class GetInterviewQuestionsByTokenQueryHandler(QueryHandler[GetInterviewQuestionsByTokenQuery, InterviewQuestionsResponse]):
+class GetInterviewQuestionsByTokenQueryHandler(
+    QueryHandler[GetInterviewQuestionsByTokenQuery, InterviewQuestionsResponse]):
     def __init__(
-        self,
-        interview_repository: InterviewRepositoryInterface,
-        answer_repository: InterviewAnswerRepositoryInterface,
-        query_bus: QueryBus
+            self,
+            interview_repository: InterviewRepositoryInterface,
+            answer_repository: InterviewAnswerRepositoryInterface,
+            query_bus: QueryBus
     ):
         self.interview_repository = interview_repository
         self.answer_repository = answer_repository
@@ -54,7 +57,7 @@ class GetInterviewQuestionsByTokenQueryHandler(QueryHandler[GetInterviewQuestion
 
         # Get existing answers
         existing_answers_list = self.answer_repository.get_by_interview_id(query.interview_id)
-        
+
         # Create mapping of question_id -> answer_text
         existing_answers = {}
         for answer in existing_answers_list:
@@ -67,4 +70,3 @@ class GetInterviewQuestionsByTokenQueryHandler(QueryHandler[GetInterviewQuestion
             template=template,
             existing_answers=existing_answers
         )
-

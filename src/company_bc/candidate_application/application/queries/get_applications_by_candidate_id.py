@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Optional, List
 
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
-from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import \
+    CandidateApplicationDto
 from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto_mapper import \
     CandidateApplicationDtoMapper
 from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum

@@ -5,8 +5,8 @@ from sqlalchemy import String, Enum, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.base import Base
-from src.framework.domain.entities.base import generate_id
 from src.auth_bc.staff.domain.enums.staff_enums import StaffStatusEnum
+from src.framework.domain.entities.base import generate_id
 
 
 @dataclass

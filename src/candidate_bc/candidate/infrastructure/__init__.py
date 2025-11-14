@@ -1,5 +1,5 @@
-from .repositories.candidate_repository import SQLAlchemyCandidateRepository
 from .models import CandidateModel
+from .repositories.candidate_repository import SQLAlchemyCandidateRepository
 
 __all__ = [
     "SQLAlchemyCandidateRepository",

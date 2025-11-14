@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Dict, Any
+
 from sqlalchemy import String, Text, Index, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base
-from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
 
 
 @dataclass
@@ -31,4 +31,3 @@ class EntityCustomizationModel(Base):
         UniqueConstraint('entity_type', 'entity_id', name='uq_entity_customizations_entity_type_id'),
         Index('ix_entity_customizations_entity_type_id', 'entity_type', 'entity_id'),
     )
-

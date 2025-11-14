@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 
-from sqlalchemy import String, Text, DateTime, ForeignKey, JSON, Enum as SQLEnum, ARRAY
+from sqlalchemy import String, DateTime, ForeignKey, JSON, Enum as SQLEnum, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base

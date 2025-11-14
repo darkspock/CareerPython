@@ -2,10 +2,11 @@
 from dataclasses import dataclass
 from typing import List
 
+from src.company_bc.company.domain.value_objects import CompanyId
 from src.company_bc.company_role.application.dtos.company_role_dto import CompanyRoleDto
 from src.company_bc.company_role.application.mappers.company_role_mapper import CompanyRoleMapper
-from src.company_bc.company.domain.value_objects import CompanyId
-from src.company_bc.company_role.domain.infrastructure.company_role_repository_interface import CompanyRoleRepositoryInterface
+from src.company_bc.company_role.domain.infrastructure.company_role_repository_interface import \
+    CompanyRoleRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
 
 

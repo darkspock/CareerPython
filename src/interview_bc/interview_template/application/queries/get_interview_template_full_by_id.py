@@ -1,5 +1,6 @@
 from typing import Optional, List
 
+from src.framework.application.query_bus import Query, QueryHandler
 from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import (
     InterviewTemplateFullDto,
     InterviewTemplateSectionDto,
@@ -12,7 +13,6 @@ from src.interview_bc.interview_template.infrastructure.repositories.interview_t
     InterviewTemplateRepository
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_section_repository import \
     InterviewTemplateSectionRepository
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 class GetInterviewTemplateFullByIdQuery(Query):

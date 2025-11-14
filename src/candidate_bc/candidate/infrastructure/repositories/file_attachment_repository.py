@@ -1,6 +1,7 @@
 from typing import List, Optional
-from src.candidate_bc.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
+
 from core.database import database
+from src.candidate_bc.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
 
 
 class FileAttachmentRepository:

@@ -1,38 +1,5 @@
 """Company candidate application module - exports queries and commands"""
 
-# Queries
-from .queries.count_pending_comments_query import CountPendingCommentsQuery, CountPendingCommentsQueryHandler
-from .queries.get_candidate_comment_by_id import GetCandidateCommentByIdQuery, GetCandidateCommentByIdQueryHandler
-from .queries.get_company_candidate_by_company_and_candidate import (
-    GetCompanyCandidateByCompanyAndCandidateQuery,
-    GetCompanyCandidateByCompanyAndCandidateQueryHandler,
-)
-from .queries.get_company_candidate_by_id import GetCompanyCandidateByIdQuery, GetCompanyCandidateByIdQueryHandler
-from .queries.get_company_candidate_by_id_with_candidate_info import (
-    GetCompanyCandidateByIdWithCandidateInfoQuery,
-    GetCompanyCandidateByIdWithCandidateInfoQueryHandler,
-)
-from .queries.list_candidate_comments_by_company_candidate import (
-    ListCandidateCommentsByCompanyCandidateQuery,
-    ListCandidateCommentsByCompanyCandidateQueryHandler,
-)
-from .queries.list_candidate_comments_by_stage import (
-    ListCandidateCommentsByStageQuery,
-    ListCandidateCommentsByStageQueryHandler,
-)
-from .queries.list_company_candidates_by_candidate import (
-    ListCompanyCandidatesByCandidateQuery,
-    ListCompanyCandidatesByCandidateQueryHandler,
-)
-from .queries.list_company_candidates_by_company import (
-    ListCompanyCandidatesByCompanyQuery,
-    ListCompanyCandidatesByCompanyQueryHandler,
-)
-from .queries.list_company_candidates_with_candidate_info import (
-    ListCompanyCandidatesWithCandidateInfoQuery,
-    ListCompanyCandidatesWithCandidateInfoQueryHandler,
-)
-
 # Commands
 from .commands.archive_company_candidate_command import (
     ArchiveCompanyCandidateCommand,
@@ -78,6 +45,38 @@ from .commands.update_company_candidate_command import (
     UpdateCompanyCandidateCommandHandler,
 )
 from .commands.upload_resume_command import UploadCandidateResumeCommand, UploadCandidateResumeCommandHandler
+# Queries
+from .queries.count_pending_comments_query import CountPendingCommentsQuery, CountPendingCommentsQueryHandler
+from .queries.get_candidate_comment_by_id import GetCandidateCommentByIdQuery, GetCandidateCommentByIdQueryHandler
+from .queries.get_company_candidate_by_company_and_candidate import (
+    GetCompanyCandidateByCompanyAndCandidateQuery,
+    GetCompanyCandidateByCompanyAndCandidateQueryHandler,
+)
+from .queries.get_company_candidate_by_id import GetCompanyCandidateByIdQuery, GetCompanyCandidateByIdQueryHandler
+from .queries.get_company_candidate_by_id_with_candidate_info import (
+    GetCompanyCandidateByIdWithCandidateInfoQuery,
+    GetCompanyCandidateByIdWithCandidateInfoQueryHandler,
+)
+from .queries.list_candidate_comments_by_company_candidate import (
+    ListCandidateCommentsByCompanyCandidateQuery,
+    ListCandidateCommentsByCompanyCandidateQueryHandler,
+)
+from .queries.list_candidate_comments_by_stage import (
+    ListCandidateCommentsByStageQuery,
+    ListCandidateCommentsByStageQueryHandler,
+)
+from .queries.list_company_candidates_by_candidate import (
+    ListCompanyCandidatesByCandidateQuery,
+    ListCompanyCandidatesByCandidateQueryHandler,
+)
+from .queries.list_company_candidates_by_company import (
+    ListCompanyCandidatesByCompanyQuery,
+    ListCompanyCandidatesByCompanyQueryHandler,
+)
+from .queries.list_company_candidates_with_candidate_info import (
+    ListCompanyCandidatesWithCandidateInfoQuery,
+    ListCompanyCandidatesWithCandidateInfoQueryHandler,
+)
 
 __all__ = [
     # Queries
@@ -131,4 +130,3 @@ __all__ = [
     "UploadCandidateResumeCommand",
     "UploadCandidateResumeCommandHandler",
 ]
-

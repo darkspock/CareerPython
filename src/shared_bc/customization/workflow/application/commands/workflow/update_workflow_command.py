@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.shared_bc.customization.workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.framework.application.command_bus import Command, CommandHandler
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
+from src.shared_bc.customization.workflow.domain.exceptions.workflow_not_found import WorkflowNotFound
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 
 
 @dataclass(frozen=True)

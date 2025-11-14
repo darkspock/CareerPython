@@ -8,7 +8,8 @@ from core.database import DatabaseInterface
 from src.company_bc.company.domain.value_objects import CompanyId
 from src.company_bc.job_position.domain.entities.job_position import JobPosition
 from src.company_bc.job_position.domain.enums import JobPositionStatusEnum, JobPositionVisibilityEnum
-from src.company_bc.job_position.domain.repositories.job_position_repository_interface import JobPositionRepositoryInterface
+from src.company_bc.job_position.domain.repositories.job_position_repository_interface import \
+    JobPositionRepositoryInterface
 from src.company_bc.job_position.domain.value_objects import JobPositionId
 from src.company_bc.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.company_bc.job_position.domain.value_objects.stage_id import StageId

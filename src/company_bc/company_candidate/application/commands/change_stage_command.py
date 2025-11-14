@@ -1,20 +1,23 @@
 from dataclasses import dataclass
-from typing import Optional
 
-from src.company_bc.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
-from src.framework.application.command_bus import Command, CommandHandler
-from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import CompanyCandidateRepositoryInterface
-from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
-from src.shared_bc.customization.field_validation.application.services.interview_validation_service import InterviewValidationService
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company_bc.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
+from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
+    CompanyCandidateRepositoryInterface
+from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
+from src.framework.application.command_bus import Command, CommandHandler
+from src.shared_bc.customization.field_validation.application.services.interview_validation_service import \
+    InterviewValidationService
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import \
+    StagePhaseValidationService
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 @dataclass(frozen=True)
@@ -28,12 +31,12 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
     """Handler for changing the workflow stage of a company candidate with automatic phase transition support"""
 
     def __init__(
-        self,
-        repository: CompanyCandidateRepositoryInterface,
-        workflow_stage_repository: WorkflowStageRepositoryInterface,
-        workflow_repository: WorkflowRepositoryInterface,
-        validation_service: StagePhaseValidationService,
-        interview_validation_service: InterviewValidationService
+            self,
+            repository: CompanyCandidateRepositoryInterface,
+            workflow_stage_repository: WorkflowStageRepositoryInterface,
+            workflow_repository: WorkflowRepositoryInterface,
+            validation_service: StagePhaseValidationService,
+            interview_validation_service: InterviewValidationService
     ):
         self._repository = repository
         self._workflow_stage_repository = workflow_stage_repository
@@ -110,14 +113,15 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
                 target_stage.next_phase_id,
                 workflow_type=WorkflowTypeEnum.CANDIDATE_APPLICATION
             )
-            
+
             if not next_phase_workflows:
                 # No workflow found for next phase, just update the stage
                 self._repository.save(updated_candidate)
                 return
 
             # Use the first workflow (or default if available)
-            next_phase_workflow = next((w for w in next_phase_workflows if w.is_default), None) or next_phase_workflows[0]
+            next_phase_workflow = next((w for w in next_phase_workflows if w.is_default), None) or next_phase_workflows[
+                0]
 
             # Get the initial stage of the next phase's workflow
             initial_stage = self._workflow_stage_repository.get_initial_stage(next_phase_workflow.id)

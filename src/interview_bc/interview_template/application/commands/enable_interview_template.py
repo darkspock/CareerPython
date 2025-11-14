@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.framework.application.command_bus import Command
 from src.interview_bc.interview_template.domain.exceptions.interview_exceptions import (
     InterviewTemplateNotFoundException
 )
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.interview_bc.interview_template.infrastructure.repositories.interview_template_repository import \
     InterviewTemplateRepository
-from src.framework.application.command_bus import Command
 
 
 @dataclass

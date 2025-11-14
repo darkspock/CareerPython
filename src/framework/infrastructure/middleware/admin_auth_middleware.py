@@ -6,12 +6,12 @@ from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from adapters.http.auth.schemas.user import UserResponse
-from src.framework.application.query_bus import QueryBus
 from src.auth_bc.staff.domain.enums.staff_enums import RoleEnum, StaffStatusEnum
 from src.auth_bc.staff.infrastructure.repositories.staff_repository import SQLAlchemyStaffRepository
 from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
 from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
 from src.auth_bc.user.domain.value_objects import UserId
+from src.framework.application.query_bus import QueryBus
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 

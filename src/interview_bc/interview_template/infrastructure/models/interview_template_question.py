@@ -5,10 +5,10 @@ from sqlalchemy import String, Integer, Enum, ForeignKey, Boolean, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
+from src.framework.domain.entities.base import generate_id
 from src.interview_bc.interview_template.domain.enums.interview_template_question import \
     InterviewTemplateQuestionDataTypeEnum, \
     InterviewTemplateQuestionStatusEnum, InterviewTemplateQuestionScopeEnum
-from src.framework.domain.entities.base import generate_id
 
 # Forward reference for mypy
 if TYPE_CHECKING:
@@ -37,7 +37,8 @@ class InterviewTemplateQuestionModel(Base):
     allow_ai_followup: Mapped[bool] = mapped_column(Boolean, nullable=False,
                                                     default=False)  # Allow AI to generate follow-up questions
     legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for this question
-    scoring_values: Mapped[Optional[List[Dict[str, Any]]]] = mapped_column(JSON, nullable=True)  # Array of {label: string, scoring: number}
+    scoring_values: Mapped[Optional[List[Dict[str, Any]]]] = mapped_column(JSON,
+                                                                           nullable=True)  # Array of {label: string, scoring: number}
 
     section: Mapped["InterviewTemplateSectionModel"] = relationship("InterviewTemplateSectionModel",
                                                                     back_populates="questions")

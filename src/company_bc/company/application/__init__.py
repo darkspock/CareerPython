@@ -1,29 +1,5 @@
 """Company application module - exports queries and commands"""
 
-# Queries
-from .queries import (
-    GetCompanyByIdQuery,
-    GetCompanyByIdQueryHandler,
-    GetCompanyByDomainQuery,
-    GetCompanyByDomainQueryHandler,
-    GetCompanyBySlugQuery,
-    GetCompanyBySlugQueryHandler,
-    ListCompaniesQuery,
-    ListCompaniesQueryHandler,
-    GetCompanyUserByIdQuery,
-    GetCompanyUserByIdQueryHandler,
-    GetCompanyUserByCompanyAndUserQuery,
-    GetCompanyUserByCompanyAndUserQueryHandler,
-    ListCompanyUsersByCompanyQuery,
-    ListCompanyUsersByCompanyQueryHandler,
-    GetUserInvitationQuery,
-    GetUserInvitationQueryHandler,
-    GetUserPermissionsQuery,
-    GetUserPermissionsQueryHandler,
-    GetInvitationByEmailAndCompanyQuery,
-    GetInvitationByEmailAndCompanyQueryHandler,
-)
-
 # Commands
 from .commands import (
     CreateCompanyCommand,
@@ -60,6 +36,29 @@ from .commands import (
     InitializeOnboardingCommandHandler,
     DeleteCompanyWithAllDataCommand,
     DeleteCompanyWithAllDataCommandHandler,
+)
+# Queries
+from .queries import (
+    GetCompanyByIdQuery,
+    GetCompanyByIdQueryHandler,
+    GetCompanyByDomainQuery,
+    GetCompanyByDomainQueryHandler,
+    GetCompanyBySlugQuery,
+    GetCompanyBySlugQueryHandler,
+    ListCompaniesQuery,
+    ListCompaniesQueryHandler,
+    GetCompanyUserByIdQuery,
+    GetCompanyUserByIdQueryHandler,
+    GetCompanyUserByCompanyAndUserQuery,
+    GetCompanyUserByCompanyAndUserQueryHandler,
+    ListCompanyUsersByCompanyQuery,
+    ListCompanyUsersByCompanyQueryHandler,
+    GetUserInvitationQuery,
+    GetUserInvitationQueryHandler,
+    GetUserPermissionsQuery,
+    GetUserPermissionsQueryHandler,
+    GetInvitationByEmailAndCompanyQuery,
+    GetInvitationByEmailAndCompanyQueryHandler,
 )
 
 __all__ = [
@@ -120,4 +119,3 @@ __all__ = [
     "DeleteCompanyWithAllDataCommand",
     "DeleteCompanyWithAllDataCommandHandler",
 ]
-

@@ -2,7 +2,8 @@ from dataclasses import dataclass
 
 from core.event_bus import EventBus
 from src.candidate_bc.candidate.domain.events.candidate_project_deleted_event import CandidateProjectDeletedEvent
-from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import CandidateProjectRepositoryInterface
+from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import \
+    CandidateProjectRepositoryInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_project_id import CandidateProjectId
 from src.framework.application.command_bus import Command, CommandHandler
 

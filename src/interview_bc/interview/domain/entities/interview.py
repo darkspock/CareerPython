@@ -4,6 +4,8 @@ from typing import Optional, List
 
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewStatusEnum,
     InterviewTypeEnum,
@@ -12,9 +14,7 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
 )
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 
 
 @dataclass
@@ -117,7 +117,8 @@ class Interview:
         if scheduled_by:
             self.updated_by = scheduled_by
 
-    def update_scheduled_at(self, scheduled_at: datetime, updated_by: Optional[str] = None, allow_past: bool = False) -> None:
+    def update_scheduled_at(self, scheduled_at: datetime, updated_by: Optional[str] = None,
+                            allow_past: bool = False) -> None:
         """Update scheduled_at date, optionally allowing past dates (for editing existing interviews)"""
         if allow_past:
             # When allow_past=True, allow any date (for editing existing interviews)
@@ -133,7 +134,7 @@ class Interview:
                 elif self.scheduled_at and scheduled_at < self.scheduled_at:
                     raise ValueError("Cannot reschedule interview to an earlier past date")
             self.scheduled_at = scheduled_at
-        
+
         self.updated_at = datetime.utcnow()
         if updated_by:
             self.updated_by = updated_by
@@ -142,7 +143,7 @@ class Interview:
         """Set the deadline date for the interview"""
         if deadline_date <= datetime.utcnow():
             raise ValueError("Cannot set deadline in the past")
-        
+
         if self.scheduled_at and deadline_date < self.scheduled_at:
             raise ValueError("Deadline cannot be before scheduled date")
 
@@ -223,7 +224,7 @@ class Interview:
         """Update the required roles for this interview"""
         if not required_roles:
             raise ValueError("Required roles cannot be empty")
-        
+
         self.required_roles = required_roles
         self.updated_at = datetime.utcnow()
         if updated_by:
@@ -323,10 +324,10 @@ class Interview:
         """
         if not required_roles:
             raise ValueError("Required roles cannot be empty")
-        
+
         if deadline_date and scheduled_at and deadline_date < scheduled_at:
             raise ValueError("Deadline cannot be before scheduled date")
-        
+
         now = datetime.utcnow()
         return Interview(
             id=id,

@@ -1,7 +1,7 @@
-from src.framework.application.query_bus import Query, QueryHandler
 from src.auth_bc.staff.application.dtos.staff_dto import StaffDTO
 from src.auth_bc.staff.infrastructure.repositories.staff_repository import SQLAlchemyStaffRepository
 from src.auth_bc.user.domain.value_objects import UserId
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 class UserIsStaffQuery(Query):

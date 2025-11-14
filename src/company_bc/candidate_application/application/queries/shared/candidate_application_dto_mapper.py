@@ -1,4 +1,5 @@
-from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import \
+    CandidateApplicationDto
 from src.company_bc.candidate_application.domain.entities.candidate_application import CandidateApplication
 
 

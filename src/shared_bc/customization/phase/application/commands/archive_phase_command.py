@@ -1,9 +1,9 @@
 """Archive phase command"""
 from dataclasses import dataclass
 
+from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass

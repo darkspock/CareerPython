@@ -2,23 +2,23 @@ from typing import Optional, List
 
 from sqlalchemy.orm import Session
 
+from core.database import SQLAlchemyDatabase
+from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
 from src.company_bc.company_candidate.domain.entities.candidate_comment import CandidateComment
 from src.company_bc.company_candidate.domain.enums import (
     CommentVisibility,
     CommentReviewStatus,
 )
+from src.company_bc.company_candidate.domain.infrastructure.candidate_comment_repository_interface import (
+    CandidateCommentRepositoryInterface
+)
 from src.company_bc.company_candidate.domain.value_objects import (
     CandidateCommentId,
     CompanyCandidateId,
 )
-from src.company_bc.company_candidate.domain.infrastructure.candidate_comment_repository_interface import (
-    CandidateCommentRepositoryInterface
-)
 from src.company_bc.company_candidate.infrastructure.models.candidate_comment_model import CandidateCommentModel
-from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from core.database import SQLAlchemyDatabase
 
 
 class CandidateCommentRepository(CandidateCommentRepositoryInterface):
@@ -81,8 +81,8 @@ class CandidateCommentRepository(CandidateCommentRepositoryInterface):
         return self._to_domain(model)
 
     def list_by_company_candidate(
-        self,
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> List[CandidateComment]:
         """List all comments for a company candidate"""
         session = self._get_session()
@@ -93,9 +93,9 @@ class CandidateCommentRepository(CandidateCommentRepositoryInterface):
         return [self._to_domain(model) for model in models]
 
     def list_by_stage(
-        self,
-        company_candidate_id: CompanyCandidateId,
-        stage_id: WorkflowStageId
+            self,
+            company_candidate_id: CompanyCandidateId,
+            stage_id: WorkflowStageId
     ) -> List[CandidateComment]:
         """List all comments for a company candidate in a specific stage"""
         session = self._get_session()
@@ -115,8 +115,8 @@ class CandidateCommentRepository(CandidateCommentRepositoryInterface):
         session.commit()
 
     def count_pending_by_company_candidate(
-        self,
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> int:
         """Count pending comments for a company candidate"""
         session = self._get_session()
@@ -126,4 +126,3 @@ class CandidateCommentRepository(CandidateCommentRepositoryInterface):
         ).count()
 
         return count
-

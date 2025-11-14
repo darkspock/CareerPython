@@ -25,4 +25,3 @@ class CandidateReviewMapper:
     def from_entity(entity: CandidateReview) -> CandidateReviewDto:
         """Alias for entity_to_dto for consistency"""
         return CandidateReviewMapper.entity_to_dto(entity)
-

@@ -9,10 +9,11 @@ from typing import Dict, Any
 from core.event import EventHandler
 from src.company_bc.candidate_application.domain.events.application_stage_changed_event import \
     ApplicationStageChangedEvent
-from src.notification_bc.email_template.domain.enums.trigger_event import TriggerEvent
-from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import EmailTemplateRepositoryInterface
-from src.notification_bc.notification.application.commands.send_email_command import SendEmailCommand
 from src.framework.application.command_bus import CommandBus
+from src.notification_bc.email_template.domain.enums.trigger_event import TriggerEvent
+from src.notification_bc.email_template.domain.repositories.email_template_repository_interface import \
+    EmailTemplateRepositoryInterface
+from src.notification_bc.notification.application.commands.send_email_command import SendEmailCommand
 from src.notification_bc.notification.domain.enums.notification_type import NotificationTypeEnum
 
 logger = logging.getLogger(__name__)

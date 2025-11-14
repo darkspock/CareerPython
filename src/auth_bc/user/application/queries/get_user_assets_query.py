@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from src.framework.application.query_bus import Query, QueryHandler
 from src.auth_bc.user.domain.entities.user_asset import UserAsset
 from src.auth_bc.user.domain.enums.asset_enums import AssetTypeEnum
 from src.auth_bc.user.domain.repositories.user_asset_repository_interface import UserAssetRepositoryInterface
 from src.auth_bc.user.domain.value_objects.UserId import UserId
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass

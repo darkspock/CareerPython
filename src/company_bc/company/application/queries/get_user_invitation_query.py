@@ -3,10 +3,10 @@ from typing import Optional
 
 from src.company_bc.company.application.dtos.company_user_invitation_dto import CompanyUserInvitationDto
 from src.company_bc.company.application.mappers.company_user_invitation_mapper import CompanyUserInvitationMapper
-from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
 from src.company_bc.company.domain.infrastructure.company_user_invitation_repository_interface import (
     CompanyUserInvitationRepositoryInterface
 )
+from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
 from src.framework.application.query_bus import Query, QueryHandler
 
 
@@ -30,4 +30,3 @@ class GetUserInvitationQueryHandler(QueryHandler[GetUserInvitationQuery, Optiona
             return None
 
         return CompanyUserInvitationMapper.entity_to_dto(invitation)
-

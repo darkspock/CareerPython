@@ -3,6 +3,7 @@ from datetime import date
 from typing import Optional, List, Dict
 
 from core.event_bus import EventBus
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.candidate_bc.candidate.domain.entities.candidate import Candidate
 from src.candidate_bc.candidate.domain.enums import CandidateTypeEnum
 from src.candidate_bc.candidate.domain.enums.candidate_enums import LanguageEnum, LanguageLevelEnum, PositionRoleEnum, \
@@ -13,7 +14,6 @@ from src.candidate_bc.candidate.domain.value_objects.candidate_id import Candida
 from src.company_bc.job_position.domain.enums.position_level_enum import JobPositionLevelEnum
 from src.framework.application.command_bus import Command, CommandHandler
 from src.framework.domain.enums.job_category import JobCategoryEnum
-from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 @dataclass

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
-from src.company_bc.company.domain.value_objects import CompanyId, CompanySettings
-from src.company_bc.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company_bc.company.domain.exceptions.company_exceptions import CompanyNotFoundError
+from src.company_bc.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
+from src.company_bc.company.domain.value_objects import CompanyId, CompanySettings
 from src.framework.application.command_bus import CommandHandler, Command
 
 

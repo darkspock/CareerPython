@@ -10,7 +10,8 @@ from src.candidate_bc.candidate.domain.repositories.candiadate_experience_reposi
     CandidateExperienceRepositoryInterface
 from src.candidate_bc.candidate.domain.repositories.candidate_education_repository_interface import \
     CandidateEducationRepositoryInterface
-from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import CandidateProjectRepositoryInterface
+from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import \
+    CandidateProjectRepositoryInterface
 from src.candidate_bc.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.framework.application.query_bus import Query

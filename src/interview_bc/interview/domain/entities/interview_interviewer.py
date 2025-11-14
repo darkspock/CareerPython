@@ -42,12 +42,12 @@ class InterviewInterviewer:
 
     @staticmethod
     def create(
-        id: InterviewInterviewerId,
-        interview_id: InterviewId,
-        user_id: UserId,
-        name: Optional[str] = None,
-        is_external: bool = False,
-        created_by: Optional[str] = None
+            id: InterviewInterviewerId,
+            interview_id: InterviewId,
+            user_id: UserId,
+            name: Optional[str] = None,
+            is_external: bool = False,
+            created_by: Optional[str] = None
     ) -> 'InterviewInterviewer':
         """Create a new interview interviewer relationship"""
         now = datetime.utcnow()
@@ -62,4 +62,3 @@ class InterviewInterviewer:
             updated_at=now,
             created_by=created_by
         )
-

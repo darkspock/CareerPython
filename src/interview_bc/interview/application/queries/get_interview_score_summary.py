@@ -1,14 +1,14 @@
 """Get interview score summary query"""
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional
 
+from src.framework.application.query_bus import Query, QueryHandler
+from src.interview_bc.interview.application.services.interview_score_calculator import InterviewScoreCalculator
 from src.interview_bc.interview.domain.infrastructure.interview_answer_repository_interface import \
     InterviewAnswerRepositoryInterface
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import \
     InterviewTemplateRepositoryInterface
-from src.interview_bc.interview.application.services.interview_score_calculator import InterviewScoreCalculator
-from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass
@@ -27,10 +27,10 @@ class GetInterviewScoreSummaryQuery(Query):
 
 class GetInterviewScoreSummaryQueryHandler(QueryHandler[GetInterviewScoreSummaryQuery, InterviewScoreSummaryDto]):
     def __init__(
-        self,
-        answer_repository: InterviewAnswerRepositoryInterface,
-        interview_repository: InterviewRepositoryInterface,
-        template_repository: InterviewTemplateRepositoryInterface
+            self,
+            answer_repository: InterviewAnswerRepositoryInterface,
+            interview_repository: InterviewRepositoryInterface,
+            template_repository: InterviewTemplateRepositoryInterface
     ):
         self.answer_repository = answer_repository
         self.interview_repository = interview_repository

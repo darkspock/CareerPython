@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, Any
 
-from src.notification_bc.notification.domain.enums.notification_type import NotificationTypeEnum
 from src.framework.application.command_bus import Command
+from src.notification_bc.notification.domain.enums.notification_type import NotificationTypeEnum
 
 
 @dataclass

@@ -33,8 +33,3 @@ class CompanyUserCompanyRoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<CompanyUserCompanyRoleModel(id={self.id}, company_user_id={self.company_user_id}, company_role_id={self.company_role_id})>"
-
-
-
-
-

@@ -6,12 +6,12 @@ Phase 8: Query to search talent pool entries
 from dataclasses import dataclass
 from typing import Optional, List
 
-from src.framework.application.query_bus import QueryHandler, Query
 from src.company_bc.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEntryDto
 from src.company_bc.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 from src.company_bc.talent_pool.domain.infrastructure.talent_pool_entry_repository_interface import (
     TalentPoolEntryRepositoryInterface,
 )
+from src.framework.application.query_bus import QueryHandler, Query
 
 
 @dataclass(frozen=True)

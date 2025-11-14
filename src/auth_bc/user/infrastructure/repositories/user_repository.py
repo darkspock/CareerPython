@@ -4,11 +4,11 @@ from typing import Optional, List, Any, Dict
 from sqlalchemy import and_, func, extract
 
 from core.database import DatabaseInterface
-from src.framework.infrastructure.repositories.base import BaseRepository
 from src.auth_bc.user.domain.entities.user import User
 from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.auth_bc.user.domain.value_objects.UserId import UserId
 from src.auth_bc.user.infrastructure.models.user_model import UserModel
+from src.framework.infrastructure.repositories.base import BaseRepository
 
 
 class SQLAlchemyUserRepository(UserRepositoryInterface):

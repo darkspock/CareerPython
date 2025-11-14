@@ -3,9 +3,10 @@ import logging
 from datetime import datetime
 from typing import Optional, List
 
-from core.database import DatabaseInterface
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, func
 from sqlalchemy.dialects import postgresql
+
+from core.database import DatabaseInterface
 
 logger = logging.getLogger(__name__)
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
@@ -53,7 +54,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             workflow_stage_id = WorkflowStageId.from_string(model.workflow_stage_id)
 
         interviewers_list = model.interviewers or []
-        
+
         # Convert required_roles from List[str] to List[CompanyRoleId]
         required_roles_list = []
         if model.required_roles:
@@ -68,21 +69,21 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             except ValueError:
                 # Handle invalid enum values gracefully
                 process_type_enum = None
-        
+
         interview_type_enum = InterviewTypeEnum.CUSTOM
         if model.interview_type:
             try:
                 interview_type_enum = InterviewTypeEnum(model.interview_type)
             except ValueError:
                 interview_type_enum = InterviewTypeEnum.CUSTOM
-        
+
         interview_mode_enum = None
         if model.interview_mode:
             try:
                 interview_mode_enum = InterviewModeEnum(model.interview_mode)
             except ValueError:
                 interview_mode_enum = None
-        
+
         # Handle status enum conversion
         # Note: InterviewStatusEnum.ENABLED has value "PENDING", so we need to handle both cases
         status_enum = InterviewStatusEnum.ENABLED  # Default
@@ -215,15 +216,17 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         """Update an existing interview"""
         import logging
         logger = logging.getLogger(__name__)
-        
+
         with self.database.get_session() as session:
             model = session.query(InterviewModel).filter(InterviewModel.id == interview.id.value).first()
             if model:
-                logger.debug(f"Updating interview {interview.id.value}. Link token before: {model.link_token}, after: {interview.link_token}")
-                
+                logger.debug(
+                    f"Updating interview {interview.id.value}. Link token before: {model.link_token}, after: {interview.link_token}")
+
                 # Update all fields from the entity
                 model.candidate_id = interview.candidate_id.value
-                model.required_roles = [role_id.value for role_id in interview.required_roles] if interview.required_roles else []
+                model.required_roles = [role_id.value for role_id in
+                                        interview.required_roles] if interview.required_roles else []
                 model.process_type = interview.process_type.value if interview.process_type else None
                 model.job_position_id = interview.job_position_id.value if interview.job_position_id else None
                 model.application_id = interview.application_id.value if interview.application_id else None
@@ -344,15 +347,13 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             offset: int = 0
     ) -> List[Interview]:
         """Find interviews by multiple filters"""
-        from sqlalchemy import text
-        
-        
+
         with self.database.get_session() as session:
             query = session.query(InterviewModel)
 
             if candidate_id:
                 query = query.filter(InterviewModel.candidate_id == candidate_id)
-            
+
             # Filter by candidate_name using JOIN with candidates table
             if candidate_name:
                 from src.candidate_bc.candidate.infrastructure.models.candidate_model import CandidateModel
@@ -362,23 +363,23 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 ).filter(
                     func.lower(CandidateModel.name).contains(func.lower(candidate_name))
                 )
-            
+
             if job_position_id:
                 query = query.filter(InterviewModel.job_position_id == job_position_id)
-            
+
             if interview_type:
                 # Convert enum to string for comparison
                 interview_type_str = interview_type.value if hasattr(interview_type, 'value') else str(interview_type)
                 query = query.filter(InterviewModel.interview_type == interview_type_str)
-            
+
             if process_type:
                 process_type_str = process_type.value if hasattr(process_type, 'value') else str(process_type)
                 query = query.filter(InterviewModel.process_type == process_type_str)
-            
+
             if status:
                 status_str = status.value if hasattr(status, 'value') else str(status)
                 query = query.filter(InterviewModel.status == status_str)
-            
+
             # Special filter for "SCHEDULED" status: must have scheduled_at and interviewers
             if has_scheduled_at_and_interviewers:
                 # interviewers is JSON (not JSONB), so we need to cast it to JSONB for jsonb_array_length
@@ -388,13 +389,13 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                     InterviewModel.interviewers.isnot(None),
                     func.jsonb_array_length(func.cast(InterviewModel.interviewers, postgresql.JSONB)) > 0
                 )
-            
+
             if required_role_id:
                 # Filter using JSONB operator: check if required_roles contains the role_id
                 query = query.filter(
                     InterviewModel.required_roles.contains([required_role_id])
                 )
-            
+
             if interviewer_user_id:
                 # Filter by interviewer user_id in the interviewers list
                 # Note: interviewers is currently a list of names, not user_ids
@@ -402,10 +403,10 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 query = query.filter(
                     InterviewModel.interviewers.contains([interviewer_user_id])
                 )
-            
+
             if created_by:
                 query = query.filter(InterviewModel.created_by == created_by)
-            
+
             # Date filtering - support both scheduled_at and deadline_date
             # If filter_by is 'deadline', always exclude null deadline_date
             if filter_by == 'deadline':
@@ -460,14 +461,13 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             has_scheduled_at_and_interviewers: bool = False  # Special filter for "SCHEDULED" status
     ) -> int:
         """Count interviews matching the filters (for pagination)"""
-        from sqlalchemy import text
-        
+
         with self.database.get_session() as session:
             query = session.query(InterviewModel)
 
             if candidate_id:
                 query = query.filter(InterviewModel.candidate_id == candidate_id)
-            
+
             # Filter by candidate_name using JOIN with candidates table
             if candidate_name:
                 from src.candidate_bc.candidate.infrastructure.models.candidate_model import CandidateModel
@@ -477,22 +477,22 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 ).filter(
                     func.lower(CandidateModel.name).contains(func.lower(candidate_name))
                 )
-            
+
             if job_position_id:
                 query = query.filter(InterviewModel.job_position_id == job_position_id)
-            
+
             if interview_type:
                 interview_type_str = interview_type.value if hasattr(interview_type, 'value') else str(interview_type)
                 query = query.filter(InterviewModel.interview_type == interview_type_str)
-            
+
             if process_type:
                 process_type_str = process_type.value if hasattr(process_type, 'value') else str(process_type)
                 query = query.filter(InterviewModel.process_type == process_type_str)
-            
+
             if status:
                 status_str = status.value if hasattr(status, 'value') else str(status)
                 query = query.filter(InterviewModel.status == status_str)
-            
+
             # Special filter for "SCHEDULED" status: must have scheduled_at and interviewers
             if has_scheduled_at_and_interviewers:
                 # interviewers is JSON (not JSONB), so we need to cast it to JSONB for jsonb_array_length
@@ -502,20 +502,20 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                     InterviewModel.interviewers.isnot(None),
                     func.jsonb_array_length(func.cast(InterviewModel.interviewers, postgresql.JSONB)) > 0
                 )
-            
+
             if required_role_id:
                 query = query.filter(
                     InterviewModel.required_roles.contains([required_role_id])
                 )
-            
+
             if interviewer_user_id:
                 query = query.filter(
                     InterviewModel.interviewers.contains([interviewer_user_id])
                 )
-            
+
             if created_by:
                 query = query.filter(InterviewModel.created_by == created_by)
-            
+
             # Date filtering - support both scheduled_at and deadline_date
             # If filter_by is 'deadline', always exclude null deadline_date
             if filter_by == 'deadline':
@@ -577,27 +577,28 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         """Get interview by ID and token for secure link access"""
         import logging
         logger = logging.getLogger(__name__)
-        
+
         with self.database.get_session() as session:
             # First check if interview exists
             model = session.query(InterviewModel).filter(
                 InterviewModel.id == interview_id
             ).first()
-            
+
             if not model:
                 logger.warning(f"Interview {interview_id} not found")
                 return None
-            
+
             # Check if token matches
             if model.link_token != token:
-                logger.warning(f"Token mismatch for interview {interview_id}. Expected: {model.link_token}, Got: {token}")
+                logger.warning(
+                    f"Token mismatch for interview {interview_id}. Expected: {model.link_token}, Got: {token}")
                 return None
-            
+
             interview = self._to_domain(model)
-            
+
             # Validate that the link is still valid
             if not interview.is_link_valid():
                 logger.warning(f"Link expired for interview {interview_id}. Expires at: {interview.link_expires_at}")
                 return None
-            
+
             return interview

@@ -5,9 +5,10 @@ from sqlalchemy import String, Enum, Text, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
-from src.interview_bc.interview_template.domain.enums import InterviewTemplateSectionEnum
-from src.interview_bc.interview_template.domain.enums.interview_template_section import InterviewTemplateSectionStatusEnum
 from src.framework.domain.entities.base import generate_id
+from src.interview_bc.interview_template.domain.enums import InterviewTemplateSectionEnum
+from src.interview_bc.interview_template.domain.enums.interview_template_section import \
+    InterviewTemplateSectionStatusEnum
 
 # Forward reference for mypy
 if TYPE_CHECKING:

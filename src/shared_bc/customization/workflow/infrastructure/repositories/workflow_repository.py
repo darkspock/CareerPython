@@ -1,14 +1,15 @@
 from typing import Optional, List, Any
 
-from src.shared_bc.customization.workflow.domain.entities.workflow import Workflow
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.company_bc.company.domain.value_objects import CompanyId
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.infrastructure.models.workflow_model import WorkflowModel
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.entities.workflow import Workflow
+from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_status_enum import WorkflowStatusEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.infrastructure.models.workflow_model import WorkflowModel
 
 
 class WorkflowRepository(WorkflowRepositoryInterface):
@@ -36,7 +37,8 @@ class WorkflowRepository(WorkflowRepositoryInterface):
                 return self._to_domain(model)
             return None
 
-    def list_by_company(self, company_id: CompanyId, workflow_type: Optional[WorkflowTypeEnum] = None) -> List[Workflow]:
+    def list_by_company(self, company_id: CompanyId, workflow_type: Optional[WorkflowTypeEnum] = None) -> List[
+        Workflow]:
         """List all workflows for a company, optionally filtered by workflow_type"""
         with self._database.get_session() as session:
             query = session.query(WorkflowModel).filter_by(company_id=str(company_id))
@@ -45,7 +47,8 @@ class WorkflowRepository(WorkflowRepositoryInterface):
             models = query.all()
             return [self._to_domain(model) for model in models]
 
-    def get_default_by_company(self, company_id: CompanyId, workflow_type: Optional[WorkflowTypeEnum] = None) -> Optional[Workflow]:
+    def get_default_by_company(self, company_id: CompanyId, workflow_type: Optional[WorkflowTypeEnum] = None) -> \
+            Optional[Workflow]:
         """Get the default workflow for a company, optionally filtered by workflow_type"""
         with self._database.get_session() as session:
             query = session.query(WorkflowModel).filter_by(
@@ -65,7 +68,8 @@ class WorkflowRepository(WorkflowRepositoryInterface):
             session.query(WorkflowModel).filter_by(id=str(workflow_id)).delete()
             session.commit()
 
-    def list_by_phase_id(self, phase_id: PhaseId, workflow_type: Optional[WorkflowTypeEnum] = None, status: Optional[str] = None) -> List[Workflow]:
+    def list_by_phase_id(self, phase_id: PhaseId, workflow_type: Optional[WorkflowTypeEnum] = None,
+                         status: Optional[str] = None) -> List[Workflow]:
         """List all workflows for a phase, optionally filtered by workflow_type and status"""
         with self._database.get_session() as session:
             query = session.query(WorkflowModel).filter_by(phase_id=str(phase_id))

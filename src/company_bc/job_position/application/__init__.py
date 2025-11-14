@@ -1,32 +1,5 @@
 """Job position application module - exports queries and commands"""
 
-# Queries
-from .queries.get_job_position_by_id import GetJobPositionByIdQuery, GetJobPositionByIdQueryHandler
-from .queries.get_job_position_workflow import GetJobPositionWorkflowQuery, GetJobPositionWorkflowQueryHandler
-from .queries.get_job_positions_stats import GetJobPositionsStatsQuery, GetJobPositionsStatsQueryHandler
-from .queries.get_public_job_position import GetPublicJobPositionQuery, GetPublicJobPositionQueryHandler
-from .queries.list_all_job_position_comments_query import (
-    ListAllJobPositionCommentsQuery,
-    ListAllJobPositionCommentsQueryHandler,
-)
-from .queries.list_job_position_activities_query import (
-    ListJobPositionActivitiesQuery,
-    ListJobPositionActivitiesQueryHandler,
-)
-from .queries.list_job_position_comments_query import (
-    ListJobPositionCommentsQuery,
-    ListJobPositionCommentsQueryHandler,
-)
-from .queries.list_job_position_workflows import (
-    ListJobPositionWorkflowsQuery,
-    ListJobPositionWorkflowsQueryHandler,
-)
-from .queries.list_job_positions import ListJobPositionsQuery, ListJobPositionsQueryHandler
-from .queries.list_public_job_positions import (
-    ListPublicJobPositionsQuery,
-    ListPublicJobPositionsQueryHandler,
-)
-
 # Commands
 from .commands.create_job_position import CreateJobPositionCommand, CreateJobPositionCommandHandler
 from .commands.create_job_position_comment_command import (
@@ -58,6 +31,32 @@ from .commands.update_job_position_comment_command import (
 from .commands.update_job_position_custom_fields import (
     UpdateJobPositionCustomFieldsCommand,
     UpdateJobPositionCustomFieldsCommandHandler,
+)
+# Queries
+from .queries.get_job_position_by_id import GetJobPositionByIdQuery, GetJobPositionByIdQueryHandler
+from .queries.get_job_position_workflow import GetJobPositionWorkflowQuery, GetJobPositionWorkflowQueryHandler
+from .queries.get_job_positions_stats import GetJobPositionsStatsQuery, GetJobPositionsStatsQueryHandler
+from .queries.get_public_job_position import GetPublicJobPositionQuery, GetPublicJobPositionQueryHandler
+from .queries.list_all_job_position_comments_query import (
+    ListAllJobPositionCommentsQuery,
+    ListAllJobPositionCommentsQueryHandler,
+)
+from .queries.list_job_position_activities_query import (
+    ListJobPositionActivitiesQuery,
+    ListJobPositionActivitiesQueryHandler,
+)
+from .queries.list_job_position_comments_query import (
+    ListJobPositionCommentsQuery,
+    ListJobPositionCommentsQueryHandler,
+)
+from .queries.list_job_position_workflows import (
+    ListJobPositionWorkflowsQuery,
+    ListJobPositionWorkflowsQueryHandler,
+)
+from .queries.list_job_positions import ListJobPositionsQuery, ListJobPositionsQueryHandler
+from .queries.list_public_job_positions import (
+    ListPublicJobPositionsQuery,
+    ListPublicJobPositionsQueryHandler,
 )
 
 __all__ = [
@@ -104,4 +103,3 @@ __all__ = [
     "UpdateJobPositionCustomFieldsCommand",
     "UpdateJobPositionCustomFieldsCommandHandler",
 ]
-

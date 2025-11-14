@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from src.framework.application.command_bus import Command, CommandHandler
 from src.auth_bc.user.domain.entities.user import User
 from src.auth_bc.user.domain.exceptions.user_exceptions import EmailAlreadyExistException
 from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
 from src.auth_bc.user.domain.services.password_service import PasswordService
 from src.auth_bc.user.domain.value_objects.UserId import UserId
+from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass(frozen=True)

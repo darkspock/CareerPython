@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum,
     InterviewTemplateTypeEnum
 )
 from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 @dataclass

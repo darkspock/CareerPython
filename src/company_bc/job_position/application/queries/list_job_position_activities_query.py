@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.framework.application.query_bus import Query, QueryHandler
-from src.company_bc.job_position.domain.value_objects import JobPositionId
+from src.company_bc.job_position.application.dtos.job_position_activity_dto import JobPositionActivityDto
 from src.company_bc.job_position.domain.infrastructure.job_position_activity_repository_interface import (
     JobPositionActivityRepositoryInterface
 )
-from src.company_bc.job_position.application.dtos.job_position_activity_dto import JobPositionActivityDto
+from src.company_bc.job_position.domain.value_objects import JobPositionId
+from src.framework.application.query_bus import Query, QueryHandler
 
 
 @dataclass(frozen=True)
@@ -36,7 +36,7 @@ class ListJobPositionActivitiesQueryHandler(QueryHandler[ListJobPositionActiviti
             List[JobPositionActivityDto]: List of activities
         """
         job_position_id = JobPositionId.from_string(query.job_position_id)
-        
+
         # Retrieve activities
         activities = self._repository.list_by_job_position(
             job_position_id,
@@ -56,4 +56,3 @@ class ListJobPositionActivitiesQueryHandler(QueryHandler[ListJobPositionActiviti
             )
             for activity in activities
         ]
-

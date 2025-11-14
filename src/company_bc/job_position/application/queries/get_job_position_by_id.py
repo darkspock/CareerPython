@@ -3,7 +3,8 @@ from typing import Optional
 
 from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
 from src.company_bc.job_position.domain.value_objects import JobPositionId
-from src.company_bc.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
+from src.company_bc.job_position.infrastructure.repositories.job_position_repository import \
+    JobPositionRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
 
 

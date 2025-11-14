@@ -6,8 +6,10 @@ Phase 6: Query to retrieve applications assigned to a user at their current stag
 from dataclasses import dataclass
 from typing import List, Optional
 
-from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
-from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto_mapper import CandidateApplicationDtoMapper
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import \
+    CandidateApplicationDto
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto_mapper import \
+    CandidateApplicationDtoMapper
 from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import (
     CandidateApplicationRepositoryInterface
 )
@@ -29,9 +31,9 @@ class GetMyAssignedTasksQueryHandler(QueryHandler[GetMyAssignedTasksQuery, List[
     """Handler for getting user's assigned tasks"""
 
     def __init__(
-        self,
-        application_repository: CandidateApplicationRepositoryInterface,
-        stage_assignment_repository: PositionStageAssignmentRepositoryInterface
+            self,
+            application_repository: CandidateApplicationRepositoryInterface,
+            stage_assignment_repository: PositionStageAssignmentRepositoryInterface
     ):
         self.application_repository = application_repository
         self.stage_assignment_repository = stage_assignment_repository

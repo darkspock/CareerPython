@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.candidate_bc.resume.application.dtos.resume_dto import ResumeDto
 from src.candidate_bc.resume.domain.repositories.resume_repository_interface import ResumeRepositoryInterface
 from src.candidate_bc.resume.domain.value_objects.resume_id import ResumeId
-from src.candidate_bc.resume.application.dtos.resume_dto import ResumeDto
 from src.framework.application.query_bus import Query, QueryHandler
 
 

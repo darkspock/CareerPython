@@ -1,12 +1,13 @@
-from typing import Optional, List
 from datetime import datetime, timedelta
+from typing import Optional, List
+
 from sqlalchemy import func
 
 from core.database import DatabaseInterface
 from src.company_bc.company.domain.entities.company import Company
 from src.company_bc.company.domain.enums import CompanyStatusEnum, CompanyTypeEnum
-from src.company_bc.company.domain.value_objects import CompanyId, CompanySettings
 from src.company_bc.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
+from src.company_bc.company.domain.value_objects import CompanyId, CompanySettings
 from src.company_bc.company.infrastructure.models.company_model import CompanyModel
 
 

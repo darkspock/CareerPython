@@ -1,14 +1,14 @@
 """Initialize Onboarding Command - Creates default roles and pages for a new company"""
+import logging
 from dataclasses import dataclass
 from typing import List, Dict, Any
-import logging
 
-from src.framework.application.command_bus import Command, CommandHandler, CommandBus
 from src.company_bc.company.domain.value_objects.company_id import CompanyId
-from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
-from src.company_bc.company_role.application.commands.create_role_command import CreateRoleCommand
 from src.company_bc.company_page.application.commands.create_company_page_command import CreateCompanyPageCommand
 from src.company_bc.company_page.domain.enums.page_type import PageType
+from src.company_bc.company_role.application.commands.create_role_command import CreateRoleCommand
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.framework.application.command_bus import Command, CommandHandler, CommandBus
 from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
 
 log = logging.getLogger(__name__)
@@ -29,24 +29,24 @@ class InitializeOnboardingCommand(Command):
 
 class InitializeOnboardingCommandHandler(CommandHandler[InitializeOnboardingCommand]):
     """Handler for initializing onboarding for a new company"""
-    
+
     def __init__(self, command_bus: CommandBus):
         self.command_bus = command_bus
-    
+
     def execute(self, command: InitializeOnboardingCommand) -> None:
         """Execute the onboarding initialization command"""
         log.info(f"Initializing onboarding for company: {command.company_id.value}")
-        
+
         # Create default roles
         if command.create_roles:
             self._create_default_roles(command.company_id)
-        
+
         # Create default pages
         if command.create_pages:
             self._create_default_pages(command.company_id)
-        
+
         log.info(f"Onboarding initialization completed for company: {command.company_id.value}")
-    
+
     def _create_default_roles(self, company_id: CompanyId) -> None:
         """Create 7 default company roles"""
         roles_to_create = [
@@ -79,7 +79,7 @@ class InitializeOnboardingCommandHandler(CommandHandler[InitializeOnboardingComm
                 "description": "Participates in senior-level or technical hiring decisions."
             }
         ]
-        
+
         for role_data in roles_to_create:
             try:
                 role_id = CompanyRoleId.generate()
@@ -96,7 +96,7 @@ class InitializeOnboardingCommandHandler(CommandHandler[InitializeOnboardingComm
                 # The CreateRoleCommandHandler will check if role already exists
                 log.warning(f"Failed to create role '{role_data['name']}': {e}")
                 continue
-    
+
     def _create_default_pages(self, company_id: CompanyId) -> None:
         """Create 5 default company pages in DRAFT status with empty content"""
         pages_to_create: List[Dict[str, Any]] = [
@@ -146,7 +146,7 @@ class InitializeOnboardingCommandHandler(CommandHandler[InitializeOnboardingComm
                 "is_default": True
             }
         ]
-        
+
         for page_data in pages_to_create:
             try:
                 create_page_command = CreateCompanyPageCommand(
@@ -166,4 +166,3 @@ class InitializeOnboardingCommandHandler(CommandHandler[InitializeOnboardingComm
                 # The CreateCompanyPageCommandHandler will check if page already exists
                 log.warning(f"Failed to create page '{page_data['page_type']}': {e}")
                 continue
-

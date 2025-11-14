@@ -18,25 +18,25 @@ class CandidateReviewRepositoryInterface(ABC):
 
     @abstractmethod
     def get_by_company_candidate(
-        self, 
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> List[CandidateReview]:
         """Get all reviews for a company candidate"""
         pass
 
     @abstractmethod
     def get_by_stage(
-        self, 
-        company_candidate_id: CompanyCandidateId, 
-        stage_id: WorkflowStageId
+            self,
+            company_candidate_id: CompanyCandidateId,
+            stage_id: WorkflowStageId
     ) -> List[CandidateReview]:
         """Get all reviews for a specific stage"""
         pass
 
     @abstractmethod
     def get_global_reviews(
-        self, 
-        company_candidate_id: CompanyCandidateId
+            self,
+            company_candidate_id: CompanyCandidateId
     ) -> List[CandidateReview]:
         """Get all global reviews (stage_id is None)"""
         pass
@@ -55,4 +55,3 @@ class CandidateReviewRepositoryInterface(ABC):
     def delete(self, review_id: CandidateReviewId) -> None:
         """Delete a review"""
         pass
-

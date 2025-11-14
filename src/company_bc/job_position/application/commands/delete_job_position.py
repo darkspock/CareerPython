@@ -5,7 +5,8 @@ from src.company_bc.candidate_application.domain.repositories.candidate_applicat
 from src.company_bc.job_position.domain.enums.job_position_visibility import JobPositionVisibilityEnum
 from src.company_bc.job_position.domain.exceptions import JobPositionNotFoundException
 from src.company_bc.job_position.domain.value_objects import JobPositionId
-from src.company_bc.job_position.infrastructure.repositories.job_position_repository import JobPositionRepositoryInterface
+from src.company_bc.job_position.infrastructure.repositories.job_position_repository import \
+    JobPositionRepositoryInterface
 from src.framework.application.command_bus import Command
 
 
