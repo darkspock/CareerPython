@@ -185,10 +185,9 @@ async def assign_role_to_user(
 @router.get("/me/language", response_model=UserLanguageResponse)
 @inject
 async def get_company_user_language(
+        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])],
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
         company_user_id: str = Depends(get_company_user_id_from_token),
-        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = Depends(
-            Provide[Container.user_controller]),
-        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])] = Depends(Provide[Container.query_bus]),
 ) -> UserLanguageResponse:
     """Get current company user's preferred language"""
     from src.company_bc.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQuery
@@ -210,10 +209,9 @@ async def get_company_user_language(
 @inject
 async def update_company_user_language(
         request: UserLanguageRequest,
+        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])],
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
         company_user_id: str = Depends(get_company_user_id_from_token),
-        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = Depends(
-            Provide[Container.user_controller]),
-        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])] = Depends(Provide[Container.query_bus]),
 ) -> UserLanguageUpdateResponse:
     """Update current company user's preferred language"""
     from src.company_bc.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQuery
