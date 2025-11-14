@@ -15,6 +15,8 @@ from src.interview_bc.interview.domain.value_objects.interview_id import Intervi
 from src.interview_bc.interview.domain.value_objects.interview_interviewer_id import InterviewInterviewerId
 from src.interview_bc.interview.application.services.interview_permission_service import InterviewPermissionService
 from src.auth_bc.user.domain.value_objects.UserId import UserId
+from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
+from src.company_bc.company.domain.infrastructure.company_user_repository_interface import CompanyUserRepositoryInterface
 from src.framework.application.command_bus import Command, CommandHandler
 
 
@@ -34,11 +36,13 @@ class InviteInterviewerCommandHandler(CommandHandler[InviteInterviewerCommand]):
         interview_repository: InterviewRepositoryInterface,
         interviewer_repository: InterviewInterviewerRepositoryInterface,
         permission_service: InterviewPermissionService,
+        company_user_repository: CompanyUserRepositoryInterface,
         event_bus: EventBus
     ):
         self.interview_repository = interview_repository
         self.interviewer_repository = interviewer_repository
         self.permission_service = permission_service
+        self.company_user_repository = company_user_repository
         self.event_bus = event_bus
 
     def execute(self, command: InviteInterviewerCommand) -> None:
@@ -68,6 +72,30 @@ class InviteInterviewerCommandHandler(CommandHandler[InviteInterviewerCommand]):
         )
         if existing:
             raise ValueError(f"User {command.user_id} is already invited as interviewer for this interview")
+
+        # Validate that the user has at least one of the required roles for the interview
+        if interview.required_roles:
+            # Get the company user to check their roles
+            company_user = self.company_user_repository.get_by_company_and_user(
+                CompanyId.from_string(command.company_id),
+                UserId.from_string(command.user_id)
+            )
+            
+            if not company_user:
+                raise ValueError(f"User {command.user_id} is not a member of company {command.company_id}")
+            
+            # Get the user's assigned company roles
+            user_role_ids = self.company_user_repository.get_company_role_ids(company_user.id)
+            
+            # Check if user has at least one of the required roles
+            required_role_ids = [role_id.value for role_id in interview.required_roles]
+            has_required_role = any(role_id in user_role_ids for role_id in required_role_ids)
+            
+            if not has_required_role:
+                raise ValueError(
+                    f"User {command.user_id} does not have any of the required roles for this interview. "
+                    f"Required roles: {required_role_ids}, User roles: {user_role_ids}"
+                )
 
         # Create interviewer relationship
         interviewer_id = InterviewInterviewerId.generate()

@@ -1,13 +1,17 @@
 // Company Interview API service
 import { ApiClient } from '../lib/api';
 
-export type InterviewStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PENDING';
-export type InterviewType = 'RESUME_ENHANCEMENT' | 'POSITION_INTERVIEW' | 'TECHNICAL' | 'BEHAVIORAL' | 'CULTURAL_FIT';
+export type InterviewStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PENDING' | 'ENABLED' | 'DISABLED';
+export type InterviewType = 'CUSTOM' | 'TECHNICAL' | 'BEHAVIORAL' | 'CULTURAL_FIT' | 'KNOWLEDGE_CHECK' | 'EXPERIENCE_CHECK';
+export type InterviewProcessType = 'CANDIDATE_SIGN_UP' | 'CANDIDATE_APPLICATION' | 'SCREENING' | 'INTERVIEW' | 'FEEDBACK';
 
 export type Interview = {
   id: string;
   candidate_id: string;
+  required_roles: string[]; // List of CompanyRole IDs (obligatory)
   interview_type: InterviewType;
+  interview_mode?: 'AUTOMATIC' | 'AI' | 'MANUAL';
+  process_type?: InterviewProcessType;
   status: InterviewStatus;
   job_position_id?: string;
   application_id?: string;
@@ -16,16 +20,24 @@ export type Interview = {
   title?: string;
   description?: string;
   scheduled_at?: string;
+  deadline_date?: string; // New field
   started_at?: string;
+  finished_at?: string;
   completed_at?: string;
+  duration_minutes?: number;
   score?: number;
   notes?: string;
+  interviewer_notes?: string;
+  candidate_notes?: string;
+  feedback?: string;
   interviewers?: string[];
   metadata?: Record<string, any>;
   created_at: string;
   updated_at: string;
   created_by?: string;
+  updated_by?: string;
   link_token?: string;
+  link_expires_at?: string;
   shareable_link?: string;
 };
 
@@ -43,6 +55,12 @@ export type InterviewStatsResponse = {
   completed_interviews: number;
   average_score?: number;
   average_duration_minutes?: number;
+  // New statistics fields
+  pending_to_plan?: number; // No scheduled_at or no interviewers
+  planned?: number; // Have scheduled_at and interviewers
+  recently_finished?: number; // Finished in last 30 days
+  overdue?: number; // deadline_date < now and not finished
+  pending_feedback?: number; // Finished but no score or feedback
 };
 
 export type InterviewActionResponse = {
@@ -62,11 +80,16 @@ export type InterviewScoreSummaryResponse = {
 
 export type InterviewFilters = {
   candidate_id?: string;
+  candidate_name?: string; // Search by candidate name
   job_position_id?: string;
   interview_type?: InterviewType;
+  process_type?: InterviewProcessType;
   status?: InterviewStatus;
+  required_role_id?: string; // Filter by CompanyRole ID
+  interviewer_user_id?: string; // Filter by interviewer (CompanyUserId)
   from_date?: string;
   to_date?: string;
+  filter_by?: 'scheduled' | 'deadline'; // Which date field to filter
   limit?: number;
   offset?: number;
 };
@@ -75,8 +98,10 @@ export type InterviewMode = 'AUTOMATIC' | 'AI' | 'MANUAL';
 
 export type CreateInterviewRequest = {
   candidate_id: string;
+  required_roles: string[]; // List of CompanyRole IDs (obligatory)
   interview_type: InterviewType;
   interview_mode: InterviewMode;
+  process_type?: InterviewProcessType;
   job_position_id?: string;
   application_id?: string;
   interview_template_id?: string;
@@ -84,6 +109,7 @@ export type CreateInterviewRequest = {
   title?: string;
   description?: string;
   scheduled_at?: string;
+  deadline_date?: string; // New field
   interviewers?: string[];
 };
 
@@ -91,7 +117,13 @@ export type UpdateInterviewRequest = {
   title?: string;
   description?: string;
   scheduled_at?: string;
+  deadline_date?: string; // New field
+  process_type?: InterviewProcessType;
+  required_roles?: string[]; // List of CompanyRole IDs
   interviewers?: string[];
+  interviewer_notes?: string;
+  feedback?: string;
+  score?: number;
   notes?: string;
   metadata?: Record<string, any>;
 };
@@ -113,11 +145,16 @@ export const companyInterviewService = {
   async listInterviews(filters?: InterviewFilters): Promise<InterviewListResponse> {
     const queryParams = new URLSearchParams();
     if (filters?.candidate_id) queryParams.append('candidate_id', filters.candidate_id);
+    if (filters?.candidate_name) queryParams.append('candidate_name', filters.candidate_name);
     if (filters?.job_position_id) queryParams.append('job_position_id', filters.job_position_id);
     if (filters?.interview_type) queryParams.append('interview_type', filters.interview_type);
+    if (filters?.process_type) queryParams.append('process_type', filters.process_type);
     if (filters?.status) queryParams.append('status', filters.status);
+    if (filters?.required_role_id) queryParams.append('required_role_id', filters.required_role_id);
+    if (filters?.interviewer_user_id) queryParams.append('interviewer_user_id', filters.interviewer_user_id);
     if (filters?.from_date) queryParams.append('from_date', filters.from_date);
     if (filters?.to_date) queryParams.append('to_date', filters.to_date);
+    if (filters?.filter_by) queryParams.append('filter_by', filters.filter_by);
     if (filters?.limit) queryParams.append('limit', filters.limit.toString());
     if (filters?.offset) queryParams.append('offset', filters.offset.toString());
 
@@ -129,7 +166,25 @@ export const companyInterviewService = {
    * Get interview statistics for the company
    */
   async getInterviewStats(): Promise<InterviewStatsResponse> {
-    return ApiClient.authenticatedRequest<InterviewStatsResponse>('/api/company/interviews/stats');
+    return ApiClient.authenticatedRequest<InterviewStatsResponse>('/api/company/interviews/statistics');
+  },
+
+  /**
+   * Get interviews by date range for calendar
+   */
+  async getInterviewCalendar(fromDate: string, toDate: string): Promise<Interview[]> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('from_date', fromDate);
+    queryParams.append('to_date', toDate);
+    queryParams.append('filter_by', 'scheduled');
+    return ApiClient.authenticatedRequest<Interview[]>(`/api/company/interviews/calendar?${queryParams}`);
+  },
+
+  /**
+   * Get overdue interviews
+   */
+  async getOverdueInterviews(): Promise<Interview[]> {
+    return ApiClient.authenticatedRequest<Interview[]>('/api/company/interviews/overdue');
   },
 
   /**

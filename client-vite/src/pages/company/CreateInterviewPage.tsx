@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, User, Briefcase, FileText } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Briefcase, FileText, Users, X } from 'lucide-react';
 import { companyInterviewService, type CreateInterviewRequest } from '../../services/companyInterviewService';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import { PositionService } from '../../services/positionService';
 import { companyInterviewTemplateService } from '../../services/companyInterviewTemplateService';
+import { CompanyUserService } from '../../services/companyUserService';
+import { api } from '../../lib/api';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 import type { Position } from '../../types/position';
 import type { InterviewTemplate } from '../../services/companyInterviewTemplateService';
+import type { CompanyRole } from '../../types/company';
+import type { CompanyUser } from '../../types/companyUser';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,28 +35,42 @@ export default function CreateInterviewPage() {
 
   const [formData, setFormData] = useState<CreateInterviewRequest>({
     candidate_id: '',
-    interview_type: 'POSITION_INTERVIEW',
+    required_roles: [], // Obligatory
+    interview_type: 'CUSTOM',
     interview_mode: 'MANUAL',
+    process_type: undefined,
     job_position_id: undefined,
     interview_template_id: undefined,
     title: '',
     description: '',
     scheduled_at: '',
+    deadline_date: undefined,
     interviewers: [],
   });
 
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [templates, setTemplates] = useState<InterviewTemplate[]>([]);
+  const [roles, setRoles] = useState<CompanyRole[]>([]);
+  const [companyUsers, setCompanyUsers] = useState<CompanyUser[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [interviewerInput, setInterviewerInput] = useState('');
+  const [selectedInterviewerIds, setSelectedInterviewerIds] = useState<string[]>([]);
 
   const interviewTypes = [
-    { value: 'POSITION_INTERVIEW', label: 'Job Position Interview' },
-    { value: 'RESUME_ENHANCEMENT', label: 'Resume Enhancement' },
-    { value: 'TECHNICAL', label: 'Technical Interview' },
-    { value: 'BEHAVIORAL', label: 'Behavioral Interview' },
-    { value: 'CULTURAL_FIT', label: 'Cultural Fit Interview' },
+    { value: 'CUSTOM', label: 'Personalizada' },
+    { value: 'TECHNICAL', label: 'Técnica' },
+    { value: 'BEHAVIORAL', label: 'Conductual' },
+    { value: 'CULTURAL_FIT', label: 'Ajuste Cultural' },
+    { value: 'KNOWLEDGE_CHECK', label: 'Verificación de Conocimientos' },
+    { value: 'EXPERIENCE_CHECK', label: 'Verificación de Experiencia' },
+  ];
+
+  const processTypes = [
+    { value: 'CANDIDATE_SIGN_UP', label: 'Registro de Candidato' },
+    { value: 'CANDIDATE_APPLICATION', label: 'Aplicación de Candidato' },
+    { value: 'SCREENING', label: 'Screening' },
+    { value: 'INTERVIEW', label: 'Entrevista' },
+    { value: 'FEEDBACK', label: 'Feedback' },
   ];
 
   const interviewModes = [
@@ -105,6 +123,14 @@ export default function CreateInterviewPage() {
         page_size: 100,
       });
       setTemplates(templatesData);
+
+      // Load company roles (only active)
+      const rolesData = await api.listCompanyRoles(companyId, true);
+      setRoles(rolesData as CompanyRole[]);
+
+      // Load company users (only active)
+      const usersData = await CompanyUserService.getCompanyUsers(companyId, { active_only: true });
+      setCompanyUsers(usersData);
     } catch (err: any) {
       setError(err.message || 'Error al cargar los datos');
       console.error('Error loading data:', err);
@@ -113,20 +139,89 @@ export default function CreateInterviewPage() {
     }
   };
 
-  const handleAddInterviewer = () => {
-    if (interviewerInput.trim() && !formData.interviewers?.includes(interviewerInput.trim())) {
+  const handleToggleRole = (roleId: string) => {
+    const currentRoles = formData.required_roles || [];
+    let newRoles: string[];
+    
+    if (currentRoles.includes(roleId)) {
+      newRoles = currentRoles.filter(id => id !== roleId);
+    } else {
+      newRoles = [...currentRoles, roleId];
+    }
+    
+    // Remove interviewers that no longer have any of the required roles
+    const validInterviewerIds = selectedInterviewerIds.filter(userId => {
+      const user = companyUsers.find(u => u.id === userId);
+      if (!user) return false;
+      
+      // If no roles selected, keep all interviewers
+      if (newRoles.length === 0) return true;
+      
+      const userRoleIds = user.company_roles || [];
+      return newRoles.some(roleId => userRoleIds.includes(roleId));
+    });
+    
+    setFormData({
+      ...formData,
+      required_roles: newRoles,
+      interviewers: validInterviewerIds,
+    });
+    setSelectedInterviewerIds(validInterviewerIds);
+  };
+
+  const handleToggleInterviewer = (userId: string) => {
+    const currentIds = selectedInterviewerIds || [];
+    if (currentIds.includes(userId)) {
+      const newIds = currentIds.filter(id => id !== userId);
+      setSelectedInterviewerIds(newIds);
       setFormData({
         ...formData,
-        interviewers: [...(formData.interviewers || []), interviewerInput.trim()],
+        interviewers: newIds.length > 0 ? newIds : [],
       });
-      setInterviewerInput('');
+    } else {
+      // Validate that user has at least one of the required roles
+      const user = companyUsers.find(u => u.id === userId);
+      const requiredRoleIds = formData.required_roles || [];
+      
+      if (requiredRoleIds.length > 0 && user) {
+        const userRoleIds = user.company_roles || [];
+        const hasRequiredRole = requiredRoleIds.some(roleId => userRoleIds.includes(roleId));
+        
+        if (!hasRequiredRole) {
+          const requiredRoleNames = requiredRoleIds
+            .map(roleId => roles.find(r => r.id === roleId)?.name)
+            .filter(Boolean)
+            .join(', ');
+          
+          toast.warning(
+            `El usuario ${user.email || user.id} no tiene ninguno de los roles requeridos: ${requiredRoleNames}`
+          );
+          return;
+        }
+      }
+      
+      const newIds = [...currentIds, userId];
+      setSelectedInterviewerIds(newIds);
+      setFormData({
+        ...formData,
+        interviewers: newIds,
+      });
     }
   };
 
-  const handleRemoveInterviewer = (interviewer: string) => {
-    setFormData({
-      ...formData,
-      interviewers: formData.interviewers?.filter(i => i !== interviewer) || [],
+  // Filter users based on selected required roles
+  const getAvailableUsers = (): CompanyUser[] => {
+    const requiredRoleIds = formData.required_roles || [];
+    
+    // If no roles selected, show all users
+    if (requiredRoleIds.length === 0) {
+      return companyUsers;
+    }
+    
+    // Filter users that have at least one of the required roles
+    return companyUsers.filter(user => {
+      const userRoleIds = user.company_roles || [];
+      return requiredRoleIds.some(roleId => userRoleIds.includes(roleId));
     });
   };
 
@@ -146,6 +241,11 @@ export default function CreateInterviewPage() {
 
     if (!formData.interview_mode) {
       setError('El modo de entrevista es requerido');
+      return;
+    }
+
+    if (!formData.required_roles || formData.required_roles.length === 0) {
+      setError('Debe seleccionar al menos un rol requerido');
       return;
     }
 
@@ -235,6 +335,60 @@ export default function CreateInterviewPage() {
             </div>
 
             <div>
+              <Label htmlFor="required_roles" className="flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4" />
+                Roles Requeridos *
+              </Label>
+              <div className="border rounded-md p-3 min-h-[100px] max-h-[200px] overflow-y-auto">
+                {roles.length === 0 ? (
+                  <p className="text-sm text-gray-500">No hay roles disponibles</p>
+                ) : (
+                  <div className="space-y-2">
+                    {roles.map((role) => (
+                      <label
+                        key={role.id}
+                        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.required_roles?.includes(role.id) || false}
+                          onChange={() => handleToggleRole(role.id)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm">{role.name}</span>
+                        {role.description && (
+                          <span className="text-xs text-gray-500">- {role.description}</span>
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {formData.required_roles && formData.required_roles.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.required_roles.map((roleId) => {
+                    const role = roles.find(r => r.id === roleId);
+                    return role ? (
+                      <div
+                        key={roleId}
+                        className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                      >
+                        <span>{role.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleRole(roleId)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div>
               <Label htmlFor="interview_type" className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4" />
                 Tipo de Entrevista *
@@ -249,6 +403,29 @@ export default function CreateInterviewPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {interviewTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="process_type" className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4" />
+                Tipo de Proceso (Opcional)
+              </Label>
+              <Select
+                value={formData.process_type || 'none'}
+                onValueChange={(value) => setFormData({ ...formData, process_type: value === 'none' ? undefined : value as any })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un tipo de proceso" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Ninguno</SelectItem>
+                  {processTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
                     </SelectItem>
@@ -370,46 +547,99 @@ export default function CreateInterviewPage() {
             </div>
 
             <div>
-              <Label>Entrevistadores (Opcional)</Label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  type="text"
-                  value={interviewerInput}
-                  onChange={(e) => setInterviewerInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddInterviewer();
-                    }
-                  }}
-                  placeholder="Nombre del entrevistador"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleAddInterviewer}
-                  disabled={!interviewerInput.trim()}
-                >
-                  Agregar
-                </Button>
+              <Label htmlFor="deadline_date" className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4" />
+                Fecha Límite (Opcional)
+              </Label>
+              <Input
+                id="deadline_date"
+                type="datetime-local"
+                value={formData.deadline_date || ''}
+                onChange={(e) => setFormData({ ...formData, deadline_date: e.target.value || undefined })}
+              />
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4" />
+                Entrevistadores (Opcional)
+              </Label>
+              {formData.required_roles && formData.required_roles.length > 0 && (
+                <p className="text-xs text-gray-500 mb-2">
+                  Solo se muestran usuarios que tienen al menos uno de los roles requeridos seleccionados
+                </p>
+              )}
+              <div className="border rounded-md p-3 min-h-[100px] max-h-[200px] overflow-y-auto">
+                {companyUsers.length === 0 ? (
+                  <p className="text-sm text-gray-500">No hay usuarios disponibles</p>
+                ) : getAvailableUsers().length === 0 ? (
+                  <div className="text-sm text-gray-500">
+                    {formData.required_roles && formData.required_roles.length > 0 ? (
+                      <p>No hay usuarios con los roles requeridos seleccionados</p>
+                    ) : (
+                      <p>No hay usuarios disponibles</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {getAvailableUsers().map((user) => {
+                      const userRoleIds = user.company_roles || [];
+                      const requiredRoleIds = formData.required_roles || [];
+                      const hasRequiredRole = requiredRoleIds.length === 0 || 
+                        requiredRoleIds.some(roleId => userRoleIds.includes(roleId));
+                      
+                      return (
+                        <label
+                          key={user.id}
+                          className={`flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded ${
+                            !hasRequiredRole ? 'opacity-50' : ''
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedInterviewerIds.includes(user.id)}
+                            onChange={() => handleToggleInterviewer(user.id)}
+                            disabled={!hasRequiredRole}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
+                          />
+                          <span className="text-sm">
+                            {user.email || user.id}
+                            {user.role && <span className="text-xs text-gray-500 ml-2">({user.role})</span>}
+                            {user.company_roles && user.company_roles.length > 0 && (
+                              <span className="text-xs text-blue-600 ml-2">
+                                [{user.company_roles.map(roleId => {
+                                  const role = roles.find(r => r.id === roleId);
+                                  return role?.name || roleId;
+                                }).join(', ')}]
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-              {formData.interviewers && formData.interviewers.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {formData.interviewers.map((interviewer, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                    >
-                      <span>{interviewer}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveInterviewer(interviewer)}
-                        className="text-blue-600 hover:text-blue-800"
+              {selectedInterviewerIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedInterviewerIds.map((userId) => {
+                    const user = companyUsers.find(u => u.id === userId);
+                    return user ? (
+                      <div
+                        key={userId}
+                        className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs"
                       >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                        <span>{user.email || user.id}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleInterviewer(userId)}
+                          className="text-green-600 hover:text-green-800"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : null;
+                  })}
                 </div>
               )}
             </div>

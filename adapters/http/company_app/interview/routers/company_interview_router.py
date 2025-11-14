@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from typing import Annotated
 
 from core.container import Container
+from src.framework.application.query_bus import QueryBus
 from adapters.http.admin_app.controllers.interview_controller import InterviewController
 from adapters.http.admin_app.schemas.interview_management import (
     InterviewCreateRequest, InterviewUpdateRequest, InterviewManagementResponse,
@@ -88,11 +89,16 @@ def list_interviews(
     controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
     company_id: str = Depends(get_company_id_from_token),
     candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
+    candidate_name: Optional[str] = Query(None, description="Filter by candidate name"),
     job_position_id: Optional[str] = Query(None, description="Filter by job position ID"),
     interview_type: Optional[str] = Query(None, description="Filter by interview type"),
+    process_type: Optional[str] = Query(None, description="Filter by process type"),
     status: Optional[str] = Query(None, description="Filter by status"),
+    required_role_id: Optional[str] = Query(None, description="Filter by required role ID"),
+    interviewer_user_id: Optional[str] = Query(None, description="Filter by interviewer user ID"),
     from_date: Optional[datetime] = Query(None, description="Filter from date"),
     to_date: Optional[datetime] = Query(None, description="Filter to date"),
+    filter_by: Optional[str] = Query(None, description="Filter by 'scheduled' or 'deadline' date field"),
     limit: int = Query(50, ge=1, le=100, description="Limit results"),
     offset: int = Query(0, ge=0, description="Offset for pagination")
 ) -> InterviewListResponse:
@@ -101,14 +107,19 @@ def list_interviews(
     
     # TODO: Add company_id filter to ListInterviewsQuery
     # For now, we'll filter by company_id in the controller or query handler
-    interviews = controller.list_interviews(
+    interviews, total = controller.list_interviews(
         candidate_id=candidate_id,
+        candidate_name=candidate_name,
         job_position_id=job_position_id,
         interview_type=interview_type,
+        process_type=process_type,
         status=status,
+        required_role_id=required_role_id,
+        interviewer_user_id=interviewer_user_id,
         created_by=None,  # Don't filter by creator in company context
         from_date=from_date,
         to_date=to_date,
+        filter_by=filter_by,
         limit=limit,
         offset=offset
     )
@@ -116,30 +127,88 @@ def list_interviews(
     # TODO: Filter interviews by company_id (candidates and job positions must belong to company)
     # This should be done in the query handler, not here
     
+    # Calculate current page from offset and limit
+    current_page = (offset // limit) + 1 if limit > 0 else 1
+    
     return InterviewListResponse(
         interviews=[InterviewManagementResponse.from_dto(interview) for interview in interviews],
-        total=len(interviews),
-        page=1,
+        total=total,
+        page=current_page,
         page_size=limit
     )
 
 
-@router.get("/stats", response_model=InterviewStatsResponse)
+@router.get("/statistics", response_model=InterviewStatsResponse)
 @inject
 def get_interview_stats(
     controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
     company_id: str = Depends(get_company_id_from_token),
 ) -> InterviewStatsResponse:
     """Get interview statistics for the authenticated company"""
-    # TODO: Implement company-specific stats
-    return InterviewStatsResponse(
-        total_interviews=0,
-        scheduled_interviews=0,
-        in_progress_interviews=0,
-        completed_interviews=0,
-        average_score=None,
-        average_duration_minutes=None
-    )
+    try:
+        stats_dto = controller.get_interview_statistics(company_id=company_id)
+        return InterviewStatsResponse(
+            total_interviews=0,  # TODO: Calculate from stats_dto if needed
+            scheduled_interviews=0,  # TODO: Calculate from stats_dto if needed
+            in_progress_interviews=stats_dto.in_progress,
+            completed_interviews=0,  # TODO: Calculate from stats_dto if needed
+            average_score=None,
+            average_duration_minutes=None,
+            pending_to_plan=stats_dto.pending_to_plan,
+            planned=stats_dto.planned,
+            recently_finished=stats_dto.recently_finished,
+            overdue=stats_dto.overdue,
+            pending_feedback=stats_dto.pending_feedback
+        )
+    except Exception as e:
+        log.error(f"Error getting interview statistics: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve interview statistics")
+
+
+@router.get("/calendar", response_model=List[InterviewManagementResponse])
+@inject
+def get_interview_calendar(
+    query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
+    company_id: str = Depends(get_company_id_from_token),
+    from_date: datetime = Query(..., description="Start date for calendar range"),
+    to_date: datetime = Query(..., description="End date for calendar range"),
+    filter_by: Optional[str] = Query('scheduled', description="Filter by 'scheduled' or 'deadline'")
+) -> List[InterviewManagementResponse]:
+    """Get interviews within a date range for calendar view"""
+    try:
+        from src.interview_bc.interview.application.queries.get_interviews_by_date_range import GetInterviewsByDateRangeQuery
+        from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+        
+        query = GetInterviewsByDateRangeQuery(
+            from_date=from_date,
+            to_date=to_date,
+            company_id=company_id,
+            filter_by=filter_by
+        )
+        interviews: List[InterviewDto] = query_bus.query(query)
+        return [InterviewManagementResponse.from_dto(interview) for interview in interviews]
+    except Exception as e:
+        log.error(f"Error getting interview calendar: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve interview calendar")
+
+
+@router.get("/overdue", response_model=List[InterviewManagementResponse])
+@inject
+def get_overdue_interviews(
+    query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
+    company_id: str = Depends(get_company_id_from_token),
+) -> List[InterviewManagementResponse]:
+    """Get overdue interviews for the authenticated company"""
+    try:
+        from src.interview_bc.interview.application.queries.get_overdue_interviews import GetOverdueInterviewsQuery
+        from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+        
+        query = GetOverdueInterviewsQuery(company_id=company_id)
+        interviews: List[InterviewDto] = query_bus.query(query)
+        return [InterviewManagementResponse.from_dto(interview) for interview in interviews]
+    except Exception as e:
+        log.error(f"Error getting overdue interviews: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve overdue interviews")
 
 
 @router.get("/{interview_id}", response_model=InterviewManagementResponse)
@@ -173,14 +242,17 @@ def create_interview(
     
     result = controller.create_interview(
         candidate_id=interview_data.candidate_id,
+        required_roles=interview_data.required_roles,
         interview_type=interview_data.interview_type,
         interview_mode=interview_data.interview_mode,
+        process_type=interview_data.process_type,
         job_position_id=interview_data.job_position_id,
         application_id=interview_data.application_id,
         interview_template_id=interview_data.interview_template_id,
         title=interview_data.title,
         description=interview_data.description,
         scheduled_at=interview_data.scheduled_at,
+        deadline_date=interview_data.deadline_date,
         interviewers=interview_data.interviewers,
         created_by=company_user_id
     )
@@ -203,10 +275,27 @@ def update_interview(
 ) -> InterviewActionResponse:
     """Update an existing interview (must belong to the company)"""
     # TODO: Verify that the interview belongs to the company
-    # TODO: Implement update_interview in controller
+    
+    result = controller.update_interview(
+        interview_id=interview_id,
+        title=interview_data.title,
+        description=interview_data.description,
+        scheduled_at=interview_data.scheduled_at,
+        deadline_date=interview_data.deadline_date,
+        process_type=interview_data.process_type,
+        interview_type=interview_data.interview_type,
+        interview_mode=interview_data.interview_mode,
+        required_roles=interview_data.required_roles,
+        interviewers=interview_data.interviewers,
+        interviewer_notes=interview_data.interviewer_notes,
+        feedback=interview_data.feedback,
+        score=interview_data.score,
+        updated_by=company_user_id
+    )
+    
     return InterviewActionResponse(
-        message="Interview updated successfully",
-        status="success",
+        message=result["message"],
+        status=result["status"],
         interview_id=interview_id
     )
 

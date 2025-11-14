@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, Calendar, User, Briefcase, Clock, CheckCircle2, ExternalLink, Copy } from 'lucide-react';
+import { Plus, Search, Eye, Calendar, User, Briefcase, Clock, CheckCircle2, ExternalLink, Copy, ChevronDown, ChevronUp, Filter, X, Users } from 'lucide-react';
 import { companyInterviewService } from '../../services/companyInterviewService';
 import type { Interview, InterviewFilters, InterviewStatsResponse } from '../../services/companyInterviewService';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import { PositionService } from '../../services/positionService';
 import { companyInterviewTemplateService } from '../../services/companyInterviewTemplateService';
-import type { CompanyCandidate } from '../../types/companyCandidate';
-import type { Position } from '../../types/position';
-import type { InterviewTemplate } from '../../services/companyInterviewTemplateService';
+import { CompanyUserService } from '../../services/companyUserService';
+import { api } from '../../lib/api';
+import type { CompanyRole } from '../../types/company';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -46,15 +47,29 @@ const CompanyInterviewsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
 
-  // Maps for candidate, position, and template names (using objects instead of Maps for React state)
+  // Maps for candidate, position, template, role, and user names
   const [candidateMap, setCandidateMap] = useState<Record<string, string>>({});
   const [positionMap, setPositionMap] = useState<Record<string, string>>({});
   const [templateMap, setTemplateMap] = useState<Record<string, string>>({});
+  const [roleMap, setRoleMap] = useState<Record<string, string>>({});
+  const [userMap, setUserMap] = useState<Record<string, string>>({});
 
   // Filters
-  const [searchTerm, setSearchTerm] = useState('');
+  const [candidateNameFilter, setCandidateNameFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [processTypeFilter, setProcessTypeFilter] = useState<string>('all');
+  const [jobPositionFilter, setJobPositionFilter] = useState<string>('all');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [interviewerFilter, setInterviewerFilter] = useState<string>('all');
+  const [fromDateFilter, setFromDateFilter] = useState<string>('');
+  const [toDateFilter, setToDateFilter] = useState<string>('');
+  const [dateFilterBy, setDateFilterBy] = useState<'scheduled' | 'deadline'>('scheduled');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Calendar state
+  const [calendarInterviews, setCalendarInterviews] = useState<Interview[]>([]);
+  const [calendarLoading, setCalendarLoading] = useState(false);
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -71,7 +86,12 @@ const CompanyInterviewsPage: React.FC = () => {
     loadInterviews();
     loadStats();
     loadCandidateAndPositionData();
-  }, [currentPage, statusFilter, typeFilter]);
+    loadCalendarData();
+  }, [currentPage, statusFilter, typeFilter, processTypeFilter, jobPositionFilter, roleFilter, interviewerFilter, fromDateFilter, toDateFilter, dateFilterBy, candidateNameFilter]);
+
+  useEffect(() => {
+    loadCalendarData();
+  }, []);
 
   const loadCandidateAndPositionData = async () => {
     const companyId = getCompanyId();
@@ -130,9 +150,48 @@ const CompanyInterviewsPage: React.FC = () => {
       console.log('Template map loaded:', templateMapData);
       console.log('Total templates in map:', Object.keys(templateMapData).length);
       setTemplateMap(templateMapData);
+
+      // Load company roles
+      const rolesData = await api.listCompanyRoles(companyId, true);
+      const roleMapData: Record<string, string> = {};
+      (rolesData as CompanyRole[]).forEach((role) => {
+        if (role.id && role.name) {
+          roleMapData[role.id] = role.name;
+        }
+      });
+      setRoleMap(roleMapData);
+
+      // Load company users
+      const usersData = await CompanyUserService.getCompanyUsers(companyId, { active_only: true });
+      const userMapData: Record<string, string> = {};
+      usersData.forEach((user) => {
+        if (user.id && user.email) {
+          userMapData[user.id] = user.email;
+        }
+      });
+      setUserMap(userMapData);
     } catch (err) {
       console.error('Error loading candidate/position/template data:', err);
       // Don't show error, just log it
+    }
+  };
+
+  const loadCalendarData = async () => {
+    try {
+      setCalendarLoading(true);
+      const today = new Date();
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+      
+      const calendarData = await companyInterviewService.getInterviewCalendar(
+        startOfMonth.toISOString(),
+        endOfMonth.toISOString()
+      );
+      setCalendarInterviews(calendarData);
+    } catch (err: any) {
+      console.error('Error loading calendar data:', err);
+    } finally {
+      setCalendarLoading(false);
     }
   };
 
@@ -146,12 +205,42 @@ const CompanyInterviewsPage: React.FC = () => {
         offset: (currentPage - 1) * pageSize,
       };
 
+      if (candidateNameFilter) {
+        filters.candidate_name = candidateNameFilter;
+      }
+
       if (statusFilter !== 'all') {
         filters.status = statusFilter as any;
       }
 
       if (typeFilter !== 'all') {
         filters.interview_type = typeFilter as any;
+      }
+
+      if (processTypeFilter !== 'all') {
+        filters.process_type = processTypeFilter as any;
+      }
+
+      if (jobPositionFilter !== 'all') {
+        filters.job_position_id = jobPositionFilter;
+      }
+
+      if (roleFilter !== 'all') {
+        filters.required_role_id = roleFilter;
+      }
+
+      if (interviewerFilter !== 'all') {
+        filters.interviewer_user_id = interviewerFilter;
+      }
+
+      if (fromDateFilter) {
+        filters.from_date = fromDateFilter;
+        filters.filter_by = dateFilterBy;
+      }
+
+      if (toDateFilter) {
+        filters.to_date = toDateFilter;
+        filters.filter_by = dateFilterBy;
       }
 
       const response = await companyInterviewService.listInterviews(filters);
@@ -186,6 +275,79 @@ const CompanyInterviewsPage: React.FC = () => {
   const handleSearch = () => {
     setCurrentPage(1);
     loadInterviews();
+  };
+
+  const handleFilterByMetric = (filterType: string) => {
+    setCurrentPage(1);
+    // Reset all filters first
+    setStatusFilter('all');
+    setTypeFilter('all');
+    setProcessTypeFilter('all');
+    setJobPositionFilter('all');
+    setRoleFilter('all');
+    setInterviewerFilter('all');
+    setFromDateFilter('');
+    setToDateFilter('');
+    setCandidateNameFilter('');
+
+    switch (filterType) {
+      case 'pending_to_plan':
+        // No scheduled_at or no interviewers
+        setStatusFilter('ENABLED');
+        break;
+      case 'planned':
+        // Have scheduled_at and interviewers
+        setStatusFilter('SCHEDULED');
+        break;
+      case 'in_progress':
+        // scheduled_at = today
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString().split('T')[0];
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
+        setFromDateFilter(todayStart);
+        setToDateFilter(todayEnd);
+        setDateFilterBy('scheduled');
+        break;
+      case 'recently_finished':
+        // finished_at in last 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        setFromDateFilter(thirtyDaysAgo.toISOString().split('T')[0]);
+        setDateFilterBy('scheduled');
+        break;
+      case 'overdue':
+        // deadline_date < now and not finished
+        setStatusFilter('ENABLED');
+        setDateFilterBy('deadline');
+        break;
+      case 'pending_feedback':
+        // finished but no score or feedback
+        setStatusFilter('COMPLETED');
+        break;
+    }
+    
+    setTimeout(() => loadInterviews(), 100);
+  };
+
+  const handleDateClick = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    setFromDateFilter(dateStr);
+    setToDateFilter(dateStr);
+    setDateFilterBy('scheduled');
+    setCurrentPage(1);
+    setTimeout(() => loadInterviews(), 100);
+  };
+
+  const getInterviewsForDate = (date: Date): number => {
+    return calendarInterviews.filter(interview => {
+      if (!interview.scheduled_at) return false;
+      const interviewDate = new Date(interview.scheduled_at);
+      return (
+        interviewDate.getDate() === date.getDate() &&
+        interviewDate.getMonth() === date.getMonth() &&
+        interviewDate.getFullYear() === date.getFullYear()
+      );
+    }).length;
   };
 
   const handleViewInterview = (interviewId: string) => {
@@ -304,95 +466,331 @@ const CompanyInterviewsPage: React.FC = () => {
           </Button>
         </div>
 
-        {/* Stats Cards */}
+        {/* Header with Metrics and Calendar */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  Total Entrevistas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_interviews}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  Programadas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.scheduled_interviews}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  En Progreso
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.in_progress_interviews}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  Completadas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.completed_interviews}</div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Metrics (Left) */}
+            <div className="lg:col-span-2">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleFilterByMetric('pending_to_plan')}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-gray-600">
+                      Pendientes de Planificar
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">{stats.pending_to_plan || 0}</div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleFilterByMetric('planned')}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-gray-600">
+                      Planificadas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-600">{stats.planned || 0}</div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleFilterByMetric('in_progress')}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-gray-600">
+                      En Proceso
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">{stats.in_progress_interviews || 0}</div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleFilterByMetric('recently_finished')}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-gray-600">
+                      Finalizadas Recientes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-purple-600">{stats.recently_finished || 0}</div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleFilterByMetric('overdue')}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-gray-600">
+                      Pasadas Fecha Límite
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-red-600">{stats.overdue || 0}</div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleFilterByMetric('pending_feedback')}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-gray-600">
+                      Pendiente Feedback
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-yellow-600">{stats.pending_feedback || 0}</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Calendar (Right) */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Calendario
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {calendarLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-7 gap-1 text-xs">
+                      {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
+                        <div key={day} className="text-center font-medium text-gray-500 p-1">
+                          {day}
+                        </div>
+                      ))}
+                      {Array.from({ length: 35 }, (_, i) => {
+                        const date = new Date();
+                        date.setDate(1);
+                        date.setDate(date.getDate() - date.getDay() + 1 + i);
+                        const isCurrentMonth = date.getMonth() === new Date().getMonth();
+                        const isToday = date.toDateString() === new Date().toDateString();
+                        const interviewCount = getInterviewsForDate(date);
+                        
+                        return (
+                          <div
+                            key={i}
+                            className={`text-center p-1 cursor-pointer rounded hover:bg-gray-100 ${
+                              isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+                            } ${isToday ? 'bg-blue-50 font-bold' : ''}`}
+                            onClick={() => handleDateClick(date)}
+                            title={`${interviewCount} entrevista(s)`}
+                          >
+                            <div className="text-xs">{date.getDate()}</div>
+                            {interviewCount > 0 && (
+                              <div className="text-[8px] text-blue-600 font-bold mt-0.5">
+                                {interviewCount}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
 
         {/* Filters */}
         <Card>
           <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <Input
-                  placeholder="Buscar entrevistas..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="w-full"
-                />
+            <div className="space-y-4">
+              {/* Basic Filters */}
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Buscar por nombre de candidato..."
+                    value={candidateNameFilter}
+                    onChange={(e) => setCandidateNameFilter(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    className="w-full"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="ENABLED">Habilitada</SelectItem>
+                    <SelectItem value="SCHEDULED">Programada</SelectItem>
+                    <SelectItem value="IN_PROGRESS">En Progreso</SelectItem>
+                    <SelectItem value="COMPLETED">Completada</SelectItem>
+                    <SelectItem value="CANCELLED">Cancelada</SelectItem>
+                    <SelectItem value="PENDING">Pendiente</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    <SelectItem value="CUSTOM">Personalizada</SelectItem>
+                    <SelectItem value="TECHNICAL">Técnica</SelectItem>
+                    <SelectItem value="BEHAVIORAL">Conductual</SelectItem>
+                    <SelectItem value="CULTURAL_FIT">Ajuste Cultural</SelectItem>
+                    <SelectItem value="KNOWLEDGE_CHECK">Verificación de Conocimientos</SelectItem>
+                    <SelectItem value="EXPERIENCE_CHECK">Verificación de Experiencia</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleSearch} variant="outline" className="flex items-center gap-2">
+                  <Search className="w-4 h-4" />
+                  Buscar
+                </Button>
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  <SelectItem value="SCHEDULED">Programada</SelectItem>
-                  <SelectItem value="IN_PROGRESS">En Progreso</SelectItem>
-                  <SelectItem value="COMPLETED">Completada</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelada</SelectItem>
-                  <SelectItem value="PENDING">Pendiente</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los tipos</SelectItem>
-                  <SelectItem value="EXTENDED_PROFILE">Perfil Extendido</SelectItem>
-                  <SelectItem value="POSITION_INTERVIEW">Entrevista de Posición</SelectItem>
-                  <SelectItem value="TECHNICAL">Técnica</SelectItem>
-                  <SelectItem value="BEHAVIORAL">Conductual</SelectItem>
-                  <SelectItem value="CULTURAL_FIT">Ajuste Cultural</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button onClick={handleSearch} variant="outline" className="flex items-center gap-2">
-                <Search className="w-4 h-4" />
-                Buscar
-              </Button>
+
+              {/* Advanced Filters Toggle */}
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="flex items-center gap-2"
+                >
+                  <Filter className="w-4 h-4" />
+                  Filtros Avanzados
+                  {showAdvancedFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
+                {(processTypeFilter !== 'all' || jobPositionFilter !== 'all' || roleFilter !== 'all' || 
+                  interviewerFilter !== 'all' || fromDateFilter || toDateFilter) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setProcessTypeFilter('all');
+                      setJobPositionFilter('all');
+                      setRoleFilter('all');
+                      setInterviewerFilter('all');
+                      setFromDateFilter('');
+                      setToDateFilter('');
+                      setCurrentPage(1);
+                      setTimeout(() => loadInterviews(), 100);
+                    }}
+                    className="flex items-center gap-2 text-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                    Limpiar Filtros
+                  </Button>
+                )}
+              </div>
+
+              {/* Advanced Filters */}
+              {showAdvancedFilters && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Tipo de Proceso</Label>
+                    <Select value={processTypeFilter} onValueChange={setProcessTypeFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="CANDIDATE_SIGN_UP">Registro de Candidato</SelectItem>
+                        <SelectItem value="CANDIDATE_APPLICATION">Aplicación</SelectItem>
+                        <SelectItem value="SCREENING">Screening</SelectItem>
+                        <SelectItem value="INTERVIEW">Entrevista</SelectItem>
+                        <SelectItem value="FEEDBACK">Feedback</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Posición</Label>
+                    <Select value={jobPositionFilter} onValueChange={setJobPositionFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Todas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        {Object.entries(positionMap).map(([id, name]) => (
+                          <SelectItem key={id} value={id}>{name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Rol Requerido</Label>
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        {Object.entries(roleMap).map(([id, name]) => (
+                          <SelectItem key={id} value={id}>{name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Entrevistador</Label>
+                    <Select value={interviewerFilter} onValueChange={setInterviewerFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        {Object.entries(userMap).map(([id, email]) => (
+                          <SelectItem key={id} value={id}>{email}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Filtrar por Fecha</Label>
+                    <Select value={dateFilterBy} onValueChange={(v) => setDateFilterBy(v as 'scheduled' | 'deadline')}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="scheduled">Programada</SelectItem>
+                        <SelectItem value="deadline">Fecha Límite</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Desde</Label>
+                    <Input
+                      type="date"
+                      value={fromDateFilter}
+                      onChange={(e) => setFromDateFilter(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-1 block">Hasta</Label>
+                    <Input
+                      type="date"
+                      value={toDateFilter}
+                      onChange={(e) => setToDateFilter(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -447,9 +845,10 @@ const CompanyInterviewsPage: React.FC = () => {
                   <TableRow>
                     <TableHead>Candidato</TableHead>
                     <TableHead>Entrevista</TableHead>
-                    <TableHead>Tipo</TableHead>
+                    <TableHead>Asignado</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Programada</TableHead>
+                    <TableHead>Fecha Límite</TableHead>
                     <TableHead>Posición</TableHead>
                     <TableHead>Puntuación</TableHead>
                     <TableHead>Acciones</TableHead>
@@ -469,25 +868,85 @@ const CompanyInterviewsPage: React.FC = () => {
                           {interview.title && interview.title.trim() ? (
                             <span className="font-medium text-gray-900">{interview.title}</span>
                           ) : interview.interview_template_id && templateMap[interview.interview_template_id] ? (
-                            <span className="text-sm text-gray-500 italic">
+                            <span className="font-medium text-gray-900">
                               {templateMap[interview.interview_template_id]}
                             </span>
                           ) : (
-                            <span className="text-sm text-gray-400 italic">Sin título</span>
+                            <span className="font-medium text-gray-400 italic">Sin título</span>
                           )}
+                          <span className="text-[9px] text-gray-500 mt-0.5">
+                            {interview.interview_type.replace('_', ' ')}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-gray-600">
-                          {interview.interview_type.replace('_', ' ')}
-                        </span>
+                        {interview.interviewers && interview.interviewers.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {interview.interviewers.slice(0, 2).map((interviewer, idx) => (
+                              <div key={idx} className="flex items-center gap-1 text-xs text-gray-600">
+                                <Users className="w-3 h-3" />
+                                <span>{userMap[interviewer] || interviewer}</span>
+                              </div>
+                            ))}
+                            {interview.interviewers.length > 2 && (
+                              <span className="text-xs text-gray-400">+{interview.interviewers.length - 2} más</span>
+                            )}
+                          </div>
+                        ) : interview.required_roles && interview.required_roles.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {interview.required_roles.slice(0, 2).map((roleId, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs w-fit">
+                                {roleMap[roleId] || roleId}
+                              </Badge>
+                            ))}
+                            {interview.required_roles.length > 2 && (
+                              <span className="text-xs text-gray-400">+{interview.required_roles.length - 2} más</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">Sin asignar</span>
+                        )}
                       </TableCell>
                       <TableCell>{getStatusBadge(interview.status)}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Clock className="w-4 h-4" />
-                          {formatDate(interview.scheduled_at)}
-                        </div>
+                        {interview.scheduled_at ? (
+                          <button
+                            onClick={() => navigate(`/company/interviews/${interview.id}/edit`)}
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                          >
+                            <Clock className="w-4 h-4" />
+                            {formatDate(interview.scheduled_at)}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              const today = new Date();
+                              const dateStr = today.toISOString().split('T')[0];
+                              setFromDateFilter(dateStr);
+                              setToDateFilter(dateStr);
+                              setDateFilterBy('scheduled');
+                              setCurrentPage(1);
+                              setTimeout(() => loadInterviews(), 100);
+                            }}
+                            className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-600 transition-colors"
+                          >
+                            <Calendar className="w-4 h-4" />
+                            N/A
+                          </button>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {interview.deadline_date ? (
+                          <button
+                            onClick={() => navigate(`/company/interviews/${interview.id}/edit`)}
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                          >
+                            <Clock className="w-4 h-4" />
+                            {formatDate(interview.deadline_date)}
+                          </button>
+                        ) : (
+                          <span className="text-sm text-gray-400">N/A</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {interview.job_position_id ? (

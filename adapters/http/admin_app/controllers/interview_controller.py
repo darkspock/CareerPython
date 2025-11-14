@@ -21,9 +21,14 @@ from src.interview_bc.interview.application.queries.list_interviews import ListI
 from src.interview_bc.interview.application.queries.get_pending_interviews_by_candidate_and_stage import GetPendingInterviewsByCandidateAndStageQuery
 from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQuery
 from src.interview_bc.interview.application.queries.get_interview_questions_by_token import GetInterviewQuestionsByTokenQuery, InterviewQuestionsResponse
+from src.interview_bc.interview.application.queries.get_interview_statistics import GetInterviewStatisticsQuery
+from src.interview_bc.interview.application.queries.dtos.interview_statistics_dto import InterviewStatisticsDto
+from src.interview_bc.interview.application.queries.get_interviews_by_date_range import GetInterviewsByDateRangeQuery
+from src.interview_bc.interview.application.queries.get_overdue_interviews import GetOverdueInterviewsQuery
 from src.interview_bc.interview.application.commands.submit_interview_answer_by_token import SubmitInterviewAnswerByTokenCommand
 from src.interview_bc.interview.application.commands.invite_interviewer import InviteInterviewerCommand
 from src.interview_bc.interview.application.commands.accept_interviewer_invitation import AcceptInterviewerInvitationCommand
+from src.interview_bc.interview.application.commands.update_interview import UpdateInterviewCommand
 from src.interview_bc.interview.application.queries.get_interviewers_by_interview import GetInterviewersByInterviewQuery
 from src.interview_bc.interview.application.queries.dtos.interview_interviewer_dto import InterviewInterviewerDto
 from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum
@@ -49,31 +54,81 @@ class InterviewController:
     def list_interviews(
             self,
             candidate_id: Optional[str] = None,
+            candidate_name: Optional[str] = None,
             job_position_id: Optional[str] = None,
             interview_type: Optional[str] = None,
+            process_type: Optional[str] = None,
             status: Optional[str] = None,
+            required_role_id: Optional[str] = None,
+            interviewer_user_id: Optional[str] = None,
             created_by: Optional[str] = None,
             from_date: Optional[datetime] = None,
             to_date: Optional[datetime] = None,
+            filter_by: Optional[str] = None,
             limit: int = 50,
             offset: int = 0
-    ) -> List[InterviewDto]:
-        """List interviews with optional filtering"""
+    ) -> tuple[List[InterviewDto], int]:
+        """List interviews with optional filtering. Returns (interviews, total_count)"""
         try:
-            query = ListInterviewsQuery(
+            from src.interview_bc.interview.domain.enums.interview_enums import (
+                InterviewStatusEnum,
+                InterviewTypeEnum,
+                InterviewProcessTypeEnum
+            )
+            from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
+            from core.container import Container
+            
+            # Convert string enums to enum values for count query
+            interview_type_enum = None
+            if interview_type:
+                interview_type_enum = InterviewTypeEnum(interview_type)
+
+            process_type_enum = None
+            if process_type:
+                process_type_enum = InterviewProcessTypeEnum(process_type)
+
+            status_enum = None
+            if status:
+                status_enum = InterviewStatusEnum(status)
+
+            # Get total count
+            container = Container()
+            interview_repository: InterviewRepositoryInterface = container.interview_repository()
+            total = interview_repository.count_by_filters(
                 candidate_id=candidate_id,
+                candidate_name=candidate_name,
                 job_position_id=job_position_id,
-                interview_type=interview_type,
-                status=status,
+                interview_type=interview_type_enum,
+                process_type=process_type_enum,
+                status=status_enum,
+                required_role_id=required_role_id,
+                interviewer_user_id=interviewer_user_id,
                 created_by=created_by,
                 from_date=from_date,
                 to_date=to_date,
+                filter_by=filter_by
+            )
+
+            # Get paginated results
+            query = ListInterviewsQuery(
+                candidate_id=candidate_id,
+                candidate_name=candidate_name,
+                job_position_id=job_position_id,
+                interview_type=interview_type,
+                process_type=process_type,
+                status=status,
+                required_role_id=required_role_id,
+                interviewer_user_id=interviewer_user_id,
+                created_by=created_by,
+                from_date=from_date,
+                to_date=to_date,
+                filter_by=filter_by,
                 limit=limit,
                 offset=offset
             )
 
             interviews: List[InterviewDto] = self._query_bus.query(query)
-            return interviews
+            return interviews, total
 
         except Exception as e:
             logger.error(f"Error listing interviews: {e}")
@@ -135,14 +190,17 @@ class InterviewController:
     def create_interview(
             self,
             candidate_id: str,
-            interview_type: str,
+            required_roles: List[str],
             interview_mode: str,
+            interview_type: str,
+            process_type: Optional[str] = None,
             job_position_id: Optional[str] = None,
             application_id: Optional[str] = None,
             interview_template_id: Optional[str] = None,
             title: Optional[str] = None,
             description: Optional[str] = None,
             scheduled_at: Optional[str] = None,
+            deadline_date: Optional[str] = None,
             interviewers: Optional[List[str]] = None,
             created_by: Optional[str] = None
     ) -> dict:
@@ -150,14 +208,17 @@ class InterviewController:
         try:
             command = CreateInterviewCommand(
                 candidate_id=candidate_id,
+                required_roles=required_roles,
                 interview_mode=interview_mode,
                 interview_type=interview_type,
+                process_type=process_type,
                 job_position_id=job_position_id,
                 application_id=application_id,
                 interview_template_id=interview_template_id,
                 title=title,
                 description=description,
                 scheduled_at=scheduled_at,
+                deadline_date=deadline_date,
                 interviewers=interviewers,
                 created_by=created_by
             )
@@ -172,6 +233,54 @@ class InterviewController:
         except Exception as e:
             logger.error(f"Error creating interview: {e}", exc_info=True)
             error_message = str(e) if str(e) else "Failed to create interview"
+            raise HTTPException(status_code=500, detail=error_message)
+
+    def update_interview(
+            self,
+            interview_id: str,
+            title: Optional[str] = None,
+            description: Optional[str] = None,
+            scheduled_at: Optional[str] = None,
+            deadline_date: Optional[str] = None,
+            process_type: Optional[str] = None,
+            interview_type: Optional[str] = None,
+            interview_mode: Optional[str] = None,
+            required_roles: Optional[List[str]] = None,
+            interviewers: Optional[List[str]] = None,
+            interviewer_notes: Optional[str] = None,
+            feedback: Optional[str] = None,
+            score: Optional[float] = None,
+            updated_by: Optional[str] = None
+    ) -> dict:
+        """Update an existing interview"""
+        try:
+            command = UpdateInterviewCommand(
+                interview_id=interview_id,
+                title=title,
+                description=description,
+                scheduled_at=scheduled_at,
+                deadline_date=deadline_date,
+                process_type=process_type,
+                interview_type=interview_type,
+                interview_mode=interview_mode,
+                required_roles=required_roles,
+                interviewers=interviewers,
+                interviewer_notes=interviewer_notes,
+                feedback=feedback,
+                score=score,
+                updated_by=updated_by
+            )
+
+            self._command_bus.execute(command)
+
+            return {
+                "message": "Interview updated successfully",
+                "status": "success"
+            }
+
+        except Exception as e:
+            logger.error(f"Error updating interview: {e}", exc_info=True)
+            error_message = str(e) if str(e) else "Failed to update interview"
             raise HTTPException(status_code=500, detail=error_message)
 
     def start_interview(
@@ -381,6 +490,19 @@ class InterviewController:
         except Exception as e:
             logger.error(f"Error accepting invitation: {e}")
             raise HTTPException(status_code=500, detail="Failed to accept invitation")
+
+    def get_interview_statistics(
+            self,
+            company_id: str
+    ) -> InterviewStatisticsDto:
+        """Get interview statistics for a company"""
+        try:
+            query = GetInterviewStatisticsQuery(company_id=company_id)
+            stats: InterviewStatisticsDto = self._query_bus.query(query)
+            return stats
+        except Exception as e:
+            logger.error(f"Error getting interview statistics: {e}")
+            raise HTTPException(status_code=500, detail="Failed to retrieve interview statistics")
 
     def get_interviewers_by_interview(
             self,

@@ -9,18 +9,23 @@ class InterviewStatusEnum(Enum):
     PAUSED = "PAUSED"
 
 
-class InterviewTypeEnum(Enum):
-    EXTENDED_PROFILE = "EXTENDED_PROFILE"
-    POSITION_INTERVIEW = "POSITION_INTERVIEW"
+class InterviewProcessTypeEnum(str, Enum):
+    """Enum for the moment in the candidate selection process when the interview is conducted"""
+    CANDIDATE_SIGN_UP = "CANDIDATE_SIGN_UP"
+    CANDIDATE_APPLICATION = "CANDIDATE_APPLICATION"
+    SCREENING = "SCREENING"
+    INTERVIEW = "INTERVIEW"
+    FEEDBACK = "FEEDBACK"  # Final feedback
+
+
+class InterviewTypeEnum(str, Enum):
+    """Enum for the type/category of interview"""
     CUSTOM = "CUSTOM"
     TECHNICAL = "TECHNICAL"
     BEHAVIORAL = "BEHAVIORAL"
     CULTURAL_FIT = "CULTURAL_FIT"
-    # Legacy values - kept for backward compatibility, deprecated
-    JOB_POSITION = "JOB_POSITION"  # Deprecated: use POSITION_INTERVIEW
-    PLATFORM_ONBOARDING = "PLATFORM_ONBOARDING"  # Deprecated
-    COMPANY_ONBOARDING = "COMPANY_ONBOARDING"  # Deprecated
-    PREMIUM_ONBOARDING = "PREMIUM_ONBOARDING"  # Deprecated
+    KNOWLEDGE_CHECK = "KNOWLEDGE_CHECK"
+    EXPERIENCE_CHECK = "EXPERIENCE_CHECK"
 
 
 class InterviewModeEnum(str, Enum):

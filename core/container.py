@@ -83,6 +83,7 @@ from src.interview_bc.interview_template.infrastructure.repositories.interview_t
 
 # Interview Management Application Layer
 from src.interview_bc.interview.application.commands.create_interview import CreateInterviewCommandHandler
+from src.interview_bc.interview.application.commands.update_interview import UpdateInterviewCommandHandler
 from src.interview_bc.interview.application.commands.start_interview import StartInterviewCommandHandler
 from src.interview_bc.interview.application.commands.finish_interview import FinishInterviewCommandHandler
 from src.interview_bc.interview.application.commands.create_interview_answer import CreateInterviewAnswerCommandHandler
@@ -823,6 +824,7 @@ class Container(containers.DeclarativeContainer):
         interview_repository=interview_repository,
         interviewer_repository=interview_interviewer_repository,
         permission_service=interview_permission_service,
+        company_user_repository=company_user_repository,
         event_bus=event_bus
     )
 
@@ -1243,6 +1245,12 @@ class Container(containers.DeclarativeContainer):
     # Interview Management Command Handlers
     create_interview_command_handler = providers.Factory(
         CreateInterviewCommandHandler,
+        interview_repository=interview_repository,
+        event_bus=event_bus
+    )
+
+    update_interview_command_handler = providers.Factory(
+        UpdateInterviewCommandHandler,
         interview_repository=interview_repository,
         event_bus=event_bus
     )

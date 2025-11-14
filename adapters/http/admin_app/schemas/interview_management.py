@@ -7,15 +7,20 @@ from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict
 
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
-from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum
+from src.interview_bc.interview.domain.enums.interview_enums import (
+    InterviewTypeEnum,
+    InterviewProcessTypeEnum
+)
 from core.config import settings
 
 
 class InterviewCreateRequest(BaseModel):
     """Request schema for creating an interview"""
     candidate_id: str = Field(..., description="ID of the candidate")
-    interview_type: str = Field(default=InterviewTypeEnum.JOB_POSITION.value, description="Type of interview")
+    required_roles: List[str] = Field(..., min_length=1, description="List of CompanyRole IDs (obligatory)")
+    interview_type: str = Field(default=InterviewTypeEnum.CUSTOM.value, description="Type of interview")
     interview_mode: str = Field(..., description="Interview mode (AUTOMATIC, AI, MANUAL)")
+    process_type: Optional[str] = Field(None, description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
     job_position_id: Optional[str] = Field(None, description="ID of the job position")
     application_id: Optional[str] = Field(None, description="ID of the candidate application")
     interview_template_id: Optional[str] = Field(None, description="ID of the interview template")
@@ -23,6 +28,7 @@ class InterviewCreateRequest(BaseModel):
     title: Optional[str] = Field(None, description="Interview title")
     description: Optional[str] = Field(None, description="Interview description")
     scheduled_at: Optional[str] = Field(None, description="Scheduled datetime (ISO format)")
+    deadline_date: Optional[str] = Field(None, description="Deadline datetime (ISO format)")
     interviewers: Optional[List[str]] = Field(None, description="List of interviewer names")
 
 
@@ -30,7 +36,12 @@ class InterviewUpdateRequest(BaseModel):
     """Request schema for updating an interview"""
     title: Optional[str] = Field(None, description="Interview title")
     description: Optional[str] = Field(None, description="Interview description")
+    process_type: Optional[str] = Field(None, description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
+    interview_type: Optional[str] = Field(None, description="Interview type")
+    interview_mode: Optional[str] = Field(None, description="Interview mode (AUTOMATIC, AI, MANUAL)")
     scheduled_at: Optional[str] = Field(None, description="Scheduled datetime (ISO format)")
+    deadline_date: Optional[str] = Field(None, description="Deadline datetime (ISO format)")
+    required_roles: Optional[List[str]] = Field(None, min_length=1, description="List of CompanyRole IDs")
     interviewers: Optional[List[str]] = Field(None, description="List of interviewer names")
     interviewer_notes: Optional[str] = Field(None, description="Interviewer notes")
     feedback: Optional[str] = Field(None, description="Interview feedback")
@@ -41,16 +52,19 @@ class InterviewManagementResponse(BaseModel):
     """Response schema for interview management data"""
     id: str = Field(..., description="Interview ID")
     candidate_id: str = Field(..., description="Candidate ID")
+    required_roles: List[str] = Field(default_factory=list, description="List of CompanyRole IDs (obligatory)")
     job_position_id: Optional[str] = Field(None, description="Job position ID")
     application_id: Optional[str] = Field(None, description="Application ID")
     interview_template_id: Optional[str] = Field(None, description="Interview template ID")
     workflow_stage_id: Optional[str] = Field(None, description="Workflow stage ID where this interview is conducted")
+    process_type: Optional[str] = Field(None, description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
     interview_type: str = Field(..., description="Interview type")
     interview_mode: Optional[str] = Field(None, description="Interview mode (AUTOMATIC, AI, MANUAL)")
     status: str = Field(..., description="Interview status")
     title: Optional[str] = Field(None, description="Interview title")
     description: Optional[str] = Field(None, description="Interview description")
     scheduled_at: Optional[datetime] = Field(None, description="Scheduled datetime")
+    deadline_date: Optional[datetime] = Field(None, description="Deadline datetime")
     started_at: Optional[datetime] = Field(None, description="Started datetime")
     finished_at: Optional[datetime] = Field(None, description="Finished datetime")
     duration_minutes: Optional[int] = Field(None, description="Duration in minutes")
@@ -72,6 +86,7 @@ class InterviewManagementResponse(BaseModel):
         return cls(
             id=dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
             candidate_id=dto.candidate_id.value if hasattr(dto.candidate_id, 'value') else str(dto.candidate_id),
+            required_roles=dto.required_roles if dto.required_roles else [],
             job_position_id=dto.job_position_id.value if dto.job_position_id and hasattr(dto.job_position_id,
                                                                                          'value') else str(
                 dto.job_position_id) if dto.job_position_id else None,
@@ -84,12 +99,14 @@ class InterviewManagementResponse(BaseModel):
             workflow_stage_id=dto.workflow_stage_id.value
             if dto.workflow_stage_id and hasattr(dto.workflow_stage_id, 'value') else str(
                 dto.workflow_stage_id) if dto.workflow_stage_id else None,
+            process_type=dto.process_type,
             interview_type=dto.interview_type,
             interview_mode=dto.interview_mode,
             status=dto.status,
             title=dto.title,
             description=dto.description,
             scheduled_at=dto.scheduled_at,
+            deadline_date=dto.deadline_date,
             started_at=dto.started_at,
             finished_at=dto.finished_at,
             duration_minutes=dto.duration_minutes,
@@ -126,12 +143,17 @@ class InterviewListResponse(BaseModel):
 
 class InterviewStatsResponse(BaseModel):
     """Response schema for interview statistics"""
-    total_interviews: int = Field(..., description="Total number of interviews")
-    scheduled_interviews: int = Field(..., description="Number of scheduled interviews")
-    in_progress_interviews: int = Field(..., description="Number of in-progress interviews")
-    completed_interviews: int = Field(..., description="Number of completed interviews")
+    total_interviews: int = Field(default=0, description="Total number of interviews")
+    scheduled_interviews: int = Field(default=0, description="Number of scheduled interviews")
+    in_progress_interviews: int = Field(default=0, description="Number of in-progress interviews")
+    completed_interviews: int = Field(default=0, description="Number of completed interviews")
     average_score: Optional[float] = Field(None, description="Average interview score")
     average_duration_minutes: Optional[float] = Field(None, description="Average duration in minutes")
+    pending_to_plan: int = Field(default=0, description="Interviews pending to plan (no scheduled_at or no interviewers)")
+    planned: int = Field(default=0, description="Planned interviews (with scheduled_at and interviewers)")
+    recently_finished: int = Field(default=0, description="Recently finished interviews (last 30 days)")
+    overdue: int = Field(default=0, description="Overdue interviews (deadline_date < now and not finished)")
+    pending_feedback: int = Field(default=0, description="Interviews pending feedback (finished but no score or feedback)")
 
 
 class InterviewActionResponse(BaseModel):

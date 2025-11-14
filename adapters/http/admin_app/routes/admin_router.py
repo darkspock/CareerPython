@@ -1124,7 +1124,7 @@ def list_interviews(
         offset: int = Query(0, ge=0, description="Offset for pagination")
 ) -> InterviewListResponse:
     """List interviews with optional filtering"""
-    interviews = controller.list_interviews(
+    interviews, total = controller.list_interviews(
         candidate_id=candidate_id,
         job_position_id=job_position_id,
         interview_type=interview_type,
@@ -1136,10 +1136,13 @@ def list_interviews(
         offset=offset
     )
 
+    # Calculate current page from offset and limit
+    current_page = (offset // limit) + 1 if limit > 0 else 1
+
     return InterviewListResponse(
         interviews=[InterviewManagementResponse.from_dto(interview) for interview in interviews],
-        total=len(interviews),
-        page=1,
+        total=total,
+        page=current_page,
         page_size=limit
     )
 
@@ -1182,14 +1185,17 @@ def create_interview(
     """Create a new interview"""
     result = controller.create_interview(
         candidate_id=interview_data.candidate_id,
+        required_roles=interview_data.required_roles,
         interview_type=interview_data.interview_type,
         interview_mode=interview_data.interview_mode,
+        process_type=interview_data.process_type,
         job_position_id=interview_data.job_position_id,
         application_id=interview_data.application_id,
         interview_template_id=interview_data.interview_template_id,
         title=interview_data.title,
         description=interview_data.description,
         scheduled_at=interview_data.scheduled_at,
+        deadline_date=interview_data.deadline_date,
         interviewers=interview_data.interviewers,
         created_by=current_admin.id
     )

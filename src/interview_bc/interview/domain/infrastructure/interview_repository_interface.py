@@ -4,7 +4,11 @@ from datetime import datetime
 from typing import Optional, List
 
 from src.interview_bc.interview.domain.entities.interview import Interview
-from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
+from src.interview_bc.interview.domain.enums.interview_enums import (
+    InterviewStatusEnum,
+    InterviewTypeEnum,
+    InterviewProcessTypeEnum
+)
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 
 
@@ -69,16 +73,40 @@ class InterviewRepositoryInterface(ABC):
     def find_by_filters(
             self,
             candidate_id: Optional[str] = None,
+            candidate_name: Optional[str] = None,
             job_position_id: Optional[str] = None,
             interview_type: Optional[InterviewTypeEnum] = None,
+            process_type: Optional[InterviewProcessTypeEnum] = None,
             status: Optional[InterviewStatusEnum] = None,
+            required_role_id: Optional[str] = None,
+            interviewer_user_id: Optional[str] = None,
             created_by: Optional[str] = None,
             from_date: Optional[datetime] = None,
             to_date: Optional[datetime] = None,
+            filter_by: Optional[str] = None,  # 'scheduled' or 'deadline'
             limit: int = 50,
             offset: int = 0
     ) -> List[Interview]:
         """Find interviews by multiple filters"""
+        pass
+
+    @abstractmethod
+    def count_by_filters(
+            self,
+            candidate_id: Optional[str] = None,
+            candidate_name: Optional[str] = None,
+            job_position_id: Optional[str] = None,
+            interview_type: Optional[InterviewTypeEnum] = None,
+            process_type: Optional[InterviewProcessTypeEnum] = None,
+            status: Optional[InterviewStatusEnum] = None,
+            required_role_id: Optional[str] = None,
+            interviewer_user_id: Optional[str] = None,
+            created_by: Optional[str] = None,
+            from_date: Optional[datetime] = None,
+            to_date: Optional[datetime] = None,
+            filter_by: Optional[str] = None  # 'scheduled' or 'deadline'
+    ) -> int:
+        """Count interviews matching the filters (for pagination)"""
         pass
 
     @abstractmethod

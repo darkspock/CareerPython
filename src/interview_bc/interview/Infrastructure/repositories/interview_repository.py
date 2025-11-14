@@ -3,16 +3,23 @@ from datetime import datetime
 from typing import Optional, List
 
 from core.database import DatabaseInterface
+from sqlalchemy import or_, func
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.interview_bc.interview.Infrastructure.models.interview_model import InterviewModel
 from src.interview_bc.interview.domain.entities.interview import Interview
-from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum
+from src.interview_bc.interview.domain.enums.interview_enums import (
+    InterviewStatusEnum,
+    InterviewTypeEnum,
+    InterviewModeEnum,
+    InterviewProcessTypeEnum
+)
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.framework.infrastructure.repositories.base import BaseRepository
 
 
@@ -42,20 +49,38 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             workflow_stage_id = WorkflowStageId.from_string(model.workflow_stage_id)
 
         interviewers_list = model.interviewers or []
+        
+        # Convert required_roles from List[str] to List[CompanyRoleId]
+        required_roles_list = []
+        if model.required_roles:
+            required_roles_list = [CompanyRoleId.from_string(role_id) for role_id in model.required_roles]
+        # Note: required_roles is obligatory, so it should never be None, but we handle empty list
+
+        # Convert string enums to enum objects
+        process_type_enum = None
+        if model.process_type:
+            process_type_enum = InterviewProcessTypeEnum(model.process_type)
+        
+        interview_type_enum = InterviewTypeEnum(model.interview_type) if model.interview_type else InterviewTypeEnum.CUSTOM
+        interview_mode_enum = InterviewModeEnum(model.interview_mode) if model.interview_mode else None
+        status_enum = InterviewStatusEnum(model.status) if model.status else InterviewStatusEnum.ENABLED
 
         return Interview(
             id=InterviewId.from_string(model.id),
             candidate_id=CandidateId.from_string(model.candidate_id),
+            required_roles=required_roles_list,
+            process_type=process_type_enum,
             job_position_id=job_position_id,
             application_id=application_id,
             interview_template_id=interview_template_id,
             workflow_stage_id=workflow_stage_id,
-            interview_type=model.interview_type,
-            interview_mode=model.interview_mode,
-            status=model.status,
+            interview_type=interview_type_enum,
+            interview_mode=interview_mode_enum,
+            status=status_enum,
             title=model.title,
             description=model.description,
             scheduled_at=model.scheduled_at,
+            deadline_date=model.deadline_date,
             started_at=model.started_at,
             finished_at=model.finished_at,
             duration_minutes=model.duration_minutes,
@@ -89,19 +114,32 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         if domain.workflow_stage_id:
             workflow_stage_id = str(domain.workflow_stage_id)
 
+        # Convert required_roles from List[CompanyRoleId] to List[str]
+        # required_roles is obligatory, so it should always have at least one element
+        required_roles_list = [role_id.value for role_id in domain.required_roles] if domain.required_roles else []
+
+        # Convert enum objects to strings for storage
+        process_type_str = domain.process_type.value if domain.process_type else None
+        interview_type_str = domain.interview_type.value if domain.interview_type else InterviewTypeEnum.CUSTOM.value
+        interview_mode_str = domain.interview_mode.value if domain.interview_mode else None
+        status_str = domain.status.value if domain.status else InterviewStatusEnum.ENABLED.value
+
         return InterviewModel(
             id=domain.id.value,
             candidate_id=domain.candidate_id.value,
+            required_roles=required_roles_list,
+            process_type=process_type_str,
             job_position_id=job_position_id,
             application_id=application_id,
             interview_template_id=interview_template_id,
             workflow_stage_id=workflow_stage_id,
-            interview_type=domain.interview_type,
-            interview_mode=domain.interview_mode,
-            status=domain.status,
+            interview_type=interview_type_str,
+            interview_mode=interview_mode_str,
+            status=status_str,
             title=domain.title,
             description=domain.description,
             scheduled_at=domain.scheduled_at,
+            deadline_date=domain.deadline_date,
             started_at=domain.started_at,
             finished_at=domain.finished_at,
             duration_minutes=domain.duration_minutes,
@@ -143,15 +181,19 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 
                 # Update all fields from the entity
                 model.candidate_id = interview.candidate_id.value
+                model.required_roles = [role_id.value for role_id in interview.required_roles] if interview.required_roles else []
+                model.process_type = interview.process_type.value if interview.process_type else None
                 model.job_position_id = interview.job_position_id.value if interview.job_position_id else None
                 model.application_id = interview.application_id.value if interview.application_id else None
                 model.interview_template_id = interview.interview_template_id.value if interview.interview_template_id else None
                 model.workflow_stage_id = str(interview.workflow_stage_id) if interview.workflow_stage_id else None
-                model.interview_type = interview.interview_type
-                model.status = interview.status
+                model.interview_type = interview.interview_type.value if interview.interview_type else InterviewTypeEnum.CUSTOM.value
+                model.interview_mode = interview.interview_mode.value if interview.interview_mode else None
+                model.status = interview.status.value if interview.status else InterviewStatusEnum.ENABLED.value
                 model.title = interview.title
                 model.description = interview.description
                 model.scheduled_at = interview.scheduled_at
+                model.deadline_date = interview.deadline_date
                 model.started_at = interview.started_at
                 model.finished_at = interview.finished_at
                 model.duration_minutes = interview.duration_minutes
@@ -244,39 +286,179 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
     def find_by_filters(
             self,
             candidate_id: Optional[str] = None,
+            candidate_name: Optional[str] = None,
             job_position_id: Optional[str] = None,
             interview_type: Optional[InterviewTypeEnum] = None,
+            process_type: Optional[InterviewProcessTypeEnum] = None,
             status: Optional[InterviewStatusEnum] = None,
+            required_role_id: Optional[str] = None,
+            interviewer_user_id: Optional[str] = None,
             created_by: Optional[str] = None,
             from_date: Optional[datetime] = None,
             to_date: Optional[datetime] = None,
+            filter_by: Optional[str] = None,  # 'scheduled' or 'deadline'
             limit: int = 50,
             offset: int = 0
     ) -> List[Interview]:
         """Find interviews by multiple filters"""
+        from sqlalchemy import text
+        
         with self.database.get_session() as session:
             query = session.query(InterviewModel)
 
             if candidate_id:
                 query = query.filter(InterviewModel.candidate_id == candidate_id)
+            
+            # Filter by candidate_name using JOIN with candidates table
+            if candidate_name:
+                from src.candidate_bc.candidate.infrastructure.models.candidate_model import CandidateModel
+                query = query.join(
+                    CandidateModel,
+                    InterviewModel.candidate_id == CandidateModel.id
+                ).filter(
+                    func.lower(CandidateModel.name).contains(func.lower(candidate_name))
+                )
+            
             if job_position_id:
                 query = query.filter(InterviewModel.job_position_id == job_position_id)
+            
             if interview_type:
-                query = query.filter(InterviewModel.interview_type == interview_type)
+                # Convert enum to string for comparison
+                interview_type_str = interview_type.value if hasattr(interview_type, 'value') else str(interview_type)
+                query = query.filter(InterviewModel.interview_type == interview_type_str)
+            
+            if process_type:
+                process_type_str = process_type.value if hasattr(process_type, 'value') else str(process_type)
+                query = query.filter(InterviewModel.process_type == process_type_str)
+            
             if status:
-                query = query.filter(InterviewModel.status == status)
+                status_str = status.value if hasattr(status, 'value') else str(status)
+                query = query.filter(InterviewModel.status == status_str)
+            
+            if required_role_id:
+                # Filter using JSONB operator: check if required_roles contains the role_id
+                query = query.filter(
+                    InterviewModel.required_roles.contains([required_role_id])
+                )
+            
+            if interviewer_user_id:
+                # Filter by interviewer user_id in the interviewers list
+                # Note: interviewers is currently a list of names, not user_ids
+                # TODO: Update when interviewers becomes a list of CompanyUserId
+                query = query.filter(
+                    InterviewModel.interviewers.contains([interviewer_user_id])
+                )
+            
             if created_by:
                 query = query.filter(InterviewModel.created_by == created_by)
-            if from_date:
-                query = query.filter(InterviewModel.created_at >= from_date)
-            if to_date:
-                query = query.filter(InterviewModel.created_at <= to_date)
+            
+            # Date filtering - support both scheduled_at and deadline_date
+            if from_date or to_date:
+                if filter_by == 'deadline':
+                    if from_date:
+                        query = query.filter(InterviewModel.deadline_date >= from_date)
+                    if to_date:
+                        query = query.filter(InterviewModel.deadline_date <= to_date)
+                else:  # Default to scheduled_at
+                    if from_date:
+                        query = query.filter(InterviewModel.scheduled_at >= from_date)
+                    if to_date:
+                        query = query.filter(InterviewModel.scheduled_at <= to_date)
+            else:
+                # If no filter_by specified, use created_at as fallback
+                if from_date:
+                    query = query.filter(InterviewModel.created_at >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.created_at <= to_date)
 
             query = query.order_by(InterviewModel.created_at.desc())
             query = query.offset(offset).limit(limit)
 
             models = query.all()
             return [self._to_domain(model) for model in models]
+
+    def count_by_filters(
+            self,
+            candidate_id: Optional[str] = None,
+            candidate_name: Optional[str] = None,
+            job_position_id: Optional[str] = None,
+            interview_type: Optional[InterviewTypeEnum] = None,
+            process_type: Optional[InterviewProcessTypeEnum] = None,
+            status: Optional[InterviewStatusEnum] = None,
+            required_role_id: Optional[str] = None,
+            interviewer_user_id: Optional[str] = None,
+            created_by: Optional[str] = None,
+            from_date: Optional[datetime] = None,
+            to_date: Optional[datetime] = None,
+            filter_by: Optional[str] = None  # 'scheduled' or 'deadline'
+    ) -> int:
+        """Count interviews matching the filters (for pagination)"""
+        from sqlalchemy import text
+        
+        with self.database.get_session() as session:
+            query = session.query(InterviewModel)
+
+            if candidate_id:
+                query = query.filter(InterviewModel.candidate_id == candidate_id)
+            
+            # Filter by candidate_name using JOIN with candidates table
+            if candidate_name:
+                from src.candidate_bc.candidate.infrastructure.models.candidate_model import CandidateModel
+                query = query.join(
+                    CandidateModel,
+                    InterviewModel.candidate_id == CandidateModel.id
+                ).filter(
+                    func.lower(CandidateModel.name).contains(func.lower(candidate_name))
+                )
+            
+            if job_position_id:
+                query = query.filter(InterviewModel.job_position_id == job_position_id)
+            
+            if interview_type:
+                interview_type_str = interview_type.value if hasattr(interview_type, 'value') else str(interview_type)
+                query = query.filter(InterviewModel.interview_type == interview_type_str)
+            
+            if process_type:
+                process_type_str = process_type.value if hasattr(process_type, 'value') else str(process_type)
+                query = query.filter(InterviewModel.process_type == process_type_str)
+            
+            if status:
+                status_str = status.value if hasattr(status, 'value') else str(status)
+                query = query.filter(InterviewModel.status == status_str)
+            
+            if required_role_id:
+                query = query.filter(
+                    InterviewModel.required_roles.contains([required_role_id])
+                )
+            
+            if interviewer_user_id:
+                query = query.filter(
+                    InterviewModel.interviewers.contains([interviewer_user_id])
+                )
+            
+            if created_by:
+                query = query.filter(InterviewModel.created_by == created_by)
+            
+            # Date filtering - support both scheduled_at and deadline_date
+            if from_date or to_date:
+                if filter_by == 'deadline':
+                    if from_date:
+                        query = query.filter(InterviewModel.deadline_date >= from_date)
+                    if to_date:
+                        query = query.filter(InterviewModel.deadline_date <= to_date)
+                else:  # Default to scheduled_at
+                    if from_date:
+                        query = query.filter(InterviewModel.scheduled_at >= from_date)
+                    if to_date:
+                        query = query.filter(InterviewModel.scheduled_at <= to_date)
+            else:
+                # If no filter_by specified, use created_at as fallback
+                if from_date:
+                    query = query.filter(InterviewModel.created_at >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.created_at <= to_date)
+
+            return query.count()
 
     def count_by_status(self, status: InterviewStatusEnum) -> int:
         """Count interviews by status"""

@@ -4,11 +4,17 @@ from typing import Optional, List
 
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.interview_bc.interview.domain.enums.interview_enums import InterviewStatusEnum, InterviewTypeEnum, InterviewModeEnum
+from src.interview_bc.interview.domain.enums.interview_enums import (
+    InterviewStatusEnum,
+    InterviewTypeEnum,
+    InterviewModeEnum,
+    InterviewProcessTypeEnum
+)
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 
 
 @dataclass
@@ -16,18 +22,21 @@ class Interview:
     """Interview domain entity"""
     id: InterviewId
     candidate_id: CandidateId
+    required_roles: List[CompanyRoleId]  # Obligatory: List of CompanyRole IDs required for this interview
     created_at: datetime
     updated_at: datetime
     job_position_id: Optional[JobPositionId] = None
     application_id: Optional[CandidateApplicationId] = None
     interview_template_id: Optional[InterviewTemplateId] = None
     workflow_stage_id: Optional[WorkflowStageId] = None  # Stage where this interview is conducted
-    interview_type: InterviewTypeEnum = InterviewTypeEnum.POSITION_INTERVIEW
+    process_type: Optional[InterviewProcessTypeEnum] = None  # Moment in the selection process
+    interview_type: InterviewTypeEnum = InterviewTypeEnum.CUSTOM
     interview_mode: Optional[InterviewModeEnum] = None  # Mode: AUTOMATIC, AI, MANUAL
     status: InterviewStatusEnum = InterviewStatusEnum.ENABLED
     title: Optional[str] = None
     description: Optional[str] = None
     scheduled_at: Optional[datetime] = None
+    deadline_date: Optional[datetime] = None  # Optional deadline date
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
     duration_minutes: Optional[int] = None
@@ -108,6 +117,19 @@ class Interview:
         if scheduled_by:
             self.updated_by = scheduled_by
 
+    def set_deadline(self, deadline_date: datetime, set_by: Optional[str] = None) -> None:
+        """Set the deadline date for the interview"""
+        if deadline_date <= datetime.utcnow():
+            raise ValueError("Cannot set deadline in the past")
+        
+        if self.scheduled_at and deadline_date < self.scheduled_at:
+            raise ValueError("Deadline cannot be before scheduled date")
+
+        self.deadline_date = deadline_date
+        self.updated_at = datetime.utcnow()
+        if set_by:
+            self.updated_by = set_by
+
     def set_score(self, score: float, scored_by: Optional[str] = None) -> None:
         """Set the interview score"""
         if score < 0 or score > 100:
@@ -136,11 +158,14 @@ class Interview:
             self,
             title: Optional[str] = None,
             description: Optional[str] = None,
+            process_type: Optional[InterviewProcessTypeEnum] = None,
             interview_type: Optional[InterviewTypeEnum] = None,
+            interview_mode: Optional[InterviewModeEnum] = None,
             job_position_id: Optional[JobPositionId] = None,
             application_id: Optional[CandidateApplicationId] = None,
             interview_template_id: Optional[InterviewTemplateId] = None,
             workflow_stage_id: Optional[WorkflowStageId] = None,
+            deadline_date: Optional[datetime] = None,
             updated_by: Optional[str] = None
     ) -> None:
         """Update interview details"""
@@ -148,8 +173,12 @@ class Interview:
             self.title = title
         if description is not None:
             self.description = description
+        if process_type is not None:
+            self.process_type = process_type
         if interview_type is not None:
             self.interview_type = interview_type
+        if interview_mode is not None:
+            self.interview_mode = interview_mode
         if job_position_id is not None:
             self.job_position_id = job_position_id
         if application_id is not None:
@@ -158,7 +187,23 @@ class Interview:
             self.interview_template_id = interview_template_id
         if workflow_stage_id is not None:
             self.workflow_stage_id = workflow_stage_id
+        if deadline_date is not None:
+            if deadline_date <= datetime.utcnow():
+                raise ValueError("Cannot set deadline in the past")
+            if self.scheduled_at and deadline_date < self.scheduled_at:
+                raise ValueError("Deadline cannot be before scheduled date")
+            self.deadline_date = deadline_date
 
+        self.updated_at = datetime.utcnow()
+        if updated_by:
+            self.updated_by = updated_by
+
+    def update_required_roles(self, required_roles: List[CompanyRoleId], updated_by: Optional[str] = None) -> None:
+        """Update the required roles for this interview"""
+        if not required_roles:
+            raise ValueError("Required roles cannot be empty")
+        
+        self.required_roles = required_roles
         self.updated_at = datetime.utcnow()
         if updated_by:
             self.updated_by = updated_by
@@ -219,7 +264,9 @@ class Interview:
     def create(
             id: InterviewId,
             candidate_id: CandidateId,
-            interview_type: InterviewTypeEnum = InterviewTypeEnum.POSITION_INTERVIEW,
+            required_roles: List[CompanyRoleId],
+            process_type: Optional[InterviewProcessTypeEnum] = None,
+            interview_type: InterviewTypeEnum = InterviewTypeEnum.CUSTOM,
             interview_mode: Optional[InterviewModeEnum] = None,
             job_position_id: Optional[JobPositionId] = None,
             application_id: Optional[CandidateApplicationId] = None,
@@ -228,13 +275,43 @@ class Interview:
             title: Optional[str] = None,
             description: Optional[str] = None,
             scheduled_at: Optional[datetime] = None,
+            deadline_date: Optional[datetime] = None,
             created_by: Optional[str] = None
     ) -> 'Interview':
-        """Create a new interview"""
+        """Create a new interview
+        
+        Args:
+            id: Interview ID
+            candidate_id: Candidate ID (obligatory)
+            required_roles: List of CompanyRole IDs required for this interview (obligatory)
+            process_type: Moment in the selection process (optional)
+            interview_type: Type of interview (default: CUSTOM)
+            interview_mode: Execution mode (optional)
+            job_position_id: Job position ID (optional)
+            application_id: Application ID (optional)
+            interview_template_id: Template ID (optional)
+            workflow_stage_id: Workflow stage ID (optional)
+            title: Interview title (optional)
+            description: Interview description (optional)
+            scheduled_at: Scheduled date and time (optional)
+            deadline_date: Deadline date (optional)
+            created_by: User ID who created the interview (optional)
+            
+        Raises:
+            ValueError: If required_roles is empty
+        """
+        if not required_roles:
+            raise ValueError("Required roles cannot be empty")
+        
+        if deadline_date and scheduled_at and deadline_date < scheduled_at:
+            raise ValueError("Deadline cannot be before scheduled date")
+        
         now = datetime.utcnow()
         return Interview(
             id=id,
             candidate_id=candidate_id,
+            required_roles=required_roles,
+            process_type=process_type,
             job_position_id=job_position_id,
             application_id=application_id,
             interview_template_id=interview_template_id,
@@ -245,6 +322,7 @@ class Interview:
             title=title,
             description=description,
             scheduled_at=scheduled_at,
+            deadline_date=deadline_date,
             created_at=now,
             updated_at=now,
         )
