@@ -187,15 +187,16 @@ async def assign_role_to_user(
 @inject
 async def get_company_user_language(
         company_user_id: str = Depends(get_company_user_id_from_token),
-        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = None,
-        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])] = None,
+        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = Depends(Provide[Container.user_controller]),
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])] = Depends(Provide[Container.query_bus]),
 ) -> UserLanguageResponse:
     """Get current company user's preferred language"""
     from src.company_bc.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQuery
+    from src.company_bc.company.application.dtos.company_user_dto import CompanyUserDto
     
     # Get company user to extract user_id
     company_user_query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
-    company_user_dto = query_bus.query(company_user_query)
+    company_user_dto: CompanyUserDto = query_bus.query(company_user_query)
     
     if not company_user_dto:
         raise HTTPException(status_code=404, detail="Company user not found")
@@ -210,15 +211,16 @@ async def get_company_user_language(
 async def update_company_user_language(
         request: UserLanguageRequest,
         company_user_id: str = Depends(get_company_user_id_from_token),
-        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = None,
-        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])] = None,
+        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = Depends(Provide[Container.user_controller]),
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])] = Depends(Provide[Container.query_bus]),
 ) -> UserLanguageUpdateResponse:
     """Update current company user's preferred language"""
     from src.company_bc.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQuery
+    from src.company_bc.company.application.dtos.company_user_dto import CompanyUserDto
     
     # Get company user to extract user_id
     company_user_query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
-    company_user_dto = query_bus.query(company_user_query)
+    company_user_dto: CompanyUserDto = query_bus.query(company_user_query)
     
     if not company_user_dto:
         raise HTTPException(status_code=404, detail="Company user not found")
