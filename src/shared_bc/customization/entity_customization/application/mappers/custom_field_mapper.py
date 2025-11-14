@@ -1,5 +1,5 @@
-from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
 from src.shared_bc.customization.entity_customization.application.dtos.custom_field_dto import CustomFieldDto
+from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
 
 
 class CustomFieldMapper:
@@ -19,4 +19,3 @@ class CustomFieldMapper:
             created_at=field.created_at,
             updated_at=field.updated_at
         )
-

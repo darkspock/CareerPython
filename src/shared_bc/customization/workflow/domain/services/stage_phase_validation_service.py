@@ -6,11 +6,14 @@ access to multiple domain entities through repositories. The logic belongs to
 the domain, not the application layer.
 """
 from typing import Optional
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 class StagePhaseValidationService:
@@ -23,19 +26,19 @@ class StagePhaseValidationService:
     - It requires access to repositories to validate across entities
     - It's called from Application Layer (Command Handlers) but the logic is domain logic
     """
-    
+
     def __init__(
-        self,
-        workflow_repository: WorkflowRepositoryInterface,
-        stage_repository: WorkflowStageRepositoryInterface
+            self,
+            workflow_repository: WorkflowRepositoryInterface,
+            stage_repository: WorkflowStageRepositoryInterface
     ):
         self.workflow_repository = workflow_repository
         self.stage_repository = stage_repository
-    
+
     def validate_stage_belongs_to_phase(
-        self,
-        stage_id: WorkflowStageId,
-        expected_phase_id: Optional[PhaseId] = None
+            self,
+            stage_id: WorkflowStageId,
+            expected_phase_id: Optional[PhaseId] = None
     ) -> tuple[WorkflowId, PhaseId]:
         """
         Validate that a stage belongs to a workflow that belongs to a phase.
@@ -60,16 +63,16 @@ class StagePhaseValidationService:
         stage = self.stage_repository.get_by_id(stage_id)
         if not stage:
             raise ValueError(f"Stage {stage_id.value} not found")
-        
+
         # Get workflow
         workflow = self.workflow_repository.get_by_id(stage.workflow_id)
         if not workflow:
             raise ValueError(f"Workflow {stage.workflow_id.value} not found for stage {stage_id.value}")
-        
+
         # Validate workflow has phase_id (Business Rule: workflow must belong to a phase)
         if not workflow.phase_id:
             raise ValueError(f"Workflow {workflow.id.value} must belong to a phase")
-        
+
         # Validate phase_id matches if expected
         if expected_phase_id:
             if workflow.phase_id.value != expected_phase_id.value:
@@ -77,13 +80,13 @@ class StagePhaseValidationService:
                     f"Stage {stage_id.value} belongs to workflow in phase {workflow.phase_id.value}, "
                     f"but expected phase is {expected_phase_id.value}"
                 )
-        
+
         return (workflow.id, workflow.phase_id)
-    
+
     def validate_stage_belongs_to_workflow(
-        self,
-        stage_id: WorkflowStageId,
-        workflow_id: WorkflowId
+            self,
+            stage_id: WorkflowStageId,
+            workflow_id: WorkflowId
     ) -> None:
         """
         Validate that a stage belongs to a specific workflow.
@@ -102,15 +105,15 @@ class StagePhaseValidationService:
         stage = self.stage_repository.get_by_id(stage_id)
         if not stage:
             raise ValueError(f"Stage {stage_id.value} not found")
-        
+
         if stage.workflow_id.value != workflow_id.value:
             raise ValueError(
                 f"Stage {stage_id.value} does not belong to workflow {workflow_id.value}"
             )
-    
+
     def validate_workflow_has_phase(
-        self,
-        workflow_id: WorkflowId
+            self,
+            workflow_id: WorkflowId
     ) -> PhaseId:
         """
         Validate that a workflow belongs to a phase.
@@ -129,9 +132,8 @@ class StagePhaseValidationService:
         workflow = self.workflow_repository.get_by_id(workflow_id)
         if not workflow:
             raise ValueError(f"Workflow {workflow_id.value} not found")
-        
+
         if not workflow.phase_id:
             raise ValueError(f"Workflow {workflow_id.value} must belong to a phase")
-        
-        return workflow.phase_id
 
+        return workflow.phase_id

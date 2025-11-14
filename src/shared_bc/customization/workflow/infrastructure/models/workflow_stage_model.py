@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any
+
 from sqlalchemy import String, Integer, Boolean, Enum as SQLEnum, ForeignKey, JSON, Text, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.database import Base
-from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 
 
 @dataclass
@@ -37,7 +38,8 @@ class WorkflowStageModel(Base):
     estimated_cost: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), nullable=True)  # Cost tracking
 
     # Phase 12: Phase transition
-    next_phase_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # Phase to transition to (only for SUCCESS/FAIL stages)
+    next_phase_id: Mapped[Optional[str]] = mapped_column(String(255),
+                                                         nullable=True)  # Phase to transition to (only for SUCCESS/FAIL stages)
 
     # Kanban display configuration
     kanban_display: Mapped[str] = mapped_column(
@@ -51,10 +53,13 @@ class WorkflowStageModel(Base):
 
     # JsonLogic validation and recommendation rules
     validation_rules: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # JsonLogic rules that must pass
-    recommended_rules: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # JsonLogic rules that are recommended
+    recommended_rules: Mapped[Optional[Any]] = mapped_column(JSON,
+                                                             nullable=True)  # JsonLogic rules that are recommended
 
     # Interview configuration
-    interview_configurations: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)  # List of interview configurations: [{"template_id": str, "mode": str}]
+    interview_configurations: Mapped[Optional[Any]] = \
+        (mapped_column(JSON, nullable=True)  # List of interview configurations: [{"template_id": str, "mode": str}]
+         )
 
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -6,14 +6,14 @@ from typing import List, Optional
 
 from src.company_bc.company.domain.value_objects import CompanyId
 from src.company_bc.company_page.domain.entities.company_page import CompanyPage
-from src.company_bc.company_page.domain.enums.page_type import PageType
 from src.company_bc.company_page.domain.enums.page_status import PageStatus
+from src.company_bc.company_page.domain.enums.page_type import PageType
 from src.company_bc.company_page.domain.value_objects.page_id import PageId
 
 
 class CompanyPageRepositoryInterface(ABC):
     """Interface para repositorio de páginas de empresa"""
-    
+
     @abstractmethod
     def save(self, page: CompanyPage) -> None:
         """
@@ -26,7 +26,7 @@ class CompanyPageRepositoryInterface(ABC):
             PageTypeAlreadyExistsException: Si ya existe una página del mismo tipo
         """
         pass
-    
+
     @abstractmethod
     def get_by_id(self, page_id: PageId) -> Optional[CompanyPage]:
         """
@@ -39,12 +39,12 @@ class CompanyPageRepositoryInterface(ABC):
             Página encontrada o None si no existe
         """
         pass
-    
+
     @abstractmethod
     def get_by_company_and_type(
-        self, 
-        company_id: CompanyId, 
-        page_type: PageType
+            self,
+            company_id: CompanyId,
+            page_type: PageType
     ) -> Optional[CompanyPage]:
         """
         Obtener página por empresa y tipo.
@@ -57,7 +57,7 @@ class CompanyPageRepositoryInterface(ABC):
             Página encontrada o None si no existe
         """
         pass
-    
+
     @abstractmethod
     def list_by_company(self, company_id: CompanyId) -> List[CompanyPage]:
         """
@@ -70,12 +70,12 @@ class CompanyPageRepositoryInterface(ABC):
             Lista de páginas de la empresa
         """
         pass
-    
+
     @abstractmethod
     def list_by_company_and_status(
-        self, 
-        company_id: CompanyId, 
-        status: PageStatus
+            self,
+            company_id: CompanyId,
+            status: PageStatus
     ) -> List[CompanyPage]:
         """
         Listar páginas de una empresa por estado.
@@ -88,12 +88,12 @@ class CompanyPageRepositoryInterface(ABC):
             Lista de páginas con el estado especificado
         """
         pass
-    
+
     @abstractmethod
     def list_by_company_and_type(
-        self, 
-        company_id: CompanyId, 
-        page_type: PageType
+            self,
+            company_id: CompanyId,
+            page_type: PageType
     ) -> List[CompanyPage]:
         """
         Listar páginas de una empresa por tipo.
@@ -106,13 +106,13 @@ class CompanyPageRepositoryInterface(ABC):
             Lista de páginas del tipo especificado
         """
         pass
-    
+
     @abstractmethod
     def list_by_company_type_and_status(
-        self, 
-        company_id: CompanyId, 
-        page_type: PageType,
-        status: PageStatus
+            self,
+            company_id: CompanyId,
+            page_type: PageType,
+            status: PageStatus
     ) -> List[CompanyPage]:
         """
         Listar páginas de una empresa por tipo y estado.
@@ -126,12 +126,12 @@ class CompanyPageRepositoryInterface(ABC):
             Lista de páginas del tipo y estado especificados
         """
         pass
-    
+
     @abstractmethod
     def get_default_by_type(
-        self, 
-        company_id: CompanyId, 
-        page_type: PageType
+            self,
+            company_id: CompanyId,
+            page_type: PageType
     ) -> Optional[CompanyPage]:
         """
         Obtener página por defecto de un tipo específico.
@@ -144,7 +144,7 @@ class CompanyPageRepositoryInterface(ABC):
             Página por defecto o None si no existe
         """
         pass
-    
+
     @abstractmethod
     def list_public_pages(self, company_id: CompanyId) -> List[CompanyPage]:
         """
@@ -157,7 +157,7 @@ class CompanyPageRepositoryInterface(ABC):
             Lista de páginas publicadas
         """
         pass
-    
+
     @abstractmethod
     def delete(self, page_id: PageId) -> None:
         """
@@ -170,12 +170,12 @@ class CompanyPageRepositoryInterface(ABC):
             PageNotFoundException: Si la página no existe
         """
         pass
-    
+
     @abstractmethod
     def exists_by_company_and_type(
-        self, 
-        company_id: CompanyId, 
-        page_type: PageType
+            self,
+            company_id: CompanyId,
+            page_type: PageType
     ) -> bool:
         """
         Verificar si existe una página del tipo especificado para la empresa.
@@ -188,7 +188,7 @@ class CompanyPageRepositoryInterface(ABC):
             True si existe, False si no
         """
         pass
-    
+
     @abstractmethod
     def count_by_company(self, company_id: CompanyId) -> int:
         """

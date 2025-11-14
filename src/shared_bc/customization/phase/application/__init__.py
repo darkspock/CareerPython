@@ -1,12 +1,5 @@
 """Phase application module - exports queries and commands"""
 
-# Queries
-from .queries.get_phase_by_id_query import GetPhaseByIdQuery, GetPhaseByIdQueryHandler
-from .queries.list_phases_by_company_query import (
-    ListPhasesByCompanyQuery,
-    ListPhasesByCompanyQueryHandler,
-)
-
 # Commands
 from .commands.activate_phase_command import ActivatePhaseCommand, ActivatePhaseCommandHandler
 from .commands.archive_phase_command import ArchivePhaseCommand, ArchivePhaseCommandHandler
@@ -17,6 +10,12 @@ from .commands.initialize_company_phases_command import (
     InitializeCompanyPhasesCommandHandler,
 )
 from .commands.update_phase_command import UpdatePhaseCommand, UpdatePhaseCommandHandler
+# Queries
+from .queries.get_phase_by_id_query import GetPhaseByIdQuery, GetPhaseByIdQueryHandler
+from .queries.list_phases_by_company_query import (
+    ListPhasesByCompanyQuery,
+    ListPhasesByCompanyQueryHandler,
+)
 
 __all__ = [
     # Queries
@@ -38,4 +37,3 @@ __all__ = [
     "UpdatePhaseCommand",
     "UpdatePhaseCommandHandler",
 ]
-

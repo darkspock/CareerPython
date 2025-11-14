@@ -1,19 +1,5 @@
 """Field validation application module - exports queries and commands"""
 
-# Queries
-from .queries.get_validation_rule_by_id_query import (
-    GetValidationRuleByIdQuery,
-    GetValidationRuleByIdQueryHandler,
-)
-from .queries.list_validation_rules_by_field_query import (
-    ListValidationRulesByFieldQuery,
-    ListValidationRulesByFieldQueryHandler,
-)
-from .queries.list_validation_rules_by_stage_query import (
-    ListValidationRulesByStageQuery,
-    ListValidationRulesByStageQueryHandler,
-)
-
 # Commands
 from .commands.activate_validation_rule_command import (
     ActivateValidationRuleCommand,
@@ -34,6 +20,19 @@ from .commands.delete_validation_rule_command import (
 from .commands.update_validation_rule_command import (
     UpdateValidationRuleCommand,
     UpdateValidationRuleCommandHandler,
+)
+# Queries
+from .queries.get_validation_rule_by_id_query import (
+    GetValidationRuleByIdQuery,
+    GetValidationRuleByIdQueryHandler,
+)
+from .queries.list_validation_rules_by_field_query import (
+    ListValidationRulesByFieldQuery,
+    ListValidationRulesByFieldQueryHandler,
+)
+from .queries.list_validation_rules_by_stage_query import (
+    ListValidationRulesByStageQuery,
+    ListValidationRulesByStageQueryHandler,
 )
 
 __all__ = [
@@ -56,4 +55,3 @@ __all__ = [
     "UpdateValidationRuleCommand",
     "UpdateValidationRuleCommandHandler",
 ]
-

@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from src.shared_bc.customization.workflow.domain.entities.workflow_stage import WorkflowStage
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.entities.workflow_stage import WorkflowStage
+from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 class WorkflowStageRepositoryInterface(ABC):
@@ -45,4 +45,3 @@ class WorkflowStageRepositoryInterface(ABC):
     def list_by_phase(self, phase_id: PhaseId, workflow_type: WorkflowTypeEnum) -> List[WorkflowStage]:
         """List all stages for a phase, filtered by workflow_type, ordered by order field"""
         pass
-

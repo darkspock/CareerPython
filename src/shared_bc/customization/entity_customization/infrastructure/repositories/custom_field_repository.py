@@ -1,9 +1,11 @@
 from typing import Optional, List, Any
 
+from src.shared_bc.customization.entity_customization.domain.interfaces.custom_field_repository_interface import \
+    CustomFieldRepositoryInterface
 from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
 from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
-from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.shared_bc.customization.entity_customization.domain.interfaces.custom_field_repository_interface import CustomFieldRepositoryInterface
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import \
+    EntityCustomizationId
 from src.shared_bc.customization.entity_customization.infrastructure.models.custom_field_model import CustomFieldModel
 
 
@@ -33,8 +35,8 @@ class CustomFieldRepository(CustomFieldRepositoryInterface):
             return None
 
     def list_by_entity_customization(
-        self,
-        entity_customization_id: EntityCustomizationId
+            self,
+            entity_customization_id: EntityCustomizationId
     ) -> List[CustomField]:
         """List all custom fields for an entity customization, ordered by order_index"""
         with self._database.get_session() as session:
@@ -44,9 +46,9 @@ class CustomFieldRepository(CustomFieldRepositoryInterface):
             return [self._to_domain(model) for model in models]
 
     def get_by_entity_customization_and_key(
-        self,
-        entity_customization_id: EntityCustomizationId,
-        field_key: str
+            self,
+            entity_customization_id: EntityCustomizationId,
+            field_key: str
     ) -> Optional[CustomField]:
         """Get a custom field by entity customization ID and field key"""
         with self._database.get_session() as session:
@@ -90,4 +92,3 @@ class CustomFieldRepository(CustomFieldRepositoryInterface):
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )
-

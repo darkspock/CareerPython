@@ -2,21 +2,23 @@
 from dataclasses import dataclass
 
 from src.company_bc.company.domain.value_objects import CompanyId
+from src.framework.application.command_bus import Command, CommandHandler
 from src.shared_bc.customization.phase.domain.entities.phase import Phase
 from src.shared_bc.customization.phase.domain.enums.default_view_enum import DefaultView
 from src.shared_bc.customization.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from src.shared_bc.customization.workflow.domain.entities.workflow import Workflow
 from src.shared_bc.customization.workflow.domain.entities.workflow_stage import WorkflowStage
+from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-from src.shared_bc.customization.workflow.domain.enums.workflow_display_enum import WorkflowDisplayEnum
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import WorkflowRepositoryInterface
-from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import WorkflowStageRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
+    WorkflowRepositoryInterface
+from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
+    WorkflowStageRepositoryInterface
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
-from src.framework.application.command_bus import Command, CommandHandler
 
 
 @dataclass
@@ -40,10 +42,10 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
     """Handler for InitializeCompanyPhasesCommand"""
 
     def __init__(
-        self,
-        phase_repository: PhaseRepositoryInterface,
-        workflow_repository: WorkflowRepositoryInterface,
-        stage_repository: WorkflowStageRepositoryInterface
+            self,
+            phase_repository: PhaseRepositoryInterface,
+            workflow_repository: WorkflowRepositoryInterface,
+            stage_repository: WorkflowStageRepositoryInterface
     ):
         self.phase_repository = phase_repository
         self.workflow_repository = workflow_repository
@@ -67,7 +69,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         # ============================================
         # CANDIDATE_APPLICATION Workflows
         # ============================================
-        
+
         # Phase 1: Sourcing (Candidate Application)
         phase1_id = PhaseId.generate()
         phase1 = Phase.create(
@@ -127,7 +129,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         # ============================================
         # JOB_POSITION_OPENING Workflows
         # ============================================
-        
+
         # Single phase for Job Position Opening
         phase_jp_id = PhaseId.generate()
         phase_jp = Phase.create(
@@ -162,18 +164,23 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         self.workflow_repository.save(workflow)
 
         from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
-        
+
         stages = [
-            ("Pending", "Application pending review", WorkflowStageTypeEnum.INITIAL, 0, 
-             WorkflowStageStyle(icon="📋", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.COLUMN),  # amber
+            ("Pending", "Application pending review", WorkflowStageTypeEnum.INITIAL, 0,
+             WorkflowStageStyle(icon="📋", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.COLUMN),
+            # amber
             ("Screening", "Initial screening in progress", WorkflowStageTypeEnum.PROGRESS, 1,
-             WorkflowStageStyle(icon="🔍", text_color="#1e40af", background_color="#dbeafe"), KanbanDisplayEnum.COLUMN),  # blue
+             WorkflowStageStyle(icon="🔍", text_color="#1e40af", background_color="#dbeafe"), KanbanDisplayEnum.COLUMN),
+            # blue
             ("Qualified", "Candidate is qualified", WorkflowStageTypeEnum.SUCCESS, 2,
-             WorkflowStageStyle(icon="✅", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),  # green
+             WorkflowStageStyle(icon="✅", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),
+            # green
             ("Not Suitable", "Candidate not suitable for position", WorkflowStageTypeEnum.FAIL, 3,
-             WorkflowStageStyle(icon="❌", text_color="#991b1b", background_color="#fee2e2"), KanbanDisplayEnum.ROW),  # red - ROW
+             WorkflowStageStyle(icon="❌", text_color="#991b1b", background_color="#fee2e2"), KanbanDisplayEnum.ROW),
+            # red - ROW
             ("On Hold", "Application on hold", WorkflowStageTypeEnum.PROGRESS, 4,
-             WorkflowStageStyle(icon="⏸️", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.ROW),  # amber - ROW
+             WorkflowStageStyle(icon="⏸️", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.ROW),
+            # amber - ROW
         ]
         for name, desc, stage_type, order, style, kanban_display in stages:
             stage = WorkflowStage.create(
@@ -312,7 +319,7 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         not the legacy job_position_workflows table.
         """
         from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
-        
+
         # Create workflow in shared workflows table
         workflow = Workflow.create(
             id=workflow_id,
@@ -330,19 +337,25 @@ class InitializeCompanyPhasesCommandHandler(CommandHandler):
         # Create stages in workflow_stages table
         stages_data = [
             ("Draft", "Position being drafted", WorkflowStageTypeEnum.INITIAL, 0,
-             WorkflowStageStyle(icon="📝", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.COLUMN),  # amber
+             WorkflowStageStyle(icon="📝", text_color="#92400e", background_color="#fef3c7"), KanbanDisplayEnum.COLUMN),
+            # amber
             ("Under Review", "Position under review", WorkflowStageTypeEnum.PROGRESS, 1,
-             WorkflowStageStyle(icon="🔍", text_color="#1e40af", background_color="#dbeafe"), KanbanDisplayEnum.COLUMN),  # blue
+             WorkflowStageStyle(icon="🔍", text_color="#1e40af", background_color="#dbeafe"), KanbanDisplayEnum.COLUMN),
+            # blue
             ("Approved", "Position approved", WorkflowStageTypeEnum.PROGRESS, 2,
-             WorkflowStageStyle(icon="✅", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),  # green - PROGRESS (aún no publicado)
+             WorkflowStageStyle(icon="✅", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),
+            # green - PROGRESS (aún no publicado)
             ("Published", "Position is published", WorkflowStageTypeEnum.SUCCESS, 3,
-             WorkflowStageStyle(icon="🌐", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),  # green - ÚNICO SUCCESS
+             WorkflowStageStyle(icon="🌐", text_color="#065f46", background_color="#d1fae5"), KanbanDisplayEnum.COLUMN),
+            # green - ÚNICO SUCCESS
             ("Closed", "Position closed", WorkflowStageTypeEnum.ARCHIVED, 4,
-             WorkflowStageStyle(icon="🔒", text_color="#6b7280", background_color="#f3f4f6"), KanbanDisplayEnum.COLUMN),  # gray - ARCHIVED
+             WorkflowStageStyle(icon="🔒", text_color="#6b7280", background_color="#f3f4f6"), KanbanDisplayEnum.COLUMN),
+            # gray - ARCHIVED
             ("Cancelled", "Position cancelled", WorkflowStageTypeEnum.FAIL, 5,
-             WorkflowStageStyle(icon="❌", text_color="#991b1b", background_color="#fee2e2"), KanbanDisplayEnum.ROW),  # red - ROW
+             WorkflowStageStyle(icon="❌", text_color="#991b1b", background_color="#fee2e2"), KanbanDisplayEnum.ROW),
+            # red - ROW
         ]
-        
+
         for name, desc, stage_type, order, style, kanban_display in stages_data:
             stage = WorkflowStage.create(
                 id=WorkflowStageId.generate(),

@@ -1,13 +1,17 @@
 from typing import Optional, List, Any
 
 from src.shared_bc.customization.entity_customization.domain.entities.entity_customization import EntityCustomization
-from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
-from src.shared_bc.customization.entity_customization.domain.interfaces.entity_customization_repository_interface import EntityCustomizationRepositoryInterface
-from src.shared_bc.customization.entity_customization.infrastructure.models.entity_customization_model import EntityCustomizationModel
-from src.shared_bc.customization.entity_customization.infrastructure.models.custom_field_model import CustomFieldModel
+from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import \
+    EntityCustomizationTypeEnum
+from src.shared_bc.customization.entity_customization.domain.interfaces.entity_customization_repository_interface import \
+    EntityCustomizationRepositoryInterface
 from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
 from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field_id import CustomFieldId
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import \
+    EntityCustomizationId
+from src.shared_bc.customization.entity_customization.infrastructure.models.custom_field_model import CustomFieldModel
+from src.shared_bc.customization.entity_customization.infrastructure.models.entity_customization_model import \
+    EntityCustomizationModel
 
 
 class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
@@ -21,17 +25,17 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
         with self._database.get_session() as session:
             # First, try to find by ID
             existing = session.query(EntityCustomizationModel).filter_by(id=str(entity_customization.id)).first()
-            
+
             # If not found by ID, try to find by (entity_type, entity_id) to handle updates
             if not existing:
                 existing = session.query(EntityCustomizationModel).filter_by(
                     entity_type=entity_customization.entity_type.value,
                     entity_id=entity_customization.entity_id
                 ).first()
-            
+
             # Use the existing ID if found, otherwise use the entity's ID
             customization_id = existing.id if existing else str(entity_customization.id)
-            
+
             if existing:
                 # Update existing - use the existing ID from the database
                 # Update all fields
@@ -46,7 +50,7 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
                 # Create new
                 model = self._to_model(entity_customization)
                 session.add(model)
-            
+
             # Save/update custom fields
             # Use the correct customization_id (existing or new)
             # First, delete fields that are no longer in the entity
@@ -61,7 +65,7 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
                 session.query(CustomFieldModel).filter_by(
                     entity_customization_id=customization_id
                 ).delete(synchronize_session=False)
-            
+
             # Then, save/update each field
             for field in entity_customization.fields:
                 field_model = CustomFieldModel(
@@ -76,7 +80,7 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
                     updated_at=field.updated_at
                 )
                 session.merge(field_model)
-            
+
             session.commit()
 
     def get_by_id(self, id: EntityCustomizationId) -> Optional[EntityCustomization]:
@@ -88,9 +92,9 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
             return None
 
     def get_by_entity(
-        self,
-        entity_type: EntityCustomizationTypeEnum,
-        entity_id: str
+            self,
+            entity_type: EntityCustomizationTypeEnum,
+            entity_id: str
     ) -> Optional[EntityCustomization]:
         """Get an entity customization by entity type and entity ID"""
         with self._database.get_session() as session:
@@ -103,8 +107,8 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
             return None
 
     def list_by_entity_type(
-        self,
-        entity_type: EntityCustomizationTypeEnum
+            self,
+            entity_type: EntityCustomizationTypeEnum
     ) -> List[EntityCustomization]:
         """List all customizations for a given entity type"""
         with self._database.get_session() as session:
@@ -162,4 +166,3 @@ class EntityCustomizationRepository(EntityCustomizationRepositoryInterface):
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )
-

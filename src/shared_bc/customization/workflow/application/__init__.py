@@ -1,29 +1,21 @@
 """Workflow application module - exports queries and commands"""
 
-# Queries - Workflow
-from .queries.workflow.get_workflow_by_id import GetWorkflowByIdQuery, GetWorkflowByIdQueryHandler
-from .queries.workflow.list_workflows_by_company import (
-    ListWorkflowsByCompanyQuery,
-    ListWorkflowsByCompanyQueryHandler,
+# Commands - Stage
+from .commands.stage.activate_stage_command import (
+    ActivateStageCommand,
+    ActivateStageCommandHandler,
 )
-from .queries.workflow.list_workflows_by_phase import (
-    ListWorkflowsByPhaseQuery,
-    ListWorkflowsByPhaseQueryHandler,
+from .commands.stage.create_stage_command import CreateStageCommand, CreateStageCommandHandler
+from .commands.stage.deactivate_stage_command import (
+    DeactivateStageCommand,
+    DeactivateStageCommandHandler,
 )
-
-# Queries - Stage
-from .queries.stage.get_final_stages import GetFinalStagesQuery, GetFinalStagesQueryHandler
-from .queries.stage.get_initial_stage import GetInitialStageQuery, GetInitialStageQueryHandler
-from .queries.stage.get_stage_by_id import GetStageByIdQuery, GetStageByIdQueryHandler
-from .queries.stage.list_stages_by_phase import (
-    ListStagesByPhaseQuery,
-    ListStagesByPhaseQueryHandler,
+from .commands.stage.delete_stage_command import DeleteStageCommand, DeleteStageCommandHandler
+from .commands.stage.reorder_stages_command import (
+    ReorderStagesCommand,
+    ReorderStagesCommandHandler,
 )
-from .queries.stage.list_stages_by_workflow import (
-    ListStagesByWorkflowQuery,
-    ListStagesByWorkflowQueryHandler,
-)
-
+from .commands.stage.update_stage_command import UpdateStageCommand, UpdateStageCommandHandler
 # Commands - Workflow
 from .commands.workflow.activate_workflow_command import (
     ActivateWorkflowCommand,
@@ -57,23 +49,28 @@ from .commands.workflow.update_workflow_command import (
     UpdateWorkflowCommand,
     UpdateWorkflowCommandHandler,
 )
-
-# Commands - Stage
-from .commands.stage.activate_stage_command import (
-    ActivateStageCommand,
-    ActivateStageCommandHandler,
+# Queries - Stage
+from .queries.stage.get_final_stages import GetFinalStagesQuery, GetFinalStagesQueryHandler
+from .queries.stage.get_initial_stage import GetInitialStageQuery, GetInitialStageQueryHandler
+from .queries.stage.get_stage_by_id import GetStageByIdQuery, GetStageByIdQueryHandler
+from .queries.stage.list_stages_by_phase import (
+    ListStagesByPhaseQuery,
+    ListStagesByPhaseQueryHandler,
 )
-from .commands.stage.create_stage_command import CreateStageCommand, CreateStageCommandHandler
-from .commands.stage.deactivate_stage_command import (
-    DeactivateStageCommand,
-    DeactivateStageCommandHandler,
+from .queries.stage.list_stages_by_workflow import (
+    ListStagesByWorkflowQuery,
+    ListStagesByWorkflowQueryHandler,
 )
-from .commands.stage.delete_stage_command import DeleteStageCommand, DeleteStageCommandHandler
-from .commands.stage.reorder_stages_command import (
-    ReorderStagesCommand,
-    ReorderStagesCommandHandler,
+# Queries - Workflow
+from .queries.workflow.get_workflow_by_id import GetWorkflowByIdQuery, GetWorkflowByIdQueryHandler
+from .queries.workflow.list_workflows_by_company import (
+    ListWorkflowsByCompanyQuery,
+    ListWorkflowsByCompanyQueryHandler,
 )
-from .commands.stage.update_stage_command import UpdateStageCommand, UpdateStageCommandHandler
+from .queries.workflow.list_workflows_by_phase import (
+    ListWorkflowsByPhaseQuery,
+    ListWorkflowsByPhaseQueryHandler,
+)
 
 __all__ = [
     # Queries - Workflow
@@ -125,4 +122,3 @@ __all__ = [
     "UpdateStageCommand",
     "UpdateStageCommandHandler",
 ]
-
