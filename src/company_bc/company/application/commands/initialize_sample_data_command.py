@@ -313,7 +313,11 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
                 job_position_workflow_id=job_position_workflow_id,
                 stage_id=stage_id_vo,
                 title="Senior Software Engineer",
-                description="We are looking for an experienced software engineer to join our team. You will work on exciting projects and collaborate with talented colleagues.",
+                description=(
+                    "We are looking for an experienced software engineer "
+                    "to join our team. You will work on exciting projects "
+                    "and collaborate with talented colleagues."
+                ),
                 job_category=JobCategoryEnum.TECHNOLOGY,
                 visibility=JobPositionVisibilityEnum.PUBLIC
             )
@@ -453,11 +457,31 @@ class InitializeSampleDataCommandHandler(CommandHandler[InitializeSampleDataComm
         ]
 
         job_descriptions = [
-            "We are looking for an experienced professional to join our team. You will work on exciting projects and collaborate with talented colleagues.",
-            "Join our dynamic team and help shape the future of our products. This role offers great growth opportunities and competitive benefits.",
-            "We need a creative and motivated individual who can bring fresh ideas to our team. You'll work in a collaborative environment with room for innovation.",
-            "This position offers the opportunity to work on cutting-edge technology and make a real impact. We value diversity and inclusion.",
-            "We're seeking a passionate professional who is eager to learn and grow. You'll be part of a supportive team that values work-life balance."
+            (
+                "We are looking for an experienced professional to join "
+                "our team. You will work on exciting projects and "
+                "collaborate with talented colleagues."
+            ),
+            (
+                "Join our dynamic team and help shape the future of our "
+                "products. This role offers great growth opportunities "
+                "and competitive benefits."
+            ),
+            (
+                "We need a creative and motivated individual who can "
+                "bring fresh ideas to our team. You'll work in a "
+                "collaborative environment with room for innovation."
+            ),
+            (
+                "This position offers the opportunity to work on "
+                "cutting-edge technology and make a real impact. "
+                "We value diversity and inclusion."
+            ),
+            (
+                "We're seeking a passionate professional who is eager "
+                "to learn and grow. You'll be part of a supportive "
+                "team that values work-life balance."
+            )
         ]
 
         job_categories = [

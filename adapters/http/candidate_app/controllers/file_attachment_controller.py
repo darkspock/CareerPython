@@ -31,7 +31,7 @@ class FileAttachmentController:
         """Upload a file for a candidate"""
         try:
             # Validate candidate exists (you might want to add this check)
-            candidate_id_obj = CandidateId.from_string(candidate_id)
+            CandidateId.from_string(candidate_id)
 
             # Read file content
             file_content = await file.read()

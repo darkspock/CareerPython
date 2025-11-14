@@ -193,7 +193,11 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
         if not result:
             return None
 
-        cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name = result
+        (
+            cc_model, candidate_name, candidate_email, candidate_phone,
+            job_position_id, application_status, job_position_title,
+            workflow_name, stage_name
+        ) = result
 
         return CompanyCandidateWithCandidateReadModel(
             id=cc_model.id,
@@ -341,7 +345,11 @@ class CompanyCandidateRepository(CompanyCandidateRepositoryInterface):
 
         # Convert to read models
         read_models = []
-        for cc_model, candidate_name, candidate_email, candidate_phone, job_position_id, application_status, job_position_title, workflow_name, stage_name, stage_style, pending_comments_count in results:
+        for (
+            cc_model, candidate_name, candidate_email, candidate_phone,
+            job_position_id, application_status, job_position_title,
+            workflow_name, stage_name, stage_style, pending_comments_count
+        ) in results:
             read_model = CompanyCandidateWithCandidateReadModel(
                 id=cc_model.id,
                 company_id=cc_model.company_id,

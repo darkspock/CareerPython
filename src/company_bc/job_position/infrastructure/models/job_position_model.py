@@ -48,4 +48,8 @@ class JobPositionModel(Base):
         back_populates="job_position")
 
     def __repr__(self) -> str:
-        return f"<JobPositionModel(id={self.id}, title={self.title}, job_position_workflow_id={self.job_position_workflow_id}, stage_id={self.stage_id}, visibility={self.visibility})>"
+        return (
+            f"<JobPositionModel(id={self.id}, title={self.title}, "
+            f"job_position_workflow_id={self.job_position_workflow_id}, "
+            f"stage_id={self.stage_id}, visibility={self.visibility})>"
+        )

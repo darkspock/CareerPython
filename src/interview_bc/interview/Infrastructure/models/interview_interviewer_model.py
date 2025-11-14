@@ -1,12 +1,16 @@
 """Interview Interviewer SQLAlchemy model"""
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import String, DateTime, Boolean, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
+
+# Forward references for mypy
+if TYPE_CHECKING:
+    from src.interview_bc.interview.Infrastructure.models.interview_model import InterviewModel
 
 
 @dataclass
@@ -28,8 +32,9 @@ class InterviewInterviewerModel(Base):
     updated_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # Relationships
-    interview: Mapped["InterviewModel"] = relationship("InterviewModel",
-                                                       back_populates="interviewer_relations")  # type: ignore # noqa: F821
+    interview: Mapped["InterviewModel"] = relationship(  # noqa: F821
+        "InterviewModel", back_populates="interviewer_relations"
+    )
 
     def __repr__(self) -> str:
         return f"<InterviewInterviewerModel(id={self.id}, interview_id={self.interview_id}, user_id={self.user_id})>"

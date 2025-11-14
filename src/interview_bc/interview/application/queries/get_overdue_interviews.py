@@ -30,8 +30,8 @@ class GetOverdueInterviewsQueryHandler(QueryHandler[GetOverdueInterviewsQuery, L
         overdue_interviews = [
             interview for interview in all_interviews
             if interview.deadline_date
-               and interview.deadline_date < now
-               and not interview.finished_at
+            and interview.deadline_date < now
+            and not interview.finished_at
         ]
 
         # Sort by deadline_date (most overdue first)

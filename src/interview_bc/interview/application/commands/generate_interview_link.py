@@ -38,7 +38,13 @@ class GenerateInterviewLinkCommandHandler(CommandHandler[GenerateInterviewLinkCo
 
         # Save updated interview
         updated_interview = self.interview_repository.update(interview)
+        token_preview = (
+            updated_interview.link_token[:10]
+            if updated_interview.link_token else 'None'
+        )
         logger.info(
-            f"Updated interview {command.interview_id}. Token saved: {updated_interview.link_token[:10] if updated_interview.link_token else 'None'}...")
+            f"Updated interview {command.interview_id}. "
+            f"Token saved: {token_preview}..."
+        )
 
         # Note: We could dispatch an event here if needed, but for now we'll keep it simple

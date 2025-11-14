@@ -19,6 +19,7 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
 if TYPE_CHECKING:
     from src.company_bc.candidate_application.infrastructure.models.candidate_application_model import \
         CandidateApplicationModel
+    from src.interview_bc.interview.Infrastructure.models.interview_answer_model import InterviewAnswerModel
 
 
 @dataclass
@@ -46,8 +47,10 @@ class InterviewModel(Base):
     description: Mapped[Optional[str]] = mapped_column(Text)
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     deadline_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)  # Optional deadline date
-    required_roles: Mapped[Optional[List[str]]] = mapped_column(postgresql.JSONB,
-                                                                nullable=True)  # List of CompanyRole IDs (obligatory in domain, nullable in DB for migration)
+    # List of CompanyRole IDs (obligatory in domain, nullable in DB for migration)
+    required_roles: Mapped[Optional[List[str]]] = mapped_column(
+        postgresql.JSONB, nullable=True
+    )
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     duration_minutes: Mapped[Optional[int]] = mapped_column(Integer)
@@ -67,9 +70,9 @@ class InterviewModel(Base):
     updated_by: Mapped[Optional[str]] = mapped_column(String)  # User ID who last updated the interview
 
     # Relationships
-    answers: Mapped[List["InterviewAnswerModel"]] = relationship(back_populates="interview",
-                                                                 # type: ignore # noqa: F821
-                                                                 cascade="all, delete-orphan")
+    answers: Mapped[List["InterviewAnswerModel"]] = relationship(  # noqa: F821
+        back_populates="interview", cascade="all, delete-orphan"
+    )
     interviewer_relations: Mapped[List["InterviewInterviewerModel"]] = relationship(  # type: ignore # noqa: F821
         "InterviewInterviewerModel",
         back_populates="interview",

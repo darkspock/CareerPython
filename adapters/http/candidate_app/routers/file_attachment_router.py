@@ -43,7 +43,7 @@ async def upload_candidate_file(
             token = authorization.split(" ")[1]
             payload = jwt.decode(token, options={"verify_signature": False})
             company_id = payload.get("company_id")
-        except:
+        except Exception:
             pass
 
     return await controller.upload_file(candidate_id, file, description, company_id)
@@ -86,8 +86,6 @@ async def download_file(
     file_content = await controller.download_file(file_id)
 
     # Create a streaming response
-    file_stream = io.BytesIO(file_content)
-
     return StreamingResponse(
         io.BytesIO(file_content),
         media_type=file_attachment.content_type,

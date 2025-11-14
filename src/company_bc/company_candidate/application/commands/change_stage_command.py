@@ -87,7 +87,7 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
             raise ValueError(f"Cannot change stage: {e}")
 
         # Get the workflow of the target stage (already validated by Domain Service)
-        target_workflow = self._workflow_repository.get_by_id(target_stage.workflow_id)
+        # target_workflow = self._workflow_repository.get_by_id(target_stage.workflow_id)  # Not used currently
 
         # Check if the target stage belongs to a different phase than the candidate's current phase
         # If so, update phase_id and workflow_id as well

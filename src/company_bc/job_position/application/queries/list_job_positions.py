@@ -43,14 +43,14 @@ class ListJobPositionsQueryHandler:
 
     def handle(self, query: ListJobPositionsQuery) -> List[JobPositionDto]:
         """Handle query - simplified filters"""
-        # Get total count with same filters
-        total = self.job_position_repository.count_by_filters(
-            company_id=query.company_id,
-            status=query.status,
-            job_category=query.job_category,
-            search_term=query.search_term,
-            visibility=query.visibility
-        )
+        # Get total count with same filters (not used currently, but kept for future pagination)
+        # total = self.job_position_repository.count_by_filters(
+        #     company_id=query.company_id,
+        #     status=query.status,
+        #     job_category=query.job_category,
+        #     search_term=query.search_term,
+        #     visibility=query.visibility
+        # )
 
         # Get paginated results
         jobPositions = self.job_position_repository.find_by_filters(

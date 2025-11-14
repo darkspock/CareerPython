@@ -190,7 +190,7 @@ class InterviewPermissionService:
         Returns:
             True if interview belongs to company, False otherwise
         """
-        company_id_vo = CompanyId.from_string(company_id)
+        CompanyId.from_string(company_id)  # Validate company_id format
 
         # Check via job_position if available
         if interview.job_position_id:

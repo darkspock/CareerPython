@@ -68,7 +68,7 @@ class InviteCompanyUserCommandHandler(CommandHandler):
         # This would require checking User repository, but for now we'll allow and handle in accept
 
         # Determine role (default to RECRUITER)
-        role = command.role if command.role else CompanyUserRole.RECRUITER
+        # role = command.role if command.role else CompanyUserRole.RECRUITER  # Not used currently
 
         # Create invitation
         invitation_id = CompanyUserInvitationId.generate()
