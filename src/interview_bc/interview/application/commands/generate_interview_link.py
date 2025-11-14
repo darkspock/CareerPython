@@ -33,7 +33,8 @@ class GenerateInterviewLinkCommandHandler(CommandHandler[GenerateInterviewLinkCo
 
         # Generate link token
         interview.generate_link_token(expires_in_days=command.expires_in_days)
-        logger.info(f"Generated link token for interview {command.interview_id}: {interview.link_token[:10]}... (expires: {interview.link_expires_at})")
+        token_preview = interview.link_token[:10] if interview.link_token else "None"
+        logger.info(f"Generated link token for interview {command.interview_id}: {token_preview}... (expires: {interview.link_expires_at})")
 
         # Save updated interview
         updated_interview = self.interview_repository.update(interview)

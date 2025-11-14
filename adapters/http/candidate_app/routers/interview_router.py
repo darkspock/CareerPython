@@ -92,7 +92,7 @@ def get_interview_questions_by_token(
                     ))
                 
                 sections.append(InterviewSectionPublicResponse(
-                    id=section_dto.id.value,
+                    id=section_dto.id,
                     name=section_dto.name,
                     intro=section_dto.intro,
                     prompt=section_dto.prompt,
