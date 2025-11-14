@@ -1,8 +1,8 @@
 """Job position mapper for converting DTOs to response schemas"""
 from typing import Optional, Dict, Any, List
 
-from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
 from adapters.http.admin_app.schemas.job_position import JobPositionResponse, JobPositionPublicResponse
+from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
 from src.shared_bc.customization.workflow.application.dtos.workflow_dto import WorkflowDto
 from src.shared_bc.customization.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
 
@@ -17,9 +17,9 @@ class JobPositionMapper:
 
     @staticmethod
     def get_visible_fields_for_candidate(
-        dto: JobPositionDto,
-        workflow_dto: Optional[WorkflowDto] = None,
-        stages: Optional[List[WorkflowStageDto]] = None
+            dto: JobPositionDto,
+            workflow_dto: Optional[WorkflowDto] = None,
+            stages: Optional[List[WorkflowStageDto]] = None
     ) -> Dict[str, Any]:
         """
         Get only fields visible to candidates based on workflow/stage configuration.
@@ -43,14 +43,14 @@ class JobPositionMapper:
 
     @staticmethod
     def dto_to_public_response(
-        dto: JobPositionDto,
-        workflow_dto: Optional[WorkflowDto] = None,
-        stages: Optional[List[WorkflowStageDto]] = None,
-        company_name: Optional[str] = None
+            dto: JobPositionDto,
+            workflow_dto: Optional[WorkflowDto] = None,
+            stages: Optional[List[WorkflowStageDto]] = None,
+            company_name: Optional[str] = None
     ) -> JobPositionPublicResponse:
         """Convert JobPositionDto to JobPositionPublicResponse - only visible fields for candidates"""
         visible_fields = JobPositionMapper.get_visible_fields_for_candidate(dto, workflow_dto, stages)
-        
+
         return JobPositionPublicResponse(
             id=dto.id.value,
             title=dto.title,

@@ -4,13 +4,13 @@ from typing import List, Optional
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from core.container import Container
 from adapters.http.shared.workflow.controllers import WorkflowStageController
-from adapters.http.shared.workflow.schemas.create_stage_request import CreateStageRequest
-from adapters.http.shared.workflow.schemas.reorder_stages_request import ReorderStagesRequest
 from adapters.http.shared.workflow.schemas import UpdateStageRequest
 from adapters.http.shared.workflow.schemas import WorkflowStageResponse
+from adapters.http.shared.workflow.schemas.create_stage_request import CreateStageRequest
+from adapters.http.shared.workflow.schemas.reorder_stages_request import ReorderStagesRequest
 from adapters.http.shared.workflow.schemas.stage_style_request import UpdateStageStyleRequest
+from core.container import Container
 
 router = APIRouter(
     prefix="/api/workflow-stages",

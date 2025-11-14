@@ -1,11 +1,13 @@
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from core.container import Container
 from adapters.http.shared.customization.controllers.entity_customization_controller import EntityCustomizationController
-from adapters.http.shared.customization.schemas.create_entity_customization_request import CreateEntityCustomizationRequest
-from adapters.http.shared.customization.schemas.update_entity_customization_request import UpdateEntityCustomizationRequest
+from adapters.http.shared.customization.schemas.create_entity_customization_request import \
+    CreateEntityCustomizationRequest
 from adapters.http.shared.customization.schemas.entity_customization_response import EntityCustomizationResponse
+from adapters.http.shared.customization.schemas.update_entity_customization_request import \
+    UpdateEntityCustomizationRequest
+from core.container import Container
 
 router = APIRouter(
     prefix="/api/entity-customizations",
@@ -21,8 +23,8 @@ router = APIRouter(
 )
 @inject
 def create_entity_customization(
-    request: CreateEntityCustomizationRequest,
-    controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
+        request: CreateEntityCustomizationRequest,
+        controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
 ) -> EntityCustomizationResponse:
     """Create a new entity customization"""
     try:
@@ -38,8 +40,8 @@ def create_entity_customization(
 )
 @inject
 def get_entity_customization_by_id(
-    id: str,
-    controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
+        id: str,
+        controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
 ) -> EntityCustomizationResponse:
     """Get an entity customization by ID"""
     result = controller.get_entity_customization_by_id(id)
@@ -58,9 +60,9 @@ def get_entity_customization_by_id(
 )
 @inject
 def get_entity_customization(
-    entity_type: str,
-    entity_id: str,
-    controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
+        entity_type: str,
+        entity_id: str,
+        controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
 ) -> EntityCustomizationResponse:
     """Get an entity customization by entity type and entity ID
     
@@ -88,9 +90,9 @@ def get_entity_customization(
 )
 @inject
 def update_entity_customization(
-    id: str,
-    request: UpdateEntityCustomizationRequest,
-    controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
+        id: str,
+        request: UpdateEntityCustomizationRequest,
+        controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
 ) -> EntityCustomizationResponse:
     """Update an entity customization"""
     try:
@@ -106,12 +108,11 @@ def update_entity_customization(
 )
 @inject
 def delete_entity_customization(
-    id: str,
-    controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
+        id: str,
+        controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
 ) -> None:
     """Delete an entity customization"""
     try:
         controller.delete_entity_customization(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-

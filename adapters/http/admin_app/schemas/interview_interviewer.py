@@ -53,4 +53,3 @@ class InterviewInterviewerListResponse(BaseModel):
     """Response schema for list of interviewers"""
     interviewers: List[InterviewInterviewerResponse] = Field(..., description="List of interviewers")
     total: int = Field(..., description="Total number of interviewers")
-

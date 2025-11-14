@@ -1,5 +1,5 @@
-from src.company_bc.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
 from adapters.http.company_app.company_candidate.schemas.candidate_comment_response import CandidateCommentResponse
+from src.company_bc.company_candidate.application.dtos.candidate_comment_dto import CandidateCommentDto
 
 
 class CandidateCommentResponseMapper:

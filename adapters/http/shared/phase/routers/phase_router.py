@@ -4,13 +4,13 @@ from typing import List
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from core.container import Container
 from adapters.http.shared.phase.controllers.phase_controller import PhaseController
 from adapters.http.shared.phase.schemas.phase_schemas import (
     CreatePhaseRequest,
     UpdatePhaseRequest,
     PhaseResponse
 )
+from core.container import Container
 
 router = APIRouter(prefix="/api/companies/{company_id}/phases", tags=["phases"])
 

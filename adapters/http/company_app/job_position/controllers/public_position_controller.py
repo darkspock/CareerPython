@@ -18,7 +18,8 @@ from src.company_bc.job_position.application.queries.list_public_job_positions i
 from src.company_bc.job_position.domain import JobPositionNotFoundError
 from src.framework.application.query_bus import QueryBus
 from src.shared_bc.customization.workflow.application.dtos.workflow_dto import WorkflowDto
-from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQuery
+from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_workflow import \
+    ListStagesByWorkflowQuery
 from src.shared_bc.customization.workflow.application.queries.workflow.get_workflow_by_id import GetWorkflowByIdQuery
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 
@@ -94,12 +95,12 @@ class PublicPositionController:
         return (
 
             PublicPositionListResponse(
-            positions=positions,
-            total=total,
-            page=page,
-            page_size=page_size,
-            total_pages=total_pages
-        ))
+                positions=positions,
+                total=total,
+                page=page,
+                page_size=page_size,
+                total_pages=total_pages
+            ))
 
     def get_public_position(self, slug_or_id: str) -> PublicPositionResponse:
         """
@@ -176,4 +177,3 @@ class PublicPositionController:
             application_id="placeholder-id",
             message="Application submission not yet implemented. Coming soon!"
         )
-

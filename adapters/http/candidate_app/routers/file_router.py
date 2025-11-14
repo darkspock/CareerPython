@@ -1,12 +1,11 @@
 import logging
-from typing import Annotated, Any, Dict, Optional
+from typing import Annotated, Any, Dict
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, Header, UploadFile, File, HTTPException
 
 from core.container import Container
 from src.framework.application.command_bus import CommandBus
-from src.framework.application.query_bus import QueryBus
 from src.framework.infrastructure.jobs.async_job_service import AsyncJobService
 
 logger = logging.getLogger(__name__)

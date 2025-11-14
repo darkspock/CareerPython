@@ -2,10 +2,13 @@ from typing import Optional, List, Dict, Any
 
 from fastapi import HTTPException, status
 
+from adapters.http.candidate_app.mappers.resume_mapper import ResumeMapper
+from adapters.http.candidate_app.schemas.resume_dto import ResumeDto
 from adapters.http.candidate_app.schemas.resume_request import CreateGeneralResumeRequest, UpdateResumeContentRequest, \
     AddVariableSectionRequest, UpdateVariableSectionRequest, RemoveVariableSectionRequest, \
     ReorderVariableSectionsRequest
-from adapters.http.candidate_app.schemas.resume_response import ResumeListResponse, ResumeResponse, ResumeStatisticsResponse
+from adapters.http.candidate_app.schemas.resume_response import ResumeListResponse, ResumeResponse, \
+    ResumeStatisticsResponse
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.candidate_bc.resume.application import UpdateResumeContentCommand, GetResumeStatisticsQuery
 from src.candidate_bc.resume.application.commands.create_general_resume_command import CreateGeneralResumeCommand
@@ -19,8 +22,6 @@ from src.candidate_bc.resume.application.commands.manage_variable_section_comman
 from src.candidate_bc.resume.application.queries.get_resume_by_id_query import GetResumeByIdQuery
 from src.candidate_bc.resume.application.queries.get_resumes_by_candidate_query import GetResumesByCandidateQuery
 from src.candidate_bc.resume.domain.enums.resume_type import ResumeType
-from adapters.http.candidate_app.mappers.resume_mapper import ResumeMapper
-from adapters.http.candidate_app.schemas.resume_dto import ResumeDto
 from src.candidate_bc.resume.domain.value_objects.resume_id import ResumeId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus

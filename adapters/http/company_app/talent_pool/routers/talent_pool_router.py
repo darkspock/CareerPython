@@ -8,8 +8,6 @@ from typing import List, Optional, Annotated
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from core.container import Container
-from src.company_bc.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 from adapters.http.company_app.talent_pool.controllers.talent_pool_controller import TalentPoolController
 from adapters.http.company_app.talent_pool.schemas.talent_pool_schemas import (
     AddToTalentPoolRequest,
@@ -17,6 +15,8 @@ from adapters.http.company_app.talent_pool.schemas.talent_pool_schemas import (
     ChangeTalentPoolStatusRequest,
     TalentPoolEntryResponse,
 )
+from core.container import Container
+from src.company_bc.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 
 router = APIRouter(
     prefix="/api/company/talent-pool",

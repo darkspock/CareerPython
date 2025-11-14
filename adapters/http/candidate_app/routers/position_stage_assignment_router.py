@@ -1,5 +1,7 @@
 """Position stage assignment router"""
 from typing import List
+
+from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, status
 
 from adapters.http.candidate_app.schemas.position_stage_assignment_schemas import AddUserToStageRequest, \
@@ -8,7 +10,6 @@ from adapters.http.candidate_app.schemas.position_stage_assignment_schemas impor
 from adapters.http.company_app.position_stage_assignment.controllers.position_stage_assignment_controller import \
     PositionStageAssignmentController
 from core.container import Container
-from dependency_injector.wiring import inject, Provide
 
 router = APIRouter(
     prefix="/position-stage-assignments",
@@ -25,8 +26,8 @@ router = APIRouter(
 )
 @inject
 def assign_users_to_stage(
-    request: AssignUsersToStageRequest,
-    controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
+        request: AssignUsersToStageRequest,
+        controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
 ) -> PositionStageAssignmentResponse:
     """Assign users to a stage"""
     return controller.assign_users_to_stage(request)
@@ -41,8 +42,8 @@ def assign_users_to_stage(
 )
 @inject
 def add_user_to_stage(
-    request: AddUserToStageRequest,
-    controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
+        request: AddUserToStageRequest,
+        controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
 ) -> PositionStageAssignmentResponse:
     """Add a user to a stage"""
     return controller.add_user_to_stage(request)
@@ -57,8 +58,8 @@ def add_user_to_stage(
 )
 @inject
 def remove_user_from_stage(
-    request: RemoveUserFromStageRequest,
-    controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
+        request: RemoveUserFromStageRequest,
+        controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
 ) -> PositionStageAssignmentResponse:
     """Remove a user from a stage"""
     return controller.remove_user_from_stage(request)
@@ -73,8 +74,8 @@ def remove_user_from_stage(
 )
 @inject
 def copy_workflow_assignments(
-    request: CopyWorkflowAssignmentsRequest,
-    controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
+        request: CopyWorkflowAssignmentsRequest,
+        controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
 ) -> List[PositionStageAssignmentResponse]:
     """Copy workflow assignments to a position"""
     return controller.copy_workflow_assignments(request)
@@ -89,8 +90,8 @@ def copy_workflow_assignments(
 )
 @inject
 def list_stage_assignments(
-    position_id: str,
-    controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
+        position_id: str,
+        controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
 ) -> List[PositionStageAssignmentResponse]:
     """List all stage assignments for a position"""
     return controller.list_stage_assignments(position_id)
@@ -105,9 +106,9 @@ def list_stage_assignments(
 )
 @inject
 def get_assigned_users(
-    position_id: str,
-    stage_id: str,
-    controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
+        position_id: str,
+        stage_id: str,
+        controller: PositionStageAssignmentController = Depends(Provide[Container.position_stage_assignment_controller])
 ) -> List[str]:
     """Get assigned users for a position-stage combination"""
     return controller.get_assigned_users(position_id, stage_id)

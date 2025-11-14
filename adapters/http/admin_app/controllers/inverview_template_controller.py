@@ -8,6 +8,9 @@ from adapters.http.admin_app.schemas.interview_template import (
     InterviewTemplateQuestionUpdate, InterviewTemplateQuestionResponse
 )
 from src.company_bc.company.domain.value_objects import CompanyId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.application.commands import CreateInterviewTemplateCommand
 from src.interview_bc.interview_template.application.commands.create_interview_template_question import \
     CreateInterviewTemplateQuestionCommand
@@ -47,9 +50,6 @@ from src.interview_bc.interview_template.domain.value_objects.interview_template
     InterviewTemplateQuestionId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_section_id import \
     InterviewTemplateSectionId
-from src.framework.application.command_bus import CommandBus
-from src.framework.application.query_bus import QueryBus
-from src.framework.domain.enums.job_category import JobCategoryEnum
 
 
 class InterviewTemplateController:
@@ -107,7 +107,7 @@ class InterviewTemplateController:
                                   company_id: Optional[str] = None) -> InterviewTemplateResponse:
         # Generate ID before creating the command
         template_id = InterviewTemplateId.generate()
-        
+
         # Convert company_id string to CompanyId VO if provided
         # In company context, company_id is MANDATORY
         company_id_vo = None
@@ -198,9 +198,10 @@ class InterviewTemplateController:
         # First, get the existing template to check if company_id needs updating
         if company_id:
             from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
-            from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import InterviewTemplateRepositoryInterface
+            from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import \
+                InterviewTemplateRepositoryInterface
             from core.container import Container
-            
+
             # Get repository to update company_id if needed
             template_repo: InterviewTemplateRepositoryInterface = Container.interview_template_repository()
             existing_template = template_repo.get_by_id(InterviewTemplateId.from_string(template_id))
@@ -218,7 +219,7 @@ class InterviewTemplateController:
                     legal_notice=template_data.legal_notice
                 )
                 template_repo.update(existing_template)
-        
+
         # Update the main template
         command = UpdateInterviewTemplateCommand(
             template_id=InterviewTemplateId.from_string(template_id),

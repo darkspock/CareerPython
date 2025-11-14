@@ -6,14 +6,14 @@ from typing import Annotated
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
 
+from adapters.http.auth.invitations.controllers.invitation_controller import (
+    InvitationController
+)
 from adapters.http.company_app.company.schemas.company_user_invitation_request import (
     AcceptInvitationRequest
 )
 from adapters.http.company_app.company.schemas.company_user_invitation_response import (
     CompanyUserInvitationResponse,
-)
-from adapters.http.auth.invitations.controllers.invitation_controller import (
-    InvitationController
 )
 from core.container import Container
 

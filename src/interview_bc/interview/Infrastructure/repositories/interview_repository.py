@@ -7,10 +7,11 @@ from sqlalchemy import or_, func
 from sqlalchemy.dialects import postgresql
 
 from core.database import DatabaseInterface
-
-logger = logging.getLogger(__name__)
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.framework.infrastructure.repositories.base import BaseRepository
 from src.interview_bc.interview.Infrastructure.models.interview_model import InterviewModel
 from src.interview_bc.interview.domain.entities.interview import Interview
 from src.interview_bc.interview.domain.enums.interview_enums import (
@@ -22,10 +23,9 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
-from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
-from src.framework.infrastructure.repositories.base import BaseRepository
+
+logger = logging.getLogger(__name__)
 
 
 class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):

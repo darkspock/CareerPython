@@ -1,12 +1,12 @@
 """Router for company operations on candidate applications"""
 from typing import Annotated
+
+from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from dependency_injector.wiring import inject, Provide
 
-from core.container import Container
 from adapters.http.candidate_app.controllers.application_controller import ApplicationController
-
+from core.container import Container
 
 router = APIRouter(
     prefix="/api/company/candidate-applications",
@@ -23,8 +23,8 @@ class AssignCandidateToPositionRequest(BaseModel):
 @router.post("/", status_code=status.HTTP_201_CREATED)
 @inject
 def assign_candidate_to_position(
-    request: AssignCandidateToPositionRequest,
-    controller: Annotated[ApplicationController, Depends(Provide[Container.application_controller])]
+        request: AssignCandidateToPositionRequest,
+        controller: Annotated[ApplicationController, Depends(Provide[Container.application_controller])]
 ) -> dict:
     """
     Company assigns a candidate to a position by creating a candidate_application.
@@ -51,10 +51,10 @@ def assign_candidate_to_position(
 @router.get("/{application_id}/can-process", status_code=status.HTTP_200_OK)
 @inject
 def check_user_can_process_application(
-    application_id: str,
-    user_id: str,  # TODO: Get from auth token/session
-    company_id: str,  # TODO: Get from auth token/session
-    controller: Annotated[ApplicationController, Depends(Provide[Container.application_controller])]
+        application_id: str,
+        user_id: str,  # TODO: Get from auth token/session
+        company_id: str,  # TODO: Get from auth token/session
+        controller: Annotated[ApplicationController, Depends(Provide[Container.application_controller])]
 ) -> dict:
     """
     Check if the current user has permission to process an application at its current stage.

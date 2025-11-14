@@ -1,18 +1,20 @@
 """Candidate Comment Router."""
-import logging
-from typing import List
 import base64
 import json
+import logging
+from typing import List
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status, Security
 from fastapi.security import OAuth2PasswordBearer
 
-from core.container import Container
 from adapters.http.company_app.company.controllers.candidate_comment_controller import CandidateCommentController
-from adapters.http.company_app.company_candidate.schemas.create_candidate_comment_request import CreateCandidateCommentRequest
-from adapters.http.company_app.company_candidate.schemas.update_candidate_comment_request import UpdateCandidateCommentRequest
 from adapters.http.company_app.company_candidate.schemas.candidate_comment_response import CandidateCommentResponse
+from adapters.http.company_app.company_candidate.schemas.create_candidate_comment_request import \
+    CreateCandidateCommentRequest
+from adapters.http.company_app.company_candidate.schemas.update_candidate_comment_request import \
+    UpdateCandidateCommentRequest
+from core.container import Container
 
 log = logging.getLogger(__name__)
 
@@ -27,33 +29,34 @@ def get_company_user_id_from_token(token: str = Security(oauth2_scheme)) -> str:
         parts = token.split('.')
         if len(parts) != 3:
             raise HTTPException(status_code=401, detail="Invalid token format")
-        
+
         payload = parts[1]
         # Add padding if needed
         padding = 4 - len(payload) % 4
         if padding != 4:
             payload += '=' * padding
-        
+
         decoded = base64.urlsafe_b64decode(payload)
         data = json.loads(decoded)
         company_user_id = data.get('company_user_id')
-        
+
         if not company_user_id or not isinstance(company_user_id, str):
             raise HTTPException(status_code=401, detail="company_user_id not found in token")
-        
+
         return str(company_user_id)
     except Exception as e:
         log.error(f"Error extracting company_user_id from token: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-@router.post("/{company_candidate_id}/comments", response_model=CandidateCommentResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/{company_candidate_id}/comments", response_model=CandidateCommentResponse,
+             status_code=status.HTTP_201_CREATED)
 @inject
 def create_comment(
-    company_candidate_id: str,
-    request: CreateCandidateCommentRequest,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller]),
-    company_user_id: str = Depends(get_company_user_id_from_token)
+        company_candidate_id: str,
+        request: CreateCandidateCommentRequest,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller]),
+        company_user_id: str = Depends(get_company_user_id_from_token)
 ) -> CandidateCommentResponse:
     """Create a new comment for a candidate"""
     try:
@@ -69,8 +72,8 @@ def create_comment(
 @router.get("/{company_candidate_id}/comments", response_model=List[CandidateCommentResponse])
 @inject
 def list_comments(
-    company_candidate_id: str,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
+        company_candidate_id: str,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
 ) -> List[CandidateCommentResponse]:
     """Get all comments for a candidate"""
     try:
@@ -86,9 +89,9 @@ def list_comments(
 @router.get("/{company_candidate_id}/comments/stage/{stage_id}", response_model=List[CandidateCommentResponse])
 @inject
 def list_comments_by_stage(
-    company_candidate_id: str,
-    stage_id: str,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
+        company_candidate_id: str,
+        stage_id: str,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
 ) -> List[CandidateCommentResponse]:
     """Get all comments for a candidate in a specific stage"""
     try:
@@ -104,8 +107,8 @@ def list_comments_by_stage(
 @router.get("/{company_candidate_id}/comments/pending/count", response_model=int)
 @inject
 def count_pending_comments(
-    company_candidate_id: str,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
+        company_candidate_id: str,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
 ) -> int:
     """Count pending comments for a candidate"""
     try:
@@ -121,8 +124,8 @@ def count_pending_comments(
 @router.get("/comments/{comment_id}", response_model=CandidateCommentResponse)
 @inject
 def get_comment(
-    comment_id: str,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
+        comment_id: str,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
 ) -> CandidateCommentResponse:
     """Get a comment by ID"""
     result = controller.get_comment_by_id(comment_id)
@@ -137,9 +140,9 @@ def get_comment(
 @router.put("/comments/{comment_id}", response_model=CandidateCommentResponse)
 @inject
 def update_comment(
-    comment_id: str,
-    request: UpdateCandidateCommentRequest,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
+        comment_id: str,
+        request: UpdateCandidateCommentRequest,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
 ) -> CandidateCommentResponse:
     """Update a comment"""
     result = controller.update_comment(comment_id, request)
@@ -154,8 +157,8 @@ def update_comment(
 @router.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 @inject
 def delete_comment(
-    comment_id: str,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
+        comment_id: str,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
 ) -> None:
     """Delete a comment"""
     try:
@@ -171,8 +174,8 @@ def delete_comment(
 @router.post("/comments/{comment_id}/mark-pending", response_model=CandidateCommentResponse)
 @inject
 def mark_comment_as_pending(
-    comment_id: str,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
+        comment_id: str,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
 ) -> CandidateCommentResponse:
     """Mark a comment as pending review"""
     result = controller.mark_as_pending(comment_id)
@@ -187,8 +190,8 @@ def mark_comment_as_pending(
 @router.post("/comments/{comment_id}/mark-reviewed", response_model=CandidateCommentResponse)
 @inject
 def mark_comment_as_reviewed(
-    comment_id: str,
-    controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
+        comment_id: str,
+        controller: CandidateCommentController = Depends(Provide[Container.candidate_comment_controller])
 ) -> CandidateCommentResponse:
     """Mark a comment as reviewed"""
     result = controller.mark_as_reviewed(comment_id)
@@ -198,4 +201,3 @@ def mark_comment_as_reviewed(
             detail="Comment not found"
         )
     return result
-

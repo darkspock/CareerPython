@@ -9,11 +9,12 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer
 
 from adapters.http.auth.schemas.user import UserResponse
+from adapters.http.candidate_app.controllers.resume_controller import ResumeController
 from adapters.http.candidate_app.schemas.resume_request import CreateGeneralResumeRequest, UpdateResumeContentRequest, \
     UpdateResumeNameRequest, BulkDeleteResumesRequest
-from adapters.http.candidate_app.schemas.resume_response import ResumeListResponse, ResumeResponse, ResumeStatisticsResponse
+from adapters.http.candidate_app.schemas.resume_response import ResumeListResponse, ResumeResponse, \
+    ResumeStatisticsResponse
 from core.container import Container
-from adapters.http.candidate_app.controllers.resume_controller import ResumeController
 from src.framework.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)

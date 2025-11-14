@@ -7,8 +7,8 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 
 from core.config import settings
-from src.framework.infrastructure.services.ai.ai_service_factory import get_ai_service
 from src.auth_bc.user.infrastructure.services.pdf_processing_service import PDFProcessingService
+from src.framework.infrastructure.services.ai.ai_service_factory import get_ai_service
 
 logger = logging.getLogger(__name__)
 

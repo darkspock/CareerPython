@@ -6,6 +6,7 @@ from typing import Annotated
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
+from fastapi import Query
 
 from adapters.http.auth.controllers.user import UserController
 from adapters.http.company_app.company.controllers.company_controller import CompanyController
@@ -31,8 +32,8 @@ users_router = APIRouter(prefix="/users", tags=["users-public"])
 @router.post("/register", response_model=CompanyRegistrationResponse, status_code=201)
 @inject
 async def register_company_with_user(
-    request: CompanyRegistrationRequest,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
+        request: CompanyRegistrationRequest,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> CompanyRegistrationResponse:
     """
     Register a new company with a new user
@@ -50,8 +51,8 @@ async def register_company_with_user(
 @router.post("/register/link-user", response_model=LinkUserResponse, status_code=201)
 @inject
 async def link_user_to_company(
-    request: LinkUserRequest,
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
+        request: LinkUserRequest,
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
 ) -> LinkUserResponse:
     """
     Link an existing user to a new company
@@ -68,14 +69,13 @@ async def link_user_to_company(
 
 
 # Public endpoint for checking email (used during registration)
-from fastapi import Query
 
 
 @users_router.get("/check-email")
 @inject
 async def check_email_exists(
-    user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])],
-    email: str = Query(..., description="Email to check"),
+        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])],
+        email: str = Query(..., description="Email to check"),
 ) -> dict:
     """
     Check if an email already exists (public endpoint for registration)
@@ -99,8 +99,8 @@ async def check_email_exists(
 @router.get("/check-domain")
 @inject
 async def check_domain_available(
-    controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
-    domain: str = Query(..., description="Domain to check"),
+        controller: Annotated[CompanyController, Depends(Provide[Container.company_management_controller])],
+        domain: str = Query(..., description="Domain to check"),
 ) -> dict:
     """
     Check if a domain is available for registration (public endpoint)
@@ -115,4 +115,3 @@ async def check_domain_available(
         log.error(f"Error checking domain availability: {str(e)}")
         # Return default response on error
         return {"available": True, "domain": domain}
-

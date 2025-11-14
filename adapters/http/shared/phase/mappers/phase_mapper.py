@@ -1,6 +1,6 @@
 """Phase mapper for converting DTOs to response schemas"""
-from src.shared_bc.customization.phase.application.queries.get_phase_by_id_query import PhaseDto
 from adapters.http.shared.phase.schemas.phase_schemas import PhaseResponse
+from src.shared_bc.customization.phase.application.queries.get_phase_by_id_query import PhaseDto
 
 
 class PhaseMapper:

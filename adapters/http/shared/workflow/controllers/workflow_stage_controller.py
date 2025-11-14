@@ -1,33 +1,33 @@
 """Workflow Stage Controller."""
 from typing import List, Optional
 
-from src.framework.application.command_bus import CommandBus
-from src.framework.application.query_bus import QueryBus
-from src.shared_bc.customization.workflow.application import CreateStageCommand
-from src.shared_bc.customization.workflow.application.commands.stage.update_stage_command import UpdateStageCommand
-from src.shared_bc.customization.workflow.application.commands.stage.delete_stage_command import DeleteStageCommand
-from src.shared_bc.customization.workflow.application import ReorderStagesCommand
-from src.shared_bc.customization.workflow.application.commands.stage.activate_stage_command import ActivateStageCommand
-from src.shared_bc.customization.workflow.application import DeactivateStageCommand
-from src.shared_bc.customization.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
-from src.shared_bc.customization.workflow.application.queries.stage.get_stage_by_id import GetStageByIdQuery
-from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_workflow import ListStagesByWorkflowQuery
-from src.shared_bc.customization.workflow.application import GetInitialStageQuery
-from src.shared_bc.customization.workflow.application.queries.stage.get_final_stages import GetFinalStagesQuery
+from adapters.http.shared.workflow.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
 from adapters.http.shared.workflow.schemas.create_stage_request import CreateStageRequest
-from adapters.http.shared.workflow.schemas.update_stage_request import UpdateStageRequest
 from adapters.http.shared.workflow.schemas.reorder_stages_request import ReorderStagesRequest
 from adapters.http.shared.workflow.schemas.stage_style_request import UpdateStageStyleRequest
+from adapters.http.shared.workflow.schemas.update_stage_request import UpdateStageRequest
 from adapters.http.shared.workflow.schemas.workflow_stage_response import WorkflowStageResponse
-from adapters.http.shared.workflow.mappers.workflow_stage_mapper import WorkflowStageResponseMapper
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
-from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 from src.interview_bc.interview.domain.value_objects.interview_configuration import InterviewConfiguration
-from src.interview_bc.interview.domain.enums.interview_enums import InterviewModeEnum
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.application import CreateStageCommand
+from src.shared_bc.customization.workflow.application import DeactivateStageCommand
+from src.shared_bc.customization.workflow.application import GetInitialStageQuery
+from src.shared_bc.customization.workflow.application import ReorderStagesCommand
+from src.shared_bc.customization.workflow.application.commands.stage.activate_stage_command import ActivateStageCommand
+from src.shared_bc.customization.workflow.application.commands.stage.delete_stage_command import DeleteStageCommand
+from src.shared_bc.customization.workflow.application.commands.stage.update_stage_command import UpdateStageCommand
+from src.shared_bc.customization.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
+from src.shared_bc.customization.workflow.application.queries.stage.get_final_stages import GetFinalStagesQuery
+from src.shared_bc.customization.workflow.application.queries.stage.get_stage_by_id import GetStageByIdQuery
+from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_workflow import \
+    ListStagesByWorkflowQuery
+from src.shared_bc.customization.workflow.domain.enums.kanban_display_enum import KanbanDisplayEnum
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_style import WorkflowStageStyle
 
 
 class WorkflowStageController:
@@ -80,7 +80,8 @@ class WorkflowStageController:
             deadline_days=request.deadline_days,
             estimated_cost=request.estimated_cost,
             next_phase_id=PhaseId.from_string(request.next_phase_id) if request.next_phase_id else None,  # Phase 12
-            kanban_display=KanbanDisplayEnum(request.kanban_display) if request.kanban_display else KanbanDisplayEnum.COLUMN,
+            kanban_display=KanbanDisplayEnum(
+                request.kanban_display) if request.kanban_display else KanbanDisplayEnum.COLUMN,
             style=style,
             validation_rules=request.validation_rules,
             recommended_rules=request.recommended_rules,
@@ -116,9 +117,10 @@ class WorkflowStageController:
 
     def list_stages_by_phase(self, phase_id: str, workflow_type: str) -> List[WorkflowStageResponse]:
         """List all stages for a phase."""
-        from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_phase import ListStagesByPhaseQuery
+        from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_phase import \
+            ListStagesByPhaseQuery
         from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-        
+
         query = ListStagesByPhaseQuery(
             phase_id=PhaseId.from_string(phase_id),
             workflow_type=WorkflowTypeEnum(workflow_type)
@@ -147,7 +149,7 @@ class WorkflowStageController:
     def update_stage(self, stage_id: str, request: UpdateStageRequest) -> WorkflowStageResponse:
         """Update stage information."""
         stage_id_vo = WorkflowStageId.from_string(stage_id)
-        
+
         # Convert style dict to WorkflowStageStyle if provided
         style = None
         if request.style:
@@ -210,7 +212,7 @@ class WorkflowStageController:
         """Reorder stages in a workflow."""
         workflow_id_vo = WorkflowId.from_string(workflow_id)
         stage_ids_vo = [WorkflowStageId.from_string(sid) for sid in request.stage_ids_in_order]
-        
+
         command = ReorderStagesCommand(
             workflow_id=workflow_id_vo,
             stage_ids_in_order=stage_ids_vo
@@ -254,11 +256,11 @@ class WorkflowStageController:
     def update_stage_style(self, stage_id: str, style_request: UpdateStageStyleRequest) -> WorkflowStageResponse:
         """Update the visual style of a workflow stage."""
         stage_id_vo = WorkflowStageId.from_string(stage_id)
-        
+
         # First get the current stage
         query = GetStageByIdQuery(id=stage_id_vo)
         dto: Optional[WorkflowStageDto] = self._query_bus.query(query)
-        
+
         if not dto:
             raise Exception("Stage not found")
 
@@ -267,7 +269,7 @@ class WorkflowStageController:
             **dto.style,
             **{k: v for k, v in style_request.model_dump().items() if v is not None}
         }
-        
+
         updated_style = WorkflowStageStyle(
             background_color=updated_style_dict.get("background_color", "#ffffff"),
             text_color=updated_style_dict.get("text_color", "#000000"),

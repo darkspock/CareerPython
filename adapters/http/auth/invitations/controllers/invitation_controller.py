@@ -12,6 +12,7 @@ from adapters.http.company_app.company.schemas.company_user_invitation_request i
 from adapters.http.company_app.company.schemas.company_user_invitation_response import (
     CompanyUserInvitationResponse,
 )
+from src.auth_bc.user.domain.value_objects import UserId
 from src.company_bc.company.application.commands.accept_user_invitation_command import (
     AcceptUserInvitationCommand
 )
@@ -24,7 +25,6 @@ from src.company_bc.company.application.queries.get_user_invitation_query import
 from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
-from src.auth_bc.user.domain.value_objects import UserId
 
 
 class InvitationController:

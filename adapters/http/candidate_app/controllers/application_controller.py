@@ -6,22 +6,26 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
-from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
-from src.framework.application.command_bus import CommandBus
-from src.framework.application.query_bus import QueryBus
-from src.company_bc.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommand
-from src.company_bc.candidate_application.application.commands.update_application_status import UpdateApplicationStatusCommand
-from src.company_bc.candidate_application.application.queries.get_applications_by_candidate_id import GetApplicationsByCandidateIdQuery
-from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
+from adapters.http.candidate_app.schemas.candidate_job_applications import (
+    CandidateJobApplicationSummary,
+    JobApplicationListFilters
+)
+from src.company_bc.candidate_application.application.commands.create_candidate_application import \
+    CreateCandidateApplicationCommand
+from src.company_bc.candidate_application.application.commands.update_application_status import \
+    UpdateApplicationStatusCommand
+from src.company_bc.candidate_application.application.queries.get_applications_by_candidate_id import \
+    GetApplicationsByCandidateIdQuery
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import \
+    CandidateApplicationDto
 from src.company_bc.candidate_application.application.services.stage_permission_service import StagePermissionService
 from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
 from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import (
     CandidateApplicationRepositoryInterface
 )
-from adapters.http.candidate_app.schemas.candidate_job_applications import (
-    CandidateJobApplicationSummary,
-    JobApplicationListFilters
-)
+from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +34,11 @@ class ApplicationController:
     """Controller for managing candidate job applications"""
 
     def __init__(
-        self,
-        command_bus: CommandBus,
-        query_bus: QueryBus,
-        stage_permission_service: Optional[StagePermissionService] = None,
-        application_repository: Optional[CandidateApplicationRepositoryInterface] = None
+            self,
+            command_bus: CommandBus,
+            query_bus: QueryBus,
+            stage_permission_service: Optional[StagePermissionService] = None,
+            application_repository: Optional[CandidateApplicationRepositoryInterface] = None
     ):
         self._command_bus = command_bus
         self._query_bus = query_bus
@@ -42,9 +46,9 @@ class ApplicationController:
         self._application_repository = application_repository
 
     def get_applications_by_candidate(
-        self,
-        candidate_id: str,
-        filters: JobApplicationListFilters
+            self,
+            candidate_id: str,
+            filters: JobApplicationListFilters
     ) -> List[CandidateJobApplicationSummary]:
         """Get all applications for a candidate with optional filtering"""
         try:
@@ -66,10 +70,10 @@ class ApplicationController:
             raise HTTPException(status_code=500, detail="Failed to retrieve applications")
 
     def create_application(
-        self,
-        candidate_id: str,
-        job_position_id: str,
-        cover_letter: Optional[str] = None
+            self,
+            candidate_id: str,
+            job_position_id: str,
+            cover_letter: Optional[str] = None
     ) -> str:
         """Create a new job application"""
         try:
@@ -93,10 +97,10 @@ class ApplicationController:
             raise HTTPException(status_code=500, detail="Failed to create application")
 
     def update_application_status(
-        self,
-        application_id: str,
-        status: ApplicationStatusEnum,
-        notes: Optional[str] = None
+            self,
+            application_id: str,
+            status: ApplicationStatusEnum,
+            notes: Optional[str] = None
     ) -> None:
         """Update application status"""
         try:
@@ -126,10 +130,10 @@ class ApplicationController:
         )
 
     def can_user_process_application(
-        self,
-        user_id: str,
-        application_id: str,
-        company_id: str
+            self,
+            user_id: str,
+            application_id: str,
+            company_id: str
     ) -> bool:
         """Check if user has permission to process an application at its current stage
 

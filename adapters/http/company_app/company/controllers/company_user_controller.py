@@ -16,6 +16,7 @@ from adapters.http.company_app.company.schemas.company_user_request import (
     UpdateCompanyUserRequest,
 )
 from adapters.http.company_app.company.schemas.company_user_response import CompanyUserResponse
+from src.auth_bc.user.domain.value_objects import UserId
 from src.company_bc.company.application import GetCompanyUserByCompanyAndUserQuery, GetCompanyUserByIdQuery, \
     ListCompanyUsersByCompanyQuery
 from src.company_bc.company.application.commands import (
@@ -35,7 +36,6 @@ from src.company_bc.company.domain.exceptions.company_exceptions import (
 from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
-from src.auth_bc.user.domain.value_objects import UserId
 
 
 class CompanyUserController:

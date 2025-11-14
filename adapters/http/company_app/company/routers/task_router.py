@@ -3,14 +3,15 @@ Router for task management operations
 Phase 6: Task Management System
 """
 from typing import Annotated, Optional, List
+
+from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
-from dependency_injector.wiring import inject, Provide
 
-from core.container import Container
 from adapters.http.company_app.company.controllers.task_controller import TaskController
-from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import CandidateApplicationDto
-
+from core.container import Container
+from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import \
+    CandidateApplicationDto
 
 router = APIRouter(
     prefix="/api/company/tasks",
@@ -33,10 +34,10 @@ class UnclaimTaskRequest(BaseModel):
 @router.get("/my-tasks", status_code=status.HTTP_200_OK)
 @inject
 def get_my_assigned_tasks(
-    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])],
-    user_id: str = Query(..., description="User ID to get tasks for"),  # TODO: Get from auth token/session
-    stage_id: Optional[str] = Query(None, description="Filter by specific stage ID"),
-    limit: Optional[int] = Query(None, description="Limit number of results", ge=1, le=100),
+        controller: Annotated[TaskController, Depends(Provide[Container.task_controller])],
+        user_id: str = Query(..., description="User ID to get tasks for"),  # TODO: Get from auth token/session
+        stage_id: Optional[str] = Query(None, description="Filter by specific stage ID"),
+        limit: Optional[int] = Query(None, description="Limit number of results", ge=1, le=100),
 ) -> List[CandidateApplicationDto]:
     """
     Get all tasks assigned to the current user.
@@ -67,8 +68,8 @@ def get_my_assigned_tasks(
 @router.post("/claim", status_code=status.HTTP_200_OK)
 @inject
 def claim_task(
-    request: ClaimTaskRequest,
-    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])]
+        request: ClaimTaskRequest,
+        controller: Annotated[TaskController, Depends(Provide[Container.task_controller])]
 ) -> dict:
     """
     Claim a task for processing.
@@ -99,8 +100,8 @@ def claim_task(
 @router.post("/unclaim", status_code=status.HTTP_200_OK)
 @inject
 def unclaim_task(
-    request: UnclaimTaskRequest,
-    controller: Annotated[TaskController, Depends(Provide[Container.task_controller])]
+        request: UnclaimTaskRequest,
+        controller: Annotated[TaskController, Depends(Provide[Container.task_controller])]
 ) -> dict:
     """
     Unclaim/release a task back to pending status.

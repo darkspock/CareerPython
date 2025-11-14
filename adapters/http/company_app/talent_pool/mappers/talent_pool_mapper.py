@@ -3,8 +3,8 @@ Talent Pool Mapper
 Phase 8: Mapper for converting DTOs to response schemas
 """
 
-from src.company_bc.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEntryDto
 from adapters.http.company_app.talent_pool.schemas.talent_pool_schemas import TalentPoolEntryResponse
+from src.company_bc.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEntryDto
 
 
 class TalentPoolMapper:

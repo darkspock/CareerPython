@@ -1,7 +1,9 @@
-from src.shared_bc.customization.field_validation.application.dtos.validation_rule_dto import ValidationRuleDto
-from src.shared_bc.customization.field_validation.application.dtos.stage_validation_result_dto import StageValidationResultDto, ValidationIssueDto
+from adapters.http.shared.field_validation.schemas.validation_result_response import ValidationResultResponse, \
+    ValidationIssueResponse
 from adapters.http.shared.field_validation.schemas.validation_rule_response import ValidationRuleResponse
-from adapters.http.shared.field_validation.schemas.validation_result_response import ValidationResultResponse, ValidationIssueResponse
+from src.shared_bc.customization.field_validation.application.dtos.stage_validation_result_dto import \
+    StageValidationResultDto, ValidationIssueDto
+from src.shared_bc.customization.field_validation.application.dtos.validation_rule_dto import ValidationRuleDto
 
 
 class ValidationRuleResponseMapper:

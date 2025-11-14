@@ -301,22 +301,22 @@ class JobPositionController:
                 message=f"Failed to delete position: {str(e)}"
             )
 
-# Status management methods (activate, pause, resume, close, archive) have been removed.
-# Use move_position_to_stage() instead.
+    # Status management methods (activate, pause, resume, close, archive) have been removed.
+    # Use move_position_to_stage() instead.
 
     def move_position_to_stage(
-        self,
-        position_id: str,
-        stage_id: str,
-        comment: Optional[str] = None,
-        user_id: Optional[str] = None
+            self,
+            position_id: str,
+            stage_id: str,
+            comment: Optional[str] = None,
+            user_id: Optional[str] = None
     ) -> dict:
         """Move a job position to a new stage"""
         from src.company_bc.job_position.application.commands.move_job_position_to_stage import (
             MoveJobPositionToStageCommand,
             JobPositionValidationError
         )
-        
+
         try:
             command = MoveJobPositionToStageCommand(
                 id=JobPositionId.from_string(position_id),
@@ -325,7 +325,7 @@ class JobPositionController:
                 user_id=user_id
             )
             self.command_bus.dispatch(command)
-            
+
             return {
                 "success": True,
                 "message": "Position moved to stage successfully",
@@ -339,22 +339,22 @@ class JobPositionController:
             raise
 
     def update_custom_fields(
-        self,
-        position_id: str,
-        custom_fields_values: Dict[str, Any]
+            self,
+            position_id: str,
+            custom_fields_values: Dict[str, Any]
     ) -> dict:
         """Update custom fields values for a job position"""
         from src.company_bc.job_position.application.commands.update_job_position_custom_fields import (
             UpdateJobPositionCustomFieldsCommand
         )
-        
+
         try:
             command = UpdateJobPositionCustomFieldsCommand(
                 id=JobPositionId.from_string(position_id),
                 custom_fields_values=custom_fields_values
             )
             self.command_bus.dispatch(command)
-            
+
             return {
                 "success": True,
                 "message": "Custom fields updated successfully",

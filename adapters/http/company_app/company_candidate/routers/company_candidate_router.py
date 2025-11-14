@@ -3,13 +3,16 @@ from typing import List, Optional
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from adapters.http.company_app.company_candidate.controllers.company_candidate_controller import \
+    CompanyCandidateController
 from adapters.http.company_app.company_candidate.schemas.assign_workflow_request import AssignWorkflowRequest
-from adapters.http.company_app.company_candidate.schemas.company_candidate_response import CompanyCandidateResponse
-from core.container import Container
-from adapters.http.company_app.company_candidate.controllers.company_candidate_controller import CompanyCandidateController
 from adapters.http.company_app.company_candidate.schemas.change_stage_request import ChangeStageRequest
-from adapters.http.company_app.company_candidate.schemas.create_company_candidate_request import CreateCompanyCandidateRequest
-from adapters.http.company_app.company_candidate.schemas.update_company_candidate_request import UpdateCompanyCandidateRequest
+from adapters.http.company_app.company_candidate.schemas.company_candidate_response import CompanyCandidateResponse
+from adapters.http.company_app.company_candidate.schemas.create_company_candidate_request import \
+    CreateCompanyCandidateRequest
+from adapters.http.company_app.company_candidate.schemas.update_company_candidate_request import \
+    UpdateCompanyCandidateRequest
+from core.container import Container
 
 router = APIRouter(
     prefix="/api/company-candidates",

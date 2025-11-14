@@ -3,4 +3,3 @@ from adapters.http.shared.customization.routers.entity_customization_router impo
 __all__ = [
     "entity_customization_router",
 ]
-

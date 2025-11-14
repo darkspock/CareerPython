@@ -12,7 +12,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from adapters.http.auth.schemas.token import Token
 from adapters.http.auth.schemas.user import UserResponse
 from adapters.http.auth.services.authentication_service import get_current_user
-from core.container import Container
 from adapters.http.candidate_app.controllers.application_controller import ApplicationController
 from adapters.http.candidate_app.controllers.candidate import CandidateController
 from adapters.http.candidate_app.schemas.candidate import CandidateCreate, CandidateUpdate, CandidateResponse, \
@@ -25,14 +24,16 @@ from adapters.http.candidate_app.schemas.candidate_job_applications import (
     CandidateJobApplicationSummary,
     JobApplicationListFilters
 )
-from adapters.http.candidate_app.schemas.candidate_project import CandidateProjectResponse, CandidateProjectCreateRequest
+from adapters.http.candidate_app.schemas.candidate_project import CandidateProjectResponse, \
+    CandidateProjectCreateRequest
+from core.container import Container
+from src.auth_bc.user.application import AuthenticateUserQuery
+from src.auth_bc.user.application.queries.dtos.auth_dto import AuthenticatedUserDto
+from src.auth_bc.user.domain.value_objects import UserId
 from src.candidate_bc.candidate.application import GetCandidateByUserIdQuery
 from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
 from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
 from src.framework.application.query_bus import QueryBus
-from src.auth_bc.user.application import AuthenticateUserQuery
-from src.auth_bc.user.application.queries.dtos.auth_dto import AuthenticatedUserDto
-from src.auth_bc.user.domain.value_objects import UserId
 
 log = logging.getLogger(__name__)
 

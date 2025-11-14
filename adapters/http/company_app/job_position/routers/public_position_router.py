@@ -7,8 +7,6 @@ from typing import Optional
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
-from core.container import Container
-from src.company_bc.job_position.domain.exceptions import JobPositionNotFoundError
 from adapters.http.company_app.job_position.controllers.public_position_controller import PublicPositionController
 from adapters.http.company_app.job_position.schemas.public_position_schemas import (
     PublicPositionResponse,
@@ -16,6 +14,8 @@ from adapters.http.company_app.job_position.schemas.public_position_schemas impo
     SubmitApplicationRequest,
     SubmitApplicationResponse
 )
+from core.container import Container
+from src.company_bc.job_position.domain.exceptions import JobPositionNotFoundError
 
 router = APIRouter(prefix="/public/positions", tags=["public-positions"])
 

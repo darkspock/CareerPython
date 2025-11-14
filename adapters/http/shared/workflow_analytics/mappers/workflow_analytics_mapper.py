@@ -5,17 +5,17 @@ Phase 9: Convert DTOs to Response schemas
 
 from typing import List
 
-from src.shared_bc.customization.workflow_analytics.application.dtos import (
-    WorkflowAnalyticsDto,
-    StageAnalyticsDto,
-    StageBottleneckDto,
-    WorkflowPerformanceDto
-)
 from adapters.http.shared.workflow_analytics.schemas import (
     WorkflowAnalyticsResponse,
     StageAnalyticsResponse,
     StageBottleneckResponse,
     WorkflowPerformanceResponse
+)
+from src.shared_bc.customization.workflow_analytics.application.dtos import (
+    WorkflowAnalyticsDto,
+    StageAnalyticsDto,
+    StageBottleneckDto,
+    WorkflowPerformanceDto
 )
 
 

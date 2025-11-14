@@ -3,7 +3,8 @@ from typing import Optional, List, Dict
 
 from pydantic import BaseModel, Field, EmailStr
 
-from src.candidate_bc.candidate.domain.enums import WorkModalityEnum, LanguageLevelEnum, CandidateTypeEnum, CandidateStatusEnum
+from src.candidate_bc.candidate.domain.enums import WorkModalityEnum, LanguageLevelEnum, CandidateTypeEnum, \
+    CandidateStatusEnum
 from src.framework.domain.enums.job_category import JobCategoryEnum
 
 

@@ -6,7 +6,8 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, field_validator, ConfigDict
 
 from src.candidate_bc.candidate.domain.enums import CandidateTypeEnum
-from src.candidate_bc.candidate.domain.enums.candidate_enums import WorkModalityEnum, LanguageLevelEnum, LanguageEnum, CandidateStatusEnum, PositionRoleEnum
+from src.candidate_bc.candidate.domain.enums.candidate_enums import WorkModalityEnum, LanguageLevelEnum, LanguageEnum, \
+    CandidateStatusEnum, PositionRoleEnum
 from src.framework.domain.enums.job_category import JobCategoryEnum
 
 

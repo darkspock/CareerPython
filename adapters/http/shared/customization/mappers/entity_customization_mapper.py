@@ -1,6 +1,7 @@
-from src.shared_bc.customization.entity_customization.application.dtos.entity_customization_dto import EntityCustomizationDto
-from adapters.http.shared.customization.schemas.entity_customization_response import EntityCustomizationResponse
 from adapters.http.shared.customization.mappers.custom_field_mapper import CustomFieldResponseMapper
+from adapters.http.shared.customization.schemas.entity_customization_response import EntityCustomizationResponse
+from src.shared_bc.customization.entity_customization.application.dtos.entity_customization_dto import \
+    EntityCustomizationDto
 
 
 class EntityCustomizationResponseMapper:
@@ -19,4 +20,3 @@ class EntityCustomizationResponseMapper:
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
-

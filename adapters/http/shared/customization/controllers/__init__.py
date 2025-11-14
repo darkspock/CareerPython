@@ -3,4 +3,3 @@ from adapters.http.shared.customization.controllers.entity_customization_control
 __all__ = [
     "EntityCustomizationController",
 ]
-

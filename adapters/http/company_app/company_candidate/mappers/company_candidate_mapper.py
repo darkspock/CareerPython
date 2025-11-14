@@ -1,9 +1,10 @@
 from typing import Optional, Dict, Any
+
+from adapters.http.company_app.company_candidate.schemas.company_candidate_response import CompanyCandidateResponse
 from src.company_bc.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
 from src.company_bc.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import (
     CompanyCandidateWithCandidateReadModel
 )
-from adapters.http.company_app.company_candidate.schemas.company_candidate_response import CompanyCandidateResponse
 
 
 class CompanyCandidateResponseMapper:
@@ -37,8 +38,8 @@ class CompanyCandidateResponseMapper:
 
     @staticmethod
     def read_model_to_response(
-        read_model: CompanyCandidateWithCandidateReadModel,
-        custom_field_values: Optional[Dict[str, Any]] = None
+            read_model: CompanyCandidateWithCandidateReadModel,
+            custom_field_values: Optional[Dict[str, Any]] = None
     ) -> CompanyCandidateResponse:
         """Convert ReadModel to response"""
         return CompanyCandidateResponse(

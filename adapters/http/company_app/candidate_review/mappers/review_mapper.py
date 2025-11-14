@@ -24,4 +24,3 @@ class ReviewResponseMapper:
             created_by_user_name=dto.created_by_user_name,
             created_by_user_email=dto.created_by_user_email,
         )
-

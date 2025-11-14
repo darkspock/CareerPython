@@ -3,38 +3,46 @@ from typing import List, Optional
 
 from adapters.http.company_app.company_candidate.mappers.company_candidate_mapper import CompanyCandidateResponseMapper
 from adapters.http.company_app.company_candidate.schemas.assign_workflow_request import AssignWorkflowRequest
+from adapters.http.company_app.company_candidate.schemas.change_stage_request import ChangeStageRequest
 from adapters.http.company_app.company_candidate.schemas.company_candidate_response import CompanyCandidateResponse
+from adapters.http.company_app.company_candidate.schemas.create_company_candidate_request import \
+    CreateCompanyCandidateRequest
+from adapters.http.company_app.company_candidate.schemas.update_company_candidate_request import \
+    UpdateCompanyCandidateRequest
+from src.auth_bc.user.domain.value_objects import UserId
 from src.candidate_bc.candidate.application.commands import CreateCandidateCommand
 from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
 from src.candidate_bc.candidate.domain.value_objects import CandidateId
 from src.company_bc.company.domain import CompanyId
 from src.company_bc.company.domain.value_objects import CompanyUserId
-from src.company_bc.company_candidate.application.commands.archive_company_candidate_command import ArchiveCompanyCandidateCommand
+from src.company_bc.company_candidate.application.commands.archive_company_candidate_command import \
+    ArchiveCompanyCandidateCommand
 from src.company_bc.company_candidate.application.commands.assign_workflow_command import AssignWorkflowCommand
 from src.company_bc.company_candidate.application.commands.change_stage_command import ChangeStageCommand
-from src.company_bc.company_candidate.application.commands.confirm_company_candidate_command import ConfirmCompanyCandidateCommand
-from src.company_bc.company_candidate.application.commands.create_company_candidate_command import CreateCompanyCandidateCommand
-from src.company_bc.company_candidate.application.commands.reject_company_candidate_command import RejectCompanyCandidateCommand
+from src.company_bc.company_candidate.application.commands.confirm_company_candidate_command import \
+    ConfirmCompanyCandidateCommand
+from src.company_bc.company_candidate.application.commands.create_company_candidate_command import \
+    CreateCompanyCandidateCommand
+from src.company_bc.company_candidate.application.commands.reject_company_candidate_command import \
+    RejectCompanyCandidateCommand
 from src.company_bc.company_candidate.application.commands.transfer_ownership_command import TransferOwnershipCommand
-from src.company_bc.company_candidate.application.commands.update_company_candidate_command import UpdateCompanyCandidateCommand
+from src.company_bc.company_candidate.application.commands.update_company_candidate_command import \
+    UpdateCompanyCandidateCommand
 from src.company_bc.company_candidate.application.dtos.company_candidate_dto import CompanyCandidateDto
 from src.company_bc.company_candidate.application.queries.get_company_candidate_by_company_and_candidate import \
     GetCompanyCandidateByCompanyAndCandidateQuery
-from src.company_bc.company_candidate.application.queries.get_company_candidate_by_id import GetCompanyCandidateByIdQuery
+from src.company_bc.company_candidate.application.queries.get_company_candidate_by_id import \
+    GetCompanyCandidateByIdQuery
 from src.company_bc.company_candidate.application.queries.list_company_candidates_by_candidate import \
     ListCompanyCandidatesByCandidateQuery
 from src.company_bc.company_candidate.domain.enums import CandidatePriority
 from src.company_bc.company_candidate.domain.read_models.company_candidate_with_candidate_read_model import \
     CompanyCandidateWithCandidateReadModel
 from src.company_bc.company_candidate.domain.value_objects import CompanyCandidateId
-from adapters.http.company_app.company_candidate.schemas.change_stage_request import ChangeStageRequest
-from adapters.http.company_app.company_candidate.schemas.create_company_candidate_request import CreateCompanyCandidateRequest
-from adapters.http.company_app.company_candidate.schemas.update_company_candidate_request import UpdateCompanyCandidateRequest
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
-from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
-from src.auth_bc.user.domain.value_objects import UserId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
 
 class CompanyCandidateController:
@@ -84,7 +92,8 @@ class CompanyCandidateController:
                 # If candidate creation fails due to duplicate email, search for existing candidate
                 if "email ya está registrado" in str(e) or "already exists" in str(e).lower():
                     # Search for existing candidate by email using specific query
-                    from src.candidate_bc.candidate.application.queries.get_candidate_by_email import GetCandidateByEmailQuery
+                    from src.candidate_bc.candidate.application.queries.get_candidate_by_email import \
+                        GetCandidateByEmailQuery
                     search_query = GetCandidateByEmailQuery(email=request.candidate_email)
                     candidate_dto: Optional[CandidateDto] = self._query_bus.query(search_query)
 
@@ -137,9 +146,11 @@ class CompanyCandidateController:
 
         # Get custom field values
         from typing import Dict, Any
-        from src.shared_bc.customization.entity_customization.application.queries.get_custom_field_values_by_entity_query import GetCustomFieldValuesByEntityQuery
-        from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
-        
+        from src.shared_bc.customization.entity_customization.application.queries.get_custom_field_values_by_entity_query import \
+            GetCustomFieldValuesByEntityQuery
+        from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import \
+            EntityCustomizationTypeEnum
+
         custom_field_values_query = GetCustomFieldValuesByEntityQuery(
             entity_type=EntityCustomizationTypeEnum.CANDIDATE_APPLICATION,
             entity_id=company_candidate_id
@@ -289,4 +300,3 @@ class CompanyCandidateController:
             raise Exception("Company candidate not found")
 
         return CompanyCandidateResponseMapper.dto_to_response(dto)
-

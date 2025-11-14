@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+
+from pydantic import BaseModel, Field
 
 from adapters.http.shared.customization.schemas.custom_field_response import CustomFieldResponse
 
@@ -18,4 +19,3 @@ class EntityCustomizationResponse(BaseModel):
 
     class Config:
         from_attributes = True
-

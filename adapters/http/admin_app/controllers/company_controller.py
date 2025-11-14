@@ -6,7 +6,8 @@ from adapters.http.admin_app.schemas.company import (
     CompanyCreate, CompanyUpdate, CompanyResponse, CompanyListResponse,
     CompanyStatsResponse, CompanyActionResponse
 )
-from src.company_bc.company.application.commands import CreateCompanyCommand, UpdateCompanyCommand, ActivateCompanyCommand, \
+from src.company_bc.company.application.commands import CreateCompanyCommand, UpdateCompanyCommand, \
+    ActivateCompanyCommand, \
     SuspendCompanyCommand, DeleteCompanyCommand
 # DTOs and schemas
 from src.company_bc.company.application.queries.dtos.company_dto import CompanyDto

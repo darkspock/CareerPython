@@ -10,9 +10,9 @@ from fastapi.security import OAuth2PasswordBearer
 
 from adapters.http.auth.schemas.user import UserResponse
 from core.container import Container
-from src.framework.application.query_bus import QueryBus
-from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
 from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
+from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
+from src.framework.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)
 
@@ -48,8 +48,8 @@ class AuthenticationService:
 # Dependency function for FastAPI
 @inject
 def get_current_user(
-    query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
-    token: str = Security(oauth2_scheme),
+        query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
+        token: str = Security(oauth2_scheme),
 ) -> UserResponse:
     """FastAPI dependency to get current authenticated user"""
     auth_service = AuthenticationService(query_bus)

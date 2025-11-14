@@ -10,8 +10,13 @@ from adapters.http.candidate_app.schemas.candidate_education import CandidateEdu
     CandidateEducationCreateRequest
 from adapters.http.candidate_app.schemas.candidate_experience import CandidateExperienceResponse, \
     CandidateExperienceCreateRequest
-from adapters.http.candidate_app.schemas.candidate_project import CandidateProjectResponse, CandidateProjectCreateRequest
+from adapters.http.candidate_app.schemas.candidate_project import CandidateProjectResponse, \
+    CandidateProjectCreateRequest
 from adapters.http.candidate_app.services.profile_validation_service import ProfileValidationService
+from src.auth_bc.user.domain.value_objects import UserId
+from src.candidate_bc.candidate.application import GetCandidateByIdQuery, GetCandidateByUserIdQuery, ListCandidatesQuery
+from src.candidate_bc.candidate.application import GetEducationByIdQuery
+from src.candidate_bc.candidate.application import GetProjectByIdQuery
 from src.candidate_bc.candidate.application.commands import CreateCandidateCommand
 from src.candidate_bc.candidate.application.commands.create_education import CreateEducationCommand
 from src.candidate_bc.candidate.application.commands.create_experience import CreateExperienceCommand
@@ -23,12 +28,11 @@ from src.candidate_bc.candidate.application.commands.update_candidate_basic impo
 from src.candidate_bc.candidate.application.commands.update_education import UpdateEducationCommand
 from src.candidate_bc.candidate.application.commands.update_experience import UpdateExperienceCommand
 from src.candidate_bc.candidate.application.commands.update_project import UpdateProjectCommand
-from src.candidate_bc.candidate.application import GetCandidateByIdQuery, GetCandidateByUserIdQuery, ListCandidatesQuery
-from src.candidate_bc.candidate.application import GetEducationByIdQuery
-from src.candidate_bc.candidate.application.queries.get_educations_by_candidate_id import GetEducationsByCandidateIdQuery
+from src.candidate_bc.candidate.application.queries.get_educations_by_candidate_id import \
+    GetEducationsByCandidateIdQuery
 from src.candidate_bc.candidate.application.queries.get_experience_by_id import GetExperienceByIdQuery
-from src.candidate_bc.candidate.application.queries.get_experiences_by_candidate_id import GetExperiencesByCandidateIdQuery
-from src.candidate_bc.candidate.application import GetProjectByIdQuery
+from src.candidate_bc.candidate.application.queries.get_experiences_by_candidate_id import \
+    GetExperiencesByCandidateIdQuery
 from src.candidate_bc.candidate.application.queries.get_projects_by_candidate_id import GetProjectsByCandidateIdQuery
 from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
 from src.candidate_bc.candidate.application.queries.shared.candidate_education_dto import CandidateEducationDto
@@ -41,7 +45,6 @@ from src.candidate_bc.candidate.domain.value_objects import CandidateId, Candida
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 from src.framework.domain.enums.job_category import JobCategoryEnum
-from src.auth_bc.user.domain.value_objects import UserId
 
 log = logging.getLogger(__name__)
 

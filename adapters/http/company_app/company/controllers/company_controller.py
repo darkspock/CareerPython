@@ -1,13 +1,9 @@
 from typing import List, Optional
 
+import ulid
 from fastapi import HTTPException, status
 
 from adapters.http.company_app.company.mappers.company_mapper import CompanyResponseMapper
-from adapters.http.company_app.company.schemas.company_request import (
-    CreateCompanyRequest,
-    UpdateCompanyRequest,
-)
-from adapters.http.company_app.company.schemas.company_response import CompanyResponse
 from adapters.http.company_app.company.schemas.company_registration_request import (
     CompanyRegistrationRequest,
     LinkUserRequest,
@@ -16,6 +12,13 @@ from adapters.http.company_app.company.schemas.company_registration_response imp
     CompanyRegistrationResponse,
     LinkUserResponse,
 )
+from adapters.http.company_app.company.schemas.company_request import (
+    CreateCompanyRequest,
+    UpdateCompanyRequest,
+)
+from adapters.http.company_app.company.schemas.company_response import CompanyResponse
+from src.auth_bc.user.domain.exceptions.user_exceptions import EmailAlreadyExistException, UserNotFoundError
+from src.auth_bc.user.domain.value_objects import UserId
 from src.company_bc.company.application import GetCompanyByIdQuery, GetCompanyBySlugQuery, GetCompanyByDomainQuery, \
     ListCompaniesQuery
 from src.company_bc.company.application.commands import (
@@ -26,26 +29,22 @@ from src.company_bc.company.application.commands import (
     ActivateCompanyCommand,
     DeleteCompanyCommand,
 )
-from src.company_bc.company.application.commands.register_company_with_user_command import (
-    RegisterCompanyWithUserCommand,
-)
 from src.company_bc.company.application.commands.link_user_to_company_command import (
     LinkUserToCompanyCommand,
 )
+from src.company_bc.company.application.commands.register_company_with_user_command import (
+    RegisterCompanyWithUserCommand,
+)
 from src.company_bc.company.application.dtos.company_dto import CompanyDto
-
 from src.company_bc.company.domain import CompanyId, CompanyStatusEnum
-from src.company_bc.company.domain.value_objects import CompanyId as CompanyIdVO
-from src.auth_bc.user.domain.value_objects import UserId
 from src.company_bc.company.domain.exceptions.company_exceptions import (
     CompanyNotFoundError,
     CompanyValidationError, CompanyDomainAlreadyExistsError,
 )
-from src.auth_bc.user.domain.exceptions.user_exceptions import EmailAlreadyExistException, UserNotFoundError
-from src.framework.domain.exceptions import InvalidCredentialsException
+from src.company_bc.company.domain.value_objects import CompanyId as CompanyIdVO
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
-import ulid
+from src.framework.domain.exceptions import InvalidCredentialsException
 
 
 class CompanyController:
@@ -127,12 +126,12 @@ class CompanyController:
         try:
             query = GetCompanyByDomainQuery(domain=domain)
             dto: Optional[CompanyDto] = self.query_bus.query(query)
-            
+
             return {
                 "available": dto is None,
                 "domain": domain
             }
-        except Exception as e:
+        except Exception:
             # On error, assume domain is available (let registration handle validation)
             return {
                 "available": True,
@@ -333,11 +332,11 @@ class CompanyController:
             )
 
     def upload_company_logo(
-        self,
-        company_id: str,
-        file_content: bytes,
-        filename: str,
-        content_type: str
+            self,
+            company_id: str,
+            file_content: bytes,
+            filename: str,
+            content_type: str
     ) -> CompanyResponse:
         """Upload a company logo"""
         try:
@@ -377,14 +376,14 @@ class CompanyController:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to upload logo: {str(e)}"
             )
-    
+
     def register_company_with_user(self, request: CompanyRegistrationRequest) -> CompanyRegistrationResponse:
         """Register a new company with a new user"""
         try:
             # Generate IDs
             user_id = UserId.from_string(str(ulid.new()))
             company_id = CompanyIdVO.from_string(str(ulid.new()))
-            
+
             # Execute command
             command = RegisterCompanyWithUserCommand(
                 user_id=user_id,
@@ -402,23 +401,23 @@ class CompanyController:
                 include_example_data=request.include_example_data,
             )
             self.command_bus.dispatch(command)
-            
+
             return CompanyRegistrationResponse(
                 company_id=str(company_id.value),
                 user_id=str(user_id.value),
                 message="Company and user registered successfully",
                 redirect_url="/company/dashboard"
             )
-            
-        except EmailAlreadyExistException as e:
+
+        except EmailAlreadyExistException:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Este email ya está registrado. ¿Ya tienes una cuenta?"
+                detail="Este email ya está registrado. ¿Ya tienes una cuenta?"
             )
-        except CompanyDomainAlreadyExistsError as e:
+        except CompanyDomainAlreadyExistsError:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Este dominio ya está en uso. Por favor, elige otro."
+                detail="Este dominio ya está en uso. Por favor, elige otro."
             )
         except CompanyValidationError as e:
             raise HTTPException(
@@ -430,13 +429,13 @@ class CompanyController:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error al registrar la empresa: {str(e)}"
             )
-    
+
     def link_user_to_company(self, request: LinkUserRequest) -> LinkUserResponse:
         """Link an existing user to a new company"""
         try:
             # Generate company ID
             company_id = CompanyIdVO.from_string(str(ulid.new()))
-            
+
             # Execute command
             command = LinkUserToCompanyCommand(
                 user_email=request.email,
@@ -452,36 +451,36 @@ class CompanyController:
                 include_example_data=request.include_example_data,
             )
             self.command_bus.dispatch(command)
-            
+
             # Get user ID using query
             from src.auth_bc.user.application import GetUserByEmailQuery
             from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
             user_dto: Optional[CurrentUserDto] = self.query_bus.query(GetUserByEmailQuery(email=request.email))
-            
+
             if not user_dto:
                 raise UserNotFoundError(user_id=request.email)
-            
+
             return LinkUserResponse(
                 company_id=str(company_id.value),
                 user_id=user_dto.user_id,  # CurrentUserDto has user_id field
                 message="Usuario vinculado a la empresa exitosamente",
                 redirect_url="/company/dashboard"
             )
-            
-        except UserNotFoundError as e:
+
+        except UserNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Usuario no encontrado."
             )
-        except InvalidCredentialsException as e:
+        except InvalidCredentialsException:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Email o contraseña incorrectos."
             )
-        except CompanyDomainAlreadyExistsError as e:
+        except CompanyDomainAlreadyExistsError:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Este dominio ya está en uso."
+                detail="Este dominio ya está en uso."
             )
         except CompanyValidationError as e:
             # This can include password validation errors

@@ -6,12 +6,11 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field, ConfigDict
 
+from core.config import settings
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.domain.enums.interview_enums import (
-    InterviewTypeEnum,
-    InterviewProcessTypeEnum
+    InterviewTypeEnum
 )
-from core.config import settings
 
 
 class InterviewCreateRequest(BaseModel):
@@ -20,11 +19,13 @@ class InterviewCreateRequest(BaseModel):
     required_roles: List[str] = Field(..., min_length=1, description="List of CompanyRole IDs (obligatory)")
     interview_type: str = Field(default=InterviewTypeEnum.CUSTOM.value, description="Type of interview")
     interview_mode: str = Field(..., description="Interview mode (AUTOMATIC, AI, MANUAL)")
-    process_type: Optional[str] = Field(None, description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
+    process_type: Optional[str] = Field(None,
+                                        description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
     job_position_id: Optional[str] = Field(None, description="ID of the job position")
     application_id: Optional[str] = Field(None, description="ID of the candidate application")
     interview_template_id: Optional[str] = Field(None, description="ID of the interview template")
-    workflow_stage_id: Optional[str] = Field(None, description="ID of the workflow stage where this interview is conducted")
+    workflow_stage_id: Optional[str] = Field(None,
+                                             description="ID of the workflow stage where this interview is conducted")
     title: Optional[str] = Field(None, description="Interview title")
     description: Optional[str] = Field(None, description="Interview description")
     scheduled_at: Optional[str] = Field(None, description="Scheduled datetime (ISO format)")
@@ -36,7 +37,8 @@ class InterviewUpdateRequest(BaseModel):
     """Request schema for updating an interview"""
     title: Optional[str] = Field(None, description="Interview title")
     description: Optional[str] = Field(None, description="Interview description")
-    process_type: Optional[str] = Field(None, description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
+    process_type: Optional[str] = Field(None,
+                                        description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
     interview_type: Optional[str] = Field(None, description="Interview type")
     interview_mode: Optional[str] = Field(None, description="Interview mode (AUTOMATIC, AI, MANUAL)")
     scheduled_at: Optional[str] = Field(None, description="Scheduled datetime (ISO format)")
@@ -57,7 +59,8 @@ class InterviewManagementResponse(BaseModel):
     application_id: Optional[str] = Field(None, description="Application ID")
     interview_template_id: Optional[str] = Field(None, description="Interview template ID")
     workflow_stage_id: Optional[str] = Field(None, description="Workflow stage ID where this interview is conducted")
-    process_type: Optional[str] = Field(None, description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
+    process_type: Optional[str] = Field(None,
+                                        description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
     interview_type: str = Field(..., description="Interview type")
     interview_mode: Optional[str] = Field(None, description="Interview mode (AUTOMATIC, AI, MANUAL)")
     status: str = Field(..., description="Interview status")
@@ -118,7 +121,8 @@ class InterviewManagementResponse(BaseModel):
             free_answers=dto.free_answers,
             link_token=dto.link_token,
             link_expires_at=dto.link_expires_at,
-            shareable_link=cls._generate_shareable_link(dto.id.value if hasattr(dto.id, 'value') else str(dto.id), dto.link_token) if dto.link_token else None,
+            shareable_link=cls._generate_shareable_link(dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
+                                                        dto.link_token) if dto.link_token else None,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
@@ -149,11 +153,13 @@ class InterviewStatsResponse(BaseModel):
     completed_interviews: int = Field(default=0, description="Number of completed interviews")
     average_score: Optional[float] = Field(None, description="Average interview score")
     average_duration_minutes: Optional[float] = Field(None, description="Average duration in minutes")
-    pending_to_plan: int = Field(default=0, description="Interviews pending to plan (no scheduled_at or no interviewers)")
+    pending_to_plan: int = Field(default=0,
+                                 description="Interviews pending to plan (no scheduled_at or no interviewers)")
     planned: int = Field(default=0, description="Planned interviews (with scheduled_at and interviewers)")
     recently_finished: int = Field(default=0, description="Recently finished interviews (last 30 days)")
     overdue: int = Field(default=0, description="Overdue interviews (deadline_date < now and not finished)")
-    pending_feedback: int = Field(default=0, description="Interviews pending feedback (finished but no score or feedback)")
+    pending_feedback: int = Field(default=0,
+                                  description="Interviews pending feedback (finished but no score or feedback)")
 
 
 class InterviewActionResponse(BaseModel):

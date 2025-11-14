@@ -57,13 +57,13 @@ from adapters.http.shared.workflow.controllers import WorkflowController
 from adapters.http.shared.workflow.schemas import WorkflowResponse
 from adapters.http.shared.workflow.schemas.update_workflow_request import UpdateWorkflowRequest
 from core.container import Container
+from src.auth_bc.user.application import AuthenticateUserQuery
+from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto, AuthenticatedUserDto
+from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
 from src.company_bc.company.application.dtos import CompanyUserDto
 from src.company_bc.company.domain import CompanyId
 from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
 from src.framework.application.query_bus import QueryBus
-from src.auth_bc.user.application import AuthenticateUserQuery
-from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto, AuthenticatedUserDto
-from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
 
 logger = logging.getLogger(__name__)
 
@@ -535,7 +535,8 @@ def deactivate_company(
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> CompanyActionResponse:
     """Deactivate an active company"""
-    return controller.deactivate_company(company_id=CompanyId.from_string(company_id), current_admin_id=current_admin.id)
+    return controller.deactivate_company(company_id=CompanyId.from_string(company_id),
+                                         current_admin_id=current_admin.id)
 
 
 @router.delete("/companies/{company_id}", response_model=CompanyActionResponse)
@@ -571,12 +572,13 @@ def list_positions(
     # Get company_user_id for the current user (if company_id provided)
     company_user_id = None
     if company_id:
-        from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+        from src.company_bc.company.application.queries.get_company_user_by_company_and_user import \
+            GetCompanyUserByCompanyAndUserQuery
         company_user_query = GetCompanyUserByCompanyAndUserQuery(
             company_id=company_id,
             user_id=current_admin.id
         )
-        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
 
@@ -663,7 +665,8 @@ def delete_position(
 @inject
 def get_workflow(
         workflow_id: str,
-        controller: Annotated[WorkflowController, Depends(Provide[Container.candidate_application_workflow_controller])],
+        controller: Annotated[
+            WorkflowController, Depends(Provide[Container.candidate_application_workflow_controller])],
 ) -> WorkflowResponse:
     """Get a workflow by ID (backward compatibility endpoint)"""
     result = controller.get_workflow_by_id(workflow_id)
@@ -683,14 +686,21 @@ def get_workflow(
             # Extract style fields
             style = stage.get('style', {}) if isinstance(stage, dict) else getattr(stage, 'style', {})
             icon = style.get('icon', '📋') if isinstance(style, dict) else getattr(style, 'icon', '📋')
-            background_color = style.get('background_color', '#E5E7EB') if isinstance(style, dict) else getattr(style, 'background_color', '#E5E7EB')
-            text_color = style.get('text_color', '#374151') if isinstance(style, dict) else getattr(style, 'text_color', '#374151')
+            background_color = style.get('background_color', '#E5E7EB') if isinstance(style, dict) else getattr(style,
+                                                                                                                'background_color',
+                                                                                                                '#E5E7EB')
+            text_color = style.get('text_color', '#374151') if isinstance(style, dict) else getattr(style, 'text_color',
+                                                                                                    '#374151')
 
             # Get other fields
             stage_id = stage.get('id') if isinstance(stage, dict) else getattr(stage, 'id', '')
             name = stage.get('name') if isinstance(stage, dict) else getattr(stage, 'name', '')
-            kanban_display = stage.get('kanban_display', 'column') if isinstance(stage, dict) else getattr(stage, 'kanban_display', 'column')
-            default_role_ids = stage.get('default_role_ids', []) if isinstance(stage, dict) else getattr(stage, 'default_role_ids', [])
+            kanban_display = stage.get('kanban_display', 'column') if isinstance(stage, dict) else getattr(stage,
+                                                                                                           'kanban_display',
+                                                                                                           'column')
+            default_role_ids = stage.get('default_role_ids', []) if isinstance(stage, dict) else getattr(stage,
+                                                                                                         'default_role_ids',
+                                                                                                         [])
             role = default_role_ids[0] if default_role_ids else None
 
             # Map kanban_display values (generic: 'column'/'row'/'none' -> frontend: 'vertical'/'horizontal'/'hidden')
@@ -712,7 +722,9 @@ def get_workflow(
                 'status_mapping': 'draft',  # Default, as this doesn't exist in generic system
                 'kanban_display': kanban_display_mapped,
                 'field_visibility': {},  # Empty, as this doesn't exist in generic system
-                'field_validation': stage.get('validation_rules', {}) if isinstance(stage, dict) else getattr(stage, 'validation_rules', {}),
+                'field_validation': stage.get('validation_rules', {}) if isinstance(stage, dict) else getattr(stage,
+                                                                                                              'validation_rules',
+                                                                                                              {}),
                 'field_candidate_visibility': {}  # Empty, as this doesn't exist in generic system
             }
             transformed_stages.append(transformed_stage)
@@ -726,7 +738,8 @@ def get_workflow(
 @inject
 def update_workflow(
         workflow_id: str,
-        controller: Annotated[WorkflowController, Depends(Provide[Container.candidate_application_workflow_controller])],
+        controller: Annotated[
+            WorkflowController, Depends(Provide[Container.candidate_application_workflow_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         body: dict = Body(...),
 ) -> WorkflowResponse:
@@ -774,14 +787,21 @@ def update_workflow(
             # Extract style fields
             style = stage.get('style', {}) if isinstance(stage, dict) else getattr(stage, 'style', {})
             icon = style.get('icon', '📋') if isinstance(style, dict) else getattr(style, 'icon', '📋')
-            background_color = style.get('background_color', '#E5E7EB') if isinstance(style, dict) else getattr(style, 'background_color', '#E5E7EB')
-            text_color = style.get('text_color', '#374151') if isinstance(style, dict) else getattr(style, 'text_color', '#374151')
+            background_color = style.get('background_color', '#E5E7EB') if isinstance(style, dict) else getattr(style,
+                                                                                                                'background_color',
+                                                                                                                '#E5E7EB')
+            text_color = style.get('text_color', '#374151') if isinstance(style, dict) else getattr(style, 'text_color',
+                                                                                                    '#374151')
 
             # Get other fields
             stage_id = stage.get('id') if isinstance(stage, dict) else getattr(stage, 'id', '')
             name = stage.get('name') if isinstance(stage, dict) else getattr(stage, 'name', '')
-            kanban_display = stage.get('kanban_display', 'column') if isinstance(stage, dict) else getattr(stage, 'kanban_display', 'column')
-            default_role_ids = stage.get('default_role_ids', []) if isinstance(stage, dict) else getattr(stage, 'default_role_ids', [])
+            kanban_display = stage.get('kanban_display', 'column') if isinstance(stage, dict) else getattr(stage,
+                                                                                                           'kanban_display',
+                                                                                                           'column')
+            default_role_ids = stage.get('default_role_ids', []) if isinstance(stage, dict) else getattr(stage,
+                                                                                                         'default_role_ids',
+                                                                                                         [])
             role = default_role_ids[0] if default_role_ids else None
 
             # Map kanban_display values (generic: 'column'/'row'/'none' -> frontend: 'vertical'/'horizontal'/'hidden')
@@ -803,7 +823,9 @@ def update_workflow(
                 'status_mapping': 'draft',  # Default, as this doesn't exist in generic system
                 'kanban_display': kanban_display_mapped,
                 'field_visibility': {},  # Empty, as this doesn't exist in generic system
-                'field_validation': stage.get('validation_rules', {}) if isinstance(stage, dict) else getattr(stage, 'validation_rules', {}),
+                'field_validation': stage.get('validation_rules', {}) if isinstance(stage, dict) else getattr(stage,
+                                                                                                              'validation_rules',
+                                                                                                              {}),
                 'field_candidate_visibility': {}  # Empty, as this doesn't exist in generic system
             }
             transformed_stages.append(transformed_stage)
@@ -811,6 +833,7 @@ def update_workflow(
         result.stages = transformed_stages
 
     return result
+
 
 # Job Position Stage Management Endpoints
 
@@ -827,17 +850,18 @@ def move_position_to_stage(
     from src.company_bc.job_position.application.commands.move_job_position_to_stage import JobPositionValidationError
     from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.company_bc.job_position.domain.value_objects import JobPositionId
-    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import \
+        GetCompanyUserByCompanyAndUserQuery
     from fastapi import HTTPException
 
     try:
         # Get company_user_id for the current user
         from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
         from src.company_bc.company.application.dtos import CompanyUserDto
-        
+
         position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
         position_dto: Optional[JobPositionDto] = query_bus.query(position_query)
-        
+
         company_user_id = None
         if position_dto:
             company_user_query = GetCompanyUserByCompanyAndUserQuery(
@@ -847,7 +871,7 @@ def move_position_to_stage(
             company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
             if company_user_dto:
                 company_user_id = company_user_dto.id
-        
+
         return controller.move_position_to_stage(
             position_id=position_id,
             stage_id=request.stage_id,
@@ -888,7 +912,8 @@ def update_position_custom_fields(
 def create_job_position_comment(
         position_id: str,
         request: CreateJobPositionCommentRequest,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
@@ -897,10 +922,11 @@ def create_job_position_comment(
     # Get the job position to find the company_id
     from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.company_bc.job_position.domain.value_objects import JobPositionId
-    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import \
+        GetCompanyUserByCompanyAndUserQuery
 
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
-    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
+    position_dto: Optional[JobPositionDto] = query_bus.query(position_query)
 
     if not position_dto:
         raise HTTPException(status_code=404, detail="Job position not found")
@@ -910,7 +936,7 @@ def create_job_position_comment(
         company_id=position_dto.company_id.value,
         user_id=current_admin.id
     )
-    company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+    company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
 
     if not company_user_dto:
         raise HTTPException(status_code=403, detail="User not authorized for this company")
@@ -922,7 +948,8 @@ def create_job_position_comment(
 @inject
 def list_all_job_position_comments(
         position_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
         job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
@@ -931,10 +958,11 @@ def list_all_job_position_comments(
     # Get company_user_id for the current user
     from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.company_bc.job_position.domain.value_objects import JobPositionId
-    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import \
+        GetCompanyUserByCompanyAndUserQuery
 
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
-    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
+    position_dto: Optional[JobPositionDto] = query_bus.query(position_query)
 
     company_user_id = None
     if position_dto:
@@ -942,7 +970,7 @@ def list_all_job_position_comments(
             company_id=position_dto.company_id.value,
             user_id=current_admin.id
         )
-        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
 
@@ -954,7 +982,8 @@ def list_all_job_position_comments(
 @inject
 def list_job_position_comments(
         position_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
         job_position_controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
@@ -965,10 +994,11 @@ def list_job_position_comments(
     # Get company_user_id for the current user
     from src.company_bc.job_position.application.queries.get_job_position_by_id import GetJobPositionByIdQuery
     from src.company_bc.job_position.domain.value_objects import JobPositionId
-    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import GetCompanyUserByCompanyAndUserQuery
+    from src.company_bc.company.application.queries.get_company_user_by_company_and_user import \
+        GetCompanyUserByCompanyAndUserQuery
 
     position_query = GetJobPositionByIdQuery(id=JobPositionId.from_string(position_id))
-    position_dto:Optional[JobPositionDto] = query_bus.query(position_query)
+    position_dto: Optional[JobPositionDto] = query_bus.query(position_query)
 
     company_user_id = None
     if position_dto:
@@ -976,7 +1006,7 @@ def list_job_position_comments(
             company_id=position_dto.company_id.value,
             user_id=current_admin.id
         )
-        company_user_dto:Optional[CompanyUserDto] = query_bus.query(company_user_query)
+        company_user_dto: Optional[CompanyUserDto] = query_bus.query(company_user_query)
         if company_user_dto:
             company_user_id = company_user_dto.id
 
@@ -988,7 +1018,8 @@ def list_job_position_comments(
 def update_job_position_comment(
         comment_id: str,
         request: UpdateJobPositionCommentRequest,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> None:
     """Update a job position comment"""
@@ -999,7 +1030,8 @@ def update_job_position_comment(
 @inject
 def delete_job_position_comment(
         comment_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> None:
     """Delete a job position comment"""
@@ -1010,7 +1042,8 @@ def delete_job_position_comment(
 @inject
 def mark_comment_as_reviewed(
         comment_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> None:
     """Mark a comment as reviewed"""
@@ -1021,7 +1054,8 @@ def mark_comment_as_reviewed(
 @inject
 def mark_comment_as_pending(
         comment_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
 ) -> None:
     """Mark a comment as pending"""
@@ -1032,7 +1066,8 @@ def mark_comment_as_pending(
 @inject
 def list_job_position_activities(
         position_id: str,
-        controller: Annotated[JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
+        controller: Annotated[
+            JobPositionCommentController, Depends(Provide[Container.job_position_comment_controller])],
         current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
         limit: int = Query(50, ge=1, le=100, description="Maximum number of activities"),
 ) -> JobPositionActivityListResponse:

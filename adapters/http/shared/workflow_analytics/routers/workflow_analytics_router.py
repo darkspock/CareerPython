@@ -9,12 +9,13 @@ from typing import Annotated, List, Optional
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, Query
 
-from core.container import Container
-from adapters.http.shared.workflow_analytics.controllers.workflow_analytics_controller import WorkflowAnalyticsController
+from adapters.http.shared.workflow_analytics.controllers.workflow_analytics_controller import \
+    WorkflowAnalyticsController
 from adapters.http.shared.workflow_analytics.schemas import (
     WorkflowAnalyticsResponse,
     StageBottleneckResponse
 )
+from core.container import Container
 
 router = APIRouter(
     prefix="/api/company/workflows",

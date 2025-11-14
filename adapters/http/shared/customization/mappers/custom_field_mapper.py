@@ -1,5 +1,5 @@
-from src.shared_bc.customization.entity_customization.application.dtos.custom_field_dto import CustomFieldDto
 from adapters.http.shared.customization.schemas.custom_field_response import CustomFieldResponse
+from src.shared_bc.customization.entity_customization.application.dtos.custom_field_dto import CustomFieldDto
 
 
 class CustomFieldResponseMapper:
@@ -19,4 +19,3 @@ class CustomFieldResponseMapper:
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
-

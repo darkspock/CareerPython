@@ -5,8 +5,11 @@ from typing import Optional
 from fastapi import UploadFile, HTTPException
 from pydantic import ValidationError
 
-from core.database import database
 from adapters.http.candidate_app.schemas.onboarding import LandingRequest, LandingResponse
+from core.database import database
+from src.auth_bc.user.application import CreateAccessTokenQuery
+from src.auth_bc.user.application import CreateUserFromLandingCommand
+from src.auth_bc.user.application.queries.dtos.auth_dto import TokenDto
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 from src.framework.domain.entities.async_job import AsyncJobId
@@ -15,9 +18,6 @@ from src.framework.domain.enums.async_job import AsyncJobType, AsyncJobStatus
 from src.framework.infrastructure.jobs.async_job_service import AsyncJobService
 from src.framework.infrastructure.repositories.async_job_repository import AsyncJobRepository
 from src.framework.infrastructure.services.ai.ai_service_factory import get_ai_service
-from src.auth_bc.user.application import CreateUserFromLandingCommand
-from src.auth_bc.user.application import CreateAccessTokenQuery
-from src.auth_bc.user.application.queries.dtos.auth_dto import TokenDto
 
 
 class OnboardingController:

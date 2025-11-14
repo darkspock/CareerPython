@@ -4,6 +4,10 @@ Admin controller for candidate and user management
 from datetime import datetime
 from typing import List, Optional
 
+from src.auth_bc.user.application import UpdateUserPasswordCommand
+from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
+from src.auth_bc.user.domain.services.password_service import PasswordService
+from src.auth_bc.user.domain.value_objects import UserId
 from src.candidate_bc.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery
 from src.candidate_bc.candidate.application.queries.list_candidates import ListCandidatesQuery
 from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
@@ -11,10 +15,6 @@ from src.candidate_bc.candidate.domain.repositories.candidate_repository_interfa
 from src.candidate_bc.candidate.domain.value_objects import CandidateId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
-from src.auth_bc.user.application import UpdateUserPasswordCommand
-from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
-from src.auth_bc.user.domain.services.password_service import PasswordService
-from src.auth_bc.user.domain.value_objects import UserId
 
 
 class AdminCandidateController:

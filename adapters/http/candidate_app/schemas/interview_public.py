@@ -1,5 +1,6 @@
 """Public interview schemas for token-based access"""
 from typing import Optional, List, Dict
+
 from pydantic import BaseModel, Field
 
 
@@ -62,4 +63,3 @@ class SubmitAnswerResponse(BaseModel):
     """Response after submitting an answer"""
     message: str
     status: str
-

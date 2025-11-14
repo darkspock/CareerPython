@@ -1,20 +1,19 @@
-from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict, Any
 
+from pydantic import BaseModel, ConfigDict
+
+from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.application.queries.dtos.interview_template_dto import InterviewTemplateDto
-from src.interview_bc.interview_template.application.queries.dtos.interview_template_list_dto import \
-    InterviewTemplateListDto
 from src.interview_bc.interview_template.application.queries.dtos.interview_template_full_dto import \
     InterviewTemplateSectionDto, InterviewTemplateFullDto
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_list_dto import \
+    InterviewTemplateListDto
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateTypeEnum,
     InterviewTemplateStatusEnum,
     InterviewTemplateSectionEnum,
     ScoringModeEnum
 )
-from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
-from src.framework.domain.enums.job_category import JobCategoryEnum
-from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
 
 
 class InterviewTemplateBase(BaseModel):
@@ -65,7 +64,8 @@ class InterviewTemplateResponse(InterviewTemplateBase):
             goal=dto.goal,
             type=dto.template_type,
             status=dto.status,
-            company_id=dto.company_id.value if dto.company_id and hasattr(dto.company_id, 'value') else (str(dto.company_id) if dto.company_id else None),
+            company_id=dto.company_id.value if dto.company_id and hasattr(dto.company_id, 'value') else (
+                str(dto.company_id) if dto.company_id else None),
             job_category=dto.job_category,
             allow_ai_questions=dto.allow_ai_questions,
             scoring_mode=dto.scoring_mode,
@@ -194,7 +194,7 @@ class InterviewTemplateQuestionCreate(InterviewTemplateQuestionBase):
 
 class InterviewTemplateQuestionUpdate(InterviewTemplateQuestionBase):
     interview_template_section_id: str
-    scope: str   # InterviewTemplateQuestionScopeEnum
+    scope: str  # InterviewTemplateQuestionScopeEnum
     data_type: str  # InterviewTemplateQuestionDataTypeEnum
 
     model_config = ConfigDict(use_enum_values=True)

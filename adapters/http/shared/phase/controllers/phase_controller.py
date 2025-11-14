@@ -2,42 +2,47 @@
 from typing import List
 
 from adapters.http.shared.phase.mappers.phase_mapper import PhaseMapper
-from src.company_bc.company.domain.value_objects import CompanyId
-from src.shared_bc.customization.phase.application import CreatePhaseCommand, CreatePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.delete_phase_command import DeletePhaseCommand, DeletePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.update_phase_command import UpdatePhaseCommand, UpdatePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.archive_phase_command import ArchivePhaseCommand, ArchivePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.activate_phase_command import ActivatePhaseCommand, ActivatePhaseCommandHandler
-from src.shared_bc.customization.phase.application.commands.initialize_company_phases_command import (
-    InitializeCompanyPhasesCommand,
-    InitializeCompanyPhasesCommandHandler
-)
-from src.shared_bc.customization.phase.application.queries.get_phase_by_id_query import GetPhaseByIdQuery, GetPhaseByIdQueryHandler
-from src.shared_bc.customization.phase.application import (
-    ListPhasesByCompanyQuery,
-    ListPhasesByCompanyQueryHandler
-)
-from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 from adapters.http.shared.phase.schemas.phase_schemas import (
     CreatePhaseRequest,
     UpdatePhaseRequest,
     PhaseResponse
 )
+from src.company_bc.company.domain.value_objects import CompanyId
+from src.shared_bc.customization.phase.application import CreatePhaseCommand, CreatePhaseCommandHandler
+from src.shared_bc.customization.phase.application import (
+    ListPhasesByCompanyQuery,
+    ListPhasesByCompanyQueryHandler
+)
+from src.shared_bc.customization.phase.application.commands.activate_phase_command import ActivatePhaseCommand, \
+    ActivatePhaseCommandHandler
+from src.shared_bc.customization.phase.application.commands.archive_phase_command import ArchivePhaseCommand, \
+    ArchivePhaseCommandHandler
+from src.shared_bc.customization.phase.application.commands.delete_phase_command import DeletePhaseCommand, \
+    DeletePhaseCommandHandler
+from src.shared_bc.customization.phase.application.commands.initialize_company_phases_command import (
+    InitializeCompanyPhasesCommand,
+    InitializeCompanyPhasesCommandHandler
+)
+from src.shared_bc.customization.phase.application.commands.update_phase_command import UpdatePhaseCommand, \
+    UpdatePhaseCommandHandler
+from src.shared_bc.customization.phase.application.queries.get_phase_by_id_query import GetPhaseByIdQuery, \
+    GetPhaseByIdQueryHandler
+from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
 
 
 class PhaseController:
     """Controller for Phase operations"""
 
     def __init__(
-        self,
-        create_handler: CreatePhaseCommandHandler,
-        update_handler: UpdatePhaseCommandHandler,
-        delete_handler: DeletePhaseCommandHandler,
-        archive_handler: ArchivePhaseCommandHandler,
-        activate_handler: ActivatePhaseCommandHandler,
-        get_by_id_handler: GetPhaseByIdQueryHandler,
-        list_by_company_handler: ListPhasesByCompanyQueryHandler,
-        initialize_handler: InitializeCompanyPhasesCommandHandler
+            self,
+            create_handler: CreatePhaseCommandHandler,
+            update_handler: UpdatePhaseCommandHandler,
+            delete_handler: DeletePhaseCommandHandler,
+            archive_handler: ArchivePhaseCommandHandler,
+            activate_handler: ActivatePhaseCommandHandler,
+            get_by_id_handler: GetPhaseByIdQueryHandler,
+            list_by_company_handler: ListPhasesByCompanyQueryHandler,
+            initialize_handler: InitializeCompanyPhasesCommandHandler
     ):
         self.create_handler = create_handler
         self.update_handler = update_handler
@@ -60,7 +65,7 @@ class PhaseController:
         """
         # Execute command
         from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
-        
+
         command = CreatePhaseCommand(
             company_id=CompanyId.from_string(company_id),
             workflow_type=WorkflowTypeEnum(request.workflow_type),

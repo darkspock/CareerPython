@@ -1,20 +1,30 @@
 from typing import Optional
 
+from adapters.http.shared.customization.mappers.entity_customization_mapper import EntityCustomizationResponseMapper
+from adapters.http.shared.customization.schemas.create_entity_customization_request import \
+    CreateEntityCustomizationRequest
+from adapters.http.shared.customization.schemas.entity_customization_response import EntityCustomizationResponse
+from adapters.http.shared.customization.schemas.update_entity_customization_request import \
+    UpdateEntityCustomizationRequest
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
-from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import EntityCustomizationId
-from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import EntityCustomizationTypeEnum
+from src.shared_bc.customization.entity_customization.application.commands.create_entity_customization_command import \
+    CreateEntityCustomizationCommand
+from src.shared_bc.customization.entity_customization.application.commands.delete_entity_customization_command import \
+    DeleteEntityCustomizationCommand
+from src.shared_bc.customization.entity_customization.application.commands.update_entity_customization_command import \
+    UpdateEntityCustomizationCommand
+from src.shared_bc.customization.entity_customization.application.dtos.entity_customization_dto import \
+    EntityCustomizationDto
+from src.shared_bc.customization.entity_customization.application.queries.get_entity_customization_by_id_query import \
+    GetEntityCustomizationByIdQuery
+from src.shared_bc.customization.entity_customization.application.queries.get_entity_customization_query import \
+    GetEntityCustomizationQuery
+from src.shared_bc.customization.entity_customization.domain.enums.entity_customization_type_enum import \
+    EntityCustomizationTypeEnum
 from src.shared_bc.customization.entity_customization.domain.value_objects.custom_field import CustomField
-from src.shared_bc.customization.entity_customization.application.commands.create_entity_customization_command import CreateEntityCustomizationCommand
-from src.shared_bc.customization.entity_customization.application.commands.update_entity_customization_command import UpdateEntityCustomizationCommand
-from src.shared_bc.customization.entity_customization.application.commands.delete_entity_customization_command import DeleteEntityCustomizationCommand
-from src.shared_bc.customization.entity_customization.application.queries.get_entity_customization_query import GetEntityCustomizationQuery
-from src.shared_bc.customization.entity_customization.application.queries.get_entity_customization_by_id_query import GetEntityCustomizationByIdQuery
-from adapters.http.shared.customization.schemas.create_entity_customization_request import CreateEntityCustomizationRequest
-from adapters.http.shared.customization.schemas.update_entity_customization_request import UpdateEntityCustomizationRequest
-from adapters.http.shared.customization.schemas.entity_customization_response import EntityCustomizationResponse
-from adapters.http.shared.customization.mappers.entity_customization_mapper import EntityCustomizationResponseMapper
-from src.shared_bc.customization.entity_customization.application.dtos.entity_customization_dto import EntityCustomizationDto
+from src.shared_bc.customization.entity_customization.domain.value_objects.entity_customization_id import \
+    EntityCustomizationId
 
 
 class EntityCustomizationController:
@@ -34,7 +44,7 @@ class EntityCustomizationController:
                 f"Invalid entity_type: '{request.entity_type}'. "
                 f"Valid values are: {', '.join([e.value for e in EntityCustomizationTypeEnum])}"
             )
-        
+
         # Convert request fields to CustomField value objects
         fields = [
             CustomField.create(
@@ -77,7 +87,7 @@ class EntityCustomizationController:
                 f"Invalid entity_type: '{entity_type}'. "
                 f"Valid values are: {', '.join([e.value for e in EntityCustomizationTypeEnum])}"
             )
-        
+
         query = GetEntityCustomizationQuery(
             entity_type=entity_type_enum,
             entity_id=entity_id
@@ -100,9 +110,9 @@ class EntityCustomizationController:
         return EntityCustomizationResponseMapper.dto_to_response(dto)
 
     def update_entity_customization(
-        self,
-        id: str,
-        request: UpdateEntityCustomizationRequest
+            self,
+            id: str,
+            request: UpdateEntityCustomizationRequest
     ) -> EntityCustomizationResponse:
         """Update an entity customization"""
         # Convert request fields to CustomField value objects if provided
@@ -140,4 +150,3 @@ class EntityCustomizationController:
         """Delete an entity customization"""
         command = DeleteEntityCustomizationCommand(id=EntityCustomizationId.from_string(id))
         self._command_bus.dispatch(command)
-

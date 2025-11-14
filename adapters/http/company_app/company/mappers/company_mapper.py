@@ -1,5 +1,5 @@
-from src.company_bc.company.application.dtos.company_dto import CompanyDto
 from adapters.http.company_app.company.schemas.company_response import CompanyResponse
+from src.company_bc.company.application.dtos.company_dto import CompanyDto
 
 
 class CompanyResponseMapper:

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
+
+from pydantic import BaseModel, Field
 
 from adapters.http.shared.customization.schemas.create_custom_field_request import CreateCustomFieldRequest
 
@@ -26,4 +27,3 @@ class UpdateEntityCustomizationRequest(BaseModel):
                 "metadata": {}
             }
         }
-

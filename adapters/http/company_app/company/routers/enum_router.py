@@ -1,7 +1,8 @@
 """Enum metadata router for company"""
 from fastapi import APIRouter, Depends
 
-from adapters.http.company_app.company.controllers.enum_controller import CompanyEnumController, CompanyEnumMetadataResponse
+from adapters.http.company_app.company.controllers.enum_controller import CompanyEnumController, \
+    CompanyEnumMetadataResponse
 
 router = APIRouter(prefix="/api/company/enums", tags=["company-enums"])
 

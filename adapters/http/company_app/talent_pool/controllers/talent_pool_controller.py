@@ -5,21 +5,22 @@ Phase 8: Controller for talent pool operations
 
 from typing import List, Optional
 
+from adapters.http.company_app.talent_pool.mappers.talent_pool_mapper import TalentPoolMapper
 from adapters.http.company_app.talent_pool.schemas.talent_pool_schemas import TalentPoolEntryResponse
-from src.framework.application.command_bus import CommandBus
-from src.framework.application.query_bus import QueryBus
 from src.company_bc.talent_pool.application.commands.add_to_talent_pool_command import AddToTalentPoolCommand
 from src.company_bc.talent_pool.application.commands.change_talent_pool_entry_status_command import (
     ChangeTalentPoolEntryStatusCommand,
 )
 from src.company_bc.talent_pool.application.commands.remove_from_talent_pool_command import RemoveFromTalentPoolCommand
-from src.company_bc.talent_pool.application.commands.update_talent_pool_entry_command import UpdateTalentPoolEntryCommand
+from src.company_bc.talent_pool.application.commands.update_talent_pool_entry_command import \
+    UpdateTalentPoolEntryCommand
 from src.company_bc.talent_pool.application.dtos.talent_pool_entry_dto import TalentPoolEntryDto
 from src.company_bc.talent_pool.application.queries.get_talent_pool_entry_by_id_query import GetTalentPoolEntryByIdQuery
 from src.company_bc.talent_pool.application.queries.list_talent_pool_entries_query import ListTalentPoolEntriesQuery
 from src.company_bc.talent_pool.application.queries.search_talent_pool_query import SearchTalentPoolQuery
 from src.company_bc.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
-from adapters.http.company_app.talent_pool.mappers.talent_pool_mapper import TalentPoolMapper
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 
 
 class TalentPoolController:

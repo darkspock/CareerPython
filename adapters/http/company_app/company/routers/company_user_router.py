@@ -6,8 +6,11 @@ from typing import List, Annotated
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, Security
+from fastapi import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
+from adapters.http.auth.controllers.user import UserController
+from adapters.http.auth.schemas.user import UserLanguageResponse, UserLanguageUpdateResponse, UserLanguageRequest
 from adapters.http.company_app.company.controllers.company_user_controller import CompanyUserController
 from adapters.http.company_app.company.schemas.company_user_invitation_request import (
     AssignRoleRequest,
@@ -21,14 +24,10 @@ from adapters.http.company_app.company.schemas.company_user_request import (
     UpdateCompanyUserRequest,
 )
 from adapters.http.company_app.company.schemas.company_user_response import CompanyUserResponse
-from adapters.http.auth.schemas.user import UserLanguageResponse, UserLanguageUpdateResponse, UserLanguageRequest
-from adapters.http.auth.controllers.user import UserController
 from core.container import Container
-from src.framework.application.query_bus import QueryBus
-from fastapi import HTTPException
 from src.company_bc.company.domain import CompanyId
 from src.company_bc.company.domain.value_objects import CompanyUserId
-from src.company_bc.company.domain.value_objects.company_user_id import CompanyUserId as CompanyUserIdVO
+from src.framework.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)
 
@@ -44,26 +43,26 @@ def get_company_user_id_from_token(token: str = Security(oauth2_scheme)) -> str:
     import base64
     import json
     from fastapi import HTTPException
-    
+
     try:
         # Decode JWT token (payload is in the second part)
         parts = token.split('.')
         if len(parts) != 3:
             raise HTTPException(status_code=401, detail="Invalid token format")
-        
+
         payload = parts[1]
         # Add padding if needed
         padding = 4 - len(payload) % 4
         if padding != 4:
             payload += '=' * padding
-        
+
         decoded = base64.urlsafe_b64decode(payload)
         data = json.loads(decoded)
         company_user_id = data.get('company_user_id') or data.get('user_id')
-        
+
         if not company_user_id or not isinstance(company_user_id, str):
             raise HTTPException(status_code=401, detail="company_user_id not found in token")
-        
+
         return str(company_user_id)
     except Exception as e:
         log.error(f"Error extracting company_user_id from token: {e}")
@@ -187,20 +186,21 @@ async def assign_role_to_user(
 @inject
 async def get_company_user_language(
         company_user_id: str = Depends(get_company_user_id_from_token),
-        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = Depends(Provide[Container.user_controller]),
+        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = Depends(
+            Provide[Container.user_controller]),
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])] = Depends(Provide[Container.query_bus]),
 ) -> UserLanguageResponse:
     """Get current company user's preferred language"""
     from src.company_bc.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQuery
     from src.company_bc.company.application.dtos.company_user_dto import CompanyUserDto
-    
+
     # Get company user to extract user_id
     company_user_query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
     company_user_dto: CompanyUserDto = query_bus.query(company_user_query)
-    
+
     if not company_user_dto:
         raise HTTPException(status_code=404, detail="Company user not found")
-    
+
     # Get language preference using user_id
     language_code = user_controller.get_user_language(company_user_dto.user_id)
     return UserLanguageResponse(language_code=language_code)
@@ -211,20 +211,21 @@ async def get_company_user_language(
 async def update_company_user_language(
         request: UserLanguageRequest,
         company_user_id: str = Depends(get_company_user_id_from_token),
-        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = Depends(Provide[Container.user_controller]),
+        user_controller: Annotated[UserController, Depends(Provide[Container.user_controller])] = Depends(
+            Provide[Container.user_controller]),
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])] = Depends(Provide[Container.query_bus]),
 ) -> UserLanguageUpdateResponse:
     """Update current company user's preferred language"""
     from src.company_bc.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQuery
     from src.company_bc.company.application.dtos.company_user_dto import CompanyUserDto
-    
+
     # Get company user to extract user_id
     company_user_query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
     company_user_dto: CompanyUserDto = query_bus.query(company_user_query)
-    
+
     if not company_user_dto:
         raise HTTPException(status_code=404, detail="Company user not found")
-    
+
     # Update language preference using user_id
     result = user_controller.update_user_language(company_user_dto.user_id, request.language_code)
     return UserLanguageUpdateResponse(**result)

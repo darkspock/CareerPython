@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, Dict, Any
+
+from pydantic import BaseModel, Field
 
 
 class CustomFieldResponse(BaseModel):
@@ -17,4 +18,3 @@ class CustomFieldResponse(BaseModel):
 
     class Config:
         from_attributes = True
-

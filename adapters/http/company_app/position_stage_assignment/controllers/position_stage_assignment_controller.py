@@ -3,8 +3,6 @@ from typing import List
 
 from adapters.http.candidate_app.schemas.position_stage_assignment_schemas import AssignUsersToStageRequest, \
     PositionStageAssignmentResponse, RemoveUserFromStageRequest, AddUserToStageRequest, CopyWorkflowAssignmentsRequest
-from src.framework.application.command_bus import CommandBus
-from src.framework.application.query_bus import QueryBus
 from src.company_bc.position_stage_assignment import (
     AssignUsersToStageCommand,
     AddUserToStageCommand,
@@ -15,6 +13,8 @@ from src.company_bc.position_stage_assignment import (
     WorkflowStageAssignment
 )
 from src.company_bc.position_stage_assignment import PositionStageAssignmentMapper
+from src.framework.application.command_bus import CommandBus
+from src.framework.application.query_bus import QueryBus
 
 
 class PositionStageAssignmentController:
@@ -98,7 +98,8 @@ class PositionStageAssignmentController:
 
         raise ValueError(f"Assignment not found for position {request.position_id} and stage {request.stage_id}")
 
-    def copy_workflow_assignments(self, request: CopyWorkflowAssignmentsRequest) -> List[PositionStageAssignmentResponse]:
+    def copy_workflow_assignments(self, request: CopyWorkflowAssignmentsRequest) -> List[
+        PositionStageAssignmentResponse]:
         """Copy workflow assignments to a position"""
         workflow_stages = [
             WorkflowStageAssignment(

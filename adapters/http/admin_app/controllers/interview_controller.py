@@ -7,35 +7,36 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
-from src.interview_bc.interview.application.commands.create_interview import CreateInterviewCommand
-from src.interview_bc.interview.application.commands.finish_interview import FinishInterviewCommand
-from src.interview_bc.interview.application.commands.start_interview import StartInterviewCommand
-from src.interview_bc.interview.application.commands.generate_interview_link import GenerateInterviewLinkCommand
-from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
-from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQuery
-from src.interview_bc.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQuery, \
-    InterviewScoreSummaryDto
-from src.interview_bc.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQuery
-from src.interview_bc.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQuery
-from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQuery
-from src.interview_bc.interview.application.queries.get_pending_interviews_by_candidate_and_stage import GetPendingInterviewsByCandidateAndStageQuery
-from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQuery
-from src.interview_bc.interview.application.queries.get_interview_questions_by_token import GetInterviewQuestionsByTokenQuery, InterviewQuestionsResponse
-from src.interview_bc.interview.application.queries.get_interview_statistics import GetInterviewStatisticsQuery
-from src.interview_bc.interview.application.queries.dtos.interview_statistics_dto import InterviewStatisticsDto
-from src.interview_bc.interview.application.queries.get_interviews_by_date_range import GetInterviewsByDateRangeQuery
-from src.interview_bc.interview.application.queries.get_overdue_interviews import GetOverdueInterviewsQuery
-from src.interview_bc.interview.application.commands.submit_interview_answer_by_token import SubmitInterviewAnswerByTokenCommand
-from src.interview_bc.interview.application.commands.invite_interviewer import InviteInterviewerCommand
-from src.interview_bc.interview.application.commands.accept_interviewer_invitation import AcceptInterviewerInvitationCommand
-from src.interview_bc.interview.application.commands.update_interview import UpdateInterviewCommand
-from src.interview_bc.interview.application.queries.get_interviewers_by_interview import GetInterviewersByInterviewQuery
-from src.interview_bc.interview.application.queries.dtos.interview_interviewer_dto import InterviewInterviewerDto
-from src.interview_bc.interview.domain.enums.interview_enums import InterviewTypeEnum
-from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewPermissionDeniedError
+from core.config import settings
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
-from core.config import settings
+from src.interview_bc.interview.application.commands.accept_interviewer_invitation import \
+    AcceptInterviewerInvitationCommand
+from src.interview_bc.interview.application.commands.create_interview import CreateInterviewCommand
+from src.interview_bc.interview.application.commands.finish_interview import FinishInterviewCommand
+from src.interview_bc.interview.application.commands.generate_interview_link import GenerateInterviewLinkCommand
+from src.interview_bc.interview.application.commands.invite_interviewer import InviteInterviewerCommand
+from src.interview_bc.interview.application.commands.start_interview import StartInterviewCommand
+from src.interview_bc.interview.application.commands.submit_interview_answer_by_token import \
+    SubmitInterviewAnswerByTokenCommand
+from src.interview_bc.interview.application.commands.update_interview import UpdateInterviewCommand
+from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+from src.interview_bc.interview.application.queries.dtos.interview_interviewer_dto import InterviewInterviewerDto
+from src.interview_bc.interview.application.queries.dtos.interview_statistics_dto import InterviewStatisticsDto
+from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQuery
+from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQuery
+from src.interview_bc.interview.application.queries.get_interview_questions_by_token import \
+    GetInterviewQuestionsByTokenQuery, InterviewQuestionsResponse
+from src.interview_bc.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQuery, \
+    InterviewScoreSummaryDto
+from src.interview_bc.interview.application.queries.get_interview_statistics import GetInterviewStatisticsQuery
+from src.interview_bc.interview.application.queries.get_interviewers_by_interview import GetInterviewersByInterviewQuery
+from src.interview_bc.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQuery
+from src.interview_bc.interview.application.queries.get_pending_interviews_by_candidate_and_stage import \
+    GetPendingInterviewsByCandidateAndStageQuery
+from src.interview_bc.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQuery
+from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQuery
+from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewPermissionDeniedError
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +76,10 @@ class InterviewController:
                 InterviewTypeEnum,
                 InterviewProcessTypeEnum
             )
-            from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
+            from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import \
+                InterviewRepositoryInterface
             from core.container import Container
-            
+
             # Convert string enums to enum values for count query
             interview_type_enum = None
             if interview_type:
@@ -431,7 +433,8 @@ class InterviewController:
             return interviews
 
         except Exception as e:
-            logger.error(f"Error getting pending interviews for candidate {candidate_id} in stage {workflow_stage_id}: {e}")
+            logger.error(
+                f"Error getting pending interviews for candidate {candidate_id} in stage {workflow_stage_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to retrieve pending interviews")
 
     def get_interview_by_token(

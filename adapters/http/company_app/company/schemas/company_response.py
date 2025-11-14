@@ -1,6 +1,7 @@
-from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, Dict, Any
+
+from pydantic import BaseModel
 
 from src.company_bc.company.domain.enums import CompanyTypeEnum
 
