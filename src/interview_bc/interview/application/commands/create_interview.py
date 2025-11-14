@@ -1,0 +1,132 @@
+"""Create interview command"""
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional, List
+
+from core.event_bus import EventBus
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.interview_bc.interview.domain.entities.interview import Interview
+from src.interview_bc.interview.domain.enums.interview_enums import (
+    InterviewTypeEnum,
+    InterviewModeEnum,
+    InterviewProcessTypeEnum
+)
+from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
+from src.interview_bc.interview.domain.events.interview_events import InterviewCreatedEvent
+from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
+from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+from src.framework.application.command_bus import Command, CommandHandler
+
+
+@dataclass
+class CreateInterviewCommand(Command):
+    candidate_id: str
+    required_roles: List[str]  # Obligatory: List of CompanyRole IDs
+    interview_mode: str  # Required field
+    process_type: Optional[str] = None  # InterviewProcessTypeEnum value
+    interview_type: str = InterviewTypeEnum.CUSTOM.value
+    job_position_id: Optional[str] = None
+    application_id: Optional[str] = None
+    interview_template_id: Optional[str] = None
+    workflow_stage_id: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    scheduled_at: Optional[str] = None  # ISO datetime string
+    deadline_date: Optional[str] = None  # ISO datetime string
+    interviewers: Optional[List[str]] = None
+    created_by: Optional[str] = None
+
+
+class CreateInterviewCommandHandler(CommandHandler[CreateInterviewCommand]):
+    def __init__(self, interview_repository: InterviewRepositoryInterface, event_bus: EventBus):
+        self.interview_repository = interview_repository
+        self.event_bus = event_bus
+
+    def execute(self, command: CreateInterviewCommand) -> None:
+        # Generate new interview ID
+        interview_id = InterviewId.generate()
+
+        # Convert string IDs to value objects
+        candidate_id = CandidateId.from_string(command.candidate_id)
+
+        job_position_id = None
+        if command.job_position_id:
+            job_position_id = JobPositionId.from_string(command.job_position_id)
+
+        application_id = None
+        if command.application_id:
+            application_id = CandidateApplicationId.from_string(command.application_id)
+
+        interview_template_id = None
+        if command.interview_template_id:
+            interview_template_id = InterviewTemplateId.from_string(command.interview_template_id)
+
+        workflow_stage_id = None
+        if command.workflow_stage_id:
+            workflow_stage_id = WorkflowStageId.from_string(command.workflow_stage_id)
+
+        # Convert required_roles from List[str] to List[CompanyRoleId] (obligatory)
+        if not command.required_roles:
+            raise ValueError("Required roles cannot be empty")
+        required_roles = [CompanyRoleId.from_string(role_id) for role_id in command.required_roles]
+
+        # Convert process_type
+        process_type = None
+        if command.process_type:
+            process_type = InterviewProcessTypeEnum(command.process_type)
+
+        # Convert interview type
+        interview_type = InterviewTypeEnum(command.interview_type)
+
+        # Convert interview mode (required)
+        interview_mode = InterviewModeEnum(command.interview_mode)
+
+        # Parse scheduled datetime
+        scheduled_at = None
+        if command.scheduled_at:
+            scheduled_at = datetime.fromisoformat(command.scheduled_at.replace('Z', '+00:00'))
+
+        # Parse deadline datetime
+        deadline_date = None
+        if command.deadline_date:
+            deadline_date = datetime.fromisoformat(command.deadline_date.replace('Z', '+00:00'))
+
+        # Create interview using factory method
+        new_interview = Interview.create(
+            id=interview_id,
+            candidate_id=candidate_id,
+            required_roles=required_roles,
+            process_type=process_type,
+            interview_type=interview_type,
+            interview_mode=interview_mode,
+            job_position_id=job_position_id,
+            application_id=application_id,
+            interview_template_id=interview_template_id,
+            workflow_stage_id=workflow_stage_id,
+            title=command.title,
+            description=command.description,
+            scheduled_at=scheduled_at,
+            deadline_date=deadline_date,
+            created_by=command.created_by
+        )
+
+        # Set interviewers if provided
+        if command.interviewers:
+            new_interview.interviewers = command.interviewers
+
+        # Save interview
+        created_interview = self.interview_repository.create(new_interview)
+
+        # Dispatch domain event
+        self.event_bus.dispatch(InterviewCreatedEvent(
+            interview_id=created_interview.id.value,
+            candidate_id=created_interview.candidate_id.value,
+            job_position_id=created_interview.job_position_id.value if created_interview.job_position_id else None,
+            interview_template_id=created_interview.interview_template_id.value if created_interview.interview_template_id else None,
+            interview_type=created_interview.interview_type.value,
+            created_at=created_interview.created_at or datetime.utcnow()
+        ))

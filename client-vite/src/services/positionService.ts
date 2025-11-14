@@ -13,7 +13,7 @@ import type {
 } from '../types/position';
 
 export class PositionService {
-  private static readonly BASE_PATH = '/admin/positions';
+  private static readonly BASE_PATH = '/api/company/positions';
   private static readonly WORKFLOW_BASE_PATH = '/admin/workflows';
 
   /**
@@ -26,6 +26,7 @@ export class PositionService {
     if (filters?.search_term) queryParams.append('search_term', filters.search_term);
     if (filters?.job_category) queryParams.append('job_category', filters.job_category);
     if (filters?.visibility) queryParams.append('visibility', filters.visibility);
+    if (filters?.is_active !== undefined) queryParams.append('is_active', filters.is_active.toString());
     if (filters?.page) queryParams.append('page', filters.page.toString());
     if (filters?.page_size) queryParams.append('page_size', filters.page_size.toString());
 

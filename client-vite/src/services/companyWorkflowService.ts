@@ -1,6 +1,6 @@
 import { ApiClient } from '../lib/api';
 import type {
-  CompanyWorkflow,
+  CandidateApplicationWorkflow,
   WorkflowStage,
   CreateWorkflowRequest,
   UpdateWorkflowRequest,
@@ -23,7 +23,7 @@ export const companyWorkflowService = {
   /**
    * Create a new workflow
    */
-  createWorkflow: async (data: CreateWorkflowRequest): Promise<CompanyWorkflow> => {
+  createWorkflow: async (data: CreateWorkflowRequest): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post('/api/company-workflows', data, {
       headers: getAuthHeaders(),
     });
@@ -32,7 +32,7 @@ export const companyWorkflowService = {
   /**
    * Get workflow by ID
    */
-  getWorkflow: async (workflowId: string): Promise<CompanyWorkflow> => {
+  getWorkflow: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.get(`/api/company-workflows/${workflowId}`, {
       headers: getAuthHeaders(),
     });
@@ -40,9 +40,15 @@ export const companyWorkflowService = {
 
   /**
    * List workflows for a specific company
+   * @param companyId - Company ID
+   * @param workflowType - Optional workflow type filter ('CA', 'PO', 'CO')
    */
-  listWorkflowsByCompany: async (companyId: string): Promise<CompanyWorkflow[]> => {
-    return ApiClient.get(`/api/company-workflows/company/${companyId}`, {
+  listWorkflowsByCompany: async (companyId: string, workflowType?: string): Promise<CandidateApplicationWorkflow[]> => {
+    let url = `/api/company-workflows/company/${companyId}`;
+    if (workflowType) {
+      url += `?workflow_type=${workflowType}`;
+    }
+    return ApiClient.get(url, {
       headers: getAuthHeaders(),
     });
   },
@@ -53,7 +59,7 @@ export const companyWorkflowService = {
   updateWorkflow: async (
     workflowId: string,
     data: UpdateWorkflowRequest
-  ): Promise<CompanyWorkflow> => {
+  ): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.request(`/api/company-workflows/${workflowId}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
@@ -64,7 +70,7 @@ export const companyWorkflowService = {
   /**
    * Deactivate workflow
    */
-  deactivateWorkflow: async (workflowId: string): Promise<CompanyWorkflow> => {
+  deactivateWorkflow: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post(
       `/api/company-workflows/${workflowId}/deactivate`,
       {},
@@ -77,7 +83,7 @@ export const companyWorkflowService = {
   /**
    * Archive workflow
    */
-  archiveWorkflow: async (workflowId: string): Promise<CompanyWorkflow> => {
+  archiveWorkflow: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post(
       `/api/company-workflows/${workflowId}/archive`,
       {},
@@ -90,7 +96,7 @@ export const companyWorkflowService = {
   /**
    * Set workflow as default
    */
-  setAsDefault: async (workflowId: string): Promise<CompanyWorkflow> => {
+  setAsDefault: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post(
       `/api/company-workflows/${workflowId}/set-default`,
       {},
@@ -103,7 +109,7 @@ export const companyWorkflowService = {
   /**
    * Unset workflow as default
    */
-  unsetDefault: async (workflowId: string): Promise<CompanyWorkflow> => {
+  unsetDefault: async (workflowId: string): Promise<CandidateApplicationWorkflow> => {
     return ApiClient.post(
       `/api/company-workflows/${workflowId}/unset-default`,
       {},
@@ -162,9 +168,11 @@ export const companyWorkflowService = {
 
   /**
    * List stages for a specific phase
+   * @param phaseId - Phase ID
+   * @param workflowType - Workflow type (CA, PO, CO)
    */
-  listStagesByPhase: async (phaseId: string): Promise<WorkflowStage[]> => {
-    return ApiClient.get(`/api/workflow-stages/phase/${phaseId}`, {
+  listStagesByPhase: async (phaseId: string, workflowType: string): Promise<WorkflowStage[]> => {
+    return ApiClient.get(`/api/workflow-stages/phase/${phaseId}?workflow_type=${workflowType}`, {
       headers: getAuthHeaders(),
     });
   },

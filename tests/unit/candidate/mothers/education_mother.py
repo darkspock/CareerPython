@@ -5,11 +5,11 @@ from datetime import date
 from typing import Optional
 from faker import Faker
 
-from src.candidate.application.commands.create_education import CreateEducationCommand
-from src.candidate.application.commands.update_education import UpdateEducationCommand
-from src.candidate.domain.entities.candidate_education import CandidateEducation
-from src.candidate.domain.value_objects.candidate_education_id import CandidateEducationId
-from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.candidate_bc.candidate.application.commands.create_education import CreateEducationCommand
+from src.candidate_bc.candidate.application.commands.update_education import UpdateEducationCommand
+from src.candidate_bc.candidate.domain.entities.candidate_education import CandidateEducation
+from src.candidate_bc.candidate.domain.value_objects.candidate_education_id import CandidateEducationId
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 
 fake = Faker()
 

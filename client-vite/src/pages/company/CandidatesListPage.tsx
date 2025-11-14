@@ -23,6 +23,26 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Helper functions for icons (unused but kept for potential future use)
 /*
@@ -226,87 +246,87 @@ export default function CandidatesListPage() {
             <h1 className="text-2xl font-bold text-gray-900">{t('company.candidates.title')}</h1>
             <p className="text-gray-600 mt-1">{t('company.candidates.managePipeline', { defaultValue: 'Manage your candidate pipeline' })}</p>
           </div>
-          <Link
-            to="/company/candidates/add"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            {t('company.candidates.addCandidate')}
-          </Link>
+          <Button asChild>
+            <Link to="/company/candidates/add">
+              <Plus className="w-5 h-5" />
+              {t('company.candidates.addCandidate')}
+            </Link>
+          </Button>
         </div>
 
         {/* Back to Kanban View Button */}
         {phaseId && (
           <div className="flex items-center gap-4">
-            <Link
-              to={`/company/workflow-board?phase=${phaseId}`}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <Kanban className="w-4 h-4" />
-              {t('company.workflowBoard.kanbanView', { defaultValue: 'Kanban View' })}
-            </Link>
+            <Button variant="outline" asChild>
+              <Link to={`/company/workflow-board?phase=${phaseId}`}>
+                <Kanban className="w-4 h-4" />
+                {t('company.workflowBoard.kanbanView', { defaultValue: 'Kanban View' })}
+              </Link>
+            </Button>
           </div>
         )}
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder={t('company.candidates.search')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder={t('company.candidates.search')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
 
-          {/* Status Filter */}
-          <div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Status</option>
-              <option value="PENDING_INVITATION">Pending Invitation</option>
-              <option value="PENDING_CONFIRMATION">Pending Confirmation</option>
-              <option value="ACTIVE">Active</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
-          </div>
+            {/* Status Filter */}
+            <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="PENDING_INVITATION">Pending Invitation</SelectItem>
+                <SelectItem value="PENDING_CONFIRMATION">Pending Confirmation</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="REJECTED">Rejected</SelectItem>
+                <SelectItem value="ARCHIVED">Archived</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Priority Filter */}
-          <div>
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Priorities</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
-            </select>
+            {/* Priority Filter */}
+            <Select value={priorityFilter || "all"} onValueChange={(value) => setPriorityFilter(value === "all" ? "" : value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Priorities" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="HIGH">High</SelectItem>
+                <SelectItem value="MEDIUM">Medium</SelectItem>
+                <SelectItem value="LOW">Low</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Card className="mb-6 border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <p className="text-red-800">{error}</p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Candidates Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <Card>
         {filteredCandidates.length === 0 ? (
-          <div className="text-center py-12">
+          <CardContent className="text-center py-12">
             <UserPlus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No candidates found</h3>
             <p className="text-gray-600 mb-4">
@@ -315,41 +335,32 @@ export default function CandidatesListPage() {
                 : 'Start by adding your first candidate'}
             </p>
             {!searchTerm && !statusFilter && !priorityFilter && (
-              <Link
-                to="/company/candidates/add"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                Add Candidate
-              </Link>
+              <Button asChild>
+                <Link to="/company/candidates/add">
+                  <Plus className="w-5 h-5" />
+                  Add Candidate
+                </Link>
+              </Button>
             )}
-          </div>
+          </CardContent>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-[90%]">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-2 py-3 w-[50px] max-w-[50px] min-w-[50px]">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px] max-w-[50px] min-w-[50px]">
                     {/* Empty header for icons column */}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                    Candidate
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                    Position / Stage
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                    Tags
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+                  </TableHead>
+                  <TableHead className="w-1/4">Candidate</TableHead>
+                  <TableHead className="w-1/4">Position / Stage</TableHead>
+                  <TableHead className="w-1/6">Tags</TableHead>
+                  <TableHead className="text-right w-32">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredCandidates.map((candidate) => (
-                  <tr key={candidate.id} className="hover:bg-gray-50">
-                    <td className="px-2 py-4 whitespace-nowrap w-[50px] max-w-[50px] min-w-[50px]">
+                  <TableRow key={candidate.id}>
+                    <TableCell className="w-[50px] max-w-[50px] min-w-[50px]">
                       <div className="flex items-center gap-1 justify-center">
                         {getPriorityIcon(candidate.priority) && (
                           <Tooltip>
@@ -387,8 +398,8 @@ export default function CandidatesListPage() {
                           </Tooltip>
                         )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
+                    </TableCell>
+                    <TableCell>
                       <div className="min-w-[200px] max-w-[300px]">
                         <button
                           onClick={() => navigate(`/company/candidates/${candidate.id}`)}
@@ -402,8 +413,8 @@ export default function CandidatesListPage() {
                           {candidate.candidate_email || 'N/A'}
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
+                    </TableCell>
+                    <TableCell>
                       {candidate.job_position_title ? (
                         <>
                           <button
@@ -412,37 +423,50 @@ export default function CandidatesListPage() {
                           >
                             {candidate.job_position_title}
                           </button>
-                          {candidate.application_status && (
-                            <div className="text-xs text-gray-500">
-                              Status: {candidate.application_status}
-                            </div>
-                          )}
-                          {candidate.current_workflow_id && candidate.current_stage_id && (
-                            <div className="text-xs text-gray-500">
-                              {candidate.stage_name} - {candidate.workflow_name}
+                          {(candidate.workflow_name || candidate.stage_name) && (
+                            <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                              {candidate.stage_style?.icon && (
+                                <span 
+                                  className="text-sm"
+                                  dangerouslySetInnerHTML={{ __html: candidate.stage_style.icon }}
+                                />
+                              )}
+                              <span style={{ color: candidate.stage_style?.color || candidate.stage_style?.text_color || undefined }}>
+                                {candidate.workflow_name || 'No workflow'} - {candidate.stage_name || 'No stage'}
+                              </span>
                             </div>
                           )}
                         </>
-                      ) : candidate.current_workflow_id && candidate.current_stage_id ? (
+                      ) : (candidate.workflow_name || candidate.stage_name) ? (
                         <>
-                          <div className="text-sm text-gray-900">
-                            {candidate.stage_name || 'No stage'}
+                          <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                            {candidate.stage_style?.icon && (
+                              <span 
+                                className="text-base"
+                                dangerouslySetInnerHTML={{ __html: candidate.stage_style.icon }}
+                              />
+                            )}
+                            <span style={{ color: candidate.stage_style?.color || candidate.stage_style?.text_color || undefined }}>
+                              {candidate.workflow_name || 'No workflow'}
+                            </span>
                           </div>
                           <div className="text-xs text-gray-500">
-                            {candidate.workflow_name || ''}
+                            {candidate.stage_name || 'No stage'}
                           </div>
                         </>
                       ) : (
-                        <button
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleOpenPositionModal(candidate)}
-                          className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors whitespace-nowrap"
+                          className="whitespace-nowrap"
                         >
                           <Briefcase className="w-3 h-3" />
                           Assign Position
-                        </button>
+                        </Button>
                       )}
-                    </td>
-                    <td className="px-6 py-4">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {candidate.tags.slice(0, 2).map((tag, idx) => (
                           <span
@@ -458,17 +482,18 @@ export default function CandidatesListPage() {
                           </span>
                         )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    </TableCell>
+                    <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => navigate(`/company/candidates/${candidate.id}`)}
-                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
                             >
                               <Eye className="w-5 h-5" />
-                            </button>
+                            </Button>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>View candidate details</p>
@@ -476,12 +501,14 @@ export default function CandidatesListPage() {
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => navigate(`/company/candidates/${candidate.id}/edit`)}
-                              className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                              className="text-green-600 hover:text-green-900"
                             >
                               <Edit className="w-5 h-5" />
-                            </button>
+                            </Button>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Edit candidate</p>
@@ -489,26 +516,28 @@ export default function CandidatesListPage() {
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => handleArchive(candidate.id)}
-                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                              className="text-red-600 hover:text-red-900"
                             >
                               <Archive className="w-5 h-5" />
-                            </button>
+                            </Button>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Archive candidate</p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </CardContent>
         )}
-      </div>
+      </Card>
 
       {/* Summary */}
       {filteredCandidates.length > 0 && (
@@ -541,12 +570,9 @@ export default function CandidatesListPage() {
                 <div className="text-center py-12">
                   <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">No open positions available</p>
-                  <button
-                    onClick={() => navigate('/company/positions/create')}
-                    className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
-                  >
+                  <Button variant="link" onClick={() => navigate('/company/positions/create')}>
                     Create a new position
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -580,15 +606,15 @@ export default function CandidatesListPage() {
 
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowPositionModal(false);
                   setSelectedCandidateForPosition(null);
                 }}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         </div>

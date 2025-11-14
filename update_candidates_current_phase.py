@@ -35,7 +35,7 @@ def update_candidates():
         # Get phase_id from workflows
         cursor.execute("""
             SELECT id, phase_id 
-            FROM company_workflows 
+            FROM candidate_application_workflows 
             WHERE id IN (
                 SELECT DISTINCT workflow_id 
                 FROM company_candidates 

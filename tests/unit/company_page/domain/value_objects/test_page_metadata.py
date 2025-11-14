@@ -3,7 +3,7 @@ Tests unitarios para PageMetadata Value Object
 """
 import pytest
 
-from src.company_page.domain.value_objects.page_metadata import PageMetadata
+from src.company_bc.company_page.domain.value_objects.page_metadata import PageMetadata
 
 
 class TestPageMetadata:

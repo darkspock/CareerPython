@@ -48,7 +48,8 @@ export default function CompanyRegisterPage() {
     address: '',
     
     // Options
-    include_example_data: false,
+    initialize_workflows: true,        // NEW: Default to true
+    include_example_data: false,       // Keep default false
     accept_terms: false,
     accept_privacy: false
   });
@@ -76,6 +77,9 @@ export default function CompanyRegisterPage() {
         newErrors.email = 'El email es requerido';
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
         newErrors.email = 'El email no es válido';
+      } else if (emailExists) {
+        // Prevent continuing if email already exists
+        newErrors.email = 'Este email ya está registrado. Por favor, usa otro email o inicia sesión.';
       }
 
       if (!formData.full_name.trim()) {
@@ -155,6 +159,7 @@ export default function CompanyRegisterPage() {
         logo_url: formData.logo_url || undefined,
         contact_phone: formData.contact_phone || undefined,
         address: formData.address || undefined,
+        initialize_workflows: formData.initialize_workflows,  // NEW
         include_example_data: formData.include_example_data,
         accept_terms: formData.accept_terms,
         accept_privacy: formData.accept_privacy
@@ -301,6 +306,17 @@ export default function CompanyRegisterPage() {
               formData={formData}
               onChange={handleFieldChange}
               errors={errors}
+              onDomainValidation={(isValid, error) => {
+                if (error) {
+                  setErrors(prev => ({ ...prev, domain: error }));
+                } else {
+                  setErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors.domain;
+                    return newErrors;
+                  });
+                }
+              }}
             />
           )}
 

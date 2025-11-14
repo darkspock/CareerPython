@@ -1,0 +1,78 @@
+"""Interview DTO for application layer"""
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional, List
+
+from src.candidate_bc.candidate.domain.value_objects import CandidateId
+from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.interview_bc.interview.domain.entities.interview import Interview
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
+from src.company_bc.job_position.domain.value_objects import JobPositionId
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
+
+
+@dataclass
+class InterviewDto:
+    id: InterviewId
+    candidate_id: CandidateId
+    required_roles: List[str]  # List of CompanyRole IDs (obligatory)
+    interview_type: str
+    status: str
+    interviewers: List[str]
+    job_position_id: Optional[JobPositionId] = None
+    application_id: Optional[CandidateApplicationId] = None
+    interview_template_id: Optional[InterviewTemplateId] = None
+    workflow_stage_id: Optional[WorkflowStageId] = None
+    process_type: Optional[str] = None  # InterviewProcessTypeEnum value
+    interview_mode: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
+    deadline_date: Optional[datetime] = None
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    interviewer_notes: Optional[str] = None
+    candidate_notes: Optional[str] = None
+    score: Optional[float] = None
+    feedback: Optional[str] = None
+    free_answers: Optional[str] = None
+    link_token: Optional[str] = None
+    link_expires_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    @classmethod
+    def from_entity(cls, entity: Interview) -> "InterviewDto":
+        """Convert domain entity to DTO"""
+        return cls(
+            id=entity.id,
+            candidate_id=entity.candidate_id,
+            required_roles=[role_id.value for role_id in entity.required_roles] if entity.required_roles else [],
+            job_position_id=entity.job_position_id,
+            application_id=entity.application_id,
+            interview_template_id=entity.interview_template_id,
+            workflow_stage_id=entity.workflow_stage_id,
+            process_type=entity.process_type.value if entity.process_type else None,
+            interview_type=entity.interview_type.value,
+            interview_mode=entity.interview_mode.value if entity.interview_mode else None,
+            status=entity.status.value,
+            title=entity.title,
+            description=entity.description,
+            scheduled_at=entity.scheduled_at,
+            deadline_date=entity.deadline_date,
+            started_at=entity.started_at,
+            finished_at=entity.finished_at,
+            duration_minutes=entity.duration_minutes,
+            interviewers=entity.interviewers or [],
+            interviewer_notes=entity.interviewer_notes,
+            candidate_notes=entity.candidate_notes,
+            score=entity.score,
+            feedback=entity.feedback,
+            free_answers=entity.free_answers,
+            link_token=entity.link_token,
+            link_expires_at=entity.link_expires_at,
+            created_at=entity.created_at,
+            updated_at=entity.updated_at,
+        )

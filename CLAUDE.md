@@ -113,7 +113,7 @@ src/
 
 ```python
 from dataclasses import dataclass
-from src.shared.application.command_bus import Command, CommandHandler
+from src.framework.application.command_bus import Command, CommandHandler
 
 @dataclass
 class CreatePhaseCommand(Command):  # MUST inherit from Command
@@ -146,7 +146,7 @@ class CreatePhaseCommandHandler(CommandHandler[CreatePhaseCommand]):  # MUST inh
 ```python
 from dataclasses import dataclass
 from typing import Optional
-from src.shared.application.query_bus import Query, QueryHandler
+from src.framework.application.query_bus import Query, QueryHandler
 
 @dataclass
 class GetPhaseByIdQuery(Query):  # MUST inherit from Query

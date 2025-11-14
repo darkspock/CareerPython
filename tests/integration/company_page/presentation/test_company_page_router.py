@@ -8,8 +8,8 @@ from unittest.mock import Mock
 from src.company_page.presentation.routers.company_page_router import router
 from src.company_page.presentation.routers.public_company_page_router import router as public_router
 from src.company_page.presentation.schemas.company_page_response import CompanyPageResponse
-from src.company_page.domain.enums.page_type import PageType
-from src.company_page.domain.enums.page_status import PageStatus
+from src.company_bc.company_page.domain.enums.page_type import PageType
+from src.company_bc.company_page.domain.enums.page_status import PageStatus
 
 
 class TestCompanyPageRouter:

@@ -4,8 +4,8 @@ import type { StageStyle } from './stageStyle';
 // Phase 12: Updated workflow status (INACTIVE → DRAFT)
 export type WorkflowStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 
-// Phase 12: Updated stage types (INTERMEDIATE → STANDARD, FINAL → SUCCESS, added FAIL)
-export type StageType = 'initial' | 'standard' | 'success' | 'fail';
+// Phase 12: Updated stage types (INTERMEDIATE → STANDARD, FINAL → SUCCESS, added FAIL, ARCHIVED)
+export type StageType = 'initial' | 'standard' | 'success' | 'fail' | 'archived';
 
 // Kanban display configuration
 export const KanbanDisplay = {
@@ -15,7 +15,15 @@ export const KanbanDisplay = {
 } as const;
 export type KanbanDisplay = typeof KanbanDisplay[keyof typeof KanbanDisplay];
 
-export interface CompanyWorkflow {
+// Interview configuration types
+export type InterviewMode = 'AUTOMATIC' | 'MANUAL';
+
+export interface InterviewConfiguration {
+  template_id: string;
+  mode: InterviewMode;
+}
+
+export interface CandidateApplicationWorkflow {
   id: string;
   company_id: string;
   phase_id?: string | null; // Phase 12: Phase association
@@ -32,6 +40,9 @@ export interface CompanyWorkflow {
   active_candidate_count?: number;
   active_position_count?: number;
 }
+
+// Alias for backward compatibility (deprecated, use CandidateApplicationWorkflow)
+export type CompanyWorkflow = CandidateApplicationWorkflow;
 
 export interface WorkflowStage {
   id: string;
@@ -52,6 +63,9 @@ export interface WorkflowStage {
   next_phase_id?: string | null; // Phase 12: Phase transition
   kanban_display: KanbanDisplay; // Kanban display configuration
   style: StageStyle; // Visual styling
+  validation_rules?: Record<string, any> | null; // JsonLogic validation rules
+  recommended_rules?: Record<string, any> | null; // JsonLogic recommendation rules
+  interview_configurations?: InterviewConfiguration[] | null; // List of interview configurations
   created_at: string;
   updated_at: string;
 
@@ -92,6 +106,11 @@ export interface CreateStageRequest {
   deadline_days?: number;
   estimated_cost?: string;
   next_phase_id?: string | null; // Phase 12: Phase transition
+  kanban_display?: string; // Kanban display mode: 'column', 'row', or 'none'
+  style?: StageStyle; // Visual styling
+  validation_rules?: Record<string, any>; // JsonLogic validation rules
+  recommended_rules?: Record<string, any>; // JsonLogic recommendation rules
+  interview_configurations?: InterviewConfiguration[]; // List of interview configurations
 }
 
 export interface UpdateStageRequest {
@@ -110,6 +129,10 @@ export interface UpdateStageRequest {
   estimated_cost?: string;
   next_phase_id?: string | null; // Phase 12: Phase transition
   kanban_display?: string; // Kanban display mode: 'column', 'row', or 'none'
+  style?: StageStyle; // Visual styling
+  validation_rules?: Record<string, any>; // JsonLogic validation rules
+  recommended_rules?: Record<string, any>; // JsonLogic recommendation rules
+  interview_configurations?: InterviewConfiguration[]; // List of interview configurations
 }
 
 export interface ReorderStagesRequest {
@@ -137,6 +160,14 @@ export const getStageTypeColor = (type: StageType): string => {
 };
 
 // Custom Fields Types
+/**
+ * @deprecated These types are deprecated. Use types from '../../types/customization' instead.
+ * The new types are generic and work with any entity, not just workflows.
+ * 
+ * Migration:
+ * - CustomField (old) -> CustomField (from customization.ts, no workflow_id)
+ * - FieldConfiguration (old) -> FieldConfiguration (from customization.ts, with context_type/context_id)
+ */
 
 export type FieldType =
   | 'TEXT'
@@ -159,6 +190,9 @@ export type FieldVisibility =
   | 'READ_ONLY'
   | 'REQUIRED';
 
+/**
+ * @deprecated Use CustomField from '../../types/customization' instead (no workflow_id field).
+ */
 export interface CustomField {
   id: string;
   workflow_id: string;
@@ -171,6 +205,9 @@ export interface CustomField {
   updated_at: string;
 }
 
+/**
+ * @deprecated Use FieldConfiguration from '../../types/customization' instead (uses context_type/context_id).
+ */
 export interface FieldConfiguration {
   id: string;
   stage_id: string;

@@ -4,20 +4,16 @@ Integration tests for CompanyUserInvitationRepository
 import pytest
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from src.company.domain.entities.company_user_invitation import CompanyUserInvitation
-from src.company.domain.enums import CompanyUserInvitationStatus
-from src.company.domain.value_objects import CompanyId, CompanyUserId
-from src.company.domain.value_objects.company_user_invitation_id import (
+from src.company_bc.company.domain.entities.company_user_invitation import CompanyUserInvitation
+from src.company_bc.company.domain.enums import CompanyUserInvitationStatus
+from src.company_bc.company.domain.value_objects import CompanyId, CompanyUserId
+from src.company_bc.company.domain.value_objects.company_user_invitation_id import (
     CompanyUserInvitationId
 )
-from src.company.domain.value_objects.invitation_token import InvitationToken
-from src.company.infrastructure.repositories.company_user_invitation_repository import (
+from src.company_bc.company.domain.value_objects.invitation_token import InvitationToken
+from src.company_bc.company.infrastructure.repositories.company_user_invitation_repository import (
     CompanyUserInvitationRepository
-)
-from src.company.infrastructure.models.company_user_invitation_model import (
-    CompanyUserInvitationModel
 )
 from core.database import SQLAlchemyDatabase
 from core.base import Base

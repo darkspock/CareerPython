@@ -2,14 +2,13 @@
 Tests unitarios para la entidad CompanyPage
 """
 import pytest
-from datetime import datetime
 
-from src.company.domain.value_objects.company_id import CompanyId
-from src.company_page.domain.entities.company_page import CompanyPage
-from src.company_page.domain.enums.page_type import PageType
-from src.company_page.domain.enums.page_status import PageStatus
-from src.company_page.domain.value_objects.page_metadata import PageMetadata
-from src.company_page.domain.exceptions.company_page_exceptions import (
+from src.company_bc.company.domain.value_objects import CompanyId
+from src.company_bc.company_page.domain.entities.company_page import CompanyPage
+from src.company_bc.company_page.domain.enums.page_type import PageType
+from src.company_bc.company_page.domain.enums.page_status import PageStatus
+from src.company_bc.company_page.domain.value_objects.page_metadata import PageMetadata
+from src.company_bc.company_page.domain.exceptions.company_page_exceptions import (
     PageAlreadyDefaultException,
     InvalidPageStatusTransitionException
 )

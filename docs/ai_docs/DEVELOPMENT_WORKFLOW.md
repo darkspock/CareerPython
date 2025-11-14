@@ -53,7 +53,7 @@ Ubicación: `src/{module}/domain/value_objects/`
 
 ```python
 from dataclasses import dataclass
-from src.shared.domain.value_objects.base_id import BaseId
+from src.framework.domain.value_objects.base_id import BaseId
 
 @dataclass(frozen=True)
 class CompanyId(BaseId):
@@ -131,7 +131,7 @@ class Company:
         name: str,
         domain: str,
         logo_url: Optional[str],
-    ) -> "Company":
+    ) -> None:
         """Actualiza la empresa con nuevos valores"""
         # Validaciones
         if not name or len(name) < 3:
@@ -171,7 +171,7 @@ class Company:
 3. **Factory method `create()`**: Con valores por defecto y validaciones
 4. **Factory method `update()`**: Recibe TODOS los atributos actualizables
 5. **Métodos específicos para status**: Un método por cada transición de estado
-6. **Mutabilidad**: Los métodos modifican la instancia directamente (NO retornan nuevas instancias)
+6. **⚠️ REGLA CRÍTICA - MUTABILIDAD**: Las entidades SIEMPRE son mutables. Los métodos modifican la instancia directamente (NO retornan nuevas instancias). Los métodos de actualización y cambio de estado retornan `None`, no nuevas instancias.
 7. **Validaciones en métodos**: Lógica de negocio encapsulada
 
 **❌ NO HACER**:
@@ -194,14 +194,18 @@ def __init__(self, id, name, status=CompanyStatus.ACTIVE):
 
 **✅ HACER**:
 ```python
-# Bien: Método específico para cambio de status (modifica la instancia)
-company.suspend()
+# Bien: Método específico para cambio de status (modifica la instancia directamente)
+company.suspend()  # Modifica company, no retorna nueva instancia
 
 # Bien: Propiedades públicas
 print(company.name)
 
 # Bien: Factory method con valores por defecto
 company = Company.create(name="Acme", domain="acme.com")
+
+# Bien: Métodos de actualización modifican la instancia y retornan None
+company.update(name="New Name", domain="newdomain.com", logo_url=None)
+# company ahora tiene los nuevos valores, no se crea una nueva instancia
 ```
 
 #### Eventos de Dominio (Opcional)
@@ -430,11 +434,12 @@ class CompanyMapper:
 
 **Presentation Mapper** (DTO → Response)
 
-Ubicación: `src/{module}/presentation/mappers/{entity}_mapper.py`
+Ubicación: `adapters/http/{module}/mappers/{entity}_mapper.py`
 
 ```python
-from ..schemas.company_response import CompanyResponse
-from ...application.dtos.company_dto import CompanyDto
+from adapters.http.company_app.company.schemas.company_response import CompanyResponse
+from src.company_bc.company.application.dtos.company_dto import CompanyDto
+
 
 class CompanyResponseMapper:
     """Mapper para convertir DTOs a Responses"""
@@ -604,7 +609,7 @@ class GetCompanyByIdQueryHandler(QueryHandler[GetCompanyByIdQuery, Optional[Comp
 
 #### 3.4. Request Schemas
 
-Ubicación: `src/{module}/presentation/schemas/{entity}_request.py`
+Ubicación: `adapters/http/{module}/schemas/{entity}_request.py`
 
 ```python
 from pydantic import BaseModel, Field, validator
@@ -630,7 +635,7 @@ class UpdateCompanyRequest(BaseModel):
 
 #### 3.5. Response Schemas
 
-Ubicación: `src/{module}/presentation/schemas/{entity}_response.py`
+Ubicación: `adapters/http/{module}/schemas/{entity}_response.py`
 
 ```python
 from pydantic import BaseModel
@@ -652,25 +657,26 @@ class CompanyResponse(BaseModel):
 
 #### 3.6. Controller
 
-Ubicación: `src/{module}/presentation/controllers/{entity}_controller.py`
+Ubicación: `adapters/http/{module}/controllers/{entity}_controller.py`
 
 ```python
 from typing import Optional
 from core.command_bus import CommandBus
 from core.query_bus import QueryBus
-from ...application.commands.create_company_command import CreateCompanyCommand
-from ...application.queries.get_company_by_id_query import GetCompanyByIdQuery
-from ..schemas.company_request import CreateCompanyRequest
-from ..schemas.company_response import CompanyResponse
-from ..mappers.company_mapper import CompanyResponseMapper
+from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommand
+from src.company_bc.company.application.queries import GetCompanyByIdQuery
+from adapters.http.company_app.company import CreateCompanyRequest
+from adapters.http.company_app.company.schemas.company_response import CompanyResponse
+from adapters.http.company_app.company.mappers.company_mapper import CompanyResponseMapper
+
 
 class CompanyController:
     """Controller de empresas"""
 
     def __init__(
-        self,
-        command_bus: CommandBus,
-        query_bus: QueryBus
+            self,
+            command_bus: CommandBus,
+            query_bus: QueryBus
     ):
         self.command_bus = command_bus
         self.query_bus = query_bus
@@ -698,7 +704,7 @@ class CompanyController:
     def get_company(self, company_id: str) -> Optional[CompanyResponse]:
         """Obtiene una empresa por ID"""
         # ⚠️ IMPORTANTE: Conversión de strings a value objects en Controller
-        from ...domain.value_objects.company_id import CompanyId
+        from src.company_bc.company.domain.value_objects import CompanyId
         query = GetCompanyByIdQuery(company_id=CompanyId.from_string(company_id))
         dto = self.query_bus.query(query)
 
@@ -716,17 +722,18 @@ class CompanyController:
 
 #### 3.7. Router
 
-Ubicación: `src/{module}/presentation/routers/{entity}_router.py`
+Ubicación: `adapters/http/{module}/routers/{entity}_router.py`
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional
-from ..controllers.company_controller import CompanyController
-from ..schemas.company_request import CreateCompanyRequest, UpdateCompanyRequest
-from ..schemas.company_response import CompanyResponse
+from adapters.http.company_app.company.controllers.company_controller import CompanyController
+from adapters.http.company_app.company import CreateCompanyRequest, UpdateCompanyRequest
+from adapters.http.company_app.company.schemas.company_response import CompanyResponse
 from core.dependencies import get_company_controller
 
 router = APIRouter(prefix="/companies", tags=["companies"])
+
 
 @router.post(
     "",
@@ -735,8 +742,8 @@ router = APIRouter(prefix="/companies", tags=["companies"])
     summary="Crear empresa"
 )
 def create_company(
-    request: CreateCompanyRequest,
-    controller: CompanyController = Depends(get_company_controller)
+        request: CreateCompanyRequest,
+        controller: CompanyController = Depends(get_company_controller)
 ) -> CompanyResponse:
     """Crea una nueva empresa"""
     try:
@@ -744,14 +751,15 @@ def create_company(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.get(
     "/{company_id}",
     response_model=CompanyResponse,
     summary="Obtener empresa"
 )
 def get_company(
-    company_id: str,
-    controller: CompanyController = Depends(get_company_controller)
+        company_id: str,
+        controller: CompanyController = Depends(get_company_controller)
 ) -> CompanyResponse:
     """Obtiene una empresa por ID"""
     result = controller.get_company(company_id)
@@ -773,10 +781,11 @@ Ubicación: `core/container.py`
 
 ```python
 from dependency_injector import containers, providers
-from company.infrastructure.repositories.company_repository import CompanyRepository
-from company.application.commands.create_company_command import CreateCompanyCommandHandler
-from company.application.queries.get_company_by_id_query import GetCompanyByIdQueryHandler
-from company.presentation.controllers.company_controller import CompanyController
+from src.company_bc.company.infrastructure.repositories.company_repository import CompanyRepository
+from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommandHandler
+from src.company_bc.company.application.queries import GetCompanyByIdQueryHandler
+from adapters.http.company_app.company.controllers.company_controller import CompanyController
+
 
 class Container(containers.DeclarativeContainer):
     # ... existing code ...
@@ -860,14 +869,14 @@ def test_company_create():
 
 def test_company_suspend():
     company = Company.create(name="Acme", domain="acme.com")
-    suspended = company.suspend()
-    assert suspended.status == CompanyStatus.SUSPENDED
+    company.suspend()  # Modifica la instancia directamente
+    assert company.status == CompanyStatus.SUSPENDED
 
 def test_cannot_suspend_deleted_company():
     company = Company.create(name="Acme", domain="acme.com")
-    deleted = company.delete()
+    company.delete()  # Modifica la instancia directamente
     with pytest.raises(ValueError):
-        deleted.suspend()
+        company.suspend()  # Intenta suspender la misma instancia ya eliminada
 ```
 
 ### Tests de Repositorio (Fase 2)
@@ -889,7 +898,7 @@ def test_save_and_get_company(db_session):
 ### Tests de API (Fase 3)
 
 ```python
-# tests/integration/company/presentation/test_company_router.py
+# tests/integration/company/adapters/http/test_company_router.py
 
 def test_create_company(client):
     response = client.post("/companies", json={
@@ -935,10 +944,10 @@ def test_create_company(client):
 - [ ] Crear Queries en `application/queries/`
   - [ ] Query dataclass
   - [ ] QueryHandler (retorna DTO)
-- [ ] Crear Request schemas en `presentation/schemas/`
-- [ ] Crear Response schemas en `presentation/schemas/`
-- [ ] Crear Controller en `presentation/controllers/`
-- [ ] Crear Router en `presentation/routers/`
+- [ ] Crear Request schemas en `adapters/http/{module}/schemas/`
+- [ ] Crear Response schemas en `adapters/http/{module}/schemas/`
+- [ ] Crear Controller en `adapters/http/{module}/controllers/`
+- [ ] Crear Router en `adapters/http/{module}/routers/`
 - [ ] Registrar en `core/container.py`
   - [ ] Repository
   - [ ] Handlers
@@ -963,15 +972,15 @@ def test_create_company(client):
 │   ├── 📂 dtos/              ← Fase 3
 │   └── 📂 mappers/           ← Fase 2
 │
-├── 📂 infrastructure/
-│   ├── 📂 models/            ← Fase 2
-│   └── 📂 repositories/      ← Fase 2
-│
-└── 📂 presentation/
-    ├── 📂 controllers/       ← Fase 3
-    ├── 📂 routers/           ← Fase 3
-    ├── 📂 schemas/           ← Fase 3
-    └── 📂 mappers/           ← Fase 2
+└── 📂 infrastructure/
+    ├── 📂 models/            ← Fase 2
+    └── 📂 repositories/      ← Fase 2
+
+📁 adapters/http/{module}/
+├── 📂 controllers/           ← Fase 3
+├── 📂 routers/               ← Fase 3
+├── 📂 schemas/               ← Fase 3
+└── 📂 mappers/               ← Fase 2
 ```
 
 ---

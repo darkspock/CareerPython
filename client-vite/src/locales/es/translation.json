@@ -217,10 +217,246 @@
     "navigation": {
       "dashboard": "Panel",
       "jobPositions": "Posiciones de Trabajo",
+      "interviewTemplates": "Plantillas de Entrevista",
+      "interviews": "Entrevistas",
       "settings": "Configuración",
       "candidates": "Candidatos",
       "searchAllCandidates": "Buscar Todos los Candidatos",
       "workflowBoard": "Tablero de Flujo"
+    },
+    "interviewTemplateEditor": {
+        "title": {
+          "edit": "Editar Plantilla",
+          "create": "Crear Nueva Plantilla"
+        },
+        "subtitle": {
+          "edit": "Modifica la configuración y contenido de la plantilla de entrevista",
+          "create": "Crea una nueva plantilla de entrevista"
+        },
+        "buttons": {
+          "cancel": "Cancelar",
+          "save": "Guardando...",
+          "update": "Actualizar Plantilla",
+          "create": "Crear Plantilla"
+        },
+        "sections": {
+          "basicInfo": "Información Básica",
+          "content": "Contenido de la Plantilla",
+          "templateSections": "Secciones de la Plantilla"
+        },
+        "fields": {
+          "templateName": "Nombre de la Plantilla",
+          "visibility": "Tipo",
+          "jobCategory": "Aplicar a Categoría de Trabajo",
+          "tags": "Etiquetas",
+          "introduction": "Introducción",
+          "goal": "Objetivo/Meta",
+          "aiPrompt": "Prompt de IA",
+          "scoringMode": "Modo de Scoring",
+          "legalNotice": "Aviso Legal"
+        },
+        "placeholders": {
+          "templateName": "Ingresa el nombre de la plantilla",
+          "tags": "Ingresa etiquetas separadas por comas",
+          "introduction": "Texto de introducción que se mostrará a los candidatos antes de la entrevista",
+          "goal": "¿Qué debe lograr esta plantilla de entrevista? ¿Qué información debe proporcionar?",
+          "aiPrompt": "Prompt detallado para que la IA genere preguntas de entrevista. Sé específico sobre:\n- Tipos de preguntas y nivel de dificultad\n- Temas a cubrir\n- Formato de respuesta deseado\n- Criterios de evaluación\n- Cualquier instrucción especial",
+          "scoringMode": "Selecciona un modo de scoring",
+          "legalNotice": "Texto legal que se mostrará a los usuarios para cumplimiento (GDPR, procesamiento de datos, etc.)"
+        },
+        "labels": {
+          "allowAIQuestions": "Permitir que la IA genere preguntas adicionales",
+          "allowAIQuestionsDescription": "Si está habilitado, la IA puede crear preguntas adicionales más allá de las predefinidas",
+          "legalNoticeDescription": "Este texto se mostrará a los candidatos antes de comenzar la entrevista"
+        },
+        "errors": {
+          "loadTemplate": "Error al cargar la plantilla",
+          "saveTemplate": "Error al guardar la plantilla",
+          "deleteSection": "Error al eliminar la sección",
+          "saveSection": "Error al guardar la sección",
+          "enableSection": "Error al activar la sección",
+          "disableSection": "Error al desactivar la sección",
+          "moveSectionUp": "Error al mover la sección hacia arriba",
+          "moveSectionDown": "Error al mover la sección hacia abajo",
+          "scoringModeRequired": "El modo de scoring es obligatorio para plantillas de tipo Screening"
+        },
+        "confirmations": {
+          "deleteSection": "¿Estás seguro de que quieres eliminar permanentemente esta sección? Esta acción no se puede deshacer.",
+          "disableSection": "¿Estás seguro de que quieres desactivar esta sección?"
+        },
+        "sectionForm": {
+          "title": {
+            "edit": "Editar Sección",
+            "create": "Añadir Nueva Sección"
+          },
+          "subtitle": {
+            "edit": "Modifica los detalles y configuración de la sección",
+            "create": "Crea una nueva sección para esta plantilla de entrevista"
+          },
+          "fields": {
+            "sectionName": "Nombre de la Sección",
+            "sectionType": "Tipo de Sección",
+            "introduction": "Introducción",
+            "goal": "Objetivo/Meta",
+            "aiPrompt": "Prompt de IA",
+            "legalNotice": "Aviso Legal"
+          },
+          "placeholders": {
+            "sectionName": "Ingresa el nombre de la sección",
+            "introduction": "Texto de introducción para esta sección",
+            "goal": "¿Qué debe lograr esta sección?",
+            "aiPrompt": "Prompt de IA para generar preguntas en esta sección",
+            "legalNotice": "Texto legal específico para esta sección (si es necesario)"
+          },
+          "labels": {
+            "allowAIQuestions": "Permitir que la IA genere preguntas adicionales",
+            "allowAIQuestionsDescription": "La IA puede crear preguntas adicionales para esta sección",
+            "allowAIOverride": "Permitir que la IA reformule preguntas existentes",
+            "allowAIOverrideDescription": "La IA puede modificar y mejorar la redacción de las preguntas predefinidas",
+            "legalNoticeDescription": "Aviso legal opcional que se mostrará para esta sección"
+          },
+          "buttons": {
+            "cancel": "Cancelar",
+            "update": "Actualizar Sección",
+            "add": "Añadir Sección"
+          }
+        },
+        "sectionsList": {
+          "addSection": "Añadir Sección",
+          "noSections": "No se han añadido secciones aún",
+          "noSectionsDescription": "Haz clic en \"Añadir Sección\" para crear tu primera sección",
+          "tooltips": {
+            "moveUp": "Mover sección hacia arriba en la lista",
+            "moveDown": "Mover sección hacia abajo en la lista",
+            "edit": "Editar detalles, introducción y objetivos de la sección",
+            "manageQuestions": "Gestionar preguntas para esta sección",
+            "showQuestions": "Mostrar preguntas",
+            "hideQuestions": "Ocultar preguntas",
+            "disable": "Desactivar sección - no se usará en entrevistas",
+            "enable": "Activar sección - hacerla activa para entrevistas",
+            "delete": "Eliminar permanentemente esta sección y todas sus preguntas",
+            "alreadyTop": "Ya está en la parte superior",
+            "alreadyBottom": "Ya está en la parte inferior"
+          }
+        },
+        "questionsModal": {
+          "title": "Preguntas para \"{sectionName}\"",
+          "subtitle": "Gestiona las preguntas para esta sección",
+          "addQuestion": "Añadir Pregunta",
+          "noQuestions": "No se han añadido preguntas aún",
+          "noQuestionsDescription": "Haz clic en \"Añadir Pregunta\" para crear tu primera pregunta",
+          "questionsCount": "Preguntas ({{count}})",
+          "tooltips": {
+            "moveUp": "Mover pregunta hacia arriba en la lista",
+            "moveDown": "Mover pregunta hacia abajo en la lista",
+            "edit": "Editar texto, tipo y configuración de la pregunta",
+            "delete": "Eliminar permanentemente esta pregunta",
+            "alreadyTop": "Ya está en la parte superior",
+            "alreadyBottom": "Ya está en la parte inferior"
+          },
+          "close": "Cerrar",
+          "errors": {
+            "loadQuestions": "Error al cargar las preguntas",
+            "saveQuestion": "Error al guardar la pregunta",
+            "deleteQuestion": "Error al eliminar la pregunta",
+            "moveUp": "Error al mover la pregunta hacia arriba",
+            "moveDown": "Error al mover la pregunta hacia abajo"
+          },
+          "confirmations": {
+            "deleteQuestion": "¿Estás seguro de que quieres eliminar esta pregunta? Esta acción no se puede deshacer."
+          }
+        },
+        "questionForm": {
+          "title": {
+            "edit": "Editar Pregunta",
+            "create": "Añadir Nueva Pregunta"
+          },
+          "subtitle": {
+            "edit": "Modifica los detalles y configuración de la pregunta",
+            "create": "Crea una nueva pregunta para esta sección"
+          },
+          "fields": {
+            "questionName": "Nombre de la Pregunta",
+            "description": "Descripción",
+            "scope": "Alcance",
+            "dataType": "Tipo de Dato",
+            "questionCode": "Código de Pregunta (opcional)",
+            "scoringValues": "Valores de Scoring",
+            "legalNotice": "Aviso Legal"
+          },
+          "placeholders": {
+            "questionName": "Ingresa el nombre de la pregunta",
+            "description": "Describe la pregunta",
+            "questionCode": "Código único para la pregunta (opcional)",
+            "scoringLabel": "Etiqueta",
+            "legalNotice": "Texto legal específico para esta pregunta (si es necesario)"
+          },
+          "labels": {
+            "allowAIFollowup": "Permitir que la IA genere preguntas de seguimiento",
+            "allowAIFollowupDescription": "La IA puede crear preguntas de seguimiento adicionales basadas en las respuestas del candidato",
+            "addValue": "Agregar Valor",
+            "score": "Score",
+            "scoringValuesDescription": {
+              "distance": "En modo Distancia, cada valor tiene una etiqueta y una distancia seleccionada del dropdown.",
+              "absolute": "En modo Absoluto, cada valor tiene una etiqueta y se selecciona el scoring con estrellas (cada estrella = 2 puntos).",
+              "default": "Define los valores posibles para esta pregunta de scoring."
+            },
+            "legalNoticeDescription": "Aviso legal opcional para preguntas sensibles (verificaciones de antecedentes, datos personales, etc.)"
+          },
+          "scopeOptions": {
+            "global": "Global",
+            "item": "Item"
+          },
+          "dataTypeOptions": {
+            "shortString": "Texto Corto",
+            "largeString": "Texto Largo",
+            "int": "Entero",
+            "date": "Fecha",
+            "scoring": "Scoring"
+          },
+          "distanceOptions": {
+            "cerca": "Cerca",
+            "medio": "Medio",
+            "lejos": "Lejos",
+            "muyLejos": "Muy Lejos"
+          },
+          "buttons": {
+            "cancel": "Cancelar",
+            "update": "Actualizar Pregunta",
+            "add": "Añadir Pregunta"
+          }
+        },
+        "sectionTypes": {
+          "EXPERIENCE": "Experiencia",
+          "EDUCATION": "Educación",
+          "PROJECT": "Proyecto",
+          "SOFT_SKILL": "Habilidad Blanda",
+          "GENERAL": "General"
+        },
+        "templateTypes": {
+          "EXTENDED_PROFILE": "Mejora de CV",
+          "POSITION_INTERVIEW": "Proceso de selección",
+          "SCREENING": "Screening",
+          "CUSTOM": "Personalizada"
+        },
+        "scoringModes": {
+          "DISTANCE": "Distancia",
+          "ABSOLUTE": "Absoluto",
+          "DISTANCE_DESCRIPTION": "Es mejor cuanto más próximo a los requisitos es",
+          "ABSOLUTE_DESCRIPTION": "Es mejor cuanto más alto es"
+        },
+        "jobCategories": {
+          "all": "Todas",
+          "Technology": "Tecnología",
+          "Operations": "Operaciones",
+          "Sales": "Ventas",
+          "Marketing": "Marketing",
+          "Administration": "Administración",
+          "Human Resources": "Recursos Humanos",
+          "Finance": "Finanzas",
+          "Customer Service": "Atención al Cliente",
+          "Other": "Otras"
+        }
     },
     "userSettings": {
       "title": "Configuración de Usuario",
@@ -355,7 +591,12 @@
       "selectPhaseFromSidebar": "Selecciona una fase del menú lateral para ver el tablero Kanban",
       "noCandidatesInStage": "No hay candidatos en esta etapa",
       "noStagesInPhase": "No hay etapas en esta fase",
-      "addStagesToPhase": "Añade etapas a esta fase en la página de Configuración"
+      "addStagesToPhase": "Añade etapas a esta fase en la página de Configuración",
+      "moveToStage": "Mover a Etapa",
+      "nextStage": "Siguiente",
+      "goToPhases": "Ir a Fases",
+      "failedToMoveCandidate": "Error al mover candidato",
+      "failedToMoveCandidateMessage": "Error al mover candidato: {{message}}"
     },
     "settings": {
       "title": "Configuración de la Empresa",
@@ -377,7 +618,7 @@
         "description": "Organiza el reclutamiento en fases de alto nivel"
       },
       "workflowSettings": {
-        "title": "Configuración de Flujos de Trabajo",
+        "title": "Flujos de reclutamiento",
         "description": "Gestiona los flujos de trabajo y etapas de reclutamiento"
       },
       "companyRoles": {
@@ -445,6 +686,20 @@
       "activePositions": "Posiciones Abiertas Activas",
       "editStages": "Editar etapas del flujo de trabajo",
       "advancedConfig": "Configuración avanzada (Campos Personalizados y Validaciones)",
+      "advancedConfigTitle": "Configuración Avanzada",
+      "advancedConfigSubtitle": "Campos Personalizados y Validaciones",
+      "advancedConfigGoBack": "Volver",
+      "advancedConfigGoBackTooltip": "Volver a flujos de trabajo",
+      "advancedConfigSaveChanges": "Guardar Cambios",
+      "advancedConfigSaving": "Guardando...",
+      "advancedConfigSaveSuccess": "Todos los cambios se han guardado correctamente",
+      "advancedConfigSaveError": "Error al actualizar datos: {{error}}",
+      "advancedConfigUnknownError": "Error desconocido",
+      "advancedConfigError": "Error",
+      "advancedConfigWorkflowNotFound": "Flujo de Trabajo No Encontrado",
+      "advancedConfigWorkflowNotFoundDescription": "No se pudo encontrar el flujo de trabajo solicitado.",
+      "advancedConfigNoCustomFields": "Aún No Hay Campos Personalizados",
+      "advancedConfigNoCustomFieldsDescription": "Agrega campos personalizados a tu flujo de trabajo para configurar su visibilidad y reglas de validación.",
       "setAsDefault": "Establecer como predeterminado",
       "stages": "Etapas",
       "moreStages": "+{{count}} más",

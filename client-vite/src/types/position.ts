@@ -126,6 +126,7 @@ export interface PositionFilters {
   search_term?: string;
   job_category?: string;
   visibility?: JobPositionVisibility;
+  is_active?: boolean;
   page?: number;
   page_size?: number;
 }

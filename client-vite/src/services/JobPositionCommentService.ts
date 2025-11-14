@@ -13,7 +13,7 @@ import type {
 } from '../types/jobPositionComment';
 
 class JobPositionCommentService {
-  private baseUrl = '/admin/positions';
+  private baseUrl = '/api/company/positions';
 
   /**
    * Create a new comment for a job position

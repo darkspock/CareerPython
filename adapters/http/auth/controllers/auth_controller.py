@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from adapters.http.auth.schemas.auth_response import LoginResponse
-from src.user.application.queries.authenticate_user_query import AuthenticateUserQuery, AuthenticateUserQueryHandler
+from src.auth_bc.user.application import AuthenticateUserQuery, AuthenticateUserQueryHandler
 
 
 class AuthController:

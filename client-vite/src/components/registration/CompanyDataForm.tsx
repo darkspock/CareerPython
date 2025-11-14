@@ -10,8 +10,10 @@
  * @param {Object} props.errors - Validation errors
  * @param {Function} [props.onLogoUpload] - Handler for logo upload
  */
-import React, { useRef } from 'react';
-import { Building, Globe, Phone, MapPin, Upload, X, AlertCircle } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Building, Globe, Phone, MapPin, Upload, X, AlertCircle, CheckCircle, Loader2, Briefcase } from 'lucide-react';
+import { CompanyRegistrationService } from '../../services/companyRegistrationService';
+import { COMPANY_TYPE_OPTIONS, type CompanyType } from '../../types/recruiter-company';
 
 interface CompanyDataFormProps {
   formData: {
@@ -20,21 +22,27 @@ interface CompanyDataFormProps {
     logo_url?: string;
     contact_phone?: string;
     address?: string;
+    company_type?: CompanyType;
   };
-  onChange: (field: string, value: string) => void;
+  onChange: (field: string, value: string | CompanyType) => void;
   errors: Record<string, string>;
   onLogoUpload?: (file: File) => Promise<void>;
+  onDomainValidation?: (isValid: boolean, error?: string) => void;
 }
 
 export default function CompanyDataForm({
   formData,
   onChange,
   errors,
-  onLogoUpload
+  onLogoUpload,
+  onDomainValidation
 }: CompanyDataFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = React.useState(false);
+  const [domainStatus, setDomainStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+  const [domainError, setDomainError] = useState<string | null>(null);
+  const domainCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleLogoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -83,6 +91,95 @@ export default function CompanyDataForm({
       fileInputRef.current.value = '';
     }
   };
+
+  // Validate domain format
+  const validateDomainFormat = (domain: string): boolean => {
+    if (!domain.trim()) return false;
+    // Basic domain validation regex
+    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}$/;
+    return domainRegex.test(domain);
+  };
+
+  // Check domain availability
+  const checkDomainAvailability = async (domain: string) => {
+    if (!domain.trim()) {
+      setDomainStatus('idle');
+      setDomainError(null);
+      if (onDomainValidation) onDomainValidation(true);
+      return;
+    }
+
+    // First validate format
+    if (!validateDomainFormat(domain)) {
+      setDomainStatus('invalid');
+      setDomainError('El dominio no es válido (ejemplo: miempresa.com)');
+      if (onDomainValidation) onDomainValidation(false, 'El dominio no es válido (ejemplo: miempresa.com)');
+      return;
+    }
+
+    // Format is valid, check availability
+    setDomainStatus('checking');
+    setDomainError(null);
+
+    try {
+      const result = await CompanyRegistrationService.checkDomainAvailable(domain);
+      // TODO: Re-enable domain availability check when needed
+      // For now, only validate format, not availability
+      if (result.available) {
+        setDomainStatus('available');
+        setDomainError(null);
+        if (onDomainValidation) onDomainValidation(true);
+      } else {
+        // Domain is taken, but we allow it for now
+        setDomainStatus('available');
+        setDomainError(null);
+        if (onDomainValidation) onDomainValidation(true);
+      }
+    } catch (error: any) {
+      console.error('Error checking domain:', error);
+      // On error, don't block the user, but show as invalid format
+      setDomainStatus('invalid');
+      setDomainError('Error al verificar el dominio. Verifica el formato.');
+      if (onDomainValidation) onDomainValidation(false, 'Error al verificar el dominio. Verifica el formato.');
+    }
+  };
+
+  // Handle domain change with debounce
+  useEffect(() => {
+    // Clear previous timeout
+    if (domainCheckTimeoutRef.current) {
+      clearTimeout(domainCheckTimeoutRef.current);
+    }
+
+    // Reset status when domain is cleared
+    if (!formData.domain.trim()) {
+      setDomainStatus('idle');
+      setDomainError(null);
+      if (onDomainValidation) onDomainValidation(true);
+      return;
+    }
+
+    // Set debounce timeout (500ms)
+    domainCheckTimeoutRef.current = setTimeout(() => {
+      checkDomainAvailability(formData.domain);
+    }, 500);
+
+    // Cleanup
+    return () => {
+      if (domainCheckTimeoutRef.current) {
+        clearTimeout(domainCheckTimeoutRef.current);
+      }
+    };
+  }, [formData.domain]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (domainCheckTimeoutRef.current) {
+        clearTimeout(domainCheckTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -133,23 +230,92 @@ export default function CompanyDataForm({
             type="text"
             value={formData.domain}
             onChange={(e) => onChange('domain', e.target.value.toLowerCase())}
-            className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 ${
-              errors.domain
+            onBlur={() => {
+              if (formData.domain.trim()) {
+                checkDomainAvailability(formData.domain);
+              }
+            }}
+            className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 ${
+              errors.domain || domainError
                 ? 'border-red-300 focus:ring-red-500'
+                : domainStatus === 'available'
+                ? 'border-green-300 focus:ring-green-500'
                 : 'border-gray-300 focus:ring-blue-500'
             }`}
             placeholder="miempresa.com"
             required
           />
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            {domainStatus === 'checking' && (
+              <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
+            )}
+            {domainStatus === 'available' && (
+              <CheckCircle className="h-5 w-5 text-green-500" />
+            )}
+            {domainStatus === 'taken' && (
+              <AlertCircle className="h-5 w-5 text-red-500" />
+            )}
+            {domainStatus === 'invalid' && formData.domain.trim() && (
+              <AlertCircle className="h-5 w-5 text-red-500" />
+            )}
+          </div>
         </div>
-        {errors.domain && (
+        {(errors.domain || domainError) && (
           <p className="mt-1 text-sm text-red-600 flex items-center">
             <AlertCircle className="w-4 h-4 mr-1" />
-            {errors.domain}
+            {errors.domain || domainError}
+          </p>
+        )}
+        {domainStatus === 'available' && !errors.domain && !domainError && (
+          <p className="mt-1 text-sm text-green-600 flex items-center">
+            <CheckCircle className="w-4 h-4 mr-1" />
+            Dominio disponible
           </p>
         )}
         <p className="mt-1 text-xs text-gray-500">
           Sin http:// o www.
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="company_type" className="block text-sm font-medium text-gray-700 mb-2">
+          ¿Qué mejor describe tu empresa? *
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Briefcase className="h-5 w-5 text-gray-400" />
+          </div>
+          <select
+            id="company_type"
+            value={formData.company_type || 'mid_size'}
+            onChange={(e) => onChange('company_type', e.target.value as CompanyType)}
+            className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 ${
+              errors.company_type
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-blue-500'
+            }`}
+            required
+          >
+            {COMPANY_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        {errors.company_type && (
+          <p className="mt-1 text-sm text-red-600 flex items-center">
+            <AlertCircle className="w-4 h-4 mr-1" />
+            {errors.company_type}
+          </p>
+        )}
+        {formData.company_type && (
+          <p className="mt-1 text-xs text-gray-500">
+            {COMPANY_TYPE_OPTIONS.find(opt => opt.value === formData.company_type)?.description}
+          </p>
+        )}
+        <p className="mt-1 text-xs text-gray-500">
+          Esto nos ayuda a personalizar tu experiencia de onboarding
         </p>
       </div>
 

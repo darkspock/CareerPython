@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, X, Plus } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
+import { PositionService } from '../../services/positionService';
 import type { Priority } from '../../types/companyCandidate';
+import type { Position } from '../../types/position';
+import { getStatusFromStage } from '../../types/position';
 
 export default function AddCandidatePage() {
   const navigate = useNavigate();
@@ -16,9 +19,12 @@ export default function AddCandidatePage() {
     priority: 'MEDIUM' as Priority,
     tags: [] as string[],
     internal_notes: '',
+    job_position_id: undefined as string | undefined,
   });
 
   const [tagInput, setTagInput] = useState('');
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(false);
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -59,6 +65,42 @@ export default function AddCandidatePage() {
     }
   };
 
+  useEffect(() => {
+    const loadActivePositions = async () => {
+      const companyId = getCompanyId();
+      if (!companyId) return;
+
+      try {
+        setLoadingPositions(true);
+        // Try to use is_active filter first
+        const response = await PositionService.getPositions({
+          company_id: companyId,
+          page_size: 100, // Get a reasonable number of positions
+          is_active: true, // Filter for active positions
+        });
+
+        // Use all positions returned (backend should filter by is_active)
+        setPositions(response.positions);
+      } catch (err) {
+        console.error('Error loading positions:', err);
+        // If error, try without is_active filter
+        try {
+          const response = await PositionService.getPositions({
+            company_id: companyId,
+            page_size: 100,
+          });
+          setPositions(response.positions);
+        } catch (err2) {
+          console.error('Error loading positions (fallback):', err2);
+        }
+      } finally {
+        setLoadingPositions(false);
+      }
+    };
+
+    loadActivePositions();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -81,6 +123,11 @@ export default function AddCandidatePage() {
       return;
     }
 
+    if (!formData.job_position_id) {
+      setError('Job position is required');
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -92,7 +139,9 @@ export default function AddCandidatePage() {
         priority: formData.priority,
         tags: formData.tags,
         internal_notes: formData.internal_notes || undefined,
-      });
+        created_by_user_id: companyUserId,
+        job_position_id: formData.job_position_id || undefined,
+      } as any); // Using 'as any' since job_position_id might not be in the type definition yet
 
       navigate('/company/candidates');
     } catch (err: any) {
@@ -183,7 +232,7 @@ export default function AddCandidatePage() {
               </div>
 
               {/* Priority */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Priority
                 </label>
@@ -198,6 +247,32 @@ export default function AddCandidatePage() {
                   <option value="MEDIUM">Medium</option>
                   <option value="HIGH">High</option>
                 </select>
+              </div>
+
+              {/* Job Position */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Job Position <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={formData.job_position_id || ''}
+                  onChange={(e) =>
+                    setFormData({ ...formData, job_position_id: e.target.value || undefined })
+                  }
+                  disabled={loadingPositions}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">Select a position</option>
+                  {positions.map((position) => (
+                    <option key={position.id} value={position.id}>
+                      {position.title}
+                    </option>
+                  ))}
+                </select>
+                {loadingPositions && (
+                  <p className="mt-1 text-xs text-gray-500">Loading positions...</p>
+                )}
               </div>
             </div>
           </div>

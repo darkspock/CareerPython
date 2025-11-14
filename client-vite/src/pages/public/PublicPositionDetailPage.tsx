@@ -19,6 +19,7 @@ import {
 import { publicPositionService } from '../../services/publicPositionService';
 import type { Position } from '../../types/position';
 import { getLocation, getIsRemote, getEmploymentType, getSalaryRange, getExperienceLevel, getDepartment, getRequirements } from '../../types/position';
+import '../../components/common/WysiwygEditor.css';
 
 export default function PublicPositionDetailPage() {
   const { slugOrId } = useParams<{ slugOrId: string }>();
@@ -162,9 +163,10 @@ export default function PublicPositionDetailPage() {
             {position.description && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">About the Position</h2>
-                <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                  {position.description}
-                </div>
+                <div 
+                  className="prose max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: position.description }}
+                />
               </div>
             )}
 
@@ -172,9 +174,10 @@ export default function PublicPositionDetailPage() {
             {getRequirements(position) && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Requirements</h2>
-                <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                  {getRequirements(position)}
-                </div>
+                <div 
+                  className="prose max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: getRequirements(position) || '' }}
+                />
               </div>
             )}
 
@@ -182,9 +185,10 @@ export default function PublicPositionDetailPage() {
             {(position as any).responsibilities && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Responsibilities</h2>
-                <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                  {(position as any).responsibilities}
-                </div>
+                <div 
+                  className="prose max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: (position as any).responsibilities || '' }}
+                />
               </div>
             )}
           </div>

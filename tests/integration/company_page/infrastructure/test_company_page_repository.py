@@ -2,23 +2,22 @@
 Tests de integración para CompanyPageRepository
 """
 import pytest
-from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.company.domain.value_objects.company_id import CompanyId
-from src.company_page.domain.entities.company_page import CompanyPage
-from src.company_page.domain.enums.page_type import PageType
-from src.company_page.domain.enums.page_status import PageStatus
-from src.company_page.domain.value_objects.page_id import PageId
-from src.company_page.domain.value_objects.page_metadata import PageMetadata
-from src.company_page.domain.exceptions.company_page_exceptions import (
+from src.company_bc.company.domain.value_objects import CompanyId
+from src.company_bc.company_page.domain.entities.company_page import CompanyPage
+from src.company_bc.company_page.domain.enums.page_type import PageType
+from src.company_bc.company_page.domain.enums.page_status import PageStatus
+from src.company_bc.company_page.domain.value_objects.page_id import PageId
+from src.company_bc.company_page.domain.value_objects.page_metadata import PageMetadata
+from src.company_bc.company_page.domain.exceptions.company_page_exceptions import (
     PageTypeAlreadyExistsException,
     PageNotFoundException
 )
 from src.company_page.infrastructure.repositories.company_page_repository import CompanyPageRepository
 from src.company_page.infrastructure.models.company_page_model import CompanyPageModel
-from src.shared.infrastructure.models.base import Base
+from src.framework.infrastructure.models.base import Base
 
 
 class TestCompanyPageRepository:

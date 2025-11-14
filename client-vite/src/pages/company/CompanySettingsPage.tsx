@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Workflow, Users, Settings, Layers, RotateCcw, Building2, FileText, UserCog, Briefcase } from 'lucide-react';
+import { Workflow, Users, Settings, Layers, RotateCcw, Building2, FileText, UserCog, Briefcase, MessageSquare } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 import { PositionService } from '../../services/positionService';
 
@@ -101,11 +101,18 @@ export default function CompanySettingsPage() {
       color: 'orange',
     },
     {
-      title: 'Job Position Workflows',
+      title: 'Flujos de publicación de ofertas',
       description: 'Gestiona workflows para posiciones de trabajo',
       icon: Briefcase,
       path: '/company/settings/job-position-workflows',
       color: 'indigo',
+    },
+    {
+      title: 'Interview Templates',
+      description: 'Gestiona los interview templates para candidatos',
+      icon: MessageSquare,
+      path: '/company/interview-templates',
+      color: 'teal',
     },
   ];
 
@@ -153,6 +160,7 @@ export default function CompanySettingsPage() {
             purple: 'bg-purple-50 text-purple-600 group-hover:bg-purple-100',
             indigo: 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100',
             orange: 'bg-orange-50 text-orange-600 group-hover:bg-orange-100',
+            teal: 'bg-teal-50 text-teal-600 group-hover:bg-teal-100',
           };
 
           return (

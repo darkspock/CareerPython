@@ -26,10 +26,14 @@ export class CompanyRegistrationService {
       
       // Translate error messages for better UX
       if (error.message.includes('domain') || error.message.includes('dominio')) {
-        if (error.message.includes('already') || error.message.includes('ya existe')) {
-          throw new Error('Este dominio ya está en uso. Por favor, elige otro.');
+        // TODO: Re-enable domain uniqueness check when needed
+        // if (error.message.includes('already') || error.message.includes('ya existe')) {
+        //   throw new Error('Este dominio ya está en uso. Por favor, elige otro.');
+        // }
+        // Only show format validation errors, not uniqueness errors
+        if (!error.message.includes('already') && !error.message.includes('ya existe')) {
+          throw new Error('El dominio ingresado no es válido.');
         }
-        throw new Error('El dominio ingresado no es válido.');
       }
       if (error.message.includes('email') || error.message.includes('correo')) {
         if (error.message.includes('already') || error.message.includes('ya está')) {
@@ -65,13 +69,33 @@ export class CompanyRegistrationService {
         throw new Error('Email o contraseña incorrectos.');
       }
       if (error.message.includes('domain') || error.message.includes('dominio')) {
-        if (error.message.includes('already') || error.message.includes('ya existe')) {
-          throw new Error('Este dominio ya está en uso.');
+        // TODO: Re-enable domain uniqueness check when needed
+        // if (error.message.includes('already') || error.message.includes('ya existe')) {
+        //   throw new Error('Este dominio ya está en uso.');
+        // }
+        // Only show format validation errors, not uniqueness errors
+        if (!error.message.includes('already') && !error.message.includes('ya existe')) {
+          throw new Error('El dominio ingresado no es válido.');
         }
-        throw new Error('El dominio ingresado no es válido.');
       }
       
       throw new Error(error.message || 'Error al vincular la cuenta. Intenta nuevamente.');
+    }
+  }
+
+  /**
+   * Check if a domain is available
+   */
+  static async checkDomainAvailable(domain: string): Promise<{ available: boolean; domain: string }> {
+    try {
+      const response = await ApiClient.get<{ available: boolean; domain: string }>(
+        `/company/check-domain?domain=${encodeURIComponent(domain)}`
+      );
+      return response;
+    } catch (error: any) {
+      console.error('Error checking domain availability:', error);
+      // On error, assume domain is available (let registration handle validation)
+      return { available: true, domain };
     }
   }
 

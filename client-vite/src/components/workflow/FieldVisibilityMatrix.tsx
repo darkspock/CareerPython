@@ -1,3 +1,7 @@
+/**
+ * @deprecated This component is deprecated. Use FieldVisibilityMatrix from '../../components/customization' instead.
+ * This component will be removed in a future version.
+ */
 import React, { useState, useEffect } from 'react';
 import type {
   CustomField,
@@ -11,6 +15,9 @@ import {
 } from '../../types/workflow';
 import { CustomFieldService } from '../../services/customFieldService';
 
+/**
+ * @deprecated Use FieldVisibilityMatrix from '../../components/customization' instead.
+ */
 interface FieldVisibilityMatrixProps {
   workflowId: string;
   stages: WorkflowStage[];

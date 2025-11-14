@@ -5,13 +5,12 @@ import pytest
 from datetime import date
 from unittest.mock import Mock
 
-from src.candidate.application.commands.create_project import CreateProjectCommand, CreateProjectCommandHandler
-from src.candidate.application.commands.update_project import UpdateProjectCommand, UpdateProjectCommandHandler
-from src.candidate.domain.entities.candidate_project import CandidateProject
-from src.candidate.domain.exceptions.candidate_exceptions import ProjectNotFoundError
-from src.candidate.domain.repositories.candidate_project_repository_interface import CandidateProjectRepositoryInterface
-from src.candidate.domain.value_objects.candidate_id import CandidateId
-from src.candidate.domain.value_objects.candidate_project_id import CandidateProjectId
+from src.candidate_bc.candidate.application.commands.create_project import CreateProjectCommandHandler
+from src.candidate_bc.candidate.application.commands.update_project import UpdateProjectCommand, UpdateProjectCommandHandler
+from src.candidate_bc.candidate.domain.entities.candidate_project import CandidateProject
+from src.candidate_bc.candidate.domain.exceptions.candidate_exceptions import ProjectNotFoundError
+from src.candidate_bc.candidate.domain.repositories.candidate_project_repository_interface import CandidateProjectRepositoryInterface
+from src.candidate_bc.candidate.domain.value_objects.candidate_project_id import CandidateProjectId
 from tests.unit.candidate.mothers.project_mother import ProjectMother
 
 

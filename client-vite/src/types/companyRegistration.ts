@@ -1,4 +1,6 @@
 // Types for company registration
+import type { CompanyType } from './recruiter-company';
+
 export interface CompanyRegistrationRequest {
   // User data
   email: string;
@@ -11,9 +13,11 @@ export interface CompanyRegistrationRequest {
   logo_url?: string;
   contact_phone?: string;
   address?: string;
+  company_type?: CompanyType;  // Company type for onboarding customization
   
   // Options
-  include_example_data: boolean;
+  initialize_workflows: boolean;      // Whether to initialize default workflows
+  include_example_data: boolean;       // Whether to include sample data
   accept_terms: boolean;
   accept_privacy: boolean;
 }
@@ -34,9 +38,11 @@ export interface LinkUserRequest {
   logo_url?: string;
   contact_phone?: string;
   address?: string;
+  company_type?: CompanyType;  // Company type for onboarding customization
   
   // Options
-  include_example_data: boolean;
+  initialize_workflows: boolean;      // Whether to initialize default workflows
+  include_example_data: boolean;       // Whether to include sample data
   accept_terms: boolean;
   accept_privacy: boolean;
 }

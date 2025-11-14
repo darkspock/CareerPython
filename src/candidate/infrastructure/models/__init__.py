@@ -1,4 +1,0 @@
-from .candidate_education import CandidateEducationModel
-from .candidate_experience import CandidateExperienceModel
-from .candidate_model import CandidateModel
-from .candidate_project import CandidateProjectModel

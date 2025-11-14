@@ -4,9 +4,9 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
-from src.candidate.infrastructure.repositories.file_attachment_repository import FileAttachmentRepository
-from src.shared.domain.entities.base import generate_id
+from src.candidate_bc.candidate.infrastructure.models.file_attachment_model import FileAttachmentModel
+from src.candidate_bc.candidate.infrastructure import FileAttachmentRepository
+from src.framework.domain.entities.base import generate_id
 from datetime import datetime
 
 def test_file_save():

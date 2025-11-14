@@ -19,6 +19,7 @@ export type PhaseStatus = typeof PhaseStatus[keyof typeof PhaseStatus];
 export interface Phase {
   id: string;
   company_id: string;
+  workflow_type: string; // 'CA' (Candidate Application), 'PO' (Job Position Opening), 'CO' (Company)
   name: string;
   sort_order: number;
   default_view: DefaultView;

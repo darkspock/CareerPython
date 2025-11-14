@@ -2,16 +2,16 @@
 Unit tests for Experience commands
 """
 import pytest
-from datetime import date, timedelta
+from datetime import date
 from unittest.mock import Mock
 
-from src.candidate.application.commands.create_experience import CreateExperienceCommand, CreateExperienceCommandHandler
-from src.candidate.application.commands.update_experience import UpdateExperienceCommand, UpdateExperienceCommandHandler
-from src.candidate.domain.entities.candidate_experience import CandidateExperience
-from src.candidate.domain.exceptions.candidate_exceptions import ExperienceNotFoundError
-from src.candidate.domain.repositories.candiadate_experience_repository_interface import CandidateExperienceRepositoryInterface
-from src.candidate.domain.value_objects.candidate_experience_id import CandidateExperienceId
-from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.candidate_bc.candidate.application.commands.create_experience import CreateExperienceCommand, CreateExperienceCommandHandler
+from src.candidate_bc.candidate.application.commands.update_experience import UpdateExperienceCommand, UpdateExperienceCommandHandler
+from src.candidate_bc.candidate.domain.entities.candidate_experience import CandidateExperience
+from src.candidate_bc.candidate.domain.exceptions.candidate_exceptions import ExperienceNotFoundError
+from src.candidate_bc.candidate.domain.repositories.candiadate_experience_repository_interface import CandidateExperienceRepositoryInterface
+from src.candidate_bc.candidate.domain.value_objects.candidate_experience_id import CandidateExperienceId
+from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from tests.unit.candidate.mothers.experience_mother import ExperienceMother
 
 

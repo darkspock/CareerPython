@@ -18,6 +18,7 @@ import {
 import { publicPositionService, type PublicPositionFilters } from '../../services/publicPositionService';
 import type { Position } from '../../types/position';
 import { getDepartment, getExperienceLevel, getLocation, getIsRemote, getEmploymentType, getSalaryRange } from '../../types/position';
+import '../../components/common/WysiwygEditor.css';
 
 export default function PublicPositionsPage() {
   const navigate = useNavigate();
@@ -270,9 +271,10 @@ export default function PublicPositionsPage() {
 
                   {/* Description Preview */}
                   {position.description && (
-                    <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-                      {position.description}
-                    </p>
+                    <div 
+                      className="text-sm text-gray-600 line-clamp-3 mb-4 prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: position.description }}
+                    />
                   )}
 
                   {/* Tags */}

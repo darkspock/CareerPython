@@ -7,9 +7,9 @@ from fastapi.testclient import TestClient
 from unittest.mock import Mock
 from datetime import datetime, timedelta
 
-from adapters.http.company.routers.company_user_router import router as company_user_router
-from adapters.http.invitations.routers.invitation_router import router as invitation_router
-from adapters.http.company.schemas.company_user_invitation_response import (
+from adapters.http.company_app.company.routers.company_user_router import router as company_user_router
+from adapters.http.auth.invitations.routers.invitation_router import router as invitation_router
+from adapters.http.company_app.company.schemas.company_user_invitation_response import (
     UserInvitationLinkResponse,
     CompanyUserInvitationResponse
 )

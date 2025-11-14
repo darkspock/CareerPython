@@ -5,6 +5,7 @@ export interface Interview {
   interview_type: InterviewType;
   status: InterviewStatus;
   template_id?: string;
+  workflow_stage_id?: string; // ID of the workflow stage where this interview is conducted
   scheduled_at?: string;
   started_at?: string;
   completed_at?: string;

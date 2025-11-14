@@ -67,19 +67,22 @@ import CandidatesListPage from './pages/company/CandidatesListPage';
 import AddCandidatePage from './pages/company/AddCandidatePage';
 import CandidateDetailPage from './pages/company/CandidateDetailPage';
 import EditCandidatePage from './pages/company/EditCandidatePage';
-import WorkflowsSettingsPage from './pages/company/WorkflowsSettingsPage';
-import WorkflowAdvancedConfigPage from './pages/company/WorkflowAdvancedConfigPage';
+import WorkflowsSettingsPage from './pages/workflow/WorkflowsSettingsPage.tsx';
+import WorkflowAdvancedConfigPage from './pages/workflow/WorkflowAdvancedConfigPage.tsx';
 import CompanySettingsPage from './pages/company/CompanySettingsPage';
 import CompanyRolesPage from './pages/company/CompanyRolesPage';
+import CompanyInterviewTemplatesPage from './pages/company/CompanyInterviewTemplatesPage';
+import CompanyInterviewsPage from './pages/company/CompanyInterviewsPage';
+import CompanyInterviewDetailPage from './pages/company/CompanyInterviewDetailPage';
+import CreateInterviewPage from './pages/company/CreateInterviewPage';
+import EditInterviewPage from './pages/company/EditInterviewPage';
 import PositionsListPage from './pages/company/PositionsListPage';
-import JobPositionWorkflowsSettingsPage from './pages/company/JobPositionWorkflowsSettingsPage';
+import JobPositionWorkflowsSettingsPage from './pages/company/JobPositionWorkflowsSettingsPage.tsx';
 import CreateJobPositionWorkflowPage from './pages/company/CreateJobPositionWorkflowPage';
-import EditJobPositionWorkflowPage from './pages/company/EditJobPositionWorkflowPage';
-import EditJobPositionWorkflowCustomFieldsPage from './pages/company/EditJobPositionWorkflowCustomFieldsPage';
-import WorkflowBoardPage from './pages/company/WorkflowBoardPage';
+import WorkflowBoardPage from './pages/workflow/WorkflowBoardPage.tsx';
 import CreatePositionPage from './pages/company/CreatePositionPage';
-import CreateWorkflowPage from './pages/company/CreateWorkflowPage';
-import EditWorkflowPage from './pages/company/EditWorkflowPage';
+import CreateWorkflowPage from './pages/workflow/CreateWorkflowPage.tsx';
+import EditWorkflowPage from './pages/workflow/EditWorkflowPage.tsx';
 import PositionDetailPage from './pages/company/PositionDetailPage';
 import EditPositionPage from './pages/company/EditPositionPage';
 import PhasesPage from './pages/company/PhasesPage';
@@ -95,6 +98,7 @@ import CompanyPublicPositionsPage from './pages/public/CompanyPublicPositionsPag
 import AcceptInvitationPage from './pages/public/AcceptInvitationPage';
 import CompanyLandingPage from './pages/public/CompanyLandingPage';
 import CompanyRegisterPage from './pages/public/CompanyRegisterPage';
+import InterviewAnswerPage from './pages/public/InterviewAnswerPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import UsersManagement from './components/admin/UsersManagement';
 import CandidatesManagement from './components/admin/CandidatesManagement';
@@ -137,10 +141,12 @@ function App() {
 
                       <Routes>
                         <Route path="/" element={<LandingPage />} />
+                        <Route path="/candidate/landing" element={<LandingPage />} />
                         <Route path="/positions" element={<PublicPositionsPage />} />
                         <Route path="/positions/:slugOrId" element={<PublicPositionDetailPage />} />
                         <Route path="/companies/:companySlug/open-positions" element={<CompanyPublicPositionsPage />} />
                         <Route path="/invitations/accept" element={<AcceptInvitationPage />} />
+                        <Route path="/interviews/:interviewId/answer" element={<InterviewAnswerPage />} />
                         <Route path="/company/landing" element={<CompanyLandingPage />} />
                         <Route path="/company/register" element={<CompanyRegisterPage />} />
                         <Route path="/candidate/dashboard" element={<HomePage />} />
@@ -155,6 +161,7 @@ function App() {
                         <Route path="/company/login" element={<Navigate to="/company/auth/login" replace />} />
                         <Route path="/candidate/auth/register" element={<RegisterPage />} />
                         <Route path="/candidate/reset-password" element={<ResetPasswordPage />} />
+                        <Route path="/candidate/onboarding" element={<Navigate to="/candidate/onboarding/complete-profile" replace />} />
                         <Route path="/candidate/onboarding/complete-profile" element={<CompleteProfilePage />} />
                         <Route path="/candidate/onboarding/pdf-processing" element={<PDFProcessingPage />} />
                         <Route path="/candidate/onboarding/experience" element={<OnboardingExperiencePage />} />
@@ -237,11 +244,15 @@ function App() {
                           <Route path="settings/workflows" element={<WorkflowsSettingsPage />} />
                           <Route path="settings/workflows/create" element={<CreateWorkflowPage />} />
                           <Route path="settings/job-position-workflows" element={<JobPositionWorkflowsSettingsPage />} />
-                          <Route path="settings/job-position-workflows/create" element={<CreateJobPositionWorkflowPage />} />
-                          <Route path="settings/job-position-workflows/:workflowId/edit" element={<EditJobPositionWorkflowPage />} />
-                          <Route path="settings/job-position-workflows/:workflowId/configure" element={<EditJobPositionWorkflowCustomFieldsPage />} />
                           <Route path="settings/phases" element={<PhasesPage />} />
                           <Route path="settings/roles" element={<CompanyRolesPage />} />
+                          <Route path="interview-templates" element={<CompanyInterviewTemplatesPage />} />
+                          <Route path="interview-templates/create" element={<InterviewTemplateEditor />} />
+                          <Route path="interview-templates/edit/:templateId" element={<InterviewTemplateEditor />} />
+                          <Route path="interviews" element={<CompanyInterviewsPage />} />
+                          <Route path="interviews/:interviewId" element={<CompanyInterviewDetailPage />} />
+                          <Route path="interviews/create" element={<CreateInterviewPage />} />
+                          <Route path="interviews/:interviewId/edit" element={<EditInterviewPage />} />
                           <Route path="users" element={<UsersManagementPage />} />
                           <Route index element={<CompanyDashboardPage />} />
                         </Route>

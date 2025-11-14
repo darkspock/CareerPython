@@ -5,13 +5,12 @@ import pytest
 from datetime import date
 from unittest.mock import Mock
 
-from src.candidate.application.commands.create_education import CreateEducationCommand, CreateEducationCommandHandler
-from src.candidate.application.commands.update_education import UpdateEducationCommand, UpdateEducationCommandHandler
-from src.candidate.domain.entities.candidate_education import CandidateEducation
-from src.candidate.domain.exceptions.candidate_exceptions import EducationNotFoundError
-from src.candidate.domain.repositories.candidate_education_repository_interface import CandidateEducationRepositoryInterface
-from src.candidate.domain.value_objects.candidate_education_id import CandidateEducationId
-from src.candidate.domain.value_objects.candidate_id import CandidateId
+from src.candidate_bc.candidate.application.commands.create_education import CreateEducationCommandHandler
+from src.candidate_bc.candidate.application.commands.update_education import UpdateEducationCommand, UpdateEducationCommandHandler
+from src.candidate_bc.candidate.domain.entities.candidate_education import CandidateEducation
+from src.candidate_bc.candidate.domain.exceptions.candidate_exceptions import EducationNotFoundError
+from src.candidate_bc.candidate.domain.repositories.candidate_education_repository_interface import CandidateEducationRepositoryInterface
+from src.candidate_bc.candidate.domain.value_objects.candidate_education_id import CandidateEducationId
 from tests.unit.candidate.mothers.education_mother import EducationMother
 
 
