@@ -27,13 +27,13 @@ class GetInterviewStatisticsQueryHandler(QueryHandler[GetInterviewStatisticsQuer
         today_start = datetime(now.year, now.month, now.day)
         today_end = datetime(now.year, now.month, now.day, 23, 59, 59)
 
+        recently_finished = self.interview_repository.find_finished_recent(days=30)
+
         # Get all interviews from the last month (created_at >= 30 days ago)
         # This ensures consistency between statistics and filters
         # For a typical company, this should be a manageable number of interviews
         # We use created_at as the date field to get all interviews from the period
         all_interviews = self.interview_repository.find_by_filters(
-            from_date=thirty_days_ago,
-            to_date=now,
             filter_by=None,  # No specific date filter, get all from the period (uses created_at as fallback)
             limit=10000  # Large limit to get all interviews from the period
         )
@@ -60,12 +60,6 @@ class GetInterviewStatisticsQueryHandler(QueryHandler[GetInterviewStatisticsQuer
             if i.scheduled_at and today_start <= i.scheduled_at <= today_end
         )
 
-        # Count recently finished (finished_at in last 30 days)
-        recently_finished = sum(
-            1 for i in all_interviews
-            if i.finished_at and i.finished_at >= thirty_days_ago
-        )
-
         # Count overdue (deadline_date < now and not finished)
         overdue = sum(
             1 for i in all_interviews
@@ -82,7 +76,7 @@ class GetInterviewStatisticsQueryHandler(QueryHandler[GetInterviewStatisticsQuer
             pending_to_plan=pending_to_plan,
             planned=planned,
             in_progress=in_progress,
-            recently_finished=recently_finished,
+            recently_finished=len(recently_finished),
             overdue=overdue,
             pending_feedback=pending_feedback
         )

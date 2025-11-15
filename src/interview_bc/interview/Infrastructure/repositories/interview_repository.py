@@ -1,6 +1,6 @@
 """Interview repository implementation"""
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List
 
 from sqlalchemy import or_, func
@@ -21,8 +21,8 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewProcessTypeEnum
 )
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
-from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview.domain.read_models.interview_list_read_model import InterviewListReadModel
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
@@ -328,6 +328,17 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 InterviewModel.job_position_id == job_position_id
             ).order_by(InterviewModel.created_at.desc()).all()
             return [self._to_domain(model) for model in models]
+
+    def find_finished_recent(self, days: int) -> List[Interview]:
+        now = datetime.utcnow()
+        from_date = now - timedelta(days=days)
+        with self.database.get_session() as session:
+            query = session.query(InterviewModel)
+            query = query.filter(InterviewModel.status == InterviewStatusEnum.FINISHED.value)
+            query = query.order_by(InterviewModel.created_at.desc())
+            query = query.filter(InterviewModel.created_at >= from_date)
+            models = query.all()
+        return [self._to_domain(model) for model in models]
 
     def find_by_filters(
             self,
@@ -732,11 +743,11 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             for result in results:
                 interview_model = result[0]
                 interview_id = interview_model.id
-                
+
                 if interview_model.interviewers:
                     interview_interviewers_map[interview_id] = interview_model.interviewers
                     all_interviewer_ids.update(interview_model.interviewers)
-                
+
                 if interview_model.required_roles:
                     interview_roles_map[interview_id] = interview_model.required_roles
                     all_role_ids.update(interview_model.required_roles)
@@ -748,7 +759,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                     UserModel,
                     CompanyUserModel.user_id == UserModel.id
                 ).filter(CompanyUserModel.id.in_(list(all_interviewer_ids))).all()
-                
+
                 for company_user, user in company_users:
                     interviewer_name_map[company_user.id] = user.email or user.name or company_user.id
 
@@ -786,8 +797,8 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
 
                 # Calculate is_incomplete
                 is_incomplete = (
-                    interview_model.scheduled_at is not None and
-                    (not interview_model.required_roles or not interview_model.interviewers)
+                        interview_model.scheduled_at is not None and
+                        (not interview_model.required_roles or not interview_model.interviewers)
                 )
 
                 read_model = InterviewListReadModel(

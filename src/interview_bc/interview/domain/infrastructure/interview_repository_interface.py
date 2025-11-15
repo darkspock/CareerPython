@@ -71,6 +71,10 @@ class InterviewRepositoryInterface(ABC):
         pass
 
     @abstractmethod
+    def find_finished_recent(self, days: int)-> List[Interview]:
+        pass
+
+    @abstractmethod
     def find_by_filters(
             self,
             candidate_id: Optional[str] = None,
