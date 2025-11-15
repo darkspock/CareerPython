@@ -10,6 +10,7 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewProcessTypeEnum
 )
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview.domain.read_models.interview_list_read_model import InterviewListReadModel
 
 
 class InterviewRepositoryInterface(ABC):
@@ -133,4 +134,46 @@ class InterviewRepositoryInterface(ABC):
     @abstractmethod
     def get_by_token(self, interview_id: str, token: str) -> Optional[Interview]:
         """Get interview by ID and token for secure link access"""
+        pass
+
+    @abstractmethod
+    def find_by_filters_with_joins(
+            self,
+            candidate_id: Optional[str] = None,
+            candidate_name: Optional[str] = None,
+            job_position_id: Optional[str] = None,
+            interview_type: Optional[InterviewTypeEnum] = None,
+            process_type: Optional[InterviewProcessTypeEnum] = None,
+            status: Optional[InterviewStatusEnum] = None,
+            required_role_id: Optional[str] = None,
+            interviewer_user_id: Optional[str] = None,
+            created_by: Optional[str] = None,
+            from_date: Optional[datetime] = None,
+            to_date: Optional[datetime] = None,
+            filter_by: Optional[str] = None,  # 'scheduled' or 'deadline'
+            has_scheduled_at_and_interviewers: bool = False,  # Special filter for "SCHEDULED" status
+            limit: int = 50,
+            offset: int = 0
+    ) -> List[InterviewListReadModel]:
+        """Find interviews by multiple filters with JOINs to get all related information (ReadModel)"""
+        pass
+
+    @abstractmethod
+    def count_by_filters(
+            self,
+            candidate_id: Optional[str] = None,
+            candidate_name: Optional[str] = None,
+            job_position_id: Optional[str] = None,
+            interview_type: Optional[InterviewTypeEnum] = None,
+            process_type: Optional[InterviewProcessTypeEnum] = None,
+            status: Optional[InterviewStatusEnum] = None,
+            required_role_id: Optional[str] = None,
+            interviewer_user_id: Optional[str] = None,
+            created_by: Optional[str] = None,
+            from_date: Optional[datetime] = None,
+            to_date: Optional[datetime] = None,
+            filter_by: Optional[str] = None,  # 'scheduled' or 'deadline'
+            has_scheduled_at_and_interviewers: bool = False  # Special filter for "SCHEDULED" status
+    ) -> int:
+        """Count interviews matching the filters (for pagination)"""
         pass

@@ -42,6 +42,7 @@ class InterviewDto:
     link_expires_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    is_incomplete: bool = False  # True if has scheduled_at but missing required_roles or interviewers
 
     @classmethod
     def from_entity(cls, entity: Interview) -> "InterviewDto":
@@ -75,4 +76,8 @@ class InterviewDto:
             link_expires_at=entity.link_expires_at,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
+            is_incomplete=(
+                entity.scheduled_at is not None and
+                (not entity.required_roles or not entity.interviewers)
+            ),  # Incomplete if has date but missing roles or interviewers
         )

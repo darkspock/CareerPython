@@ -1175,7 +1175,7 @@ def list_interviews(
     current_page = (offset // limit) + 1 if limit > 0 else 1
 
     return InterviewListResponse(
-        interviews=[InterviewManagementResponse.from_dto(interview) for interview in interviews],
+        interviews=[InterviewManagementResponse.from_list_dto(interview) for interview in interviews],
         total=total,
         page=current_page,
         page_size=limit

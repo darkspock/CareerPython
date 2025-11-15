@@ -23,7 +23,7 @@ class InterviewTemplateMother(BaseMother):
             'intro': kwargs.get('intro', fake.paragraph()),
             'prompt': kwargs.get('prompt', fake.text()),
             'goal': kwargs.get('goal', fake.sentence()),
-            'status': kwargs.get('status', InterviewTemplateStatusEnum.ENABLED),
+            'status': kwargs.get('status', InterviewTemplateStatusEnum.PENDING),
             'type': kwargs.get('type', InterviewTemplateTypeEnum.EXTENDED_PROFILE),
             'job_category': kwargs.get('job_category', fake.random_element(list(JobCategoryEnum))),
             'created_by': kwargs.get('created_by', fake.email()),
@@ -37,7 +37,7 @@ class InterviewTemplateMother(BaseMother):
     def create_enabled(cls, database, **kwargs) -> InterviewTemplateModel:
         """Create an enabled interview template"""
         mother = cls(database)
-        return mother.create_in_db(status=InterviewTemplateStatusEnum.ENABLED, **kwargs)
+        return mother.create_in_db(status=InterviewTemplateStatusEnum.PENDING, **kwargs)
 
     @classmethod
     def create_draft(cls, database, **kwargs) -> InterviewTemplateModel:

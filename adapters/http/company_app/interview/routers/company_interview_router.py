@@ -100,8 +100,8 @@ def list_interviews(
         filter_by: Optional[str] = Query(
             None,
             description=(
-                "Filter by date field: 'scheduled', 'deadline', "
-                "or 'unscheduled' (interviews without scheduled_at or interviewers)"
+                "Filter by InterviewFilterEnum: 'PENDING_TO_PLAN', 'PLANNED', "
+                "'IN_PROGRESS', 'RECENTLY_FINISHED', 'OVERDUE', 'PENDING_FEEDBACK'"
             )
         ),
         limit: int = Query(50, ge=1, le=100, description="Limit results"),
@@ -136,7 +136,7 @@ def list_interviews(
     current_page = (offset // limit) + 1 if limit > 0 else 1
 
     return InterviewListResponse(
-        interviews=[InterviewManagementResponse.from_dto(interview) for interview in interviews],
+        interviews=[InterviewManagementResponse.from_list_dto(interview) for interview in interviews],
         total=total,
         page=current_page,
         page_size=limit

@@ -21,6 +21,7 @@ from src.interview_bc.interview.application.commands.submit_interview_answer_by_
     SubmitInterviewAnswerByTokenCommand
 from src.interview_bc.interview.application.commands.update_interview import UpdateInterviewCommand
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+from src.interview_bc.interview.application.queries.dtos.interview_list_dto import InterviewListDto
 from src.interview_bc.interview.application.queries.dtos.interview_interviewer_dto import InterviewInterviewerDto
 from src.interview_bc.interview.application.queries.dtos.interview_statistics_dto import InterviewStatisticsDto
 from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQuery
@@ -68,7 +69,7 @@ class InterviewController:
             filter_by: Optional[str] = None,
             limit: int = 50,
             offset: int = 0
-    ) -> tuple[List[InterviewDto], int]:
+    ) -> tuple[List[InterviewListDto], int]:
         """List interviews with optional filtering. Returns (interviews, total_count)"""
         try:
             from src.interview_bc.interview.domain.enums.interview_enums import (
@@ -111,11 +112,11 @@ class InterviewController:
                         # Handle legacy or mismatched values
                         # Map "ENABLED" to ENABLED enum (which has value "PENDING")
                         if status_upper == "ENABLED":
-                            status_enum = InterviewStatusEnum.ENABLED
+                            status_enum = InterviewStatusEnum.PENDING
                         elif status_upper == "DISABLED":
                             status_enum = InterviewStatusEnum.DISCARDED
                         elif status_upper == "PENDING":
-                            status_enum = InterviewStatusEnum.ENABLED  # PENDING maps to ENABLED enum
+                            status_enum = InterviewStatusEnum.PENDING  # PENDING maps to ENABLED enum
                         else:
                             # Try to find enum member by name
                             try:
@@ -160,7 +161,7 @@ class InterviewController:
                 offset=offset
             )
 
-            interviews: List[InterviewDto] = self._query_bus.query(query)
+            interviews: List[InterviewListDto] = self._query_bus.query(query)
             return interviews, total
 
         except Exception as e:

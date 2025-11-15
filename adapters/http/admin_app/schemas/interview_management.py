@@ -54,11 +54,17 @@ class InterviewManagementResponse(BaseModel):
     """Response schema for interview management data"""
     id: str = Field(..., description="Interview ID")
     candidate_id: str = Field(..., description="Candidate ID")
+    candidate_name: Optional[str] = Field(None, description="Candidate name")
+    candidate_email: Optional[str] = Field(None, description="Candidate email")
     required_roles: List[str] = Field(default_factory=list, description="List of CompanyRole IDs (obligatory)")
+    required_role_names: List[str] = Field(default_factory=list, description="List of CompanyRole names")
     job_position_id: Optional[str] = Field(None, description="Job position ID")
+    job_position_title: Optional[str] = Field(None, description="Job position title")
     application_id: Optional[str] = Field(None, description="Application ID")
     interview_template_id: Optional[str] = Field(None, description="Interview template ID")
+    interview_template_name: Optional[str] = Field(None, description="Interview template name")
     workflow_stage_id: Optional[str] = Field(None, description="Workflow stage ID where this interview is conducted")
+    workflow_stage_name: Optional[str] = Field(None, description="Workflow stage name")
     process_type: Optional[str] = Field(None,
                                         description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
     interview_type: str = Field(..., description="Interview type")
@@ -71,7 +77,8 @@ class InterviewManagementResponse(BaseModel):
     started_at: Optional[datetime] = Field(None, description="Started datetime")
     finished_at: Optional[datetime] = Field(None, description="Finished datetime")
     duration_minutes: Optional[int] = Field(None, description="Duration in minutes")
-    interviewers: List[str] = Field(default_factory=list, description="List of interviewer names")
+    interviewers: List[str] = Field(default_factory=list, description="List of interviewer IDs")
+    interviewer_names: List[str] = Field(default_factory=list, description="List of interviewer names/emails")
     interviewer_notes: Optional[str] = Field(None, description="Interviewer notes")
     candidate_notes: Optional[str] = Field(None, description="Candidate notes")
     score: Optional[float] = Field(None, description="Interview score")
@@ -80,6 +87,7 @@ class InterviewManagementResponse(BaseModel):
     link_token: Optional[str] = Field(None, description="Unique token for secure interview link access")
     link_expires_at: Optional[datetime] = Field(None, description="Expiration date for the interview link")
     shareable_link: Optional[str] = Field(None, description="Shareable link for the interview (computed)")
+    is_incomplete: bool = Field(default=False, description="True if has scheduled_at but missing required_roles or interviewers")
     created_at: Optional[datetime] = Field(None, description="Created datetime")
     updated_at: Optional[datetime] = Field(None, description="Updated datetime")
 
@@ -123,6 +131,55 @@ class InterviewManagementResponse(BaseModel):
             link_expires_at=dto.link_expires_at,
             shareable_link=cls._generate_shareable_link(dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
                                                         dto.link_token) if dto.link_token else None,
+            is_incomplete=dto.is_incomplete,
+            created_at=dto.created_at,
+            updated_at=dto.updated_at
+        )
+
+    @classmethod
+    def from_list_dto(cls, dto) -> "InterviewManagementResponse":
+        """Convert InterviewListDto to response schema"""
+        from src.interview_bc.interview.application.queries.dtos.interview_list_dto import InterviewListDto
+        if not isinstance(dto, InterviewListDto):
+            # Fallback to from_dto for backward compatibility
+            return cls.from_dto(dto)
+        
+        return cls(
+            id=dto.id,
+            candidate_id=dto.candidate_id,
+            candidate_name=dto.candidate_name,
+            candidate_email=dto.candidate_email,
+            required_roles=dto.required_roles if dto.required_roles else [],
+            required_role_names=dto.required_role_names if dto.required_role_names else [],
+            job_position_id=dto.job_position_id,
+            job_position_title=dto.job_position_title,
+            application_id=dto.application_id,
+            interview_template_id=dto.interview_template_id,
+            interview_template_name=dto.interview_template_name,
+            workflow_stage_id=dto.workflow_stage_id,
+            workflow_stage_name=dto.workflow_stage_name,
+            process_type=dto.process_type,
+            interview_type=dto.interview_type,
+            interview_mode=dto.interview_mode,
+            status=dto.status,
+            title=dto.title,
+            description=dto.description,
+            scheduled_at=dto.scheduled_at,
+            deadline_date=dto.deadline_date,
+            started_at=dto.started_at,
+            finished_at=dto.finished_at,
+            duration_minutes=dto.duration_minutes,
+            interviewers=dto.interviewers if dto.interviewers else [],
+            interviewer_names=dto.interviewer_names if dto.interviewer_names else [],
+            interviewer_notes=dto.interviewer_notes,
+            candidate_notes=dto.candidate_notes,
+            score=dto.score,
+            feedback=dto.feedback,
+            free_answers=dto.free_answers,
+            link_token=dto.link_token,
+            link_expires_at=dto.link_expires_at,
+            shareable_link=cls._generate_shareable_link(dto.id, dto.link_token) if dto.link_token else None,
+            is_incomplete=dto.is_incomplete,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )

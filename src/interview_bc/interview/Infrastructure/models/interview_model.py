@@ -42,7 +42,7 @@ class InterviewModel(Base):
     interview_mode: Mapped[Optional[str]] = mapped_column(String, nullable=True,
                                                           index=True)  # Stored as VARCHAR, validated in domain layer
     status: Mapped[str] = mapped_column(String,
-                                        default=InterviewStatusEnum.ENABLED.value)  # Stored as VARCHAR, validated in domain layer
+                                        default=InterviewStatusEnum.PENDING.value)  # Stored as VARCHAR, validated in domain layer
     title: Mapped[Optional[str]] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(Text)
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)

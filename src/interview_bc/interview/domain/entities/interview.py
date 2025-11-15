@@ -32,7 +32,7 @@ class Interview:
     process_type: Optional[InterviewProcessTypeEnum] = None  # Moment in the selection process
     interview_type: InterviewTypeEnum = InterviewTypeEnum.CUSTOM
     interview_mode: Optional[InterviewModeEnum] = None  # Mode: AUTOMATIC, AI, MANUAL
-    status: InterviewStatusEnum = InterviewStatusEnum.ENABLED
+    status: InterviewStatusEnum = InterviewStatusEnum.PENDING
     title: Optional[str] = None
     description: Optional[str] = None
     scheduled_at: Optional[datetime] = None
@@ -51,7 +51,7 @@ class Interview:
 
     def start(self, started_by: Optional[str] = None) -> None:
         """Start the interview"""
-        if self.status != InterviewStatusEnum.ENABLED:
+        if self.status != InterviewStatusEnum.PENDING:
             raise ValueError("Can only start interviews that are in ENABLED status")
 
         self.status = InterviewStatusEnum.IN_PROGRESS
@@ -340,7 +340,7 @@ class Interview:
             workflow_stage_id=workflow_stage_id,
             interview_type=interview_type,
             interview_mode=interview_mode,
-            status=InterviewStatusEnum.ENABLED,
+            status=InterviewStatusEnum.PENDING,
             title=title,
             description=description,
             scheduled_at=scheduled_at,

@@ -88,7 +88,7 @@ Pay attention to skills used, challenges overcome, and impact created.""",
         goal="""To gather comprehensive information about the candidate's professional journey that goes beyond what's
 written in their resume, including specific achievements, technical skills, soft skills, and career motivations.""",
         type=InterviewTemplateTypeEnum.EXTENDED_PROFILE,
-        status=InterviewTemplateStatusEnum.ENABLED,
+        status=InterviewTemplateStatusEnum.PENDING,
         job_category=None,  # Generic template for all categories
         allow_ai_questions=True,
         legal_notice="""The information you provide will be used to enhance your professional profile.
@@ -112,7 +112,7 @@ All data will be handled in accordance with our privacy policy and data protecti
         goal="Discover hidden technical skills, leadership experiences, and quantifiable achievements from work history.",
         section=InterviewTemplateSectionEnum.EXPERIENCE,
         sort_order=1,
-        status=InterviewTemplateSectionStatusEnum.ENABLED,
+        status=InterviewTemplateSectionStatusEnum.PENDING,
         allow_ai_questions=True,
         allow_ai_override_questions=True
     )
@@ -151,7 +151,7 @@ All data will be handled in accordance with our privacy policy and data protecti
             sort_order=idx,
             name=q["name"],
             description=q["description"],
-            status=InterviewTemplateQuestionStatusEnum.ENABLED,
+            status=InterviewTemplateQuestionStatusEnum.PENDING,
             data_type=q["data_type"],
             scope=q["scope"],
             code=q["code"],
@@ -171,7 +171,7 @@ All data will be handled in accordance with our privacy policy and data protecti
         goal="Uncover practical skills from education, academic achievements, and relevant coursework not on resume.",
         section=InterviewTemplateSectionEnum.EDUCATION,
         sort_order=2,
-        status=InterviewTemplateSectionStatusEnum.ENABLED,
+        status=InterviewTemplateSectionStatusEnum.PENDING,
         allow_ai_questions=True,
         allow_ai_override_questions=True
     )
@@ -210,7 +210,7 @@ All data will be handled in accordance with our privacy policy and data protecti
             sort_order=idx,
             name=q["name"],
             description=q["description"],
-            status=InterviewTemplateQuestionStatusEnum.ENABLED,
+            status=InterviewTemplateQuestionStatusEnum.PENDING,
             data_type=q["data_type"],
             scope=q["scope"],
             code=q["code"],
@@ -230,7 +230,7 @@ All data will be handled in accordance with our privacy policy and data protecti
         goal="Discover projects that showcase technical skills, initiative, and passion for technology.",
         section=InterviewTemplateSectionEnum.PROJECT,
         sort_order=3,
-        status=InterviewTemplateSectionStatusEnum.ENABLED,
+        status=InterviewTemplateSectionStatusEnum.PENDING,
         allow_ai_questions=True,
         allow_ai_override_questions=True
     )
@@ -269,7 +269,7 @@ All data will be handled in accordance with our privacy policy and data protecti
             sort_order=idx,
             name=q["name"],
             description=q["description"],
-            status=InterviewTemplateQuestionStatusEnum.ENABLED,
+            status=InterviewTemplateQuestionStatusEnum.PENDING,
             data_type=q["data_type"],
             scope=q["scope"],
             code=q["code"],
@@ -289,7 +289,7 @@ All data will be handled in accordance with our privacy policy and data protecti
         goal="Identify soft skills, leadership qualities, and cultural fit indicators.",
         section=InterviewTemplateSectionEnum.SOFT_SKILL,
         sort_order=4,
-        status=InterviewTemplateSectionStatusEnum.ENABLED,
+        status=InterviewTemplateSectionStatusEnum.PENDING,
         allow_ai_questions=True,
         allow_ai_override_questions=True
     )
@@ -328,7 +328,7 @@ All data will be handled in accordance with our privacy policy and data protecti
             sort_order=idx,
             name=q["name"],
             description=q["description"],
-            status=InterviewTemplateQuestionStatusEnum.ENABLED,
+            status=InterviewTemplateQuestionStatusEnum.PENDING,
             data_type=q["data_type"],
             scope=q["scope"],
             code=q["code"],
@@ -348,7 +348,7 @@ All data will be handled in accordance with our privacy policy and data protecti
         goal="Discover career motivations, professional goals, and culture fit indicators.",
         section=InterviewTemplateSectionEnum.GENERAL,
         sort_order=5,
-        status=InterviewTemplateSectionStatusEnum.ENABLED,
+        status=InterviewTemplateSectionStatusEnum.PENDING,
         allow_ai_questions=True,
         allow_ai_override_questions=True
     )
@@ -387,7 +387,7 @@ All data will be handled in accordance with our privacy policy and data protecti
             sort_order=idx,
             name=q["name"],
             description=q["description"],
-            status=InterviewTemplateQuestionStatusEnum.ENABLED,
+            status=InterviewTemplateQuestionStatusEnum.PENDING,
             data_type=q["data_type"],
             scope=q["scope"],
             code=q["code"],

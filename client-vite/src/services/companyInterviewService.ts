@@ -8,15 +8,21 @@ export type InterviewProcessType = 'CANDIDATE_SIGN_UP' | 'CANDIDATE_APPLICATION'
 export type Interview = {
   id: string;
   candidate_id: string;
+  candidate_name?: string; // From ReadModel
+  candidate_email?: string; // From ReadModel
   required_roles: string[]; // List of CompanyRole IDs (obligatory)
+  required_role_names?: string[]; // From ReadModel - List of CompanyRole names
   interview_type: InterviewType;
   interview_mode?: 'AUTOMATIC' | 'AI' | 'MANUAL';
   process_type?: InterviewProcessType;
   status: InterviewStatus;
   job_position_id?: string;
+  job_position_title?: string; // From ReadModel
   application_id?: string;
   interview_template_id?: string;
+  interview_template_name?: string; // From ReadModel
   workflow_stage_id?: string; // ID of the workflow stage where this interview is conducted
+  workflow_stage_name?: string; // From ReadModel
   title?: string;
   description?: string;
   scheduled_at?: string;
@@ -30,7 +36,8 @@ export type Interview = {
   interviewer_notes?: string;
   candidate_notes?: string;
   feedback?: string;
-  interviewers?: string[];
+  interviewers?: string[]; // List of interviewer IDs
+  interviewer_names?: string[]; // From ReadModel - List of interviewer names/emails
   metadata?: Record<string, any>;
   created_at: string;
   updated_at: string;
@@ -39,6 +46,7 @@ export type Interview = {
   link_token?: string;
   link_expires_at?: string;
   shareable_link?: string;
+  is_incomplete?: boolean; // True if has scheduled_at but missing required_roles or interviewers
 };
 
 export type InterviewListResponse = {
@@ -78,6 +86,15 @@ export type InterviewScoreSummaryResponse = {
   completion_percentage: number;
 };
 
+// Interview filter enum values (matches backend InterviewFilterEnum)
+export type InterviewFilterEnum = 
+  | 'PENDING_TO_PLAN' 
+  | 'PLANNED' 
+  | 'IN_PROGRESS' 
+  | 'RECENTLY_FINISHED' 
+  | 'OVERDUE' 
+  | 'PENDING_FEEDBACK';
+
 export type InterviewFilters = {
   candidate_id?: string;
   candidate_name?: string; // Search by candidate name
@@ -89,7 +106,7 @@ export type InterviewFilters = {
   interviewer_user_id?: string; // Filter by interviewer (CompanyUserId)
   from_date?: string;
   to_date?: string;
-  filter_by?: 'scheduled' | 'deadline' | 'unscheduled'; // Which date field to filter
+  filter_by?: InterviewFilterEnum; // Filter name from InterviewFilterEnum
   limit?: number;
   offset?: number;
 };

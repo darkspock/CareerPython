@@ -22,6 +22,7 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
 )
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
 from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
+from src.interview_bc.interview.domain.read_models.interview_list_read_model import InterviewListReadModel
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.shared_bc.customization.workflow.domain.value_objects.workflow_stage_id import WorkflowStageId
 
@@ -86,7 +87,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
 
         # Handle status enum conversion
         # Note: InterviewStatusEnum.ENABLED has value "PENDING", so we need to handle both cases
-        status_enum = InterviewStatusEnum.ENABLED  # Default
+        status_enum = InterviewStatusEnum.PENDING  # Default
         if model.status:
             status_upper = model.status.upper()
             try:
@@ -96,17 +97,17 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 # Handle legacy or mismatched values
                 # Map "ENABLED" to ENABLED enum (which has value "PENDING")
                 if status_upper == "ENABLED":
-                    status_enum = InterviewStatusEnum.ENABLED
+                    status_enum = InterviewStatusEnum.PENDING
                 elif status_upper == "DISABLED":
                     status_enum = InterviewStatusEnum.DISCARDED
                 elif status_upper == "PENDING":
-                    status_enum = InterviewStatusEnum.ENABLED  # PENDING maps to ENABLED enum
+                    status_enum = InterviewStatusEnum.PENDING  # PENDING maps to ENABLED enum
                 else:
                     # Try to find enum member by name
                     try:
                         status_enum = InterviewStatusEnum[status_upper]
                     except (KeyError, ValueError):
-                        status_enum = InterviewStatusEnum.ENABLED  # Default fallback
+                        status_enum = InterviewStatusEnum.PENDING  # Default fallback
 
         return Interview(
             id=InterviewId.from_string(model.id),
@@ -165,7 +166,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         process_type_str = domain.process_type.value if domain.process_type else None
         interview_type_str = domain.interview_type.value if domain.interview_type else InterviewTypeEnum.CUSTOM.value
         interview_mode_str = domain.interview_mode.value if domain.interview_mode else None
-        status_str = domain.status.value if domain.status else InterviewStatusEnum.ENABLED.value
+        status_str = domain.status.value if domain.status else InterviewStatusEnum.PENDING.value
 
         return InterviewModel(
             id=domain.id.value,
@@ -234,7 +235,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 model.workflow_stage_id = str(interview.workflow_stage_id) if interview.workflow_stage_id else None
                 model.interview_type = interview.interview_type.value if interview.interview_type else InterviewTypeEnum.CUSTOM.value
                 model.interview_mode = interview.interview_mode.value if interview.interview_mode else None
-                model.status = interview.status.value if interview.status else InterviewStatusEnum.ENABLED.value
+                model.status = interview.status.value if interview.status else InterviewStatusEnum.PENDING.value
                 model.title = interview.title
                 model.description = interview.description
                 model.scheduled_at = interview.scheduled_at
@@ -569,7 +570,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             models = session.query(InterviewModel).filter(
                 InterviewModel.candidate_id == candidate_id,
                 InterviewModel.workflow_stage_id == workflow_stage_id,
-                InterviewModel.status == InterviewStatusEnum.ENABLED  # ENABLED = "PENDING" (see enum definition)
+                InterviewModel.status == InterviewStatusEnum.PENDING  # ENABLED = "PENDING" (see enum definition)
             ).order_by(InterviewModel.created_at.desc()).all()
             return [self._to_domain(model) for model in models]
 
@@ -602,3 +603,233 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 return None
 
             return interview
+
+    def find_by_filters_with_joins(
+            self,
+            candidate_id: Optional[str] = None,
+            candidate_name: Optional[str] = None,
+            job_position_id: Optional[str] = None,
+            interview_type: Optional[InterviewTypeEnum] = None,
+            process_type: Optional[InterviewProcessTypeEnum] = None,
+            status: Optional[InterviewStatusEnum] = None,
+            required_role_id: Optional[str] = None,
+            interviewer_user_id: Optional[str] = None,
+            created_by: Optional[str] = None,
+            from_date: Optional[datetime] = None,
+            to_date: Optional[datetime] = None,
+            filter_by: Optional[str] = None,  # 'scheduled', 'deadline', or 'unscheduled'
+            has_scheduled_at_and_interviewers: bool = False,  # Special filter for "SCHEDULED" status
+            limit: int = 50,
+            offset: int = 0
+    ) -> List[InterviewListReadModel]:
+        """Find interviews by multiple filters with JOINs to get all related information (ReadModel)"""
+        from src.candidate_bc.candidate.infrastructure.models.candidate_model import CandidateModel
+        from src.company_bc.job_position.infrastructure.models.job_position_model import JobPositionModel
+        from src.interview_bc.interview_template.infrastructure.models.interview_template import InterviewTemplateModel
+        from src.shared_bc.customization.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+        from src.company_bc.company_role.infrastructure.models.company_role_model import CompanyRoleModel
+        from src.company_bc.company.infrastructure.models.company_user_model import CompanyUserModel
+        from src.auth_bc.user.infrastructure.models.user_model import UserModel
+
+        with self.database.get_session() as session:
+            # Base query with JOINs
+            query = session.query(
+                InterviewModel,
+                CandidateModel.name.label('candidate_name'),
+                CandidateModel.email.label('candidate_email'),
+                JobPositionModel.title.label('job_position_title'),
+                InterviewTemplateModel.name.label('interview_template_name'),
+                WorkflowStageModel.name.label('workflow_stage_name')
+            ).outerjoin(
+                CandidateModel,
+                InterviewModel.candidate_id == CandidateModel.id
+            ).outerjoin(
+                JobPositionModel,
+                InterviewModel.job_position_id == JobPositionModel.id
+            ).outerjoin(
+                InterviewTemplateModel,
+                InterviewModel.interview_template_id == InterviewTemplateModel.id
+            ).outerjoin(
+                WorkflowStageModel,
+                InterviewModel.workflow_stage_id == WorkflowStageModel.id
+            )
+
+            # Apply filters (same logic as find_by_filters)
+            if candidate_id:
+                query = query.filter(InterviewModel.candidate_id == candidate_id)
+
+            if candidate_name:
+                query = query.filter(func.lower(CandidateModel.name).contains(func.lower(candidate_name)))
+
+            if job_position_id:
+                query = query.filter(InterviewModel.job_position_id == job_position_id)
+
+            if interview_type:
+                interview_type_str = interview_type.value if hasattr(interview_type, 'value') else str(interview_type)
+                query = query.filter(InterviewModel.interview_type == interview_type_str)
+
+            if process_type:
+                process_type_str = process_type.value if hasattr(process_type, 'value') else str(process_type)
+                query = query.filter(InterviewModel.process_type == process_type_str)
+
+            if status:
+                status_str = status.value if hasattr(status, 'value') else str(status)
+                query = query.filter(InterviewModel.status == status_str)
+
+            if has_scheduled_at_and_interviewers:
+                query = query.filter(
+                    InterviewModel.scheduled_at.isnot(None),
+                    InterviewModel.interviewers.isnot(None),
+                    func.jsonb_array_length(func.cast(InterviewModel.interviewers, postgresql.JSONB)) > 0
+                )
+
+            if required_role_id:
+                query = query.filter(InterviewModel.required_roles.contains([required_role_id]))
+
+            if interviewer_user_id:
+                query = query.filter(InterviewModel.interviewers.contains([interviewer_user_id]))
+
+            if created_by:
+                query = query.filter(InterviewModel.created_by == created_by)
+
+            # Date filtering
+            if filter_by == 'deadline':
+                query = query.filter(InterviewModel.deadline_date.isnot(None))
+                if from_date:
+                    query = query.filter(InterviewModel.deadline_date >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.deadline_date <= to_date)
+            elif filter_by == 'unscheduled':
+                query = query.filter(
+                    or_(
+                        InterviewModel.scheduled_at.is_(None),
+                        InterviewModel.interviewers.is_(None),
+                        func.jsonb_array_length(func.cast(InterviewModel.interviewers, postgresql.JSONB)) == 0
+                    )
+                )
+            elif from_date or to_date:
+                if from_date:
+                    query = query.filter(InterviewModel.scheduled_at >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.scheduled_at <= to_date)
+            else:
+                if from_date:
+                    query = query.filter(InterviewModel.created_at >= from_date)
+                if to_date:
+                    query = query.filter(InterviewModel.created_at <= to_date)
+
+            query = query.order_by(InterviewModel.created_at.desc())
+            query = query.offset(offset).limit(limit)
+
+            results = query.all()
+
+            # Collect all unique interviewer IDs and role IDs to fetch in batch
+            all_interviewer_ids = set()
+            all_role_ids = set()
+            interview_interviewers_map = {}  # interview_id -> list of interviewer_ids
+            interview_roles_map = {}  # interview_id -> list of role_ids
+
+            for result in results:
+                interview_model = result[0]
+                interview_id = interview_model.id
+                
+                if interview_model.interviewers:
+                    interview_interviewers_map[interview_id] = interview_model.interviewers
+                    all_interviewer_ids.update(interview_model.interviewers)
+                
+                if interview_model.required_roles:
+                    interview_roles_map[interview_id] = interview_model.required_roles
+                    all_role_ids.update(interview_model.required_roles)
+
+            # Batch fetch all CompanyUsers and Users
+            interviewer_name_map = {}  # interviewer_id -> name/email
+            if all_interviewer_ids:
+                company_users = session.query(CompanyUserModel, UserModel).join(
+                    UserModel,
+                    CompanyUserModel.user_id == UserModel.id
+                ).filter(CompanyUserModel.id.in_(list(all_interviewer_ids))).all()
+                
+                for company_user, user in company_users:
+                    interviewer_name_map[company_user.id] = user.email or user.name or company_user.id
+
+            # Batch fetch all CompanyRoles
+            role_name_map = {}  # role_id -> name
+            if all_role_ids:
+                roles = session.query(CompanyRoleModel).filter(
+                    CompanyRoleModel.id.in_(list(all_role_ids))
+                ).all()
+                for role in roles:
+                    role_name_map[role.id] = role.name
+
+            # Convert to ReadModels
+            read_models = []
+            for result in results:
+                interview_model = result[0]
+                interview_id = interview_model.id
+                candidate_name = result[1]
+                candidate_email = result[2]
+                job_position_title = result[3]
+                interview_template_name = result[4]
+                workflow_stage_name = result[5]
+
+                # Get interviewer names from batch-fetched map
+                interviewer_names = []
+                if interview_id in interview_interviewers_map:
+                    for interviewer_id in interview_interviewers_map[interview_id]:
+                        interviewer_names.append(interviewer_name_map.get(interviewer_id, interviewer_id))
+
+                # Get required role names from batch-fetched map
+                required_role_names = []
+                if interview_id in interview_roles_map:
+                    for role_id in interview_roles_map[interview_id]:
+                        required_role_names.append(role_name_map.get(role_id, role_id))
+
+                # Calculate is_incomplete
+                is_incomplete = (
+                    interview_model.scheduled_at is not None and
+                    (not interview_model.required_roles or not interview_model.interviewers)
+                )
+
+                read_model = InterviewListReadModel(
+                    id=interview_model.id,
+                    candidate_id=interview_model.candidate_id,
+                    required_roles=interview_model.required_roles or [],
+                    interview_type=interview_model.interview_type or '',
+                    status=interview_model.status or '',
+                    interviewers=interview_model.interviewers or [],
+                    job_position_id=interview_model.job_position_id,
+                    application_id=interview_model.application_id,
+                    interview_template_id=interview_model.interview_template_id,
+                    workflow_stage_id=interview_model.workflow_stage_id,
+                    process_type=interview_model.process_type,
+                    interview_mode=interview_model.interview_mode,
+                    title=interview_model.title,
+                    description=interview_model.description,
+                    scheduled_at=interview_model.scheduled_at,
+                    deadline_date=interview_model.deadline_date,
+                    started_at=interview_model.started_at,
+                    finished_at=interview_model.finished_at,
+                    duration_minutes=interview_model.duration_minutes,
+                    interviewer_notes=interview_model.interviewer_notes,
+                    candidate_notes=interview_model.candidate_notes,
+                    score=interview_model.score,
+                    feedback=interview_model.feedback,
+                    free_answers=interview_model.free_answers,
+                    link_token=interview_model.link_token,
+                    link_expires_at=interview_model.link_expires_at,
+                    created_at=interview_model.created_at,
+                    updated_at=interview_model.updated_at,
+                    created_by=interview_model.created_by,
+                    updated_by=interview_model.updated_by,
+                    candidate_name=candidate_name,
+                    candidate_email=candidate_email,
+                    job_position_title=job_position_title,
+                    interview_template_name=interview_template_name,
+                    workflow_stage_name=workflow_stage_name,
+                    interviewer_names=interviewer_names,
+                    required_role_names=required_role_names,
+                    is_incomplete=is_incomplete
+                )
+                read_models.append(read_model)
+
+            return read_models
