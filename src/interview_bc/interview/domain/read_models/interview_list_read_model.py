@@ -14,10 +14,10 @@ class InterviewListReadModel:
     # Interview fields
     id: str
     candidate_id: str
-    required_roles: List[str]  # List of CompanyRole IDs
     interview_type: str
     status: str
-    interviewers: List[str]  # List of CompanyUser IDs
+    required_roles: Optional[List[str]] = None  # List of CompanyRole IDs
+    interviewers: Optional[List[str]] = None  # List of CompanyUser IDs
     job_position_id: Optional[str] = None
     application_id: Optional[str] = None
     interview_template_id: Optional[str] = None
@@ -51,15 +51,15 @@ class InterviewListReadModel:
     workflow_stage_name: Optional[str] = None
     
     # Interviewers information (from JOINs)
-    interviewer_names: List[str] = None  # List of interviewer names/emails
+    interviewer_names: Optional[List[str]] = None  # List of interviewer names/emails
     
     # Required roles information (from JOINs)
-    required_role_names: List[str] = None  # List of role names
+    required_role_names: Optional[List[str]] = None  # List of role names
     
     # Computed fields
     is_incomplete: bool = False  # True if has scheduled_at but missing required_roles or interviewers
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize default values for lists"""
         if self.interviewer_names is None:
             self.interviewer_names = []

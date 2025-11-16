@@ -13,12 +13,12 @@ class InterviewListDto:
     candidate_id: str
     candidate_name: Optional[str] = None
     candidate_email: Optional[str] = None
-    required_roles: List[str] = None
-    required_role_names: List[str] = None
+    required_roles: Optional[List[str]] = None
+    required_role_names: Optional[List[str]] = None
     interview_type: str = ""
     status: str = ""
-    interviewers: List[str] = None
-    interviewer_names: List[str] = None
+    interviewers: Optional[List[str]] = None
+    interviewer_names: Optional[List[str]] = None
     job_position_id: Optional[str] = None
     job_position_title: Optional[str] = None
     application_id: Optional[str] = None

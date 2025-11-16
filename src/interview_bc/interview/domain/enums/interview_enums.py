@@ -14,7 +14,8 @@ class InterviewStatusEnum(Enum):
         return [cls.PENDING, cls.IN_PROGRESS, cls.PAUSED]
 
     @classmethod
-    def finished(cls):
+    def finished(cls) -> list['InterviewStatusEnum']:
+        """Return list of statuses that are considered finished"""
         return [cls.FINISHED, cls.DISCARDED]
 
 
