@@ -41,9 +41,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
 
     def _to_domain(self, model: InterviewModel) -> Interview:
         """Convert model to domain entity"""
-        job_position_id = None
-        if model.job_position_id:
-            job_position_id = JobPositionId.from_string(model.job_position_id)
+        job_position_id = JobPositionId.from_string(model.job_position_id)
 
         application_id = None
         if model.application_id:
@@ -53,9 +51,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         if model.interview_template_id:
             interview_template_id = InterviewTemplateId.from_string(model.interview_template_id)
 
-        workflow_stage_id = None
-        if model.workflow_stage_id:
-            workflow_stage_id = WorkflowStageId.from_string(model.workflow_stage_id)
+        workflow_stage_id = WorkflowStageId.from_string(model.workflow_stage_id)
 
         interviewers_list = model.interviewers or []
 
@@ -145,9 +141,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
 
     def _to_model(self, domain: Interview) -> InterviewModel:
         """Convert domain entity to model"""
-        job_position_id = None
-        if domain.job_position_id:
-            job_position_id = domain.job_position_id.value
+        job_position_id = domain.job_position_id.value
 
         application_id = None
         if domain.application_id:
@@ -157,9 +151,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         if domain.interview_template_id:
             interview_template_id = domain.interview_template_id.value
 
-        workflow_stage_id = None
-        if domain.workflow_stage_id:
-            workflow_stage_id = str(domain.workflow_stage_id)
+        workflow_stage_id = str(domain.workflow_stage_id)
 
         # Convert required_roles from List[CompanyRoleId] to List[str]
         # required_roles is obligatory, so it should always have at least one element
@@ -232,10 +224,10 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 model.required_roles = [role_id.value for role_id in
                                         interview.required_roles] if interview.required_roles else []
                 model.process_type = interview.process_type.value if interview.process_type else None
-                model.job_position_id = interview.job_position_id.value if interview.job_position_id else None
+                model.job_position_id = interview.job_position_id.value
                 model.application_id = interview.application_id.value if interview.application_id else None
                 model.interview_template_id = interview.interview_template_id.value if interview.interview_template_id else None
-                model.workflow_stage_id = str(interview.workflow_stage_id) if interview.workflow_stage_id else None
+                model.workflow_stage_id = interview.workflow_stage_id.value
                 model.interview_type = interview.interview_type.value if interview.interview_type else InterviewTypeEnum.CUSTOM.value
                 model.interview_mode = interview.interview_mode.value if interview.interview_mode else None
                 model.status = interview.status.value if interview.status else InterviewStatusEnum.PENDING.value

@@ -43,7 +43,7 @@ export default function CompanyInterviewDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await companyInterviewService.getInterview(interviewId);
+      const data = await companyInterviewService.getInterviewView(interviewId);
       setInterview(data);
     } catch (err: any) {
       setError(err.message || 'Error al cargar la entrevista');

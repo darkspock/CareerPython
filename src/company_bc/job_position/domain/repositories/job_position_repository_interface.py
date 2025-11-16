@@ -17,6 +17,7 @@ class JobPositionRepositoryInterface(ABC):
     def get_by_id(self, id: JobPositionId) -> Optional[JobPosition]:
         pass
 
+    @abstractmethod
     def find_published(self, company_id: CompanyId) -> List[JobPosition]:
         pass
 

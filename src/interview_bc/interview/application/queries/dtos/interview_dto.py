@@ -20,10 +20,10 @@ class InterviewDto:
     interview_type: str
     status: str
     interviewers: List[str]
-    job_position_id: Optional[JobPositionId] = None
+    workflow_stage_id: WorkflowStageId
+    job_position_id: JobPositionId
     application_id: Optional[CandidateApplicationId] = None
     interview_template_id: Optional[InterviewTemplateId] = None
-    workflow_stage_id: Optional[WorkflowStageId] = None
     process_type: Optional[str] = None  # InterviewProcessTypeEnum value
     interview_mode: Optional[str] = None
     title: Optional[str] = None

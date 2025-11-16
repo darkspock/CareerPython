@@ -48,7 +48,7 @@ class InterviewListDto:
     updated_by: Optional[str] = None
     is_incomplete: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self)->None:
         """Initialize default values for lists"""
         if self.interviewer_names is None:
             self.interviewer_names = []

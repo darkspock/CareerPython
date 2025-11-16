@@ -25,10 +25,10 @@ class Interview:
     required_roles: List[CompanyRoleId]  # Obligatory: List of CompanyRole IDs required for this interview
     created_at: datetime
     updated_at: datetime
-    job_position_id: Optional[JobPositionId] = None
+    workflow_stage_id: WorkflowStageId  # Stage where this interview is conducted
+    job_position_id: JobPositionId
     application_id: Optional[CandidateApplicationId] = None
     interview_template_id: Optional[InterviewTemplateId] = None
-    workflow_stage_id: Optional[WorkflowStageId] = None  # Stage where this interview is conducted
     process_type: Optional[InterviewProcessTypeEnum] = None  # Moment in the selection process
     interview_type: InterviewTypeEnum = InterviewTypeEnum.CUSTOM
     interview_mode: Optional[InterviewModeEnum] = None  # Mode: AUTOMATIC, AI, MANUAL
@@ -287,13 +287,13 @@ class Interview:
             id: InterviewId,
             candidate_id: CandidateId,
             required_roles: List[CompanyRoleId],
+            workflow_stage_id: WorkflowStageId,
+            job_position_id: JobPositionId,
             process_type: Optional[InterviewProcessTypeEnum] = None,
             interview_type: InterviewTypeEnum = InterviewTypeEnum.CUSTOM,
             interview_mode: Optional[InterviewModeEnum] = None,
-            job_position_id: Optional[JobPositionId] = None,
             application_id: Optional[CandidateApplicationId] = None,
             interview_template_id: Optional[InterviewTemplateId] = None,
-            workflow_stage_id: Optional[WorkflowStageId] = None,
             title: Optional[str] = None,
             description: Optional[str] = None,
             scheduled_at: Optional[datetime] = None,

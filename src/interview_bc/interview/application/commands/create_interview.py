@@ -27,12 +27,12 @@ class CreateInterviewCommand(Command):
     candidate_id: str
     required_roles: List[str]  # Obligatory: List of CompanyRole IDs
     interview_mode: str  # Required field
+    workflow_stage_id: str
+    job_position_id: str
     process_type: Optional[str] = None  # InterviewProcessTypeEnum value
     interview_type: str = InterviewTypeEnum.CUSTOM.value
-    job_position_id: Optional[str] = None
     application_id: Optional[str] = None
     interview_template_id: Optional[str] = None
-    workflow_stage_id: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
     scheduled_at: Optional[str] = None  # ISO datetime string
@@ -53,9 +53,7 @@ class CreateInterviewCommandHandler(CommandHandler[CreateInterviewCommand]):
         # Convert string IDs to value objects
         candidate_id = CandidateId.from_string(command.candidate_id)
 
-        job_position_id = None
-        if command.job_position_id:
-            job_position_id = JobPositionId.from_string(command.job_position_id)
+        job_position_id = JobPositionId.from_string(command.job_position_id)
 
         application_id = None
         if command.application_id:
@@ -65,9 +63,7 @@ class CreateInterviewCommandHandler(CommandHandler[CreateInterviewCommand]):
         if command.interview_template_id:
             interview_template_id = InterviewTemplateId.from_string(command.interview_template_id)
 
-        workflow_stage_id = None
-        if command.workflow_stage_id:
-            workflow_stage_id = WorkflowStageId.from_string(command.workflow_stage_id)
+        workflow_stage_id = WorkflowStageId.from_string(command.workflow_stage_id)
 
         # Convert required_roles from List[str] to List[CompanyRoleId] (obligatory)
         if not command.required_roles:

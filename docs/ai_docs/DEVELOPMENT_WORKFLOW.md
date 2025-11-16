@@ -773,7 +773,50 @@ def get_company(
 - Valida requests con Pydantic
 - Maneja excepciones
 - Usa dependency injection
+- **⚠️ REGLA CRÍTICA**: Router NO debe tener lógica. Solo debe llamar al controller y retornar lo que el controller retorna.
+- **⚠️ REGLA CRÍTICA**: Controller debe retornar siempre un DTO con nombre terminado en `Resource` o arrays de ellos (ej: `CompanyResource`, `CompanyListResource`, `List[CompanyResource]`).
 - NO lógica, solo paso de datos
+
+**❌ NO HACER**:
+```python
+# Mal: Router con lógica
+@router.get("")
+def list_companies(controller: CompanyController) -> CompanyListResponse:
+    companies, total = controller.list_companies()
+    # ❌ Lógica en el router
+    current_page = (offset // limit) + 1
+    return CompanyListResponse(
+        companies=[CompanyResponse.from_dto(c) for c in companies],
+        total=total,
+        page=current_page
+    )
+```
+
+**✅ HACER**:
+```python
+# Bien: Router sin lógica, solo llama al controller
+@router.get("", response_model=CompanyListResource)
+def list_companies(controller: CompanyController) -> CompanyListResource:
+    # ✅ Solo llama al controller y retorna
+    return controller.list_companies()
+```
+
+**Controller debe retornar Resources**:
+```python
+# Controller retorna Resource (no Response ni dict)
+class CompanyController:
+    def list_companies(self) -> CompanyListResource:  # ✅ Termina en Resource
+        # ...
+        return CompanyListResource(...)
+    
+    def get_company(self, company_id: str) -> CompanyResource:  # ✅ Termina en Resource
+        # ...
+        return CompanyResource(...)
+    
+    def create_company(self, request: CreateCompanyRequest) -> CompanyActionResource:  # ✅ Termina en Resource
+        # ...
+        return CompanyActionResource(...)
+```
 
 #### 3.8. Registrar en Container
 

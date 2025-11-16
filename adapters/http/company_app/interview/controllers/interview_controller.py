@@ -7,7 +7,10 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
-from adapters.http.company_app.interview.schemas.interview_management import InterviewManagementResponse
+from adapters.http.company_app.interview.schemas.interview_management import (
+    InterviewResource, InterviewFullResource, InterviewListResource, InterviewStatsResource,
+    InterviewActionResource, InterviewScoreSummaryResource, InterviewLinkResource
+)
 from core.config import settings
 from src.company_bc.company.domain import CompanyId
 from src.framework.application.command_bus import CommandBus
@@ -49,6 +52,7 @@ class InterviewController:
 
     def list_interviews(
             self,
+            company_id: str,
             candidate_id: Optional[str] = None,
             candidate_name: Optional[str] = None,
             job_position_id: Optional[str] = None,
@@ -63,8 +67,8 @@ class InterviewController:
             filter_by: Optional[str] = None,
             limit: int = 50,
             offset: int = 0
-    ) -> tuple[List[InterviewListDto], int]:
-        """List interviews with optional filtering. Returns (interviews, total_count)"""
+    ) -> InterviewListResource:
+        """List interviews with optional filtering. Returns InterviewListResource"""
         try:
             from src.interview_bc.interview.domain.enums.interview_enums import (
                 InterviewStatusEnum,
@@ -156,14 +160,23 @@ class InterviewController:
             )
 
             interviews: List[InterviewListDto] = self._query_bus.query(query)
-            return interviews, total
+            
+            # Calculate current page from offset and limit
+            current_page = (offset // limit) + 1 if limit > 0 else 1
+            
+            return InterviewListResource(
+                interviews=[InterviewFullResource.from_list_dto(dto) for dto in interviews],
+                total=total,
+                page=current_page,
+                page_size=limit
+            )
 
         except Exception as e:
             logger.error(f"Error listing interviews: {e}")
             raise HTTPException(status_code=500, detail="Failed to retrieve interviews")
 
-    def get_interview_by_id(self, interview_id: str) -> InterviewManagementResponse:
-        """Get interview by ID"""
+    def get_interview_by_id(self, interview_id: str) -> InterviewResource:
+        """Get interview by ID (for editing - only interview fields)"""
         try:
             query = GetInterviewByIdQuery(interview_id=interview_id)
             interview: InterviewDto = self._query_bus.query(query)
@@ -171,7 +184,7 @@ class InterviewController:
             if not interview:
                 raise HTTPException(status_code=404, detail="Interview not found")
 
-            return InterviewManagementResponse.from_dto(self._query_bus, interview)
+            return InterviewResource.from_dto(interview)
 
         except HTTPException:
             raise
@@ -179,10 +192,27 @@ class InterviewController:
             logger.error(f"Error getting interview {interview_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to retrieve interview")
 
+    def get_interview_view(self, interview_id: str) -> InterviewFullResource:
+        """Get interview by ID with full denormalized information (for viewing)"""
+        try:
+            query = GetInterviewByIdQuery(interview_id=interview_id)
+            interview: InterviewDto = self._query_bus.query(query)
+
+            if not interview:
+                raise HTTPException(status_code=404, detail="Interview not found")
+
+            return InterviewFullResource.from_dto(self._query_bus, interview)
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error getting interview view {interview_id}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to retrieve interview")
+
     def get_interviews_by_candidate(
             self,
             candidate_id: str,
-    ) -> List[InterviewDto]:
+    ) -> List[InterviewFullResource]:
         """Get interviews for a specific candidate"""
         try:
             query = GetInterviewsByCandidateQuery(
@@ -190,7 +220,7 @@ class InterviewController:
             )
 
             interviews: List[InterviewDto] = self._query_bus.query(query)
-            return interviews
+            return [InterviewFullResource.from_dto(self._query_bus, dto) for dto in interviews]
 
         except Exception as e:
             logger.error(f"Error getting interviews for candidate {candidate_id}: {e}")
@@ -200,7 +230,7 @@ class InterviewController:
             self,
             from_date: Optional[datetime] = None,
             to_date: Optional[datetime] = None,
-    ) -> List[InterviewDto]:
+    ) -> List[InterviewFullResource]:
         """Get scheduled interviews"""
         try:
             query = GetScheduledInterviewsQuery(
@@ -209,7 +239,7 @@ class InterviewController:
             )
 
             interviews: List[InterviewDto] = self._query_bus.query(query)
-            return interviews
+            return [InterviewFullResource.from_dto(self._query_bus, dto) for dto in interviews]
 
         except Exception as e:
             logger.error(f"Error getting scheduled interviews: {e}")
@@ -221,8 +251,9 @@ class InterviewController:
             required_roles: List[str],
             interview_mode: str,
             interview_type: str,
+            stage_id: str,
+            job_position_id: str,
             process_type: Optional[str] = None,
-            job_position_id: Optional[str] = None,
             application_id: Optional[str] = None,
             interview_template_id: Optional[str] = None,
             title: Optional[str] = None,
@@ -231,7 +262,7 @@ class InterviewController:
             deadline_date: Optional[str] = None,
             interviewers: Optional[List[str]] = None,
             created_by: Optional[str] = None
-    ) -> dict:
+    ) -> InterviewActionResource:
         """Create a new interview"""
         try:
             command = CreateInterviewCommand(
@@ -240,6 +271,7 @@ class InterviewController:
                 interview_mode=interview_mode,
                 interview_type=interview_type,
                 process_type=process_type,
+                workflow_stage_id=stage_id,
                 job_position_id=job_position_id,
                 application_id=application_id,
                 interview_template_id=interview_template_id,
@@ -253,10 +285,11 @@ class InterviewController:
 
             self._command_bus.execute(command)
 
-            return {
-                "message": "Interview created successfully",
-                "status": "success"
-            }
+            return InterviewActionResource(
+                message="Interview created successfully",
+                status="success",
+                interview_id=None
+            )
 
         except Exception as e:
             logger.error(f"Error creating interview: {e}", exc_info=True)
@@ -279,7 +312,7 @@ class InterviewController:
             feedback: Optional[str] = None,
             score: Optional[float] = None,
             updated_by: Optional[str] = None
-    ) -> dict:
+    ) -> InterviewActionResource:
         """Update an existing interview"""
         try:
             command = UpdateInterviewCommand(
@@ -301,10 +334,11 @@ class InterviewController:
 
             self._command_bus.execute(command)
 
-            return {
-                "message": "Interview updated successfully",
-                "status": "success"
-            }
+            return InterviewActionResource(
+                message="Interview updated successfully",
+                status="success",
+                interview_id=interview_id
+            )
 
         except Exception as e:
             logger.error(f"Error updating interview: {e}", exc_info=True)
@@ -315,7 +349,7 @@ class InterviewController:
             self,
             interview_id: str,
             started_by: str
-    ) -> dict:
+    ) -> InterviewActionResource:
         """Start an interview"""
         try:
             command = StartInterviewCommand(
@@ -325,10 +359,11 @@ class InterviewController:
 
             self._command_bus.execute(command)
 
-            return {
-                "message": "Interview started successfully",
-                "status": "success"
-            }
+            return InterviewActionResource(
+                message="Interview started successfully",
+                status="success",
+                interview_id=interview_id
+            )
 
         except Exception as e:
             logger.error(f"Error starting interview {interview_id}: {e}")
@@ -338,7 +373,7 @@ class InterviewController:
             self,
             interview_id: str,
             finished_by: str
-    ) -> dict:
+    ) -> InterviewActionResource:
         """Finish an interview"""
         try:
             command = FinishInterviewCommand(
@@ -348,26 +383,23 @@ class InterviewController:
 
             self._command_bus.execute(command)
 
-            return {
-                "message": "Interview finished successfully",
-                "status": "success"
-            }
+            return InterviewActionResource(
+                message="Interview finished successfully",
+                status="success",
+                interview_id=interview_id
+            )
 
         except Exception as e:
             logger.error(f"Error finishing interview {interview_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to finish interview")
 
-    def get_interview_score_summary(self, interview_id: str) -> dict:
+    def get_interview_score_summary(self, interview_id: str) -> InterviewScoreSummaryResource:
         """Get interview score summary"""
         try:
             query = GetInterviewScoreSummaryQuery(interview_id=interview_id)
             score_summary: InterviewScoreSummaryDto = self._query_bus.query(query)
 
-            return {
-                "interview_id": interview_id,
-                "score_summary": score_summary,
-                "status": "success"
-            }
+            return InterviewScoreSummaryResource.from_dto(score_summary)
 
         except Exception as e:
             logger.error(f"Error getting score summary for interview {interview_id}: {e}")
@@ -378,7 +410,7 @@ class InterviewController:
             interview_id: str,
             expires_in_days: int = 30,
             generated_by: Optional[str] = None
-    ) -> dict:
+    ) -> InterviewLinkResource:
         """Generate a shareable link for an interview"""
         try:
             command = GenerateInterviewLinkCommand(
@@ -390,21 +422,18 @@ class InterviewController:
             self._command_bus.execute(command)
 
             # Get the updated interview to retrieve the link
-            interview = self.get_interview_by_id(interview_id)
-            shareable_link = None
-            if interview.link_token:
-                # Use interview_id directly (it's already a string)
-                shareable_link = f"{settings.FRONTEND_URL}/interviews/{interview_id}/answer?token={interview.link_token}"
+            interview_dto: InterviewDto = self._query_bus.query(GetInterviewByIdQuery(interview_id=interview_id))
+            interview = InterviewResource.from_dto(interview_dto)
 
-            return {
-                "message": "Interview link generated successfully",
-                "status": "success",
-                "interview_id": interview_id,
-                "link": shareable_link,
-                "link_token": interview.link_token,
-                "expires_in_days": expires_in_days,
-                "expires_at": interview.link_expires_at.isoformat() if interview.link_expires_at else None
-            }
+            return InterviewLinkResource(
+                message="Interview link generated successfully",
+                status="success",
+                interview_id=interview_id,
+                link=interview.shareable_link,
+                link_token=interview.link_token,
+                expires_in_days=expires_in_days,
+                expires_at=interview.link_expires_at.isoformat() if interview.link_expires_at else None
+            )
 
         except HTTPException:
             raise
@@ -416,8 +445,8 @@ class InterviewController:
             self,
             interview_id: str,
             token: str
-    ) -> InterviewManagementResponse:
-        """Get interview by ID and token for secure link access"""
+    ) -> InterviewFullResource:
+        """Get interview by ID and token for secure link access (with full denormalized information)"""
         try:
             query = GetInterviewByTokenQuery(
                 interview_id=interview_id,
@@ -425,7 +454,7 @@ class InterviewController:
             )
 
             interview: InterviewDto = self._query_bus.query(query)
-            return InterviewManagementResponse.from_dto(self._query_bus, interview)
+            return InterviewFullResource.from_dto(self._query_bus, interview)
 
         except Exception as e:
             logger.error(f"Error getting interview {interview_id} by token: {e}")
@@ -434,12 +463,12 @@ class InterviewController:
     def get_interview_statistics(
             self,
             company_id: str
-    ) -> InterviewStatisticsDto:
+    ) -> InterviewStatsResource:
         """Get interview statistics for a company"""
         try:
             query = GetInterviewStatisticsQuery(company_id=CompanyId(company_id))
             stats: InterviewStatisticsDto = self._query_bus.query(query)
-            return stats
+            return InterviewStatsResource.from_dto(stats)
         except Exception as e:
             logger.error(f"Error getting interview statistics: {e}", exc_info=True)
             error_message = str(e) if str(e) else "Failed to retrieve interview statistics"

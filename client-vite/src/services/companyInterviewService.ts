@@ -205,10 +205,17 @@ export const companyInterviewService = {
   },
 
   /**
-   * Get a single interview by ID
+   * Get a single interview by ID (for editing - only interview fields)
    */
   async getInterview(interviewId: string): Promise<Interview> {
     return ApiClient.authenticatedRequest<Interview>(`/api/company/interviews/${interviewId}`);
+  },
+
+  /**
+   * Get a single interview by ID with full denormalized information (for viewing)
+   */
+  async getInterviewView(interviewId: string): Promise<Interview> {
+    return ApiClient.authenticatedRequest<Interview>(`/api/company/interviews/${interviewId}/view`);
   },
 
   /**

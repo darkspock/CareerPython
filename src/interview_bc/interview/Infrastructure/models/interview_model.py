@@ -29,12 +29,12 @@ class InterviewModel(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, default=generate_id)
     candidate_id: Mapped[str] = mapped_column(String, index=True)
-    job_position_id: Mapped[Optional[str]] = mapped_column(String, index=True)
+    job_position_id: Mapped[str] = mapped_column(String, index=True)
     application_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("candidate_applications.id"), index=True)
     interview_template_id: Mapped[Optional[str]] = mapped_column(String, index=True)
-    workflow_stage_id: Mapped[Optional[str]] = mapped_column(String,
+    workflow_stage_id: Mapped[str] = mapped_column(String,
                                                              ForeignKey("workflow_stages.id", ondelete="SET NULL"),
-                                                             index=True, nullable=True)
+                                                             index=True, nullable=False)
     process_type: Mapped[Optional[str]] = mapped_column(String, nullable=True,
                                                         index=True)  # Stored as VARCHAR, validated in domain layer
     interview_type: Mapped[str] = mapped_column(String,

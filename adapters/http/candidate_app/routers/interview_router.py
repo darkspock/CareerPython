@@ -6,7 +6,7 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from adapters.http.company_app.interview.controllers.interview_controller import InterviewController
-from adapters.http.company_app.interview.schemas.interview_management import InterviewManagementResponse
+from adapters.http.company_app.interview.schemas.interview_management import InterviewFullResource
 from adapters.http.candidate_app.schemas.interview_public import (
     InterviewQuestionsPublicResponse,
     SubmitAnswerRequest,
@@ -19,13 +19,13 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/candidate/interviews", tags=["Candidate Interviews"])
 
 
-@router.get("/{interview_id}/access", response_model=InterviewManagementResponse)
+@router.get("/{interview_id}/access", response_model=InterviewFullResource)
 @inject
 def access_interview_by_token(
         interview_id: str,
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
         token: str = Query(..., description="Secure token for interview access"),
-) -> InterviewManagementResponse:
+) -> InterviewFullResource:
     """
     Access interview by secure token link.
     This endpoint allows candidates to access their interviews using a secure token.

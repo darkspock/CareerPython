@@ -14,9 +14,15 @@ from src.company_bc.job_position.application.queries.job_position_dto import Job
 from src.framework.application import QueryBus
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.application.queries.dtos.interview_list_dto import InterviewListDto
+from src.interview_bc.interview.application.queries.dtos.interview_statistics_dto import InterviewStatisticsDto
+from src.interview_bc.interview.application.queries.get_interview_score_summary import InterviewScoreSummaryDto
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewTypeEnum
 )
+from src.interview_bc.interview_template.application.queries import GetInterviewTemplateByIdQuery
+from src.interview_bc.interview_template.application.queries.dtos.interview_template_dto import InterviewTemplateDto
+from src.shared_bc.customization.workflow.application import GetStageByIdQuery
+from src.shared_bc.customization.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
 
 
 class InterviewCreateRequest(BaseModel):
@@ -25,13 +31,13 @@ class InterviewCreateRequest(BaseModel):
     required_roles: List[str] = Field(..., min_length=1, description="List of CompanyRole IDs (obligatory)")
     interview_type: str = Field(default=InterviewTypeEnum.CUSTOM.value, description="Type of interview")
     interview_mode: str = Field(..., description="Interview mode (AUTOMATIC, AI, MANUAL)")
+    workflow_stage_id: str = Field(...,
+                                             description="ID of the workflow stage where this interview is conducted")
+    job_position_id: str = Field(..., description="ID of the job position")
     process_type: Optional[str] = Field(None,
                                         description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
-    job_position_id: Optional[str] = Field(None, description="ID of the job position")
     application_id: Optional[str] = Field(None, description="ID of the candidate application")
     interview_template_id: Optional[str] = Field(None, description="ID of the interview template")
-    workflow_stage_id: Optional[str] = Field(None,
-                                             description="ID of the workflow stage where this interview is conducted")
     title: Optional[str] = Field(None, description="Interview title")
     description: Optional[str] = Field(None, description="Interview description")
     scheduled_at: Optional[str] = Field(None, description="Scheduled datetime (ISO format)")
@@ -56,8 +62,8 @@ class InterviewUpdateRequest(BaseModel):
     score: Optional[float] = Field(None, ge=0, le=100, description="Interview score (0-100)")
 
 
-class InterviewManagementResponse(BaseModel):
-    """Response schema for interview management data"""
+class InterviewFullResource(BaseModel):
+    """Full resource schema for interview with all denormalized information"""
     id: str = Field(..., description="Interview ID")
     candidate_id: str = Field(..., description="Candidate ID")
     candidate_name: Optional[str] = Field(None, description="Candidate name")
@@ -99,7 +105,7 @@ class InterviewManagementResponse(BaseModel):
     updated_at: Optional[datetime] = Field(None, description="Updated datetime")
 
     @classmethod
-    def from_dto(cls, queryBus: QueryBus, dto: InterviewDto) -> "InterviewManagementResponse":
+    def from_dto(cls, queryBus: QueryBus, dto: InterviewDto) -> "InterviewFullResource":
         """Convert DTO to response schema"""
         candidate: Optional[CandidateDto] = queryBus.query(GetCandidateByIdQuery(dto.candidate_id))
         if not candidate:
@@ -108,6 +114,16 @@ class InterviewManagementResponse(BaseModel):
         job_position: JobPositionDto = queryBus.query(GetJobPositionByIdQuery(dto.job_position_id))
         if not job_position:
             raise ValueError(f"Job position with id {dto.job_position_id} not found")
+
+        if dto.interview_template_id:
+            interview_template: Optional[InterviewTemplateDto] = queryBus.query(
+                GetInterviewTemplateByIdQuery(dto.interview_template_id))
+        else:
+            interview_template = None
+
+        workflow_stage: Optional[WorkflowStageDto] = queryBus.query(GetStageByIdQuery(dto.workflow_stage_id))
+        if not workflow_stage:
+            raise ValueError(f"Workflow stage with id {dto.workflow_stage_id} not found")
 
         return cls(
             id=dto.id.value,
@@ -119,6 +135,8 @@ class InterviewManagementResponse(BaseModel):
             job_position_title=job_position.title,
             application_id=dto.application_id.value if dto.application_id else None,
             interview_template_id=dto.interview_template_id.value if dto.interview_template_id else None,
+            interview_template_name=interview_template.name if interview_template else None,
+            workflow_stage_name=workflow_stage.name,
             workflow_stage_id=dto.workflow_stage_id.value if dto.workflow_stage_id else None,
             process_type=dto.process_type,
             interview_type=dto.interview_type,
@@ -147,7 +165,7 @@ class InterviewManagementResponse(BaseModel):
         )
 
     @classmethod
-    def from_list_dto(cls, dto: InterviewListDto) -> "InterviewManagementResponse":
+    def from_list_dto(cls, dto: InterviewListDto) -> "InterviewFullResource":
         """Convert InterviewListDto to response schema"""
 
         return cls(
@@ -202,7 +220,7 @@ class InterviewManagementResponse(BaseModel):
 
 class InterviewListResponse(BaseModel):
     """Response schema for interview list"""
-    interviews: List[InterviewManagementResponse] = Field(..., description="List of interviews")
+    interviews: List[InterviewFullResource] = Field(..., description="List of interviews")
     total: int = Field(..., description="Total number of interviews")
     page: int = Field(..., description="Current page")
     page_size: int = Field(..., description="Page size")
@@ -242,6 +260,165 @@ class InterviewScoreSummaryResponse(BaseModel):
     completion_percentage: float = Field(..., description="Interview completion percentage")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# Resource schemas (for controller return types)
+class InterviewResource(BaseModel):
+    """Resource schema for a single interview (only interview fields, no denormalized data)"""
+    id: str = Field(..., description="Interview ID")
+    candidate_id: str = Field(..., description="Candidate ID")
+    required_roles: List[str] = Field(default_factory=list, description="List of CompanyRole IDs")
+    job_position_id: Optional[str] = Field(None, description="Job position ID")
+    application_id: Optional[str] = Field(None, description="Application ID")
+    interview_template_id: Optional[str] = Field(None, description="Interview template ID")
+    workflow_stage_id: Optional[str] = Field(None, description="Workflow stage ID")
+    process_type: Optional[str] = Field(None, description="Process type")
+    interview_type: str = Field(..., description="Interview type")
+    interview_mode: Optional[str] = Field(None, description="Interview mode")
+    status: str = Field(..., description="Interview status")
+    title: Optional[str] = Field(None, description="Interview title")
+    description: Optional[str] = Field(None, description="Interview description")
+    scheduled_at: Optional[datetime] = Field(None, description="Scheduled datetime")
+    deadline_date: Optional[datetime] = Field(None, description="Deadline datetime")
+    started_at: Optional[datetime] = Field(None, description="Started datetime")
+    finished_at: Optional[datetime] = Field(None, description="Finished datetime")
+    duration_minutes: Optional[int] = Field(None, description="Duration in minutes")
+    interviewers: List[str] = Field(default_factory=list, description="List of interviewer IDs")
+    interviewer_notes: Optional[str] = Field(None, description="Interviewer notes")
+    candidate_notes: Optional[str] = Field(None, description="Candidate notes")
+    score: Optional[float] = Field(None, description="Interview score")
+    feedback: Optional[str] = Field(None, description="Interview feedback")
+    free_answers: Optional[str] = Field(None, description="Free text answers")
+    link_token: Optional[str] = Field(None, description="Link token")
+    link_expires_at: Optional[datetime] = Field(None, description="Link expiration date")
+    shareable_link: Optional[str] = Field(None, description="Shareable link")
+    is_incomplete: bool = Field(default=False, description="True if incomplete")
+    created_at: Optional[datetime] = Field(None, description="Created datetime")
+    updated_at: Optional[datetime] = Field(None, description="Updated datetime")
+
+    @classmethod
+    def from_dto(cls, dto: InterviewDto) -> "InterviewResource":
+        """Convert InterviewDto to Resource (only interview fields)"""
+        return cls(
+            id=dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
+            candidate_id=dto.candidate_id.value if hasattr(dto.candidate_id, 'value') else str(dto.candidate_id),
+            required_roles=dto.required_roles or [],
+            job_position_id=dto.job_position_id.value if dto.job_position_id and hasattr(dto.job_position_id,
+                                                                                         'value') else (
+                str(dto.job_position_id) if dto.job_position_id else None),
+            application_id=dto.application_id.value if dto.application_id and hasattr(dto.application_id,
+                                                                                      'value') else (
+                str(dto.application_id) if dto.application_id else None),
+            interview_template_id=dto.interview_template_id.value if dto.interview_template_id and hasattr(
+                dto.interview_template_id, 'value') else (
+                str(dto.interview_template_id) if dto.interview_template_id else None),
+            workflow_stage_id=dto.workflow_stage_id.value if dto.workflow_stage_id and hasattr(dto.workflow_stage_id,
+                                                                                               'value') else (
+                str(dto.workflow_stage_id) if dto.workflow_stage_id else None),
+            process_type=dto.process_type,
+            interview_type=dto.interview_type,
+            interview_mode=dto.interview_mode,
+            status=dto.status,
+            title=dto.title,
+            description=dto.description,
+            scheduled_at=dto.scheduled_at,
+            deadline_date=dto.deadline_date,
+            started_at=dto.started_at,
+            finished_at=dto.finished_at,
+            duration_minutes=dto.duration_minutes,
+            interviewers=dto.interviewers or [],
+            interviewer_notes=dto.interviewer_notes,
+            candidate_notes=dto.candidate_notes,
+            score=dto.score,
+            feedback=dto.feedback,
+            free_answers=dto.free_answers,
+            link_token=dto.link_token,
+            link_expires_at=dto.link_expires_at,
+            shareable_link=cls._generate_shareable_link(
+                dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
+                dto.link_token
+            ) if dto.link_token else None,
+            is_incomplete=dto.is_incomplete,
+            created_at=dto.created_at,
+            updated_at=dto.updated_at
+        )
+
+    @staticmethod
+    def _generate_shareable_link(interview_id: str, link_token: Optional[str]) -> Optional[str]:
+        """Generate shareable link for interview"""
+        if not link_token:
+            return None
+        return f"{settings.FRONTEND_URL}/interviews/{interview_id}/access?token={link_token}"
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InterviewListResource(BaseModel):
+    """Resource schema for interview list with pagination"""
+    interviews: List[InterviewFullResource] = Field(..., description="List of interviews")
+    total: int = Field(..., description="Total number of interviews")
+    page: int = Field(..., description="Current page")
+    page_size: int = Field(..., description="Page size")
+
+
+class InterviewStatsResource(BaseModel):
+    """Resource schema for interview statistics"""
+    pending_to_plan: int = Field(..., description="Interviews pending to plan")
+    planned: int = Field(..., description="Planned interviews")
+    in_progress: int = Field(..., description="In-progress interviews")
+    recently_finished: int = Field(..., description="Recently finished interviews")
+    overdue: int = Field(..., description="Overdue interviews")
+    pending_feedback: int = Field(..., description="Interviews pending feedback")
+
+    @classmethod
+    def from_dto(cls, dto: InterviewStatisticsDto) -> "InterviewStatsResource":
+        """Convert InterviewStatisticsDto to Resource"""
+        return cls(
+            pending_to_plan=dto.pending_to_plan,
+            planned=dto.planned,
+            in_progress=dto.in_progress,
+            recently_finished=dto.recently_finished,
+            overdue=dto.overdue,
+            pending_feedback=dto.pending_feedback
+        )
+
+
+class InterviewActionResource(BaseModel):
+    """Resource schema for interview actions"""
+    message: str = Field(..., description="Action result message")
+    status: str = Field(..., description="Action status")
+    interview_id: Optional[str] = Field(None, description="Interview ID")
+
+
+class InterviewScoreSummaryResource(BaseModel):
+    """Resource schema for interview score summary"""
+    interview_id: str = Field(..., description="Interview ID")
+    total_answers: int = Field(..., description="Total number of answers")
+    scored_answers: int = Field(..., description="Number of scored answers")
+    average_score: Optional[float] = Field(None, description="Average score")
+    completion_percentage: float = Field(..., description="Completion percentage")
+
+    @classmethod
+    def from_dto(cls, dto: InterviewScoreSummaryDto) -> "InterviewScoreSummaryResource":
+        """Convert InterviewScoreSummaryDto to Resource"""
+        return cls(
+            interview_id=dto.interview_id,
+            total_answers=dto.total_answers,
+            scored_answers=dto.scored_answers,
+            average_score=dto.average_score,
+            completion_percentage=dto.completion_percentage
+        )
+
+
+class InterviewLinkResource(BaseModel):
+    """Resource schema for interview link generation"""
+    message: str = Field(..., description="Result message")
+    status: str = Field(..., description="Status")
+    interview_id: str = Field(..., description="Interview ID")
+    link: Optional[str] = Field(None, description="Shareable link")
+    link_token: Optional[str] = Field(None, description="Link token")
+    expires_in_days: int = Field(..., description="Expiration in days")
+    expires_at: Optional[str] = Field(None, description="Expiration date")
 
 
 class ScheduledInterviewsRequest(BaseModel):

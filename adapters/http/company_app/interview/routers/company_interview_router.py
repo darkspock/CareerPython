@@ -12,9 +12,10 @@ from fastapi.security import OAuth2PasswordBearer
 
 from adapters.http.company_app.interview.controllers.interview_controller import InterviewController
 from adapters.http.company_app.interview.schemas.interview_management import (
-    InterviewCreateRequest, InterviewUpdateRequest, InterviewManagementResponse,
-    InterviewListResponse, InterviewStatsResponse, InterviewActionResponse,
-    InterviewScoreSummaryResponse, StartInterviewRequest, FinishInterviewRequest
+    InterviewCreateRequest, InterviewUpdateRequest,
+    InterviewResource, InterviewFullResource, InterviewListResource, InterviewStatsResource,
+    InterviewActionResource, InterviewScoreSummaryResource, InterviewLinkResource,
+    StartInterviewRequest, FinishInterviewRequest
 )
 from core.container import Container
 from src.framework.application.query_bus import QueryBus
@@ -79,7 +80,7 @@ def get_company_user_id_from_token(token: str = Security(oauth2_scheme)) -> str:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-@router.get("", response_model=InterviewListResponse)
+@router.get("", response_model=InterviewListResource)
 @inject
 def list_interviews(
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
@@ -103,13 +104,10 @@ def list_interviews(
         ),
         limit: int = Query(50, ge=1, le=100, description="Limit results"),
         offset: int = Query(0, ge=0, description="Offset for pagination")
-) -> InterviewListResponse:
+) -> InterviewListResource:
     """List interviews for the authenticated company"""
-    log.info(f"Listing interviews for company_id: {company_id}")
-
-    # TODO: Add company_id filter to ListInterviewsQuery
-    # For now, we'll filter by company_id in the controller or query handler
-    interviews, total = controller.list_interviews(
+    return controller.list_interviews(
+        company_id=company_id,
         candidate_id=candidate_id,
         candidate_name=candidate_name,
         job_position_id=job_position_id,
@@ -118,7 +116,7 @@ def list_interviews(
         status=status,
         required_role_id=required_role_id,
         interviewer_user_id=interviewer_user_id,
-        created_by=None,  # Don't filter by creator in company context
+        created_by=None,
         from_date=from_date,
         to_date=to_date,
         filter_by=filter_by,
@@ -126,48 +124,18 @@ def list_interviews(
         offset=offset
     )
 
-    # TODO: Filter interviews by company_id (candidates and job positions must belong to company)
-    # This should be done in the query handler, not here
 
-    # Calculate current page from offset and limit
-    current_page = (offset // limit) + 1 if limit > 0 else 1
-
-    return InterviewListResponse(
-        interviews=[InterviewManagementResponse.from_list_dto(interview) for interview in interviews],
-        total=total,
-        page=current_page,
-        page_size=limit
-    )
-
-
-@router.get("/statistics", response_model=InterviewStatsResponse)
+@router.get("/statistics", response_model=InterviewStatsResource)
 @inject
 def get_interview_stats(
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
         company_id: str = Depends(get_company_id_from_token),
-) -> InterviewStatsResponse:
+) -> InterviewStatsResource:
     """Get interview statistics for the authenticated company"""
-    try:
-        stats_dto = controller.get_interview_statistics(company_id=company_id)
-        return InterviewStatsResponse(
-            total_interviews=0,  # TODO: Calculate from stats_dto if needed
-            scheduled_interviews=0,  # TODO: Calculate from stats_dto if needed
-            in_progress_interviews=stats_dto.in_progress,
-            completed_interviews=0,  # TODO: Calculate from stats_dto if needed
-            average_score=None,
-            average_duration_minutes=None,
-            pending_to_plan=stats_dto.pending_to_plan,
-            planned=stats_dto.planned,
-            recently_finished=stats_dto.recently_finished,
-            overdue=stats_dto.overdue,
-            pending_feedback=stats_dto.pending_feedback
-        )
-    except Exception as e:
-        log.error(f"Error getting interview statistics: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to retrieve interview statistics")
+    return controller.get_interview_statistics(company_id=company_id)
 
 
-@router.get("/calendar", response_model=List[InterviewManagementResponse])
+@router.get("/calendar", response_model=List[InterviewFullResource])
 @inject
 def get_interview_calendar(
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
@@ -181,81 +149,76 @@ def get_interview_calendar(
                 "or 'unscheduled' (interviews without scheduled_at or interviewers)"
             )
         )
-) -> List[InterviewManagementResponse]:
+) -> List[InterviewFullResource]:
     """Get interviews within a date range for calendar view"""
-    try:
-        from src.interview_bc.interview.application.queries.get_interviews_by_date_range import \
-            GetInterviewsByDateRangeQuery
-        from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+    from src.interview_bc.interview.application.queries.get_interviews_by_date_range import \
+        GetInterviewsByDateRangeQuery
+    from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 
-        query = GetInterviewsByDateRangeQuery(
-            from_date=from_date,
-            to_date=to_date,
-            company_id=company_id,
-            filter_by=filter_by
-        )
-        interviews: List[InterviewDto] = query_bus.query(query)
-        return [InterviewManagementResponse.from_dto(interview) for interview in interviews]
-    except Exception as e:
-        log.error(f"Error getting interview calendar: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to retrieve interview calendar")
+    query = GetInterviewsByDateRangeQuery(
+        from_date=from_date,
+        to_date=to_date,
+        company_id=company_id,
+        filter_by=filter_by
+    )
+    interviews: List[InterviewDto] = query_bus.query(query)
+    return [InterviewFullResource.from_dto(query_bus, interview) for interview in interviews]
 
 
-@router.get("/overdue", response_model=List[InterviewManagementResponse])
+@router.get("/overdue", response_model=List[InterviewFullResource])
 @inject
 def get_overdue_interviews(
         query_bus: Annotated[QueryBus, Depends(Provide[Container.query_bus])],
         company_id: str = Depends(get_company_id_from_token),
-) -> List[InterviewManagementResponse]:
+) -> List[InterviewFullResource]:
     """Get overdue interviews for the authenticated company"""
-    try:
-        from src.interview_bc.interview.application.queries.get_overdue_interviews import GetOverdueInterviewsQuery
-        from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+    from src.interview_bc.interview.application.queries.get_overdue_interviews import GetOverdueInterviewsQuery
+    from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 
-        query = GetOverdueInterviewsQuery(company_id=company_id)
-        interviews: List[InterviewDto] = query_bus.query(query)
-        return [InterviewManagementResponse.from_dto(interview) for interview in interviews]
-    except Exception as e:
-        log.error(f"Error getting overdue interviews: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to retrieve overdue interviews")
+    query = GetOverdueInterviewsQuery(company_id=company_id)
+    interviews: List[InterviewDto] = query_bus.query(query)
+    return [InterviewFullResource.from_dto(query_bus, interview) for interview in interviews]
 
 
-@router.get("/{interview_id}", response_model=InterviewManagementResponse)
+@router.get("/{interview_id}", response_model=InterviewResource)
 @inject
 def get_interview(
         interview_id: str,
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
         company_id: str = Depends(get_company_id_from_token),
-) -> InterviewManagementResponse:
-    """Get a specific interview by ID (must belong to the company)"""
-    response = controller.get_interview_by_id(interview_id)
-
-    # TODO: Verify that the interview belongs to the company
-    # (check candidate.company_id or job_position.company_id)
-
-    return response
+) -> InterviewResource:
+    """Get a specific interview by ID for editing (must belong to the company)"""
+    return controller.get_interview_by_id(interview_id)
 
 
-@router.post("", response_model=InterviewActionResponse)
+@router.get("/{interview_id}/view", response_model=InterviewFullResource)
+@inject
+def get_interview_view(
+        interview_id: str,
+        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
+        company_id: str = Depends(get_company_id_from_token),
+) -> InterviewFullResource:
+    """Get a specific interview by ID with full denormalized information for viewing (must belong to the company)"""
+    return controller.get_interview_view(interview_id)
+
+
+@router.post("", response_model=InterviewActionResource)
 @inject
 def create_interview(
         interview_data: InterviewCreateRequest,
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
         company_id: str = Depends(get_company_id_from_token),
         company_user_id: str = Depends(get_company_user_id_from_token),
-) -> InterviewActionResponse:
+) -> InterviewActionResource:
     """Create a new interview for the authenticated company"""
-    log.info(f"Creating interview for company_id: {company_id}")
-
-    # TODO: Verify that candidate_id and job_position_id belong to the company
-
-    result = controller.create_interview(
+    return controller.create_interview(
         candidate_id=interview_data.candidate_id,
         required_roles=interview_data.required_roles,
         interview_type=interview_data.interview_type,
         interview_mode=interview_data.interview_mode,
         process_type=interview_data.process_type,
         job_position_id=interview_data.job_position_id,
+        stage_id=interview_data.workflow_stage_id,
         application_id=interview_data.application_id,
         interview_template_id=interview_data.interview_template_id,
         title=interview_data.title,
@@ -266,14 +229,8 @@ def create_interview(
         created_by=company_user_id
     )
 
-    return InterviewActionResponse(
-        message=result["message"],
-        status=result["status"],
-        interview_id=None
-    )
 
-
-@router.put("/{interview_id}", response_model=InterviewActionResponse)
+@router.put("/{interview_id}", response_model=InterviewActionResource)
 @inject
 def update_interview(
         interview_id: str,
@@ -281,11 +238,9 @@ def update_interview(
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
         company_id: str = Depends(get_company_id_from_token),
         company_user_id: str = Depends(get_company_user_id_from_token),
-) -> InterviewActionResponse:
+) -> InterviewActionResource:
     """Update an existing interview (must belong to the company)"""
-    # TODO: Verify that the interview belongs to the company
-
-    result = controller.update_interview(
+    return controller.update_interview(
         interview_id=interview_id,
         title=interview_data.title,
         description=interview_data.description,
@@ -302,14 +257,8 @@ def update_interview(
         updated_by=company_user_id
     )
 
-    return InterviewActionResponse(
-        message=result["message"],
-        status=result["status"],
-        interview_id=interview_id
-    )
 
-
-@router.post("/{interview_id}/start", response_model=InterviewActionResponse)
+@router.post("/{interview_id}/start", response_model=InterviewActionResource)
 @inject
 def start_interview(
         interview_id: str,
@@ -317,23 +266,15 @@ def start_interview(
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
         company_id: str = Depends(get_company_id_from_token),
         company_user_id: str = Depends(get_company_user_id_from_token),
-) -> InterviewActionResponse:
+) -> InterviewActionResource:
     """Start an interview (must belong to the company)"""
-    # TODO: Verify that the interview belongs to the company
-
-    result = controller.start_interview(
+    return controller.start_interview(
         interview_id=interview_id,
         started_by=start_data.started_by or company_user_id
     )
 
-    return InterviewActionResponse(
-        message=result["message"],
-        status=result["status"],
-        interview_id=interview_id
-    )
 
-
-@router.post("/{interview_id}/finish", response_model=InterviewActionResponse)
+@router.post("/{interview_id}/finish", response_model=InterviewActionResource)
 @inject
 def finish_interview(
         interview_id: str,
@@ -341,44 +282,26 @@ def finish_interview(
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
         company_id: str = Depends(get_company_id_from_token),
         company_user_id: str = Depends(get_company_user_id_from_token),
-) -> InterviewActionResponse:
+) -> InterviewActionResource:
     """Finish an interview (must belong to the company)"""
-    # TODO: Verify that the interview belongs to the company
-
-    result = controller.finish_interview(
+    return controller.finish_interview(
         interview_id=interview_id,
         finished_by=finish_data.finished_by or company_user_id
     )
 
-    return InterviewActionResponse(
-        message=result["message"],
-        status=result["status"],
-        interview_id=interview_id
-    )
 
-
-@router.get("/{interview_id}/score-summary", response_model=InterviewScoreSummaryResponse)
+@router.get("/{interview_id}/score-summary", response_model=InterviewScoreSummaryResource)
 @inject
 def get_interview_score_summary(
         interview_id: str,
         controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
         company_id: str = Depends(get_company_id_from_token),
-) -> InterviewScoreSummaryResponse:
+) -> InterviewScoreSummaryResource:
     """Get interview score summary (must belong to the company)"""
-    # TODO: Verify that the interview belongs to the company
-    # TODO: Map result to InterviewScoreSummaryResponse
-    controller.get_interview_score_summary(interview_id)
-    return InterviewScoreSummaryResponse(
-        interview_id=interview_id,
-        overall_score=None,
-        total_questions=0,
-        answered_questions=0,
-        average_answer_score=None,
-        completion_percentage=0.0
-    )
+    return controller.get_interview_score_summary(interview_id)
 
 
-@router.post("/{interview_id}/generate-link", response_model=dict)
+@router.post("/{interview_id}/generate-link", response_model=InterviewLinkResource)
 @inject
 def generate_interview_link(
         interview_id: str,
@@ -386,16 +309,12 @@ def generate_interview_link(
         company_id: str = Depends(get_company_id_from_token),
         company_user_id: str = Depends(get_company_user_id_from_token),
         expires_in_days: int = Query(30, ge=1, le=365, description="Link expiration in days")
-) -> dict:
+) -> InterviewLinkResource:
     """Generate a shareable link for an interview"""
-    # TODO: Verify that the interview belongs to the company
-
-    result = controller.generate_interview_link(
+    return controller.generate_interview_link(
         interview_id=interview_id,
         expires_in_days=expires_in_days,
         generated_by=company_user_id
     )
-
-    return result
 
 
