@@ -3,14 +3,15 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, List
 
+from src.company_bc.company.domain import CompanyId
 from src.interview_bc.interview.domain.entities.interview import Interview
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewStatusEnum,
     InterviewTypeEnum,
     InterviewProcessTypeEnum
 )
-from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 from src.interview_bc.interview.domain.read_models.interview_list_read_model import InterviewListReadModel
+from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 
 
 class InterviewRepositoryInterface(ABC):
@@ -71,7 +72,11 @@ class InterviewRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def find_finished_recent(self, days: int)-> List[Interview]:
+    def find_finished_recent(self, days: int, company_id: CompanyId) -> List[Interview]:
+        pass
+
+    @abstractmethod
+    def find_not_finished(self,company_id: CompanyId) -> List[Interview]:
         pass
 
     @abstractmethod

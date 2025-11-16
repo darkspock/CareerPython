@@ -9,8 +9,11 @@ from sqlalchemy.dialects import postgresql
 from core.database import DatabaseInterface
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
+from src.company_bc.company.domain import CompanyId
 from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+from src.company_bc.job_position.infrastructure.models import JobPositionModel
+from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
 from src.framework.infrastructure.repositories.base import BaseRepository
 from src.interview_bc.interview.Infrastructure.models.interview_model import InterviewModel
 from src.interview_bc.interview.domain.entities.interview import Interview
@@ -329,14 +332,29 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             ).order_by(InterviewModel.created_at.desc()).all()
             return [self._to_domain(model) for model in models]
 
-    def find_finished_recent(self, days: int) -> List[Interview]:
+    def find_finished_recent(self, days: int, company_id: CompanyId) -> List[Interview]:
         now = datetime.utcnow()
         from_date = now - timedelta(days=days)
+        statuses = MixedHelper.enum_list_to_string_list(InterviewStatusEnum.finished())
         with self.database.get_session() as session:
             query = session.query(InterviewModel)
-            query = query.filter(InterviewModel.status == InterviewStatusEnum.FINISHED.value)
+            query = query.join(JobPositionModel, InterviewModel.job_position_id == JobPositionModel.id)
+            query = query.filter(InterviewModel.status.in_(statuses))
             query = query.order_by(InterviewModel.created_at.desc())
             query = query.filter(InterviewModel.created_at >= from_date)
+            query= query.filter(JobPositionModel.company_id == company_id)
+            models = query.all()
+        return [self._to_domain(model) for model in models]
+
+    def find_not_finished(self, company_id: CompanyId) -> List[Interview]:
+        statuses = MixedHelper.enum_list_to_string_list(InterviewStatusEnum.not_finished())
+
+        with self.database.get_session() as session:
+            query = session.query(InterviewModel)
+            query = query.join(JobPositionModel, InterviewModel.job_position_id == JobPositionModel.id)
+            query = query.filter(InterviewModel.status.in_(statuses))
+            query = query.order_by(InterviewModel.created_at.desc())
+            query = query.filter(JobPositionModel.company_id == company_id)
             models = query.all()
         return [self._to_domain(model) for model in models]
 

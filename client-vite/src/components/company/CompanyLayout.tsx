@@ -11,7 +11,6 @@ import {
   ChevronDown,
   ChevronRight,
   Search,
-  FileText,
   MessageSquare
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -91,7 +90,6 @@ export default function CompanyLayout() {
   const menuItems = [
     { path: '/company/dashboard', icon: LayoutDashboard, label: t('company.navigation.dashboard') },
     { path: '/company/positions', icon: Briefcase, label: t('company.navigation.jobPositions') },
-    { path: '/company/interview-templates', icon: FileText, label: t('company.navigation.interviewTemplates') },
     { path: '/company/interviews', icon: MessageSquare, label: t('company.navigation.interviews') },
     { path: '/company/settings', icon: Settings, label: t('company.navigation.settings') },
   ];

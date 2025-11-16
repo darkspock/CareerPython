@@ -8,6 +8,15 @@ class InterviewStatusEnum(Enum):
     DISCARDED = "DISCARDED"
     PAUSED = "PAUSED"
 
+    @classmethod
+    def not_finished(cls) -> list['InterviewStatusEnum']:
+        """Return list of statuses that are considered not finished"""
+        return [cls.PENDING, cls.IN_PROGRESS, cls.PAUSED]
+
+    @classmethod
+    def finished(cls):
+        return [cls.FINISHED, cls.DISCARDED]
+
 
 class InterviewProcessTypeEnum(str, Enum):
     """Enum for the moment in the candidate selection process when the interview is conducted"""
