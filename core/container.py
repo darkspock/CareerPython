@@ -12,7 +12,7 @@ from adapters.http.admin_app.controllers.inverview_template_controller import In
 from adapters.http.admin_app.controllers.company_controller import CompanyController
 from adapters.http.admin_app.controllers import JobPositionController
 from adapters.http.admin_app.controllers.job_position_comment_controller import JobPositionCommentController
-from adapters.http.admin_app.controllers.interview_controller import InterviewController
+from adapters.http.company_app.interview.controllers.interview_controller import InterviewController
 
 # Onboarding Controller
 from adapters.http.candidate_app import OnboardingController
@@ -53,6 +53,8 @@ from src.company_bc.company_role.application import DeleteRoleCommandHandler, Up
 from src.company_bc.company_role.infrastructure.repositories.company_role_repository import CompanyRoleRepository
 from src.company_bc.job_position.application import ListJobPositionCommentsQueryHandler, \
     DeleteJobPositionCommentCommandHandler, UpdateJobPositionCommandHandler
+from src.company_bc.job_position.application.queries.list_published_job_positions import \
+    ListPublishedJobPositionsQueryHandler
 
 # Interview Template Application Layer
 from src.interview_bc.interview_template.application.queries.list_interview_templates import ListInterviewTemplatesQueryHandler
@@ -1082,7 +1084,7 @@ class Container(containers.DeclarativeContainer):
         job_position_repository=job_position_repository
     )
 
-    # Phase 10: Public Position Query Handlers
+    # Query Handlers
     list_public_job_positions_query_handler = providers.Factory(
         ListPublicJobPositionsQueryHandler,
         job_position_repository=job_position_repository
@@ -1090,6 +1092,11 @@ class Container(containers.DeclarativeContainer):
 
     get_public_job_position_query_handler = providers.Factory(
         GetPublicJobPositionQueryHandler,
+        job_position_repository=job_position_repository
+    )
+
+    list_published_job_positions_query_handler = providers.Factory(
+        ListPublishedJobPositionsQueryHandler,
         job_position_repository=job_position_repository
     )
 

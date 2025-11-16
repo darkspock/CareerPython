@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Optional, List, Union
 
+from src.company_bc.company.domain import CompanyId
 from src.company_bc.job_position.domain import JobPosition, JobPositionStatusEnum
 from src.company_bc.job_position.domain.enums.job_position_visibility import JobPositionVisibilityEnum
 from src.company_bc.job_position.domain.value_objects import JobPositionId
@@ -14,6 +15,9 @@ class JobPositionRepositoryInterface(ABC):
 
     @abstractmethod
     def get_by_id(self, id: JobPositionId) -> Optional[JobPosition]:
+        pass
+
+    def find_published(self, company_id: CompanyId) -> List[JobPosition]:
         pass
 
     @abstractmethod

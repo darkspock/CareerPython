@@ -7,7 +7,13 @@ from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict
 
 from core.config import settings
+from src.candidate_bc.candidate.application import GetCandidateByIdQuery
+from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
+from src.company_bc.job_position.application import GetJobPositionByIdQuery
+from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
+from src.framework.application import QueryBus
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+from src.interview_bc.interview.application.queries.dtos.interview_list_dto import InterviewListDto
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewTypeEnum
 )
@@ -87,29 +93,33 @@ class InterviewManagementResponse(BaseModel):
     link_token: Optional[str] = Field(None, description="Unique token for secure interview link access")
     link_expires_at: Optional[datetime] = Field(None, description="Expiration date for the interview link")
     shareable_link: Optional[str] = Field(None, description="Shareable link for the interview (computed)")
-    is_incomplete: bool = Field(default=False, description="True if has scheduled_at but missing required_roles or interviewers")
+    is_incomplete: bool = Field(default=False,
+                                description="True if has scheduled_at but missing required_roles or interviewers")
     created_at: Optional[datetime] = Field(None, description="Created datetime")
     updated_at: Optional[datetime] = Field(None, description="Updated datetime")
 
     @classmethod
-    def from_dto(cls, dto: InterviewDto) -> "InterviewManagementResponse":
+    def from_dto(cls, queryBus: QueryBus, dto: InterviewDto) -> "InterviewManagementResponse":
         """Convert DTO to response schema"""
+        candidate: Optional[CandidateDto] = queryBus.query(GetCandidateByIdQuery(dto.candidate_id))
+        if not candidate:
+            raise ValueError(f"Candidate with id {dto.candidate_id} not found")
+
+        job_position: JobPositionDto = queryBus.query(GetJobPositionByIdQuery(dto.job_position_id))
+        if not job_position:
+            raise ValueError(f"Job position with id {dto.job_position_id} not found")
+
         return cls(
-            id=dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
-            candidate_id=dto.candidate_id.value if hasattr(dto.candidate_id, 'value') else str(dto.candidate_id),
-            required_roles=dto.required_roles if dto.required_roles else [],
-            job_position_id=dto.job_position_id.value if dto.job_position_id and hasattr(dto.job_position_id,
-                                                                                         'value') else str(
-                dto.job_position_id) if dto.job_position_id else None,
-            application_id=dto.application_id.value if dto.application_id and hasattr(dto.application_id,
-                                                                                      'value') else str(
-                dto.application_id) if dto.application_id else None,
-            interview_template_id=dto.interview_template_id.value
-            if dto.interview_template_id and hasattr(dto.interview_template_id, 'value') else str(
-                dto.interview_template_id) if dto.interview_template_id else None,
-            workflow_stage_id=dto.workflow_stage_id.value
-            if dto.workflow_stage_id and hasattr(dto.workflow_stage_id, 'value') else str(
-                dto.workflow_stage_id) if dto.workflow_stage_id else None,
+            id=dto.id.value,
+            candidate_id=dto.candidate_id.value,
+            candidate_name=candidate.name,
+            candidate_email=candidate.email,
+            required_roles=dto.required_roles,
+            job_position_id=dto.job_position_id.value if dto.job_position_id else None,
+            job_position_title=job_position.title,
+            application_id=dto.application_id.value if dto.application_id else None,
+            interview_template_id=dto.interview_template_id.value if dto.interview_template_id else None,
+            workflow_stage_id=dto.workflow_stage_id.value if dto.workflow_stage_id else None,
             process_type=dto.process_type,
             interview_type=dto.interview_type,
             interview_mode=dto.interview_mode,
@@ -137,13 +147,9 @@ class InterviewManagementResponse(BaseModel):
         )
 
     @classmethod
-    def from_list_dto(cls, dto) -> "InterviewManagementResponse":
+    def from_list_dto(cls, dto: InterviewListDto) -> "InterviewManagementResponse":
         """Convert InterviewListDto to response schema"""
-        from src.interview_bc.interview.application.queries.dtos.interview_list_dto import InterviewListDto
-        if not isinstance(dto, InterviewListDto):
-            # Fallback to from_dto for backward compatibility
-            return cls.from_dto(dto)
-        
+
         return cls(
             id=dto.id,
             candidate_id=dto.candidate_id,

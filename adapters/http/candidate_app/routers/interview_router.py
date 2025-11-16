@@ -5,8 +5,8 @@ from typing import Annotated
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from adapters.http.admin_app.controllers.interview_controller import InterviewController
-from adapters.http.admin_app.schemas.interview_management import InterviewManagementResponse
+from adapters.http.company_app.interview.controllers.interview_controller import InterviewController
+from adapters.http.company_app.interview.schemas.interview_management import InterviewManagementResponse
 from adapters.http.candidate_app.schemas.interview_public import (
     InterviewQuestionsPublicResponse,
     SubmitAnswerRequest,
@@ -32,12 +32,12 @@ def access_interview_by_token(
     The token is validated and must not be expired.
     """
     try:
-        interview_dto = controller.get_interview_by_token(
+        response = controller.get_interview_by_token(
             interview_id=interview_id,
             token=token
         )
 
-        return InterviewManagementResponse.from_dto(interview_dto)
+        return response
 
     except HTTPException:
         raise

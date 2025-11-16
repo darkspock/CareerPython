@@ -32,22 +32,6 @@ class JobPosition:
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 
-    def get_status(self) -> JobPositionStatusEnum:
-        """
-        Get the status from the current stage.
-
-        The status is derived from the stage's status_mapping.
-        If no workflow or stage is assigned, returns DRAFT as default.
-
-        Returns:
-            JobPositionStatusEnum: The status derived from the current stage
-        """
-        # TODO: This will be implemented when we have access to the workflow repository
-        # to get the stage and its status_mapping. For now, return DRAFT as default.
-        # This method should be called from the application layer where we have access
-        # to the workflow repository.
-        return JobPositionStatusEnum.DRAFT
-
     def move_to_stage(self, stage_id: StageId) -> None:
         """
         Move the job position to a new stage.

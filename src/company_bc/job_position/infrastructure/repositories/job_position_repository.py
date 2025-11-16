@@ -16,6 +16,8 @@ from src.company_bc.job_position.domain.value_objects.stage_id import StageId
 from src.company_bc.job_position.infrastructure.models.job_position_model import JobPositionModel
 from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
+from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+from src.shared_bc.customization.workflow.infrastructure.models import WorkflowStageModel
 
 
 class JobPositionRepository(JobPositionRepositoryInterface):
@@ -53,6 +55,15 @@ class JobPositionRepository(JobPositionRepositoryInterface):
                 return None
 
             return self._create_entity_from_model(job_position_model)
+
+
+    def find_published(self,company_id:CompanyId)->List[JobPosition]:
+        with self.database.get_session() as session:
+            query=session.query(JobPositionModel).join(WorkflowStageModel,WorkflowStageModel.id==JobPositionModel.stage_id)
+            query=query.filter(WorkflowStageModel.stage_type==WorkflowStageTypeEnum.SUCCESS.value)
+            query=query.filter(JobPositionModel.company_id==company_id.value)
+            job_position_models = query.all()
+            return [self._create_entity_from_model(model) for model in job_position_models]
 
     def _build_base_query(self, session: Session, company_id: Optional[str] = None,
                           status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,

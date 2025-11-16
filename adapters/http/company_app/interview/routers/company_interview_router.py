@@ -10,11 +10,8 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi.security import OAuth2PasswordBearer
 
-from adapters.http.admin_app.controllers.interview_controller import InterviewController
-from adapters.http.admin_app.schemas.interview_interviewer import (
-    InviteInterviewerRequest, InterviewInterviewerResponse, InterviewInterviewerListResponse
-)
-from adapters.http.admin_app.schemas.interview_management import (
+from adapters.http.company_app.interview.controllers.interview_controller import InterviewController
+from adapters.http.company_app.interview.schemas.interview_management import (
     InterviewCreateRequest, InterviewUpdateRequest, InterviewManagementResponse,
     InterviewListResponse, InterviewStatsResponse, InterviewActionResponse,
     InterviewScoreSummaryResponse, StartInterviewRequest, FinishInterviewRequest
@@ -231,12 +228,12 @@ def get_interview(
         company_id: str = Depends(get_company_id_from_token),
 ) -> InterviewManagementResponse:
     """Get a specific interview by ID (must belong to the company)"""
-    interview = controller.get_interview_by_id(interview_id)
+    response = controller.get_interview_by_id(interview_id)
 
     # TODO: Verify that the interview belongs to the company
     # (check candidate.company_id or job_position.company_id)
 
-    return InterviewManagementResponse.from_dto(interview)
+    return response
 
 
 @router.post("", response_model=InterviewActionResponse)
@@ -360,45 +357,6 @@ def finish_interview(
     )
 
 
-@router.get("/candidate/{candidate_id}", response_model=List[InterviewManagementResponse])
-@inject
-def get_interviews_by_candidate(
-        candidate_id: str,
-        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
-        company_id: str = Depends(get_company_id_from_token),
-        status: Optional[str] = Query(None, description="Filter by status"),
-        interview_type: Optional[str] = Query(None, description="Filter by interview type")
-) -> List[InterviewManagementResponse]:
-    """Get interviews for a specific candidate (must belong to the company)"""
-    # TODO: Verify that the candidate belongs to the company
-
-    interviews = controller.get_interviews_by_candidate(
-        candidate_id=candidate_id,
-    )
-
-    return [InterviewManagementResponse.from_dto(interview) for interview in interviews]
-
-
-@router.get("/scheduled", response_model=List[InterviewManagementResponse])
-@inject
-def get_scheduled_interviews(
-        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
-        company_id: str = Depends(get_company_id_from_token),
-        from_date: Optional[datetime] = Query(None, description="Filter from date"),
-        to_date: Optional[datetime] = Query(None, description="Filter to date"),
-        interviewer: Optional[str] = Query(None, description="Filter by interviewer name")
-) -> List[InterviewManagementResponse]:
-    """Get scheduled interviews for the authenticated company"""
-    interviews = controller.get_scheduled_interviews(
-        from_date=from_date,
-        to_date=to_date,
-    )
-
-    # TODO: Filter interviews by company_id
-
-    return [InterviewManagementResponse.from_dto(interview) for interview in interviews]
-
-
 @router.get("/{interview_id}/score-summary", response_model=InterviewScoreSummaryResponse)
 @inject
 def get_interview_score_summary(
@@ -441,80 +399,3 @@ def generate_interview_link(
     return result
 
 
-@router.get("/candidate/{candidate_id}/stage/{workflow_stage_id}/pending",
-            response_model=List[InterviewManagementResponse])
-@inject
-def get_pending_interviews_by_candidate_and_stage(
-        candidate_id: str,
-        workflow_stage_id: str,
-        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
-        company_id: str = Depends(get_company_id_from_token),
-) -> List[InterviewManagementResponse]:
-    """Get pending interviews for a candidate in a specific workflow stage"""
-    # TODO: Verify that the candidate and stage belong to the company
-
-    interviews = controller.get_pending_interviews_by_candidate_and_stage(
-        candidate_id=candidate_id,
-        workflow_stage_id=workflow_stage_id
-    )
-
-    return [InterviewManagementResponse.from_dto(interview) for interview in interviews]
-
-
-@router.post("/{interview_id}/interviewers/invite", response_model=dict)
-@inject
-def invite_interviewer(
-        interview_id: str,
-        request: InviteInterviewerRequest,
-        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
-        company_id: str = Depends(get_company_id_from_token),
-        company_user_id: str = Depends(get_company_user_id_from_token),
-) -> dict:
-    """Invite an interviewer to an interview"""
-    # TODO: Verify that the interview belongs to the company
-
-    result = controller.invite_interviewer(
-        interview_id=interview_id,
-        user_id=request.user_id,
-        company_id=company_id,
-        name=request.name,
-        is_external=request.is_external,
-        invited_by=company_user_id
-    )
-
-    return result
-
-
-@router.post("/interviewers/{interviewer_id}/accept", response_model=dict)
-@inject
-def accept_interviewer_invitation(
-        interviewer_id: str,
-        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
-        company_user_id: str = Depends(get_company_user_id_from_token),
-) -> dict:
-    """Accept an interviewer invitation"""
-
-    result = controller.accept_interviewer_invitation(
-        interviewer_id=interviewer_id,
-        accepted_by=company_user_id
-    )
-
-    return result
-
-
-@router.get("/{interview_id}/interviewers", response_model=InterviewInterviewerListResponse)
-@inject
-def get_interviewers_by_interview(
-        interview_id: str,
-        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
-        company_id: str = Depends(get_company_id_from_token),
-) -> InterviewInterviewerListResponse:
-    """Get all interviewers for an interview"""
-    # TODO: Verify that the interview belongs to the company
-
-    interviewers = controller.get_interviewers_by_interview(interview_id=interview_id)
-
-    return InterviewInterviewerListResponse(
-        interviewers=[InterviewInterviewerResponse.from_dto(interviewer) for interviewer in interviewers],
-        total=len(interviewers)
-    )
