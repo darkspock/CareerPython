@@ -16,7 +16,7 @@ from adapters.http.admin_app.schemas.interview_template import (
     InterviewTemplateQuestionCreate, InterviewTemplateQuestionUpdate,
     InterviewTemplateQuestionResponse
 )
-from core.container import Container
+from core.containers import Container
 
 log = logging.getLogger(__name__)
 

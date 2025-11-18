@@ -7,7 +7,7 @@ from adapters.http.shared.customization.schemas.create_entity_customization_requ
 from adapters.http.shared.customization.schemas.entity_customization_response import EntityCustomizationResponse
 from adapters.http.shared.customization.schemas.update_entity_customization_request import \
     UpdateEntityCustomizationRequest
-from core.container import Container
+from core.containers import Container
 
 router = APIRouter(
     prefix="/api/entity-customizations",

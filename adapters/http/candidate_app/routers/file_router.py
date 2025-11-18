@@ -4,7 +4,7 @@ from typing import Annotated, Any, Dict
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, Header, UploadFile, File, HTTPException
 
-from core.container import Container
+from core.containers import Container
 from src.framework.application.command_bus import CommandBus
 from src.framework.infrastructure.jobs.async_job_service import AsyncJobService
 

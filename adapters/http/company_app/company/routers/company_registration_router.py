@@ -18,7 +18,7 @@ from adapters.http.company_app.company.schemas.company_registration_response imp
     CompanyRegistrationResponse,
     LinkUserResponse,
 )
-from core.container import Container
+from core.containers import Container
 
 log = logging.getLogger(__name__)
 

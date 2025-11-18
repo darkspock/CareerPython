@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from adapters.http.company_app.company_page.controllers.company_page_controller import CompanyPageController
 from adapters.http.company_app.company_page.schemas.company_page_response import CompanyPageResponse
-from core.container import Container
+from core.containers import Container
 
 # Crear router
 router = APIRouter(prefix="/api/public/company", tags=["Public Company Pages"])

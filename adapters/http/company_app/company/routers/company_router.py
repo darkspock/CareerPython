@@ -15,7 +15,7 @@ from adapters.http.company_app.company.schemas.company_request import (
     UpdateCompanyRequest,
 )
 from adapters.http.company_app.company.schemas.company_response import CompanyResponse
-from core.container import Container
+from core.containers import Container
 from src.company_bc.company.application.dtos.auth_dto import AuthenticatedCompanyUserDto
 from src.company_bc.company.application.queries.authenticate_company_user_query import AuthenticateCompanyUserQuery
 from src.company_bc.company.domain import CompanyId

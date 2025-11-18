@@ -15,7 +15,7 @@ from adapters.http.company_app.company.schemas.company_user_invitation_request i
 from adapters.http.company_app.company.schemas.company_user_invitation_response import (
     CompanyUserInvitationResponse,
 )
-from core.container import Container
+from core.containers import Container
 
 # Router for invitation endpoints (public, no authentication required)
 router = APIRouter(prefix="/invitations", tags=["invitations"])

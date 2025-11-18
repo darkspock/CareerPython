@@ -14,7 +14,7 @@ from adapters.http.company_app.company_candidate.schemas.create_candidate_commen
     CreateCandidateCommentRequest
 from adapters.http.company_app.company_candidate.schemas.update_candidate_comment_request import \
     UpdateCandidateCommentRequest
-from core.container import Container
+from core.containers import Container
 
 log = logging.getLogger(__name__)
 

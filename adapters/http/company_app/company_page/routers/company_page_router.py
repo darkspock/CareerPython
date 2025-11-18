@@ -11,7 +11,7 @@ from adapters.http.company_app.company_page.schemas.company_page_request import 
     UpdateCompanyPageRequest
 from adapters.http.company_app.company_page.schemas.company_page_response import CompanyPageResponse, \
     CompanyPageListResponse
-from core.container import Container
+from core.containers import Container
 from src.company_bc.company_page.application.dtos.company_page_dto import CompanyPageDto
 from src.company_bc.company_page.application.queries.list_company_pages_query import ListCompanyPagesQuery
 

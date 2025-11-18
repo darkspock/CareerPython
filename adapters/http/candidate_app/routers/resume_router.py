@@ -14,7 +14,7 @@ from adapters.http.candidate_app.schemas.resume_request import CreateGeneralResu
     UpdateResumeNameRequest, BulkDeleteResumesRequest
 from adapters.http.candidate_app.schemas.resume_response import ResumeListResponse, ResumeResponse, \
     ResumeStatisticsResponse
-from core.container import Container
+from core.containers import Container
 from src.framework.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)
@@ -125,7 +125,7 @@ async def get_resumes(
     try:
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -157,7 +157,7 @@ async def get_resume_stats(
     try:
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -188,7 +188,7 @@ async def get_resume_by_id(
 
         # Verify ownership - get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -228,7 +228,7 @@ async def create_resume(
     try:
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -258,7 +258,7 @@ async def create_general_resume(
     try:
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -293,7 +293,7 @@ async def update_resume_content(
 
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -326,7 +326,7 @@ async def update_resume_name(
 
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -358,7 +358,7 @@ async def delete_resume(
 
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -391,7 +391,7 @@ async def duplicate_resume(
 
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
@@ -427,7 +427,7 @@ async def bulk_delete_resumes(
     try:
         # Get candidate profile for current user
         from adapters.http.candidate_app.controllers.candidate import CandidateController
-        from core.container import Container as ContainerRef
+        from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
         candidate = candidate_controller.get_candidate_by_user_id(current_user.id)

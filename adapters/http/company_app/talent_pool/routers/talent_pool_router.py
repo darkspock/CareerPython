@@ -15,7 +15,7 @@ from adapters.http.company_app.talent_pool.schemas.talent_pool_schemas import (
     ChangeTalentPoolStatusRequest,
     TalentPoolEntryResponse,
 )
-from core.container import Container
+from core.containers import Container
 from src.company_bc.talent_pool.domain.enums.talent_pool_status import TalentPoolStatus
 
 router = APIRouter(

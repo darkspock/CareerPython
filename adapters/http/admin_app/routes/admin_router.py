@@ -48,7 +48,7 @@ from adapters.http.auth.schemas.user import UserResponse
 from adapters.http.shared.workflow.controllers import WorkflowController
 from adapters.http.shared.workflow.schemas import WorkflowResponse
 from adapters.http.shared.workflow.schemas.update_workflow_request import UpdateWorkflowRequest
-from core.container import Container
+from core.containers import Container
 from src.auth_bc.user.application import AuthenticateUserQuery
 from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto, AuthenticatedUserDto
 from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery

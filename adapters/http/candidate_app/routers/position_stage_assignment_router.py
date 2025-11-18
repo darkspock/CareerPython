@@ -9,7 +9,7 @@ from adapters.http.candidate_app.schemas.position_stage_assignment_schemas impor
     CopyWorkflowAssignmentsRequest
 from adapters.http.company_app.position_stage_assignment.controllers.position_stage_assignment_controller import \
     PositionStageAssignmentController
-from core.container import Container
+from core.containers import Container
 
 router = APIRouter(
     prefix="/position-stage-assignments",

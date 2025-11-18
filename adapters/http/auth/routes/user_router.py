@@ -9,7 +9,7 @@ from adapters.http.auth.schemas.token import PasswordResetResponse, PasswordRese
 from adapters.http.auth.schemas.user import UserResponse, UserCreate, UserAutoCreateResponse, UserAutoCreateRequest, \
     UserLanguageResponse, UserLanguageUpdateResponse, UserLanguageRequest
 from adapters.http.auth.services.authentication_service import get_current_user
-from core.container import Container
+from core.containers import Container
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 

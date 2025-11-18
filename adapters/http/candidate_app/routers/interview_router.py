@@ -12,7 +12,7 @@ from adapters.http.candidate_app.schemas.interview_public import (
     SubmitAnswerRequest,
     SubmitAnswerResponse
 )
-from core.container import Container
+from core.containers import Container
 
 log = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 
 from adapters.http.candidate_app.controllers.file_attachment_controller import FileAttachmentController
 from adapters.http.candidate_app.schemas.file_attachment_response import FileAttachmentResponse
-from core.container import Container
+from core.containers import Container
 
 try:
     import jwt  # type: ignore

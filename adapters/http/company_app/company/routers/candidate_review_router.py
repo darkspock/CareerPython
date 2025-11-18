@@ -10,7 +10,7 @@ from adapters.http.company_app.candidate_review.schemas.create_review_request im
 from adapters.http.company_app.candidate_review.schemas.review_response import ReviewResponse
 from adapters.http.company_app.candidate_review.schemas.update_review_request import UpdateReviewRequest
 from adapters.http.company_app.company.controllers.review_controller import ReviewController
-from core.container import Container
+from core.containers import Container
 from src.framework.infrastructure.helpers.mixed_helper import MixedHelper
 
 log = logging.getLogger(__name__)

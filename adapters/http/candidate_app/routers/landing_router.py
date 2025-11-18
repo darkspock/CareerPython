@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from adapters.http.candidate_app.controllers.onboarding_controller import OnboardingController
 from adapters.http.candidate_app.schemas.onboarding import LandingResponse
-from core.container import Container
+from core.containers import Container
 from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
 from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQuery
 from src.framework.application.query_bus import QueryBus

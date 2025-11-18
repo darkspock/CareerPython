@@ -10,7 +10,7 @@ from adapters.http.shared.phase.schemas.phase_schemas import (
     UpdatePhaseRequest,
     PhaseResponse
 )
-from core.container import Container
+from core.containers import Container
 
 router = APIRouter(prefix="/api/companies/{company_id}/phases", tags=["phases"])
 

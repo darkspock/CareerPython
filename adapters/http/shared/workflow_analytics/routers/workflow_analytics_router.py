@@ -15,7 +15,7 @@ from adapters.http.shared.workflow_analytics.schemas import (
     WorkflowAnalyticsResponse,
     StageBottleneckResponse
 )
-from core.container import Container
+from core.containers import Container
 
 router = APIRouter(
     prefix="/api/company/workflows",

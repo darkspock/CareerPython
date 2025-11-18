@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from adapters.http.company_app.company.controllers.email_template_controller import EmailTemplateController
-from core.container import Container
+from core.containers import Container
 from src.notification_bc.email_template.application.dtos.email_template_dto import EmailTemplateDto
 from src.notification_bc.email_template.domain.enums.trigger_event import TriggerEvent
 

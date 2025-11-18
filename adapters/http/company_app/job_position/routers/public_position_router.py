@@ -14,7 +14,7 @@ from adapters.http.company_app.job_position.schemas.public_position_schemas impo
     SubmitApplicationRequest,
     SubmitApplicationResponse
 )
-from core.container import Container
+from core.containers import Container
 from src.company_bc.job_position.domain.exceptions import JobPositionNotFoundError
 
 router = APIRouter(prefix="/public/positions", tags=["public-positions"])

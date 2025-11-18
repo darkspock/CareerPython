@@ -77,7 +77,7 @@ class InterviewController:
             )
             from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import \
                 InterviewRepositoryInterface
-            from core.container import Container
+            from core.containers import Container
 
             # Convert string enums to enum values for count query
             interview_type_enum = None

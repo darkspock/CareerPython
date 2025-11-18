@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from adapters.http.company_app.company.controllers.task_controller import TaskController
-from core.container import Container
+from core.containers import Container
 from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import \
     CandidateApplicationDto
 

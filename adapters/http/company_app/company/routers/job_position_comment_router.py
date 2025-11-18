@@ -15,7 +15,7 @@ from adapters.http.admin_app.schemas.job_position_comment import (
     JobPositionCommentResponse,
     JobPositionCommentListResponse,
 )
-from core.container import Container
+from core.containers import Container
 
 log = logging.getLogger(__name__)
 

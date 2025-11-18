@@ -9,7 +9,7 @@ from adapters.http.shared.field_validation.schemas.update_validation_rule_reques
 from adapters.http.shared.field_validation.schemas.validate_stage_request import ValidateStageRequest
 from adapters.http.shared.field_validation.schemas.validation_result_response import ValidationResultResponse
 from adapters.http.shared.field_validation.schemas.validation_rule_response import ValidationRuleResponse
-from core.container import Container
+from core.containers import Container
 
 router = APIRouter(
     prefix="/validation-rules",

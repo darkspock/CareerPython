@@ -200,7 +200,7 @@ class InterviewTemplateController:
             from src.interview_bc.interview_template.domain.value_objects import InterviewTemplateId
             from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import \
                 InterviewTemplateRepositoryInterface
-            from core.container import Container
+            from core.containers import Container
 
             # Get repository to update company_id if needed
             template_repo: InterviewTemplateRepositoryInterface = Container.interview_template_repository()

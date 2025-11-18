@@ -26,7 +26,7 @@ from adapters.http.candidate_app.schemas.candidate_job_applications import (
 )
 from adapters.http.candidate_app.schemas.candidate_project import CandidateProjectResponse, \
     CandidateProjectCreateRequest
-from core.container import Container
+from core.containers import Container
 from src.auth_bc.user.application import AuthenticateUserQuery
 from src.auth_bc.user.application.queries.dtos.auth_dto import AuthenticatedUserDto
 from src.auth_bc.user.domain.value_objects import UserId

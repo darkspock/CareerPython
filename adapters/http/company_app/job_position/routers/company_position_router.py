@@ -14,7 +14,7 @@ from adapters.http.admin_app.schemas.job_position import (
     JobPositionResponse,
 )
 from adapters.http.admin_app.schemas.job_position_workflow import MoveJobPositionToStageRequest
-from core.container import Container
+from core.containers import Container
 
 log = logging.getLogger(__name__)
 

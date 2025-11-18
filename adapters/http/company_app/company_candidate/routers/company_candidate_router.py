@@ -12,7 +12,7 @@ from adapters.http.company_app.company_candidate.schemas.create_company_candidat
     CreateCompanyCandidateRequest
 from adapters.http.company_app.company_candidate.schemas.update_company_candidate_request import \
     UpdateCompanyCandidateRequest
-from core.container import Container
+from core.containers import Container
 
 router = APIRouter(
     prefix="/api/company-candidates",

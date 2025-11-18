@@ -17,7 +17,7 @@ from adapters.http.company_app.interview.schemas.interview_management import (
     InterviewActionResource, InterviewScoreSummaryResource, InterviewLinkResource,
     StartInterviewRequest, FinishInterviewRequest
 )
-from core.container import Container
+from core.containers import Container
 from src.framework.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)

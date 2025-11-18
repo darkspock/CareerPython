@@ -17,9 +17,16 @@ class CommandHandler(ABC, Generic[TCommand]):
 
 
 class CommandBus:
-    def __init__(self) -> None:
-        from core.container import Container
-        container = Container()
+    def __init__(self, container=None) -> None:
+        """Initialize CommandBus with optional container dependency
+        
+        Args:
+            container: Optional container instance. If not provided, creates a new one for backward compatibility.
+        """
+        if container is None:
+            # Backward compatibility: create container if not provided
+            from core.container import Container
+            container = Container()
         self.container = container
         self._handlers_cache: Dict[Type[Command], Any] = {}
 

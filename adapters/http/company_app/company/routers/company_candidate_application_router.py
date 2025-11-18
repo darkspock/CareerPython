@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from adapters.http.candidate_app.controllers.application_controller import ApplicationController
-from core.container import Container
+from core.containers import Container
 
 router = APIRouter(
     prefix="/api/company/candidate-applications",

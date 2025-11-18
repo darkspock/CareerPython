@@ -8,7 +8,7 @@ from adapters.http.company_app.company.controllers.company_role_controller impor
 from adapters.http.company_app.company.schemas.create_role_request import CreateRoleRequest
 from adapters.http.company_app.company.schemas.role_response import RoleResponse
 from adapters.http.company_app.company.schemas.update_role_request import UpdateRoleRequest
-from core.container import Container
+from core.containers import Container
 from src.company_bc.company_role.domain.exceptions.role_not_found import RoleNotFound
 from src.company_bc.company_role.domain.value_objects.company_role_id import CompanyRoleId
 

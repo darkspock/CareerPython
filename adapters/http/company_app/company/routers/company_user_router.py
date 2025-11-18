@@ -24,7 +24,7 @@ from adapters.http.company_app.company.schemas.company_user_request import (
     UpdateCompanyUserRequest,
 )
 from adapters.http.company_app.company.schemas.company_user_response import CompanyUserResponse
-from core.container import Container
+from core.containers import Container
 from src.company_bc.company.domain import CompanyId
 from src.company_bc.company.domain.value_objects import CompanyUserId
 from src.framework.application.query_bus import QueryBus
