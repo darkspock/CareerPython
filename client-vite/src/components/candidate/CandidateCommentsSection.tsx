@@ -31,15 +31,21 @@ export default function CandidateCommentsSection({
 }: CandidateCommentsSectionProps) {
   // Load comments based on tab
   const loadComments = async (tab: CommentTab): Promise<CandidateComment[]> => {
+    // Always fetch all comments from backend
+    const allComments = await candidateCommentService.getCommentsByCompanyCandidate(companyCandidateId);
+
+    // Filter on frontend based on tab
     switch (tab) {
       case 'current':
+        // Show only comments for current stage
         if (!stageId) return [];
-        return await candidateCommentService.getCommentsByStage(companyCandidateId, stageId);
+        return allComments.filter(comment => comment.stage_id === stageId);
       case 'global':
-        // For candidates, "global" means all comments across all stages
-        return await candidateCommentService.getCommentsByCompanyCandidate(companyCandidateId);
+        // Show only global comments (without stage_id)
+        return allComments.filter(comment => comment.stage_id === null || comment.stage_id === undefined);
       case 'all':
-        return await candidateCommentService.getCommentsByCompanyCandidate(companyCandidateId);
+        // Show all comments
+        return allComments;
       default:
         return [];
     }

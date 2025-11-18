@@ -127,11 +127,18 @@ export const CommentForm: React.FC<CommentFormProps> = ({
             </label>
           )}
 
-          {/* Global comment indicator */}
-          {showGlobalOption && isGlobal && (
-            <span className="text-xs text-purple-600 font-medium">
-              📌 Comentario global
-            </span>
+          {/* Global comment toggle */}
+          {showGlobalOption && (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isGlobal}
+                onChange={(e) => setIsGlobal(e.target.checked)}
+                className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                disabled={isSubmitting}
+              />
+              <span className="text-gray-700">Comentario global</span>
+            </label>
           )}
         </div>
 

@@ -208,7 +208,7 @@ export function CommentsSection<T extends BaseComment>({
             placeholder={placeholder}
             showVisibilityOption={true}
             showReviewOption={true}
-            showGlobalOption={showGlobalTab && activeTab === 'global'}
+            showGlobalOption={showGlobalTab}
             defaultVisibility="shared"
             defaultReviewStatus="reviewed"
           />
