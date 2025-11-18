@@ -259,47 +259,11 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 return self._to_domain(model)
             raise ValueError(f"Interview with id {interview.id.value} not found")
 
-    def delete(self, id: InterviewId) -> bool:
-        """Delete an interview"""
-        return self.base_repo.delete(id)
-
     def get_by_candidate_id(self, candidate_id: str) -> List[Interview]:
         """Get all interviews for a candidate"""
         with self.database.get_session() as session:
             models = session.query(InterviewModel).filter(
                 InterviewModel.candidate_id == candidate_id
-            ).order_by(InterviewModel.created_at.desc()).all()
-            return [self._to_domain(model) for model in models]
-
-    def get_by_job_position_id(self, job_position_id: str) -> List[Interview]:
-        """Get all interviews for a job position"""
-        with self.database.get_session() as session:
-            models = session.query(InterviewModel).filter(
-                InterviewModel.job_position_id == job_position_id
-            ).order_by(InterviewModel.created_at.desc()).all()
-            return [self._to_domain(model) for model in models]
-
-    def get_by_application_id(self, application_id: str) -> List[Interview]:
-        """Get all interviews for a candidate application"""
-        with self.database.get_session() as session:
-            models = session.query(InterviewModel).filter(
-                InterviewModel.application_id == application_id
-            ).order_by(InterviewModel.created_at.desc()).all()
-            return [self._to_domain(model) for model in models]
-
-    def get_by_status(self, status: InterviewStatusEnum) -> List[Interview]:
-        """Get interviews by status"""
-        with self.database.get_session() as session:
-            models = session.query(InterviewModel).filter(
-                InterviewModel.status == status
-            ).order_by(InterviewModel.created_at.desc()).all()
-            return [self._to_domain(model) for model in models]
-
-    def get_by_interview_type(self, interview_type: InterviewTypeEnum) -> List[Interview]:
-        """Get interviews by type"""
-        with self.database.get_session() as session:
-            models = session.query(InterviewModel).filter(
-                InterviewModel.interview_type == interview_type
             ).order_by(InterviewModel.created_at.desc()).all()
             return [self._to_domain(model) for model in models]
 
@@ -309,19 +273,6 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             models = session.query(InterviewModel).filter(
                 InterviewModel.scheduled_at.between(from_date, to_date)
             ).order_by(InterviewModel.scheduled_at).all()
-            return [self._to_domain(model) for model in models]
-
-    def get_interviews_by_candidate_and_job_position(
-            self,
-            candidate_id: str,
-            job_position_id: str
-    ) -> List[Interview]:
-        """Get interviews for specific candidate and job position"""
-        with self.database.get_session() as session:
-            models = session.query(InterviewModel).filter(
-                InterviewModel.candidate_id == candidate_id,
-                InterviewModel.job_position_id == job_position_id
-            ).order_by(InterviewModel.created_at.desc()).all()
             return [self._to_domain(model) for model in models]
 
     def find_finished_recent(self, days: int, company_id: CompanyId) -> List[Interview]:
@@ -334,7 +285,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             query = query.filter(InterviewModel.status.in_(statuses))
             query = query.order_by(InterviewModel.created_at.desc())
             query = query.filter(InterviewModel.created_at >= from_date)
-            query= query.filter(JobPositionModel.company_id == company_id)
+            query= query.filter(JobPositionModel.company_id == company_id.value)
             models = query.all()
         return [self._to_domain(model) for model in models]
 
@@ -346,7 +297,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             query = query.join(JobPositionModel, InterviewModel.job_position_id == JobPositionModel.id)
             query = query.filter(InterviewModel.status.in_(statuses))
             query = query.order_by(InterviewModel.created_at.desc())
-            query = query.filter(JobPositionModel.company_id == company_id)
+            query = query.filter(JobPositionModel.company_id == company_id.value)
             models = query.all()
         return [self._to_domain(model) for model in models]
 
@@ -570,16 +521,6 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                     query = query.filter(InterviewModel.created_at <= to_date)
 
             return query.count()
-
-    def count_by_status(self, status: InterviewStatusEnum) -> int:
-        """Count interviews by status"""
-        with self.database.get_session() as session:
-            return session.query(InterviewModel).filter(InterviewModel.status == status).count()
-
-    def count_by_candidate(self, candidate_id: str) -> int:
-        """Count interviews for a candidate"""
-        with self.database.get_session() as session:
-            return session.query(InterviewModel).filter(InterviewModel.candidate_id == candidate_id).count()
 
     def get_pending_interviews_by_candidate_and_stage(
             self,

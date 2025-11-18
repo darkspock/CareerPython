@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -14,133 +13,24 @@ import {
   Square,
   Edit
 } from 'lucide-react';
-import { companyInterviewService } from '../../services/companyInterviewService';
-import type { Interview, InterviewScoreSummaryResponse } from '../../services/companyInterviewService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'react-toastify';
-import { Badge } from '@/components/ui/badge';
+import { useInterviewDetail } from '../../hooks/useInterviewDetail';
+import { formatDateDetailed, getStatusBadge, getTypeLabel } from '../../utils/interviewHelpers';
 
 export default function CompanyInterviewDetailPage() {
   const { interviewId } = useParams<{ interviewId: string }>();
   const navigate = useNavigate();
-  const [interview, setInterview] = useState<Interview | null>(null);
-  const [scoreSummary, setScoreSummary] = useState<InterviewScoreSummaryResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
-
-  useEffect(() => {
-    if (interviewId) {
-      loadInterview();
-      loadScoreSummary();
-    }
-  }, [interviewId]);
-
-  const loadInterview = async () => {
-    if (!interviewId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await companyInterviewService.getInterviewView(interviewId);
-      setInterview(data);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar la entrevista');
-      console.error('Error loading interview:', err);
-      toast.error(err.message || 'Error al cargar la entrevista');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadScoreSummary = async () => {
-    if (!interviewId) return;
-
-    try {
-      const summary = await companyInterviewService.getInterviewScoreSummary(interviewId);
-      setScoreSummary(summary);
-    } catch (err: any) {
-      console.warn('Could not load score summary:', err);
-      // Don't fail if score summary can't be loaded
-    }
-  };
-
-  const handleStartInterview = async () => {
-    if (!interviewId) return;
-
-    try {
-      setActionLoading(true);
-      await companyInterviewService.startInterview(interviewId);
-      toast.success('Entrevista iniciada correctamente');
-      await loadInterview();
-    } catch (err: any) {
-      toast.error(err.message || 'Error al iniciar la entrevista');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleFinishInterview = async () => {
-    if (!interviewId) return;
-
-    try {
-      setActionLoading(true);
-      await companyInterviewService.finishInterview(interviewId);
-      toast.success('Entrevista finalizada correctamente');
-      await loadInterview();
-      await loadScoreSummary();
-    } catch (err: any) {
-      toast.error(err.message || 'Error al finalizar la entrevista');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    try {
-      return new Date(dateString).toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-      SCHEDULED: { label: 'Programada', variant: 'default' },
-      IN_PROGRESS: { label: 'En Progreso', variant: 'secondary' },
-      COMPLETED: { label: 'Completada', variant: 'default' },
-      CANCELLED: { label: 'Cancelada', variant: 'destructive' },
-      PENDING: { label: 'Pendiente', variant: 'outline' },
-    };
-
-    const config = statusConfig[status] || { label: status, variant: 'outline' as const };
-
-    return (
-      <Badge variant={config.variant}>
-        {config.label}
-      </Badge>
-    );
-  };
-
-  const getTypeLabel = (type: string) => {
-    const typeLabels: Record<string, string> = {
-      EXTENDED_PROFILE: 'Perfil Extendido',
-      POSITION_INTERVIEW: 'Entrevista de Posición',
-      TECHNICAL: 'Técnica',
-      BEHAVIORAL: 'Conductual',
-      CULTURAL_FIT: 'Ajuste Cultural',
-    };
-
-    return typeLabels[type] || type.replace('_', ' ');
-  };
+  
+  const {
+    interview,
+    scoreSummary,
+    loading,
+    actionLoading,
+    error,
+    startInterview,
+    finishInterview,
+  } = useInterviewDetail(interviewId);
 
   if (loading) {
     return (
@@ -208,7 +98,7 @@ export default function CompanyInterviewDetailPage() {
           <div className="flex items-center gap-2">
             {interview.status === 'SCHEDULED' && (
               <Button
-                onClick={handleStartInterview}
+                onClick={startInterview}
                 disabled={actionLoading}
                 className="flex items-center gap-2"
               >
@@ -218,7 +108,7 @@ export default function CompanyInterviewDetailPage() {
             )}
             {interview.status === 'IN_PROGRESS' && (
               <Button
-                onClick={handleFinishInterview}
+                onClick={finishInterview}
                 disabled={actionLoading}
                 variant="outline"
                 className="flex items-center gap-2"
@@ -273,7 +163,7 @@ export default function CompanyInterviewDetailPage() {
                   <label className="text-sm font-medium text-gray-500">Programada</label>
                   <div className="mt-1 flex items-center gap-2 text-gray-900">
                     <Calendar className="w-4 h-4" />
-                    {formatDate(interview.scheduled_at)}
+                    {formatDateDetailed(interview.scheduled_at)}
                   </div>
                 </div>
                 {interview.started_at && (
@@ -281,7 +171,7 @@ export default function CompanyInterviewDetailPage() {
                     <label className="text-sm font-medium text-gray-500">Iniciada</label>
                     <div className="mt-1 flex items-center gap-2 text-gray-900">
                       <Clock className="w-4 h-4" />
-                      {formatDate(interview.started_at)}
+                      {formatDateDetailed(interview.started_at)}
                     </div>
                   </div>
                 )}
@@ -290,7 +180,7 @@ export default function CompanyInterviewDetailPage() {
                     <label className="text-sm font-medium text-gray-500">Completada</label>
                     <div className="mt-1 flex items-center gap-2 text-gray-900">
                       <CheckCircle2 className="w-4 h-4" />
-                      {formatDate(interview.completed_at)}
+                      {formatDateDetailed(interview.completed_at)}
                     </div>
                   </div>
                 )}
@@ -442,13 +332,13 @@ export default function CompanyInterviewDetailPage() {
               {interview.created_at && (
                 <div>
                   <div className="text-gray-500">Creada</div>
-                  <div className="text-gray-900">{formatDate(interview.created_at)}</div>
+                  <div className="text-gray-900">{formatDateDetailed(interview.created_at)}</div>
                 </div>
               )}
               {interview.updated_at && (
                 <div>
                   <div className="text-gray-500">Actualizada</div>
-                  <div className="text-gray-900">{formatDate(interview.updated_at)}</div>
+                  <div className="text-gray-900">{formatDateDetailed(interview.updated_at)}</div>
                 </div>
               )}
               {interview.created_by && (

@@ -37,20 +37,6 @@ class JobPositionRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def count_by_filters(self, company_id: Optional[str] = None,
-                         status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
-                         job_category: Optional[JobCategoryEnum] = None,
-                         search_term: Optional[str] = None,
-                         visibility: Optional[JobPositionVisibilityEnum] = None) -> int:
-        """Count job positions matching the filters
-        
-        Args:
-            status: Single status or list of statuses to filter by (deprecated, use stage filtering)
-            visibility: Visibility filter (hidden, internal, public)
-        """
-        pass
-
-    @abstractmethod
     def find_by_public_slug(self, public_slug: str) -> Optional[JobPosition]:
         """Phase 10: Find job position by public slug"""
         pass
@@ -65,10 +51,6 @@ class JobPositionRepositoryInterface(ABC):
 
     @abstractmethod
     def count_recent(self, days: int = 30) -> int:
-        pass
-
-    @abstractmethod
-    def count_active_by_company_id(self, company_id: str) -> int:
         pass
 
     @abstractmethod

@@ -101,16 +101,6 @@ class JobPositionRepository(JobPositionRepositoryInterface):
 
         return query
 
-    def count_by_filters(self, company_id: Optional[str] = None,
-                         status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
-                         job_category: Optional[JobCategoryEnum] = None,
-                         search_term: Optional[str] = None,
-                         visibility: Optional[JobPositionVisibilityEnum] = None) -> int:
-        """Count job positions matching the filters"""
-        with self.database.get_session() as session:
-            query = self._build_base_query(session, company_id, status, job_category, search_term, visibility)
-            return MixedHelper.get_int(query.count())
-
     def find_by_filters(self, company_id: Optional[str] = None,
                         status: Optional[Union[JobPositionStatusEnum, List[JobPositionStatusEnum]]] = None,
                         job_category: Optional[JobCategoryEnum] = None,
@@ -157,23 +147,6 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             return MixedHelper.get_int(session.query(JobPositionModel).filter(
                 JobPositionModel.created_at >= since_date
             ).count())
-
-    def count_active_by_company_id(self, company_id: str) -> int:
-        """
-        Count active job positions by company ID.
-
-        TODO: This now requires access to workflow repository to check if stage.status_mapping is ACTIVE.
-        This will be properly implemented in Phase 3.
-        For now, we count positions that have a workflow and stage assigned.
-        """
-        with self.database.get_session() as session:
-            return session.query(JobPositionModel).filter(
-                and_(
-                    JobPositionModel.company_id == company_id,
-                    JobPositionModel.job_position_workflow_id.isnot(None),
-                    JobPositionModel.stage_id.isnot(None)
-                )
-            ).count()
 
     def find_by_public_slug(self, public_slug: str) -> Optional[JobPosition]:
         """Phase 10: Find job position by public slug"""

@@ -1,12 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, FileText, Users, X } from 'lucide-react';
 import { companyInterviewService, type UpdateInterviewRequest } from '../../services/companyInterviewService';
-import type { Interview } from '../../services/companyInterviewService';
-import { CompanyUserService } from '../../services/companyUserService';
-import { api } from '../../lib/api';
-import type { CompanyRole } from '../../types/company';
-import type { CompanyUser } from '../../types/companyUser';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -22,32 +17,52 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useInterviewForEdit } from '../../hooks/useInterviewForEdit';
+import { useInterviewFormData } from '../../hooks/useInterviewFormData';
+import { useInterviewForm } from '../../hooks/useInterviewForm';
 
 export default function EditInterviewPage() {
   const { interviewId } = useParams<{ interviewId: string }>();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [interview, setInterview] = useState<Interview | null>(null);
-
-  const [formData, setFormData] = useState<UpdateInterviewRequest>({
-    title: undefined,
-    description: undefined,
-    scheduled_at: undefined,
-    deadline_date: undefined,
-    process_type: undefined,
-    required_roles: undefined,
-    interviewers: [],
-    interviewer_notes: undefined,
-    feedback: undefined,
-    score: undefined,
+  
+  // Load interview data (for edit, use getInterview not getInterviewView)
+  const {
+    interview,
+    loading: loadingInterview,
+    error: interviewError,
+  } = useInterviewForEdit(interviewId);
+  
+  // Load form options (roles and users)
+  const {
+    roles,
+    companyUsers,
+    loading: loadingFormData,
+    error: formDataError,
+  } = useInterviewFormData();
+  
+  // Form management
+  const {
+    formData: formDataRaw,
+    selectedInterviewerIds,
+    selectedRoleIds,
+    loading: formLoading,
+    error: formError,
+    setFormData,
+    handleToggleRole,
+    handleToggleInterviewer,
+    getAvailableUsers,
+    clearError,
+  } = useInterviewForm({
+    initialData: interview,
+    roles,
+    companyUsers,
   });
-
-  const [roles, setRoles] = useState<CompanyRole[]>([]);
-  const [companyUsers, setCompanyUsers] = useState<CompanyUser[]>([]);
-  const [selectedInterviewerIds, setSelectedInterviewerIds] = useState<string[]>([]);
-  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+  
+  // Type assertion for edit mode
+  const formData = formDataRaw as UpdateInterviewRequest;
+  const loading = formLoading || loadingInterview;
+  const loadingData = loadingFormData || loadingInterview;
+  const error = formError || interviewError || formDataError;
 
   const processTypes = [
     { value: 'CANDIDATE_SIGN_UP', label: 'Registro de Candidato' },
@@ -57,227 +72,25 @@ export default function EditInterviewPage() {
     { value: 'FEEDBACK', label: 'Feedback' },
   ];
 
-  const getCompanyId = () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.company_id;
-    } catch {
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    if (interviewId) {
-      loadInterview();
-      loadRolesAndUsers();
-    }
-  }, [interviewId]);
-
-  // Effect to match interviewers after both interview and companyUsers are loaded
-  useEffect(() => {
-    if (interview && companyUsers.length > 0 && interview.interviewers) {
-      const matchedIds: string[] = [];
-      interview.interviewers.forEach((interviewer) => {
-        // Try to find by email first, then by ID
-        const user = companyUsers.find(u => u.email === interviewer || u.id === interviewer);
-        if (user) {
-          matchedIds.push(user.id);
-        }
-      });
-      if (matchedIds.length > 0) {
-        setSelectedInterviewerIds(matchedIds);
-      }
-    }
-  }, [interview, companyUsers]);
-
-  const loadRolesAndUsers = async () => {
-    const companyId = getCompanyId();
-    if (!companyId) return;
-
-    try {
-      // Load company roles (only active)
-      const rolesData = await api.listCompanyRoles(companyId, true);
-      setRoles(rolesData as CompanyRole[]);
-
-      // Load company users (only active)
-      const usersData = await CompanyUserService.getCompanyUsers(companyId, { active_only: true });
-      setCompanyUsers(usersData);
-    } catch (err: any) {
-      console.error('Error loading roles/users:', err);
-    }
-  };
-
-  const loadInterview = async () => {
-    if (!interviewId) return;
-
-    try {
-      setLoadingData(true);
-      setError(null);
-      const data = await companyInterviewService.getInterview(interviewId);
-      setInterview(data);
-      
-      // Populate form with existing data
-      setFormData({
-        title: data.title || undefined,
-        description: data.description || undefined,
-        scheduled_at: data.scheduled_at ? formatDateForInput(data.scheduled_at) : undefined,
-        deadline_date: data.deadline_date ? formatDateForInput(data.deadline_date) : undefined,
-        process_type: data.process_type,
-        required_roles: data.required_roles || undefined,
-        interviewers: data.interviewers || [],
-        interviewer_notes: data.interviewer_notes || undefined,
-        feedback: data.feedback || undefined,
-        score: data.score || undefined,
-      });
-
-      // Set selected role IDs
-      if (data.required_roles && data.required_roles.length > 0) {
-        setSelectedRoleIds(data.required_roles);
-      }
-
-      // Set selected interviewer IDs after companyUsers are loaded
-      // This will be handled in a separate effect
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar la entrevista');
-      console.error('Error loading interview:', err);
-      toast.error(err.message || 'Error al cargar la entrevista');
-    } finally {
-      setLoadingData(false);
-    }
-  };
-
-  const formatDateForInput = (dateString: string): string => {
-    // Convert ISO date string to datetime-local format (YYYY-MM-DDTHH:mm)
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
-  const handleToggleRole = (roleId: string) => {
-    const currentIds = selectedRoleIds || [];
-    let newIds: string[];
-    
-    if (currentIds.includes(roleId)) {
-      newIds = currentIds.filter(id => id !== roleId);
-    } else {
-      newIds = [...currentIds, roleId];
-    }
-    
-    setSelectedRoleIds(newIds);
-    
-    // Remove interviewers that no longer have any of the required roles
-    const validInterviewerIds = selectedInterviewerIds.filter(userId => {
-      const user = companyUsers.find(u => u.id === userId);
-      if (!user) return false;
-      
-      // If no roles selected, keep all interviewers
-      if (newIds.length === 0) return true;
-      
-      const userRoleIds = user.company_roles || [];
-      return newIds.some(roleId => userRoleIds.includes(roleId));
-    });
-    
-    setFormData({
-      ...formData,
-      required_roles: newIds.length > 0 ? newIds : undefined,
-      interviewers: validInterviewerIds,
-    });
-    setSelectedInterviewerIds(validInterviewerIds);
-    
-    // Show warning if interviewers were removed
-    if (validInterviewerIds.length < selectedInterviewerIds.length) {
-      const removedCount = selectedInterviewerIds.length - validInterviewerIds.length;
-      toast.warning(
-        `${removedCount} entrevistador(es) fueron removidos porque no tienen los roles requeridos`
-      );
-    }
-  };
-
-  const handleToggleInterviewer = (userId: string) => {
-    const currentIds = selectedInterviewerIds || [];
-    if (currentIds.includes(userId)) {
-      const newIds = currentIds.filter(id => id !== userId);
-      setSelectedInterviewerIds(newIds);
-      setFormData({
-        ...formData,
-        interviewers: newIds.length > 0 ? newIds : [],
-      });
-    } else {
-      // Validate that user has at least one of the required roles
-      const user = companyUsers.find(u => u.id === userId);
-      const requiredRoleIds = formData.required_roles || [];
-      
-      if (requiredRoleIds.length > 0 && user) {
-        const userRoleIds = user.company_roles || [];
-        const hasRequiredRole = requiredRoleIds.some(roleId => userRoleIds.includes(roleId));
-        
-        if (!hasRequiredRole) {
-          const requiredRoleNames = requiredRoleIds
-            .map(roleId => roles.find(r => r.id === roleId)?.name)
-            .filter(Boolean)
-            .join(', ');
-          
-          toast.warning(
-            `El usuario ${user.email || user.id} no tiene ninguno de los roles requeridos: ${requiredRoleNames}`
-          );
-          return;
-        }
-      }
-      
-      const newIds = [...currentIds, userId];
-      setSelectedInterviewerIds(newIds);
-      setFormData({
-        ...formData,
-        interviewers: newIds,
-      });
-    }
-  };
-
-  // Filter users based on selected required roles
-  const getAvailableUsers = (): CompanyUser[] => {
-    const requiredRoleIds = formData.required_roles || [];
-    
-    // If no roles selected, show all users
-    if (requiredRoleIds.length === 0) {
-      return companyUsers;
-    }
-    
-    // Filter users that have at least one of the required roles
-    return companyUsers.filter(user => {
-      const userRoleIds = user.company_roles || [];
-      return requiredRoleIds.some(roleId => userRoleIds.includes(roleId));
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    clearError();
 
     if (!interviewId) {
-      setError('ID de entrevista no encontrado');
+      toast.error('ID de entrevista no encontrado');
       return;
     }
 
     try {
-      setLoading(true);
       await companyInterviewService.updateInterview(interviewId, formData);
       toast.success('Entrevista actualizada correctamente');
       navigate(`/company/interviews/${interviewId}`);
     } catch (err: any) {
       const errorMessage = err.message || 'Error al actualizar la entrevista';
-      setError(errorMessage);
       toast.error(errorMessage);
       console.error('Error updating interview:', err);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [interviewId, formData, clearError, navigate]);
 
   if (loadingData) {
     return (

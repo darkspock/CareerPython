@@ -11,7 +11,6 @@ from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewProcessTypeEnum
 )
 from src.interview_bc.interview.domain.read_models.interview_list_read_model import InterviewListReadModel
-from src.interview_bc.interview.domain.value_objects.interview_id import InterviewId
 
 
 class InterviewRepositoryInterface(ABC):
@@ -33,42 +32,13 @@ class InterviewRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id: InterviewId) -> bool:
-        """Delete an interview"""
-        pass
-
-    @abstractmethod
     def get_by_candidate_id(self, candidate_id: str) -> List[Interview]:
         """Get all interviews for a candidate"""
         pass
 
     @abstractmethod
-    def get_by_job_position_id(self, job_position_id: str) -> List[Interview]:
-        """Get all interviews for a job position"""
-        pass
-
-    @abstractmethod
-    def get_by_status(self, status: InterviewStatusEnum) -> List[Interview]:
-        """Get interviews by status"""
-        pass
-
-    @abstractmethod
-    def get_by_interview_type(self, interview_type: InterviewTypeEnum) -> List[Interview]:
-        """Get interviews by type"""
-        pass
-
-    @abstractmethod
     def get_scheduled_interviews(self, from_date: datetime, to_date: datetime) -> List[Interview]:
         """Get scheduled interviews within date range"""
-        pass
-
-    @abstractmethod
-    def get_interviews_by_candidate_and_job_position(
-            self,
-            candidate_id: str,
-            job_position_id: str
-    ) -> List[Interview]:
-        """Get interviews for specific candidate and job position"""
         pass
 
     @abstractmethod
@@ -119,16 +89,6 @@ class InterviewRepositoryInterface(ABC):
             has_scheduled_at_and_interviewers: bool = False  # Special filter for "SCHEDULED" status
     ) -> int:
         """Count interviews matching the filters (for pagination)"""
-        pass
-
-    @abstractmethod
-    def count_by_status(self, status: InterviewStatusEnum) -> int:
-        """Count interviews by status"""
-        pass
-
-    @abstractmethod
-    def count_by_candidate(self, candidate_id: str) -> int:
-        """Count interviews for a candidate"""
         pass
 
     @abstractmethod

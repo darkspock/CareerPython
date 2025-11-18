@@ -1,17 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, User, Briefcase, FileText, Users, X } from 'lucide-react';
 import { companyInterviewService, type CreateInterviewRequest } from '../../services/companyInterviewService';
-import { companyCandidateService } from '../../services/companyCandidateService';
-import { PositionService } from '../../services/positionService';
-import { companyInterviewTemplateService } from '../../services/companyInterviewTemplateService';
-import { CompanyUserService } from '../../services/companyUserService';
-import { api } from '../../lib/api';
-import type { CompanyCandidate } from '../../types/companyCandidate';
-import type { Position } from '../../types/position';
-import type { InterviewTemplate } from '../../services/companyInterviewTemplateService';
-import type { CompanyRole } from '../../types/company';
-import type { CompanyUser } from '../../types/companyUser';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,34 +17,45 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useInterviewFormData } from '../../hooks/useInterviewFormData';
+import { useInterviewForm } from '../../hooks/useInterviewForm';
 
 export default function CreateInterviewPage() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState<CreateInterviewRequest>({
-    candidate_id: '',
-    required_roles: [], // Obligatory
-    interview_type: 'CUSTOM',
-    interview_mode: 'MANUAL',
-    process_type: undefined,
-    job_position_id: undefined,
-    interview_template_id: undefined,
-    title: '',
-    description: '',
-    scheduled_at: '',
-    deadline_date: undefined,
-    interviewers: [],
+  
+  // Load form data
+  const {
+    candidates,
+    positions,
+    templates,
+    roles,
+    companyUsers,
+    loading: loadingData,
+    error: dataError,
+  } = useInterviewFormData();
+  
+  // Form management
+  const {
+    formData: formDataRaw,
+    selectedInterviewerIds,
+    selectedRoleIds,
+    loading: formLoading,
+    error: formError,
+    setFormData,
+    handleToggleRole,
+    handleToggleInterviewer,
+    getAvailableUsers,
+    validate,
+    clearError,
+  } = useInterviewForm({
+    roles,
+    companyUsers,
   });
-
-  const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [templates, setTemplates] = useState<InterviewTemplate[]>([]);
-  const [roles, setRoles] = useState<CompanyRole[]>([]);
-  const [companyUsers, setCompanyUsers] = useState<CompanyUser[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
-  const [selectedInterviewerIds, setSelectedInterviewerIds] = useState<string[]>([]);
+  
+  // Type assertion for create mode
+  const formData = formDataRaw as CreateInterviewRequest;
+  const loading = formLoading;
+  const error = formError || dataError;
 
   const interviewTypes = [
     { value: 'CUSTOM', label: 'Personalizada' },
@@ -79,179 +80,17 @@ export default function CreateInterviewPage() {
     { value: 'MANUAL', label: 'Manual' },
   ];
 
-  const getCompanyId = () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.company_id;
-    } catch {
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    const companyId = getCompanyId();
-    if (!companyId) {
-      setError('Company ID not found');
-      setLoadingData(false);
-      return;
-    }
-
-    try {
-      setLoadingData(true);
-      
-      // Load candidates
-      const candidatesData = await companyCandidateService.listByCompany(companyId);
-      setCandidates(candidatesData);
-
-      // Load positions
-      const positionsData = await PositionService.getPositions({
-        company_id: companyId,
-        is_active: true,
-        page_size: 100,
-      });
-      setPositions(positionsData.positions);
-
-      // Load templates
-      const templatesData = await companyInterviewTemplateService.listTemplates({
-        status: 'ENABLED',
-        page_size: 100,
-      });
-      setTemplates(templatesData);
-
-      // Load company roles (only active)
-      const rolesData = await api.listCompanyRoles(companyId, true);
-      setRoles(rolesData as CompanyRole[]);
-
-      // Load company users (only active)
-      const usersData = await CompanyUserService.getCompanyUsers(companyId, { active_only: true });
-      setCompanyUsers(usersData);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar los datos');
-      console.error('Error loading data:', err);
-    } finally {
-      setLoadingData(false);
-    }
-  };
-
-  const handleToggleRole = (roleId: string) => {
-    const currentRoles = formData.required_roles || [];
-    let newRoles: string[];
-    
-    if (currentRoles.includes(roleId)) {
-      newRoles = currentRoles.filter(id => id !== roleId);
-    } else {
-      newRoles = [...currentRoles, roleId];
-    }
-    
-    // Remove interviewers that no longer have any of the required roles
-    const validInterviewerIds = selectedInterviewerIds.filter(userId => {
-      const user = companyUsers.find(u => u.id === userId);
-      if (!user) return false;
-      
-      // If no roles selected, keep all interviewers
-      if (newRoles.length === 0) return true;
-      
-      const userRoleIds = user.company_roles || [];
-      return newRoles.some(roleId => userRoleIds.includes(roleId));
-    });
-    
-    setFormData({
-      ...formData,
-      required_roles: newRoles,
-      interviewers: validInterviewerIds,
-    });
-    setSelectedInterviewerIds(validInterviewerIds);
-  };
-
-  const handleToggleInterviewer = (userId: string) => {
-    const currentIds = selectedInterviewerIds || [];
-    if (currentIds.includes(userId)) {
-      const newIds = currentIds.filter(id => id !== userId);
-      setSelectedInterviewerIds(newIds);
-      setFormData({
-        ...formData,
-        interviewers: newIds.length > 0 ? newIds : [],
-      });
-    } else {
-      // Validate that user has at least one of the required roles
-      const user = companyUsers.find(u => u.id === userId);
-      const requiredRoleIds = formData.required_roles || [];
-      
-      if (requiredRoleIds.length > 0 && user) {
-        const userRoleIds = user.company_roles || [];
-        const hasRequiredRole = requiredRoleIds.some(roleId => userRoleIds.includes(roleId));
-        
-        if (!hasRequiredRole) {
-          const requiredRoleNames = requiredRoleIds
-            .map(roleId => roles.find(r => r.id === roleId)?.name)
-            .filter(Boolean)
-            .join(', ');
-          
-          toast.warning(
-            `El usuario ${user.email || user.id} no tiene ninguno de los roles requeridos: ${requiredRoleNames}`
-          );
-          return;
-        }
-      }
-      
-      const newIds = [...currentIds, userId];
-      setSelectedInterviewerIds(newIds);
-      setFormData({
-        ...formData,
-        interviewers: newIds,
-      });
-    }
-  };
-
-  // Filter users based on selected required roles
-  const getAvailableUsers = (): CompanyUser[] => {
-    const requiredRoleIds = formData.required_roles || [];
-    
-    // If no roles selected, show all users
-    if (requiredRoleIds.length === 0) {
-      return companyUsers;
-    }
-    
-    // Filter users that have at least one of the required roles
-    return companyUsers.filter(user => {
-      const userRoleIds = user.company_roles || [];
-      return requiredRoleIds.some(roleId => userRoleIds.includes(roleId));
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    clearError();
 
-    if (!formData.candidate_id) {
-      setError('El candidato es requerido');
-      return;
-    }
-
-    if (!formData.interview_type) {
-      setError('El tipo de entrevista es requerido');
-      return;
-    }
-
-    if (!formData.interview_mode) {
-      setError('El modo de entrevista es requerido');
-      return;
-    }
-
-    if (!formData.required_roles || formData.required_roles.length === 0) {
-      setError('Debe seleccionar al menos un rol requerido');
+    if (!validate()) {
       return;
     }
 
     try {
-      setLoading(true);
-      const response = await companyInterviewService.createInterview(formData);
+      const createData = formData as CreateInterviewRequest;
+      const response = await companyInterviewService.createInterview(createData);
       toast.success('Entrevista creada correctamente');
       const interviewId = response.interview_id || (response as any).interview?.id;
       if (interviewId) {
@@ -261,13 +100,10 @@ export default function CreateInterviewPage() {
       }
     } catch (err: any) {
       const errorMessage = err.message || 'Error al crear la entrevista';
-      setError(errorMessage);
       toast.error(errorMessage);
       console.error('Error creating interview:', err);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [formData, validate, clearError, navigate]);
 
   if (loadingData) {
     return (
@@ -351,7 +187,7 @@ export default function CreateInterviewPage() {
                       >
                         <input
                           type="checkbox"
-                          checked={formData.required_roles?.includes(role.id) || false}
+                          checked={selectedRoleIds.includes(role.id)}
                           onChange={() => handleToggleRole(role.id)}
                           className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
@@ -364,9 +200,9 @@ export default function CreateInterviewPage() {
                   </div>
                 )}
               </div>
-              {formData.required_roles && formData.required_roles.length > 0 && (
+              {selectedRoleIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.required_roles.map((roleId) => {
+                  {selectedRoleIds.map((roleId) => {
                     const role = roles.find(r => r.id === roleId);
                     return role ? (
                       <div
