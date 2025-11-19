@@ -13,7 +13,7 @@ from adapters.http.company_app.company.schemas.company_user_invitation_response 
     UserInvitationLinkResponse,
     CompanyUserInvitationResponse
 )
-from core.container import Container
+from core.containers import Container
 
 
 class TestCompanyUserInvitationEndpoints:

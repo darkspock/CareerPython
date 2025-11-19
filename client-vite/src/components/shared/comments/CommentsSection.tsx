@@ -175,28 +175,30 @@ export function CommentsSection<T extends BaseComment>({
   const isGlobalComment = activeTab === 'global';
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-blue-600" />
-          {title}
-        </h3>
-        {totalCommentsCount > 0 && !isExpanded && (
-          <button
-            onClick={() => {
-              if (onNavigateToCommentsTab) {
-                onNavigateToCommentsTab();
-              } else {
-                setIsExpanded(true);
-              }
-            }}
-            className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
-          >
-            {totalCommentsCount} {totalCommentsCount === 1 ? 'comentario' : 'comentarios'}
-          </button>
-        )}
-      </div>
+    <>
+      {/* Header - only show if title is provided */}
+      {title && (
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-blue-600" />
+            {title}
+          </h3>
+          {totalCommentsCount > 0 && !isExpanded && (
+            <button
+              onClick={() => {
+                if (onNavigateToCommentsTab) {
+                  onNavigateToCommentsTab();
+                } else {
+                  setIsExpanded(true);
+                }
+              }}
+              className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+            >
+              {totalCommentsCount} {totalCommentsCount === 1 ? 'comentario' : 'comentarios'}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Comment form - only show when NOT expanded */}
       {!isExpanded && (
@@ -283,7 +285,7 @@ export function CommentsSection<T extends BaseComment>({
           />
         </div>
       )}
-    </div>
+    </>
   );
 }
 

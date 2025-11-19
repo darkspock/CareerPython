@@ -19,6 +19,7 @@ from src.company_bc.company_role.infrastructure.repositories.company_role_reposi
 from src.company_bc.company_candidate.infrastructure.repositories.company_candidate_repository import CompanyCandidateRepository
 from src.company_bc.company_candidate.infrastructure.repositories import CandidateCommentRepository
 from src.company_bc.candidate_review.infrastructure.repositories.candidate_review_repository import CandidateReviewRepository
+from src.company_bc.company_page.infrastructure.repositories.company_page_repository import CompanyPageRepository
 
 # Company Application Layer - Commands
 from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommandHandler
@@ -125,6 +126,11 @@ class CompanyContainer(containers.DeclarativeContainer):
         database=shared.database
     )
     
+    company_page_repository = providers.Factory(
+        CompanyPageRepository,
+        database=shared.database
+    )
+    
     company_candidate_repository = providers.Factory(
         CompanyCandidateRepository,
         database=shared.database
@@ -143,47 +149,51 @@ class CompanyContainer(containers.DeclarativeContainer):
     # Company Query Handlers
     get_company_by_id_query_handler = providers.Factory(
         GetCompanyByIdQueryHandler,
-        repository=company_repository
+        company_repository=company_repository
     )
     
     get_company_by_domain_query_handler = providers.Factory(
         GetCompanyByDomainQueryHandler,
-        repository=company_repository
+        company_repository=company_repository
     )
     
     get_company_by_slug_query_handler = providers.Factory(
         GetCompanyBySlugQueryHandler,
-        repository=company_repository
+        company_repository=company_repository
     )
     
     list_companies_query_handler = providers.Factory(
         ListCompaniesQueryHandler,
-        repository=company_repository
+        company_repository=company_repository
     )
     
     get_company_user_by_id_query_handler = providers.Factory(
         GetCompanyUserByIdQueryHandler,
-        repository=company_user_repository
+        company_user_repository=company_user_repository,
+        user_repository=shared.user_repository
     )
     
     get_company_user_by_company_and_user_query_handler = providers.Factory(
         GetCompanyUserByCompanyAndUserQueryHandler,
-        repository=company_user_repository
+        company_user_repository=company_user_repository,
+        user_repository=shared.user_repository
     )
     
     list_company_users_by_company_query_handler = providers.Factory(
         ListCompanyUsersByCompanyQueryHandler,
-        repository=company_user_repository
+        company_user_repository=company_user_repository,
+        user_repository=shared.user_repository
     )
     
     authenticate_company_user_query_handler = providers.Factory(
         AuthenticateCompanyUserQueryHandler,
-        repository=company_user_repository
+        user_repository=shared.user_repository,
+        company_user_repository=company_user_repository
     )
     
     get_user_invitation_query_handler = providers.Factory(
         GetUserInvitationQueryHandler,
-        repository=company_user_invitation_repository
+        invitation_repository=company_user_invitation_repository
     )
     
     get_user_permissions_query_handler = providers.Factory(
@@ -194,7 +204,7 @@ class CompanyContainer(containers.DeclarativeContainer):
     
     get_invitation_by_email_and_company_query_handler = providers.Factory(
         GetInvitationByEmailAndCompanyQueryHandler,
-        repository=company_user_invitation_repository
+        invitation_repository=company_user_invitation_repository
     )
     
     get_companies_stats_query_handler = providers.Factory(
@@ -234,16 +244,14 @@ class CompanyContainer(containers.DeclarativeContainer):
     
     initialize_sample_data_command_handler = providers.Factory(
         InitializeSampleDataCommandHandler,
-        company_repository=company_repository,
-        workflow_repository=shared.workflow_repository,
-        stage_repository=shared.workflow_stage_repository
+        command_bus=shared.command_bus,
+        query_bus=shared.query_bus,
+        database=shared.database
     )
     
     initialize_onboarding_command_handler = providers.Factory(
         InitializeOnboardingCommandHandler,
-        company_repository=company_repository,
-        workflow_repository=shared.workflow_repository,
-        stage_repository=shared.workflow_stage_repository
+        command_bus=shared.command_bus
     )
     
     upload_company_logo_command_handler = providers.Factory(
@@ -274,12 +282,17 @@ class CompanyContainer(containers.DeclarativeContainer):
     delete_company_with_all_data_command_handler = providers.Factory(
         DeleteCompanyWithAllDataCommandHandler,
         company_repository=company_repository,
-        job_position_repository=shared.job_position_repository,
+        company_user_repository=company_user_repository,
+        company_user_invitation_repository=company_user_invitation_repository,
+        company_role_repository=company_role_repository,
+        company_page_repository=company_page_repository,
         company_candidate_repository=company_candidate_repository,
         workflow_repository=shared.workflow_repository,
-        stage_repository=shared.workflow_stage_repository,
-        interview_repository=shared.interview_repository,
-        event_bus=shared.event_bus
+        workflow_stage_repository=shared.workflow_stage_repository,
+        phase_repository=shared.phase_repository,
+        job_position_repository=shared.job_position_repository,
+        entity_customization_repository=shared.entity_customization_repository,
+        database=shared.database
     )
     
     add_company_user_command_handler = providers.Factory(
@@ -292,26 +305,22 @@ class CompanyContainer(containers.DeclarativeContainer):
     
     update_company_user_command_handler = providers.Factory(
         UpdateCompanyUserCommandHandler,
-        repository=company_user_repository,
-        event_bus=shared.event_bus
+        repository=company_user_repository
     )
     
     activate_company_user_command_handler = providers.Factory(
         ActivateCompanyUserCommandHandler,
-        repository=company_user_repository,
-        event_bus=shared.event_bus
+        repository=company_user_repository
     )
     
     deactivate_company_user_command_handler = providers.Factory(
         DeactivateCompanyUserCommandHandler,
-        repository=company_user_repository,
-        event_bus=shared.event_bus
+        repository=company_user_repository
     )
     
     remove_company_user_command_handler = providers.Factory(
         RemoveCompanyUserCommandHandler,
-        repository=company_user_repository,
-        event_bus=shared.event_bus
+        repository=company_user_repository
     )
     
     invite_company_user_command_handler = providers.Factory(
@@ -376,8 +385,7 @@ class CompanyContainer(containers.DeclarativeContainer):
     
     get_company_candidate_by_id_with_candidate_info_query_handler = providers.Factory(
         GetCompanyCandidateByIdWithCandidateInfoQueryHandler,
-        repository=company_candidate_repository,
-        candidate_repository=shared.candidate_repository
+        repository=company_candidate_repository
     )
     
     get_company_candidate_by_company_and_candidate_query_handler = providers.Factory(
@@ -397,8 +405,7 @@ class CompanyContainer(containers.DeclarativeContainer):
     
     list_company_candidates_with_candidate_info_query_handler = providers.Factory(
         ListCompanyCandidatesWithCandidateInfoQueryHandler,
-        repository=company_candidate_repository,
-        candidate_repository=shared.candidate_repository
+        repository=company_candidate_repository
     )
     
     get_candidate_comment_by_id_query_handler = providers.Factory(
@@ -425,8 +432,9 @@ class CompanyContainer(containers.DeclarativeContainer):
     create_company_candidate_command_handler = providers.Factory(
         CreateCompanyCandidateCommandHandler,
         repository=company_candidate_repository,
-        candidate_repository=shared.candidate_repository,
-        event_bus=shared.event_bus
+        workflow_repository=shared.workflow_repository,
+        stage_repository=shared.workflow_stage_repository,
+        validation_service=shared.stage_phase_validation_service
     )
     
     update_company_candidate_command_handler = providers.Factory(
@@ -462,16 +470,16 @@ class CompanyContainer(containers.DeclarativeContainer):
     assign_workflow_command_handler = providers.Factory(
         AssignWorkflowCommandHandler,
         repository=company_candidate_repository,
-        workflow_repository=shared.workflow_repository,
-        event_bus=shared.event_bus
+        validation_service=shared.stage_phase_validation_service
     )
     
     change_stage_command_handler = providers.Factory(
         ChangeStageCommandHandler,
         repository=company_candidate_repository,
         workflow_stage_repository=shared.workflow_stage_repository,
-        interview_validation_service=shared.interview_validation_service,
-        event_bus=shared.event_bus
+        workflow_repository=shared.workflow_repository,
+        validation_service=shared.stage_phase_validation_service,
+        interview_validation_service=shared.interview_validation_service
     )
     
     create_candidate_comment_command_handler = providers.Factory(
@@ -528,32 +536,27 @@ class CompanyContainer(containers.DeclarativeContainer):
     # CandidateReview Command Handlers
     create_candidate_review_command_handler = providers.Factory(
         CreateCandidateReviewCommandHandler,
-        repository=candidate_review_repository,
-        event_bus=shared.event_bus
+        repository=candidate_review_repository
     )
     
     update_candidate_review_command_handler = providers.Factory(
         UpdateCandidateReviewCommandHandler,
-        repository=candidate_review_repository,
-        event_bus=shared.event_bus
+        repository=candidate_review_repository
     )
     
     delete_candidate_review_command_handler = providers.Factory(
         DeleteCandidateReviewCommandHandler,
-        repository=candidate_review_repository,
-        event_bus=shared.event_bus
+        repository=candidate_review_repository
     )
     
     mark_review_as_reviewed_command_handler = providers.Factory(
         MarkReviewAsReviewedCommandHandler,
-        repository=candidate_review_repository,
-        event_bus=shared.event_bus
+        repository=candidate_review_repository
     )
     
     mark_review_as_pending_command_handler = providers.Factory(
         MarkReviewAsPendingCommandHandler,
-        repository=candidate_review_repository,
-        event_bus=shared.event_bus
+        repository=candidate_review_repository
     )
     
     # Controllers

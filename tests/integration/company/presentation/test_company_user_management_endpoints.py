@@ -9,7 +9,7 @@ from datetime import datetime
 
 from adapters.http.company_app.company.routers.company_user_router import router as company_user_router
 from adapters.http.company_app.company.schemas.company_user_response import CompanyUserResponse
-from core.container import Container
+from core.containers import Container
 
 
 class TestCompanyUserManagementEndpoints:

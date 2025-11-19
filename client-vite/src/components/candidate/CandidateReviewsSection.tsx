@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Heart, Globe, AlertCircle, MessageSquare } from 'lucide-react';
+import { Heart, Globe, AlertCircle, MessageSquare, Ban, ThumbsDown, ThumbsUp } from 'lucide-react';
 import ReviewForm from './ReviewForm';
 import ReviewsList from './ReviewsList';
 import { candidateReviewService } from '../../services/candidateReviewService';
@@ -20,6 +20,7 @@ interface CandidateReviewsSectionProps {
   stageId: string | null;
   currentWorkflowId?: string | null;
   onReviewChange?: () => void;
+  refreshKey?: number;
 }
 
 export default function CandidateReviewsSection({
@@ -27,9 +28,11 @@ export default function CandidateReviewsSection({
   stageId,
   currentWorkflowId,
   onReviewChange,
+  refreshKey = 0,
 }: CandidateReviewsSectionProps) {
   const [activeTab, setActiveTab] = useState<ReviewTab>('current');
   const [reviews, setReviews] = useState<CandidateReview[]>([]);
+  const [allReviews, setAllReviews] = useState<CandidateReview[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -50,14 +53,53 @@ export default function CandidateReviewsSection({
     }
   };
 
-  // Load total reviews count
+  // Load total reviews count and all reviews for average calculation
   const loadTotalReviewsCount = async () => {
     try {
-      const allReviews = await candidateReviewService.getReviewsByCandidate(companyCandidateId);
-      setTotalReviewsCount(allReviews.length);
+      const allReviewsData = await candidateReviewService.getReviewsByCandidate(companyCandidateId);
+      setAllReviews(allReviewsData);
+      setTotalReviewsCount(allReviewsData.length);
     } catch (error) {
       console.error('Error loading reviews count:', error);
     }
+  };
+
+  // Calculate average score and get closest icon
+  const getAverageScore = (): { average: number; closestIcon: React.ReactNode; closestScore: ReviewScore } => {
+    if (allReviews.length === 0) {
+      return { average: 0, closestIcon: null, closestScore: 0 };
+    }
+
+    const totalScore = allReviews.reduce((sum, review) => sum + review.score, 0);
+    const average = totalScore / allReviews.length;
+    const roundedAverage = Math.round(average * 10) / 10;
+
+    // Find closest score (0, 3, 6, 10)
+    const scores: ReviewScore[] = [0, 3, 6, 10];
+    const closestScore = scores.reduce((prev, curr) => 
+      Math.abs(curr - average) < Math.abs(prev - average) ? curr : prev
+    ) as ReviewScore;
+
+    // Get icon for closest score
+    let closestIcon: React.ReactNode;
+    switch (closestScore) {
+      case 0:
+        closestIcon = <Ban className="w-4 h-4" />;
+        break;
+      case 3:
+        closestIcon = <ThumbsDown className="w-4 h-4" />;
+        break;
+      case 6:
+        closestIcon = <ThumbsUp className="w-4 h-4" />;
+        break;
+      case 10:
+        closestIcon = <Heart className="w-4 h-4" />;
+        break;
+      default:
+        closestIcon = null;
+    }
+
+    return { average: roundedAverage, closestIcon, closestScore };
   };
 
   useEffect(() => {
@@ -66,6 +108,17 @@ export default function CandidateReviewsSection({
       handleLoadReviews();
     }
   }, [activeTab, stageId, isExpanded]);
+
+  // Reload reviews when refreshKey changes (external updates from other instances)
+  useEffect(() => {
+    if (refreshKey > 0) {
+      loadTotalReviewsCount();
+      // If expanded, also reload the reviews list
+      if (isExpanded) {
+        handleLoadReviews();
+      }
+    }
+  }, [refreshKey, isExpanded]);
 
   const handleLoadReviews = async () => {
     setIsLoading(true);
@@ -80,14 +133,14 @@ export default function CandidateReviewsSection({
   };
 
   // Create review
-  const handleCreateReview = async (score: ReviewScore, comment?: string | null): Promise<void> => {
+  const handleCreateReview = async (score: ReviewScore, comment?: string | null, isGlobal?: boolean): Promise<void> => {
     setIsSubmitting(true);
     try {
       await candidateReviewService.createReview(companyCandidateId, {
         score,
         comment: comment || null,
         workflow_id: currentWorkflowId || null,
-        stage_id: stageId || null,
+        stage_id: isGlobal ? null : (stageId || null),
         review_status: 'reviewed',
       });
       await loadTotalReviewsCount();
@@ -147,6 +200,7 @@ export default function CandidateReviewsSection({
   }
 
   const pendingCount = reviews.filter(r => r.review_status === 'pending').length;
+  const { average, closestIcon } = getAverageScore();
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -156,6 +210,24 @@ export default function CandidateReviewsSection({
           <Heart className="w-5 h-5 text-pink-600" />
           Reviews
         </h3>
+        
+        {/* Reviews counter and average - moved to top right */}
+        {totalReviewsCount > 0 && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-50"
+          >
+            {closestIcon && (
+              <span className="flex items-center gap-1.5">
+                <span className="text-gray-600">{closestIcon}</span>
+                <span className="font-semibold text-gray-900">{average.toFixed(1)}</span>
+              </span>
+            )}
+            <span className="text-gray-500 border-l border-gray-300 pl-2">
+              {totalReviewsCount} {totalReviewsCount === 1 ? 'review' : 'reviews'}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Review form */}
@@ -164,20 +236,9 @@ export default function CandidateReviewsSection({
           onSubmit={handleCreateReview}
           isSubmitting={isSubmitting}
           showCommentField={true}
+          showGlobalOption={true}
         />
       </div>
-
-      {/* Reviews counter and link */}
-      {totalReviewsCount > 0 && !isExpanded && (
-        <div className="mb-4">
-          <button
-            onClick={() => setIsExpanded(true)}
-            className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
-          >
-            {totalReviewsCount} {totalReviewsCount === 1 ? 'review' : 'reviews'}
-          </button>
-        </div>
-      )}
 
       {/* Reviews list (only shown when expanded) */}
       {isExpanded && (

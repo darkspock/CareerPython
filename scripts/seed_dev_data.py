@@ -31,7 +31,7 @@ from src.auth_bc.user.application.commands.create_user_command import CreateUser
 from src.company_bc.company.application.commands.add_company_user_command import AddCompanyUserCommand
 
 # Import infrastructure
-from core.container import Container
+from core.containers import Container
 
 # Initialize container after all imports
 container = Container()

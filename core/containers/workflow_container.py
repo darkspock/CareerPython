@@ -341,7 +341,7 @@ class WorkflowContainer(containers.DeclarativeContainer):
     
     get_custom_field_values_by_entity_query_handler = providers.Factory(
         GetCustomFieldValuesByEntityQueryHandler,
-        repository=entity_customization_repository
+        database=shared.database
     )
     
     # EntityCustomization Command Handlers

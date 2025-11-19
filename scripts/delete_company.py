@@ -9,7 +9,7 @@ import os
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core.container import Container
+from core.containers import Container
 from src.company_bc.company.domain.value_objects.company_id import CompanyId
 from src.company_bc.company.application.commands.delete_company_command import DeleteCompanyCommand
 

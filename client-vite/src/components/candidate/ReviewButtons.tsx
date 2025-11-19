@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { Ban, ThumbsDown, ThumbsUp, Heart } from 'lucide-react';
-import type { ReviewScore } from '../../types/candidateReview';
+import type { ReviewScore } from '@/types/candidateReview.ts';
 
 interface ReviewButtonsProps {
   onScoreSelect: (score: ReviewScore) => void;

@@ -25,7 +25,7 @@ class CommandBus:
         """
         if container is None:
             # Backward compatibility: create container if not provided
-            from core.container import Container
+            from core.containers import Container
             container = Container()
         self.container = container
         self._handlers_cache: Dict[Type[Command], Any] = {}

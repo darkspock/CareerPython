@@ -153,7 +153,7 @@ def _populate_candidate_from_analysis(candidate_id: str, analysis_results: Dict[
 
         # Lazy import to avoid circular dependency
         def get_command_bus() -> Any:
-            from core.container import Container
+            from core.containers import Container
             container = Container()
             return container.command_bus()
 

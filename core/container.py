@@ -442,7 +442,24 @@ from src.candidate_bc.resume.application.commands.analyze_pdf_resume_command imp
 
 
 class Container(containers.DeclarativeContainer):
-    """Container for admin + interview templates + auth"""
+    """
+    DEPRECATED: Este container está siendo reemplazado por containers modulares.
+    
+    Los nuevos containers modulares están en core/containers/:
+    - shared_container.py: Servicios compartidos (Database, EventBus, Email, AI, Storage)
+    - auth_container.py: Autenticación y gestión de usuarios
+    - interview_container.py: Entrevistas y plantillas
+    - company_container.py: Empresas, usuarios, roles, candidatos
+    - candidate_container.py: Candidatos y aplicaciones
+    - job_position_container.py: Posiciones de trabajo
+    - workflow_container.py: Workflows y fases
+    - main_container.py: Container principal que compone todos los anteriores
+    
+    Este container antiguo se mantiene temporalmente para compatibilidad hacia atrás
+    a través del método __getattr__ en main_container.py.
+    
+    TODO: Eliminar este container una vez que se verifique que no hay dependencias directas.
+    """
 
     # Core services
     database = providers.Singleton(SQLAlchemyDatabase)
