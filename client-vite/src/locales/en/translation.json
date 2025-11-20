@@ -468,6 +468,54 @@
       "aboutDescription": "Workflows help you organize your recruitment process into stages. Each workflow can have multiple stages, and you can assign candidates to workflows to track their progress through your hiring pipeline. Set one workflow as default to automatically assign new candidates to it.",
       "customFieldsLinkText": "You can configure custom fields for each stage",
       "customFieldsLinkButton": "here"
+    },
+    "interviews": {
+      "title": "Interviews",
+      "assignInterview": "Assign Interview",
+      "currentStage": "Current",
+      "currentStageInterviews": "Current Stage Interviews ({{stage}})",
+      "otherStagesInterviews": "Other Stages",
+      "noInterviewsInCurrentStage": "No interviews in current stage",
+      "noInterviews": "No interviews yet",
+      "noInterviewsDescription": "Start by assigning the first interview to this candidate",
+      "assignFirstInterview": "Assign First Interview",
+      "viewDetails": "View Details",
+      "errorLoading": "Error loading interviews",
+      "stage": "Stage",
+      "template": "Template",
+      "requiredRoles": "Required Roles",
+      "form": {
+        "stage": "Workflow Stage",
+        "selectStage": "Select a stage",
+        "type": "Interview Type",
+        "selectType": "Select a type",
+        "template": "Template",
+        "selectTemplate": "Select a template",
+        "noTemplates": "No templates available for this type",
+        "autoSelected": "Automatically selected",
+        "requiredRoles": "Required Roles",
+        "noRoles": "No roles available",
+        "rolesHelp": "Select at least one role",
+        "scheduledDate": "Scheduled Date",
+        "scheduledDateHelp": "Optional - leave empty to schedule later",
+        "participants": "Participants",
+        "noUsers": "No users available",
+        "participantsHelp": "Optional - select interviewers"
+      },
+      "errors": {
+        "stageRequired": "Stage is required",
+        "typeRequired": "Interview type is required",
+        "templateRequired": "Please select a template",
+        "rolesRequired": "At least one role is required",
+        "dateInPast": "Scheduled date must be in the future"
+      },
+      "types": {
+        "EXTENDED_PROFILE": "Extended Profile",
+        "POSITION_INTERVIEW": "Position Interview",
+        "TECHNICAL": "Technical",
+        "BEHAVIORAL": "Behavioral",
+        "CULTURAL_FIT": "Cultural Fit"
+      }
     }
   },
   "landing": {

@@ -27,7 +27,7 @@ class CreateInterviewCommand(Command):
     candidate_id: str
     required_roles: List[str]  # Obligatory: List of CompanyRole IDs
     interview_mode: str  # Required field
-    workflow_stage_id: str
+    workflow_stage_id: str  # Required: All interviews must be associated with a workflow stage
     job_position_id: str
     process_type: Optional[str] = None  # InterviewProcessTypeEnum value
     interview_type: str = InterviewTypeEnum.CUSTOM.value

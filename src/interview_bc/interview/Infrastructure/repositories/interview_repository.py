@@ -51,6 +51,9 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         if model.interview_template_id:
             interview_template_id = InterviewTemplateId.from_string(model.interview_template_id)
 
+        # workflow_stage_id is required - validate it exists
+        if not model.workflow_stage_id:
+            raise ValueError(f"Interview {model.id} has no workflow_stage_id. All interviews must be associated with a workflow stage.")
         workflow_stage_id = WorkflowStageId.from_string(model.workflow_stage_id)
 
         interviewers_list = model.interviewers or []
@@ -151,7 +154,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
         if domain.interview_template_id:
             interview_template_id = domain.interview_template_id.value
 
-        workflow_stage_id = str(domain.workflow_stage_id)
+        workflow_stage_id = domain.workflow_stage_id.value
 
         # Convert required_roles from List[CompanyRoleId] to List[str]
         # required_roles is obligatory, so it should always have at least one element

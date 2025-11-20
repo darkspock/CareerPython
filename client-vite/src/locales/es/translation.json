@@ -707,6 +707,54 @@
       "aboutDescription": "Los flujos de trabajo te ayudan a organizar tu proceso de reclutamiento en etapas. Cada flujo de trabajo puede tener múltiples etapas, y puedes asignar candidatos a flujos de trabajo para rastrear su progreso a través de tu pipeline de contratación. Establece un flujo de trabajo como predeterminado para asignar automáticamente nuevos candidatos a él.",
       "customFieldsLinkText": "Puede establecer campos personalizados en cada etapa",
       "customFieldsLinkButton": "aquí"
+    },
+    "interviews": {
+      "title": "Entrevistas",
+      "assignInterview": "Asignar Entrevista",
+      "currentStage": "Actual",
+      "currentStageInterviews": "Entrevistas de la Etapa Actual ({{stage}})",
+      "otherStagesInterviews": "Otras Etapas",
+      "noInterviewsInCurrentStage": "No hay entrevistas en la etapa actual",
+      "noInterviews": "Sin entrevistas aún",
+      "noInterviewsDescription": "Comienza asignando la primera entrevista a este candidato",
+      "assignFirstInterview": "Asignar Primera Entrevista",
+      "viewDetails": "Ver Detalles",
+      "errorLoading": "Error al cargar entrevistas",
+      "stage": "Etapa",
+      "template": "Plantilla",
+      "requiredRoles": "Roles Obligatorios",
+      "form": {
+        "stage": "Etapa del Workflow",
+        "selectStage": "Selecciona una etapa",
+        "type": "Tipo de Entrevista",
+        "selectType": "Selecciona un tipo",
+        "template": "Plantilla",
+        "selectTemplate": "Selecciona una plantilla",
+        "noTemplates": "No hay plantillas disponibles para este tipo",
+        "autoSelected": "Seleccionada automáticamente",
+        "requiredRoles": "Roles Obligatorios",
+        "noRoles": "No hay roles disponibles",
+        "rolesHelp": "Selecciona al menos un rol",
+        "scheduledDate": "Fecha Programada",
+        "scheduledDateHelp": "Opcional - deja vacío para programar más tarde",
+        "participants": "Participantes",
+        "noUsers": "No hay usuarios disponibles",
+        "participantsHelp": "Opcional - selecciona entrevistadores"
+      },
+      "errors": {
+        "stageRequired": "La etapa es obligatoria",
+        "typeRequired": "El tipo de entrevista es obligatorio",
+        "templateRequired": "Por favor selecciona una plantilla",
+        "rolesRequired": "Se requiere al menos un rol",
+        "dateInPast": "La fecha programada debe ser futura"
+      },
+      "types": {
+        "EXTENDED_PROFILE": "Perfil Extendido",
+        "POSITION_INTERVIEW": "Entrevista de Posición",
+        "TECHNICAL": "Técnica",
+        "BEHAVIORAL": "Conductual",
+        "CULTURAL_FIT": "Ajuste Cultural"
+      }
     }
   },
   "landing": {

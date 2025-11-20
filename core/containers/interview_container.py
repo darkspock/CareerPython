@@ -260,8 +260,9 @@ class InterviewContainer(containers.DeclarativeContainer):
 
     get_interview_score_summary_query_handler = providers.Factory(
         GetInterviewScoreSummaryQueryHandler,
+        answer_repository=interview_answer_repository,
         interview_repository=interview_repository,
-        answer_repository=interview_answer_repository
+        template_repository=interview_template_repository
     )
 
     get_answers_by_interview_query_handler = providers.Factory(

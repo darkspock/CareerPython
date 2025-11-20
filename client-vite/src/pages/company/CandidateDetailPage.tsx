@@ -19,6 +19,7 @@ import { StageTimeline } from '../../components/candidate';
 import CustomFieldsCard from '../../components/candidate/CustomFieldsCard';
 import CandidateCommentsSection from '../../components/candidate/CandidateCommentsSection';
 import CandidateReviewsSection from '../../components/candidate/CandidateReviewsSection';
+import CandidateInterviewsSection from '../../components/candidate/CandidateInterviewsSection';
 import CandidateHeader from '../../components/candidate/CandidateHeader';
 import CandidateSidebar from '../../components/candidate/CandidateSidebar';
 import { useCandidateData } from '../../hooks/useCandidateData';
@@ -31,7 +32,7 @@ export default function CandidateDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'info' | 'comments' | 'reviews' | 'documents' | 'history'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'comments' | 'reviews' | 'documents' | 'interviews' | 'history'>('info');
   const [changingStage, setChangingStage] = useState(false);
   const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
   const [reviewsRefreshKey, setReviewsRefreshKey] = useState(0);
@@ -271,6 +272,16 @@ export default function CandidateDetailPage() {
                   {t('company.candidates.tabs.documents')}
                 </button>
                 <button
+                  onClick={() => setActiveTab('interviews')}
+                  className={`py-4 border-b-2 font-medium transition-colors ${
+                    activeTab === 'interviews'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('company.candidates.tabs.interviews', { defaultValue: 'Interviews' })}
+                </button>
+                <button
                   onClick={() => setActiveTab('history')}
                   className={`py-4 border-b-2 font-medium transition-colors ${
                     activeTab === 'history'
@@ -454,6 +465,17 @@ export default function CandidateDetailPage() {
                     )}
                   </div>
                 </div>
+              )}
+
+              {/* Interviews Tab */}
+              {activeTab === 'interviews' && candidate && (
+                <CandidateInterviewsSection
+                  candidateId={candidate.candidate_id}
+                  companyCandidateId={id || ''}
+                  currentStageId={candidate.current_stage_id}
+                  currentWorkflowId={candidate.current_workflow_id}
+                  availableStages={availableStages}
+                />
               )}
 
               {/* History Tab - Phase 12: Stage Timeline */}
