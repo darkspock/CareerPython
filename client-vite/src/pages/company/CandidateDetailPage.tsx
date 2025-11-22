@@ -475,6 +475,7 @@ export default function CandidateDetailPage() {
                   currentStageId={candidate.current_stage_id}
                   currentWorkflowId={candidate.current_workflow_id}
                   availableStages={availableStages}
+                  jobPositionId={candidate.job_position_id}
                 />
               )}
 

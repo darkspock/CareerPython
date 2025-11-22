@@ -35,21 +35,28 @@ export function useCandidateData({ candidateId, companyId, onLoadComplete }: Use
     try {
       setLoading(true);
       const data = await companyCandidateService.getById(candidateId);
+
+      // Map workflow_id to current_workflow_id for backward compatibility
+      if (data.workflow_id && !data.current_workflow_id) {
+        data.current_workflow_id = data.workflow_id;
+      }
+
       setCandidate(data);
 
       // Load workflow stages if candidate has a workflow or phase
-      if (data.current_workflow_id) {
+      const workflowId = data.current_workflow_id || data.workflow_id;
+      if (workflowId) {
         try {
-          const stages = await companyWorkflowService.listStagesByWorkflow(data.current_workflow_id);
+          const stages = await companyWorkflowService.listStagesByWorkflow(workflowId);
           setAvailableStages(stages as WorkflowStage[]);
 
           const currentStage = stages.find((stage: WorkflowStage) => stage.id === data.current_stage_id);
           const currentOrder = currentStage?.order || 0;
 
-          const next = await workflowStageService.getNextStage(data.current_workflow_id, currentOrder);
+          const next = await workflowStageService.getNextStage(workflowId, currentOrder);
           setNextStage(next as WorkflowStage | null);
 
-          const fail = await workflowStageService.getFailStages(data.current_workflow_id);
+          const fail = await workflowStageService.getFailStages(workflowId);
           setFailStages(fail as WorkflowStage[]);
         } catch (err) {
           console.error('Error loading workflow stages:', err);

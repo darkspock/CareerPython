@@ -469,6 +469,32 @@
       "customFieldsLinkText": "You can configure custom fields for each stage",
       "customFieldsLinkButton": "here"
     },
+    "candidates": {
+      "backToCandidates": "Back to Candidates",
+      "edit": "Edit",
+      "editCandidateDetails": "Edit candidate details",
+      "applicationStatus": "Application Status",
+      "dates": "Dates",
+      "tabs": {
+        "info": "Information",
+        "information": "Information",
+        "comments": "Comments",
+        "reviews": "Reviews",
+        "documents": "Documents",
+        "interviews": "Interviews",
+        "history": "History"
+      },
+      "detail": {
+        "contactInformation": "Contact Information",
+        "currentStatus": "Current Status",
+        "priority": "Priority",
+        "phase": "Phase",
+        "actions": "Actions",
+        "created": "Created",
+        "lastUpdated": "Last Updated",
+        "stageTimeline": "Stage Timeline"
+      }
+    },
     "interviews": {
       "title": "Interviews",
       "assignInterview": "Assign Interview",
@@ -507,7 +533,8 @@
         "typeRequired": "Interview type is required",
         "templateRequired": "Please select a template",
         "rolesRequired": "At least one role is required",
-        "dateInPast": "Scheduled date must be in the future"
+        "dateInPast": "Scheduled date must be in the future",
+        "jobPositionRequired": "This candidate must be associated with a job position to assign interviews"
       },
       "types": {
         "EXTENDED_PROFILE": "Extended Profile",

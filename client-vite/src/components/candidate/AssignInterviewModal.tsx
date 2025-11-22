@@ -46,12 +46,34 @@ export default function AssignInterviewModal({
   const companyId = useCompanyId();
 
   // Form state
-  const [workflowStageId, setWorkflowStageId] = useState<string>(currentStageId || '');
   const [interviewType, setInterviewType] = useState<string>('');
   const [templateId, setTemplateId] = useState<string>('');
   const [requiredRoles, setRequiredRoles] = useState<string[]>([]);
   const [scheduledAt, setScheduledAt] = useState<string>('');
   const [participants, setParticipants] = useState<string[]>([]);
+
+  // workflowStageId - directly use currentStageId or allow override
+  const [workflowStageId, setWorkflowStageId] = useState<string>('');
+
+  // Initialize workflowStageId when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // Check if currentStageId is in availableStages
+      const isCurrentStageAvailable = currentStageId && availableStages.some(s => s.id === currentStageId);
+
+      // If current stage is available, use it; otherwise use empty string
+      const initialStageId = isCurrentStageAvailable ? currentStageId || '' : '';
+
+      setWorkflowStageId(initialStageId);
+      setInterviewType('');
+      setTemplateId('');
+      setRequiredRoles([]);
+      setScheduledAt('');
+      setParticipants([]);
+      setFormError(null);
+      setFieldErrors({});
+    }
+  }, [isOpen, currentStageId, availableStages]);
 
   // Loading states
   const [loadingTemplates, setLoadingTemplates] = useState(false);
@@ -67,13 +89,6 @@ export default function AssignInterviewModal({
   // Errors
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-  // Pre-select current stage on mount and when it changes
-  useEffect(() => {
-    if (currentStageId) {
-      setWorkflowStageId(currentStageId);
-    }
-  }, [currentStageId]);
 
   // Load available roles on mount
   useEffect(() => {
@@ -152,6 +167,14 @@ export default function AssignInterviewModal({
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
+    // Validate job position (required by backend)
+    if (!jobPositionId) {
+      setFormError(t('company.interviews.errors.jobPositionRequired', { 
+        defaultValue: 'This candidate must be associated with a job position to assign interviews' 
+      }));
+      return false;
+    }
+
     if (!workflowStageId) {
       errors.workflowStageId = t('company.interviews.errors.stageRequired', { defaultValue: 'Stage is required' });
     }
@@ -217,15 +240,7 @@ export default function AssignInterviewModal({
   };
 
   const handleClose = () => {
-    // Reset form
-    setWorkflowStageId(currentStageId || '');
-    setInterviewType('');
-    setTemplateId('');
-    setRequiredRoles([]);
-    setScheduledAt('');
-    setParticipants([]);
-    setFormError(null);
-    setFieldErrors({});
+    // Just close - form will be reset by useEffect when reopened
     onClose();
   };
 
@@ -291,7 +306,7 @@ export default function AssignInterviewModal({
               {availableStages.map((stage) => (
                 <option key={stage.id} value={stage.id}>
                   {stage.name}
-                  {stage.id === currentStageId && ` (${t('company.interviews.current')})`}
+                  {stage.id === currentStageId && ` (${t('company.interviews.current', { defaultValue: 'Current' })})`}
                 </option>
               ))}
             </select>

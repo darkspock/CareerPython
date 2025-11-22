@@ -708,6 +708,32 @@
       "customFieldsLinkText": "Puede establecer campos personalizados en cada etapa",
       "customFieldsLinkButton": "aquí"
     },
+    "candidates": {
+      "backToCandidates": "Volver a Candidatos",
+      "edit": "Editar",
+      "editCandidateDetails": "Editar detalles del candidato",
+      "applicationStatus": "Estado de la Aplicación",
+      "dates": "Fechas",
+      "tabs": {
+        "info": "Información",
+        "information": "Información",
+        "comments": "Comentarios",
+        "reviews": "Evaluaciones",
+        "documents": "Documentos",
+        "interviews": "Entrevistas",
+        "history": "Historial"
+      },
+      "detail": {
+        "contactInformation": "Información de Contacto",
+        "currentStatus": "Estado Actual",
+        "priority": "Prioridad",
+        "phase": "Fase",
+        "actions": "Acciones",
+        "created": "Creado",
+        "lastUpdated": "Última Actualización",
+        "stageTimeline": "Línea de Tiempo de Etapas"
+      }
+    },
     "interviews": {
       "title": "Entrevistas",
       "assignInterview": "Asignar Entrevista",
@@ -746,7 +772,8 @@
         "typeRequired": "El tipo de entrevista es obligatorio",
         "templateRequired": "Por favor selecciona una plantilla",
         "rolesRequired": "Se requiere al menos un rol",
-        "dateInPast": "La fecha programada debe ser futura"
+        "dateInPast": "La fecha programada debe ser futura",
+        "jobPositionRequired": "Este candidato debe estar asociado a una posición de trabajo para asignar entrevistas"
       },
       "types": {
         "EXTENDED_PROFILE": "Perfil Extendido",

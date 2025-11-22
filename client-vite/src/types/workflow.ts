@@ -23,7 +23,7 @@ export interface InterviewConfiguration {
   mode: InterviewMode;
 }
 
-export interface CandidateApplicationWorkflow {
+export interface per {
   id: string;
   company_id: string;
   phase_id?: string | null; // Phase 12: Phase association

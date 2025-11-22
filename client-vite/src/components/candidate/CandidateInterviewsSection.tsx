@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, ChevronDown, ChevronRight, Calendar, User, AlertCircle, Clock, CheckCircle, X } from 'lucide-react';
 import { useCandidateInterviews } from '../../hooks/useCandidateInterviews';
+import { companyWorkflowService } from '../../services/companyWorkflowService';
 import AssignInterviewModal from './AssignInterviewModal';
 import type { WorkflowStage } from '../../types/workflow';
 import type { Interview } from '../../services/companyInterviewService';
@@ -12,6 +13,7 @@ interface CandidateInterviewsSectionProps {
   currentStageId: string | null | undefined;
   currentWorkflowId: string | null | undefined;
   availableStages: WorkflowStage[];
+  jobPositionId?: string;
 }
 
 export default function CandidateInterviewsSection({
@@ -20,10 +22,13 @@ export default function CandidateInterviewsSection({
   currentStageId,
   currentWorkflowId,
   availableStages,
+  jobPositionId,
 }: CandidateInterviewsSectionProps) {
   const { t } = useTranslation();
   const [showOtherStages, setShowOtherStages] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [workflowStages, setWorkflowStages] = useState<WorkflowStage[]>(availableStages);
+  const [loadingStages, setLoadingStages] = useState(false);
 
   const interviewsHook = useCandidateInterviews({
     candidateId,
@@ -31,7 +36,31 @@ export default function CandidateInterviewsSection({
     currentStageId,
   });
 
-  const currentStageName = availableStages.find(s => s.id === currentStageId)?.name || t('company.interviews.currentStage');
+  // Load stages from current workflow
+  useEffect(() => {
+    const loadWorkflowStages = async () => {
+      setLoadingStages(true);
+      try {
+        if (currentWorkflowId) {
+          // Have specific workflow, load its stages
+          const stages = await companyWorkflowService.listStagesByWorkflow(currentWorkflowId);
+          setWorkflowStages(stages as WorkflowStage[]);
+        } else {
+          // No workflow, use available stages from props
+          setWorkflowStages(availableStages);
+        }
+      } catch (err) {
+        console.error('Error loading workflow stages:', err);
+        setWorkflowStages(availableStages);
+      } finally {
+        setLoadingStages(false);
+      }
+    };
+
+    loadWorkflowStages();
+  }, [currentWorkflowId, availableStages]);
+
+  const currentStageName = workflowStages.find(s => s.id === currentStageId)?.name || t('company.interviews.currentStage');
 
   // Helper to get status icon
   const getStatusIcon = (status: string) => {
@@ -270,18 +299,21 @@ export default function CandidateInterviewsSection({
       )}
 
       {/* Assign Interview Modal */}
-      <AssignInterviewModal
-        candidateId={candidateId}
-        companyCandidateId={companyCandidateId}
-        currentStageId={currentStageId}
-        currentWorkflowId={currentWorkflowId}
-        availableStages={availableStages}
-        isOpen={showAssignModal}
-        onClose={() => setShowAssignModal(false)}
-        onSuccess={() => {
-          interviewsHook.loadInterviews();
-        }}
-      />
+      {showAssignModal && (
+        <AssignInterviewModal
+          candidateId={candidateId}
+          companyCandidateId={companyCandidateId}
+          currentStageId={currentStageId}
+          currentWorkflowId={currentWorkflowId}
+          availableStages={workflowStages}
+          jobPositionId={jobPositionId}
+          isOpen={showAssignModal}
+          onClose={() => setShowAssignModal(false)}
+          onSuccess={() => {
+            interviewsHook.loadInterviews();
+          }}
+        />
+      )}
     </div>
   );
 }

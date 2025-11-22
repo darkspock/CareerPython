@@ -380,7 +380,8 @@ class CompanyContainer(containers.DeclarativeContainer):
     # CompanyCandidate Query Handlers
     get_company_candidate_by_id_query_handler = providers.Factory(
         GetCompanyCandidateByIdQueryHandler,
-        repository=company_candidate_repository
+        repository=company_candidate_repository,
+        workflow_stage_repository=shared.workflow_stage_repository
     )
     
     get_company_candidate_by_id_with_candidate_info_query_handler = providers.Factory(
