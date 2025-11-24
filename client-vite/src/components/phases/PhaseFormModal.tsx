@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { phaseService } from '../../services/phaseService';
 import type { Phase, CreatePhaseRequest, UpdatePhaseRequest } from '../../types/phase';
-import { DefaultView } from '../../types/phase';
+import { DefaultView, WorkflowType } from '../../types/phase';
 
 interface PhaseFormModalProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ export default function PhaseFormModal({
   phase,
 }: PhaseFormModalProps) {
   const [name, setName] = useState('');
+  const [workflowType, setWorkflowType] = useState<WorkflowType>(WorkflowType.CA);
   const [sortOrder, setSortOrder] = useState(0);
   const [defaultView, setDefaultView] = useState<DefaultView>(DefaultView.KANBAN);
   const [objective, setObjective] = useState('');
@@ -33,12 +34,14 @@ export default function PhaseFormModal({
       if (phase) {
         // Edit mode - populate with existing data
         setName(phase.name);
+        setWorkflowType(phase.workflow_type as WorkflowType);
         setSortOrder(phase.sort_order);
         setDefaultView(phase.default_view);
         setObjective(phase.objective || '');
       } else {
         // Create mode - reset form
         setName('');
+        setWorkflowType(WorkflowType.CA);
         setSortOrder(0);
         setDefaultView(DefaultView.KANBAN);
         setObjective('');
@@ -76,6 +79,7 @@ export default function PhaseFormModal({
       } else {
         // Create new phase
         const createData: CreatePhaseRequest = {
+          workflow_type: workflowType,
           name,
           sort_order: sortOrder,
           default_view: defaultView,
@@ -146,6 +150,27 @@ export default function PhaseFormModal({
                     placeholder="e.g., Sourcing & Screening"
                   />
                 </div>
+
+                {/* Workflow Type */}
+                {!isEditMode && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Workflow Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={workflowType}
+                      onChange={(e) => setWorkflowType(e.target.value as WorkflowType)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value={WorkflowType.CA}>Candidate Application</option>
+                      <option value={WorkflowType.PO}>Job Position Opening</option>
+                      <option value={WorkflowType.CO}>Candidate Onboarding</option>
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Select the workflow type this phase belongs to (cannot be changed later)
+                    </p>
+                  </div>
+                )}
 
                 {/* Sort Order */}
                 <div>

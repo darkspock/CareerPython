@@ -61,6 +61,11 @@ class Container(containers.DeclarativeContainer):
         shared=providers.Container(SharedDependencies)
     )
     
+    # Populate SharedDependencies with Interview repositories BEFORE creating Workflow container
+    # Workflow container needs interview_repository for InterviewValidationService
+    SharedDependencies.interview_repository = interview.interview_repository
+    SharedDependencies.interview_template_repository = interview.interview_template_repository
+    
     # Workflow next (needed by Company, JobPosition, Candidate)
     workflow = providers.Container(
         WorkflowContainer,
@@ -78,17 +83,11 @@ class Container(containers.DeclarativeContainer):
     SharedDependencies.workflow_stage_repository = workflow.workflow_stage_repository
     SharedDependencies.phase_repository = workflow.phase_repository
     SharedDependencies.entity_customization_repository = workflow.entity_customization_repository
-    SharedDependencies.interview_repository = interview.interview_repository
     SharedDependencies.stage_phase_validation_service = workflow.stage_phase_validation_service
     SharedDependencies.interview_validation_service = workflow.interview_validation_service
     
-    # Company (depends on Workflow and Auth)
-    company = providers.Container(
-        CompanyContainer,
-        shared=providers.Container(SharedDependencies)
-    )
-    
-    # Candidate (depends on Workflow, JobPosition)
+    # Candidate (depends on Workflow) - CREATE BEFORE Company
+    # Company needs candidate_application_repository, so we create Candidate first
     candidate = providers.Container(
         CandidateContainer,
         shared=providers.Container(SharedDependencies)
@@ -100,13 +99,18 @@ class Container(containers.DeclarativeContainer):
         shared=providers.Container(SharedDependencies)
     )
     
-    # Now populate SharedDependencies with remaining cross-BC dependencies
-    # Basic services, Auth repositories, Workflow repositories, and validation services were already populated
-    # Cross-BC dependencies that depend on containers created after Company
+    # Populate SharedDependencies with Candidate and JobPosition repositories BEFORE creating Company container
+    # Company's ChangeStageCommandHandler needs candidate_application_repository
     SharedDependencies.candidate_repository = candidate.candidate_repository
     SharedDependencies.job_position_repository = job_position.job_position_repository
     SharedDependencies.candidate_application_repository = candidate.candidate_application_repository
     SharedDependencies.position_stage_assignment_repository = job_position.position_stage_assignment_repository
+    
+    # Company (depends on Workflow, Auth, Candidate, JobPosition)
+    company = providers.Container(
+        CompanyContainer,
+        shared=providers.Container(SharedDependencies)
+    )
     
     # Exponer servicios compartidos directamente para compatibilidad
     database = shared.database

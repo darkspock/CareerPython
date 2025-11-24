@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import {
   ArrowLeft,
   Plus,
@@ -99,7 +100,7 @@ export default function CandidateDetailPage() {
       setShowMoveToStageDropdown(false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to move candidate';
-      alert(t('company.workflowBoard.failedToMoveCandidateMessage', { message: errorMessage }));
+      toast.error(t('company.workflowBoard.failedToMoveCandidateMessage', { message: errorMessage }));
     } finally {
       setChangingStage(false);
     }
@@ -130,6 +131,7 @@ export default function CandidateDetailPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to change stage';
       console.error('Error changing stage:', errorMessage);
+      toast.error(t('company.workflowBoard.failedToMoveCandidateMessage', { message: errorMessage }));
     } finally {
       setChangingStage(false);
     }

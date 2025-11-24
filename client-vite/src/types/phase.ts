@@ -29,7 +29,15 @@ export interface Phase {
   updated_at: string;
 }
 
+export const WorkflowType = {
+  CA: 'CA',
+  PO: 'PO',
+  CO: 'CO',
+} as const;
+export type WorkflowType = typeof WorkflowType[keyof typeof WorkflowType];
+
 export interface CreatePhaseRequest {
+  workflow_type: WorkflowType;
   name: string;
   sort_order: number;
   default_view: DefaultView;

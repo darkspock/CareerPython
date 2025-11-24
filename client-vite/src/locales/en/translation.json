@@ -377,7 +377,9 @@
       "selectPhaseFromSidebar": "Select a phase from the sidebar to view the Kanban board",
       "noCandidatesInStage": "No candidates in this stage",
       "noStagesInPhase": "No stages in this phase",
-      "addStagesToPhase": "Add stages to this phase in the Settings page"
+      "addStagesToPhase": "Add stages to this phase in the Settings page",
+      "failedToMoveCandidate": "Failed to move candidate",
+      "failedToMoveCandidateMessage": "Error moving candidate: {{message}}"
     },
     "settings": {
       "title": "Company Settings",
@@ -501,6 +503,11 @@
       "noInterviewsDescription": "Start by assigning the first interview to this candidate",
       "assignFirstInterview": "Assign First Interview",
       "viewDetails": "View Details",
+      "cancel": "Cancel",
+      "cancelInterview": "Cancel Interview",
+      "confirmCancel": "Are you sure you want to cancel this interview? This action cannot be undone.",
+      "cancelSuccess": "Interview cancelled successfully",
+      "cancelError": "Error cancelling interview: {{message}}",
       "errorLoading": "Error loading interviews",
       "stage": "Stage",
       "template": "Template",

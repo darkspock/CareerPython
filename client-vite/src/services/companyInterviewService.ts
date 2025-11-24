@@ -1,7 +1,7 @@
 // Company Interview API service
 import { ApiClient } from '../lib/api';
 
-export type InterviewStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PENDING' | 'ENABLED' | 'DISABLED';
+export type InterviewStatus = 'PENDING' | 'IN_PROGRESS' | 'FINISHED' | 'DISCARDED' | 'PAUSED';
 export type InterviewType = 'CUSTOM' | 'TECHNICAL' | 'BEHAVIORAL' | 'CULTURAL_FIT' | 'KNOWLEDGE_CHECK' | 'EXPERIENCE_CHECK';
 export type InterviewProcessType = 'CANDIDATE_SIGN_UP' | 'CANDIDATE_APPLICATION' | 'SCREENING' | 'INTERVIEW' | 'FEEDBACK';
 
@@ -237,6 +237,17 @@ export const companyInterviewService = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Cancel an interview (updates status to DISCARDED)
+   */
+  async cancelInterview(interviewId: string): Promise<InterviewActionResponse> {
+    return ApiClient.authenticatedRequest<InterviewActionResponse>(`/api/company/interviews/${interviewId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'DISCARDED' }),
     });
   },
 

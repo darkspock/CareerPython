@@ -53,6 +53,7 @@ class InterviewUpdateRequest(BaseModel):
                                         description="Process type (CANDIDATE_SIGN_UP, CANDIDATE_APPLICATION, SCREENING, INTERVIEW, FEEDBACK)")
     interview_type: Optional[str] = Field(None, description="Interview type")
     interview_mode: Optional[str] = Field(None, description="Interview mode (AUTOMATIC, AI, MANUAL)")
+    status: Optional[str] = Field(None, description="Interview status (PENDING, IN_PROGRESS, FINISHED, DISCARDED, PAUSED)")
     scheduled_at: Optional[str] = Field(None, description="Scheduled datetime (ISO format)")
     deadline_date: Optional[str] = Field(None, description="Deadline datetime (ISO format)")
     required_roles: Optional[List[str]] = Field(None, min_length=1, description="List of CompanyRole IDs")

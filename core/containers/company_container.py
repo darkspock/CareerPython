@@ -433,6 +433,7 @@ class CompanyContainer(containers.DeclarativeContainer):
     create_company_candidate_command_handler = providers.Factory(
         CreateCompanyCandidateCommandHandler,
         repository=company_candidate_repository,
+        phase_repository=shared.phase_repository,
         workflow_repository=shared.workflow_repository,
         stage_repository=shared.workflow_stage_repository,
         validation_service=shared.stage_phase_validation_service
@@ -480,7 +481,10 @@ class CompanyContainer(containers.DeclarativeContainer):
         workflow_stage_repository=shared.workflow_stage_repository,
         workflow_repository=shared.workflow_repository,
         validation_service=shared.stage_phase_validation_service,
-        interview_validation_service=shared.interview_validation_service
+        interview_validation_service=shared.interview_validation_service,
+        candidate_application_repository=shared.candidate_application_repository,
+        interview_template_repository=shared.interview_template_repository,
+        command_bus=shared.command_bus
     )
     
     create_candidate_comment_command_handler = providers.Factory(

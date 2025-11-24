@@ -465,6 +465,10 @@ class Container(containers.DeclarativeContainer):
     database = providers.Singleton(SQLAlchemyDatabase)
 
     event_bus = providers.Singleton(EventBus)
+    
+    # Buses
+    query_bus = providers.Factory(QueryBus)
+    command_bus = providers.Factory(CommandBus)
 
     # Auth Services
     user_repository = providers.Factory(
@@ -1456,6 +1460,7 @@ class Container(containers.DeclarativeContainer):
     create_company_candidate_command_handler = providers.Factory(
         CreateCompanyCandidateCommandHandler,
         repository=company_candidate_repository,
+        phase_repository=phase_repository,
         workflow_repository=workflow_repository,
         stage_repository=workflow_stage_repository,
         validation_service=stage_phase_validation_service
@@ -1498,7 +1503,10 @@ class Container(containers.DeclarativeContainer):
         workflow_stage_repository=workflow_stage_repository,
         workflow_repository=workflow_repository,
         validation_service=stage_phase_validation_service,
-        interview_validation_service=interview_validation_service
+        interview_validation_service=interview_validation_service,
+        candidate_application_repository=candidate_application_repository,
+        interview_template_repository=interview_template_repository,
+        command_bus=command_bus
     )
 
     # CandidateComment Repository
@@ -1793,10 +1801,6 @@ class Container(containers.DeclarativeContainer):
         workflow_repository=workflow_repository,
         stage_repository=workflow_stage_repository
     )
-
-    # Buses - MOVED BEFORE HANDLERS
-    query_bus = providers.Factory(QueryBus)
-    command_bus = providers.Factory(CommandBus)
 
     # Interview Query Handlers that need query_bus
     get_interview_questions_by_token_query_handler = providers.Factory(

@@ -11,6 +11,8 @@ from src.company_bc.company_candidate.domain.infrastructure.company_candidate_re
 from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
 from src.company_bc.company_candidate.domain.value_objects.visibility_settings import VisibilitySettings
 from src.framework.application.command_bus import Command, CommandHandler
+from src.shared_bc.customization.phase.domain.infrastructure.phase_repository_interface import PhaseRepositoryInterface
+from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
     WorkflowRepositoryInterface
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_stage_repository_interface import \
@@ -44,11 +46,13 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
     def __init__(
             self,
             repository: CompanyCandidateRepositoryInterface,
+            phase_repository: PhaseRepositoryInterface,
             workflow_repository: WorkflowRepositoryInterface,
             stage_repository: WorkflowStageRepositoryInterface,
             validation_service: StagePhaseValidationService
     ):
         self._repository = repository
+        self._phase_repository = phase_repository
         self._workflow_repository = workflow_repository
         self._stage_repository = stage_repository
         self._validation_service = validation_service
@@ -59,47 +63,50 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
         visibility_settings = VisibilitySettings.from_dict(
             command.visibility_settings) if command.visibility_settings else VisibilitySettings.default()
 
-        # Try to get default workflow and initial stage for automatic assignment
+        # Get first phase and initial stage for automatic assignment (REQUIRED)
         workflow_id = None
         initial_stage_id = None
         phase_id = None
 
-        try:
-            # Get default workflow for the company
-            default_workflow = self._workflow_repository.get_default_by_company(command.company_id)
-            if default_workflow:
-                workflow_id = WorkflowId.from_string(str(default_workflow.id))
+        # Get all active phases for the company, ordered by sort_order
+        phases = self._phase_repository.list_by_company(command.company_id)
+        
+        # Filter phases of type CA (Candidate Application) and get the first one
+        ca_phases = [p for p in phases if p.workflow_type == WorkflowTypeEnum.CANDIDATE_APPLICATION]
+        
+        if not ca_phases:
+            raise ValueError(
+                f"Cannot create candidate: No Candidate Application phases found for company {command.company_id.value}. "
+                "Please create at least one phase of type 'Candidate Application' before adding candidates."
+            )
+        
+        # Get the first phase (already ordered by sort_order)
+        first_phase = ca_phases[0]
+        phase_id = first_phase.id
+        
+        # Get stages for this phase
+        stages = self._stage_repository.list_by_phase(phase_id, WorkflowTypeEnum.CANDIDATE_APPLICATION)
+        
+        if not stages:
+            raise ValueError(
+                f"Cannot create candidate: Phase '{first_phase.name}' has no stages. "
+                "Please add at least one stage to this phase before adding candidates."
+            )
+        
+        # Get the first stage (stages are ordered by 'order' field)
+        first_stage = stages[0]
+        initial_stage_id = first_stage.id
+        
+        # Get the workflow_id from the first stage
+        workflow_id = first_stage.workflow_id
+        
+        # Validate stage belongs to workflow using Domain Service
+        self._validation_service.validate_stage_belongs_to_workflow(
+            stage_id=initial_stage_id,
+            workflow_id=workflow_id
+        )
 
-                # Validate workflow has phase_id using Domain Service
-                try:
-                    phase_id = self._validation_service.validate_workflow_has_phase(workflow_id)
-                except ValueError as e:
-                    print(f"Warning: Workflow {workflow_id.value} does not have phase_id: {e}")
-                    workflow_id = None
-                    phase_id = None
-
-                if workflow_id:
-                    # Get initial stage of the workflow
-                    initial_stage = self._stage_repository.get_initial_stage(workflow_id)
-                    if initial_stage:
-                        initial_stage_id = initial_stage.id
-
-                        # Validate stage belongs to workflow using Domain Service
-                        try:
-                            self._validation_service.validate_stage_belongs_to_workflow(
-                                stage_id=initial_stage_id,
-                                workflow_id=workflow_id
-                            )
-                        except ValueError as e:
-                            print(
-                                f"Warning: Initial stage {initial_stage_id.value} does not belong to workflow {workflow_id.value}: {e}")
-                            initial_stage_id = None
-        except Exception as e:
-            # Log the error but don't fail the candidate creation
-            # This ensures candidates are still created even if workflow assignment fails
-            print(f"Warning: Could not assign workflow automatically: {e}")
-
-        # Create the company candidate entity
+        # Create the company candidate entity with phase
         company_candidate = CompanyCandidate.create(
             id=command.id,
             company_id=command.company_id,
@@ -117,9 +124,8 @@ class CreateCompanyCandidateCommandHandler(CommandHandler):
             phase_id=phase_id
         )
 
-        # If we found a workflow and initial stage, assign them
-        if workflow_id and initial_stage_id:
-            company_candidate = company_candidate.assign_workflow(workflow_id, initial_stage_id, phase_id)
+        # Assign workflow and initial stage (always required)
+        company_candidate = company_candidate.assign_workflow(workflow_id, initial_stage_id, phase_id)
 
         # Save to repository
         self._repository.save(company_candidate)

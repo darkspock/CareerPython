@@ -1,11 +1,19 @@
 from dataclasses import dataclass
+from typing import Optional, List
 
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
+from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import \
+    CandidateApplicationRepositoryInterface
 from src.company_bc.company_candidate.domain.exceptions import CompanyCandidateNotFoundError
 from src.company_bc.company_candidate.domain.infrastructure.company_candidate_repository_interface import \
     CompanyCandidateRepositoryInterface
 from src.company_bc.company_candidate.domain.value_objects.company_candidate_id import CompanyCandidateId
-from src.framework.application.command_bus import Command, CommandHandler
+from src.framework.application.command_bus import Command, CommandHandler, CommandBus
+from src.interview_bc.interview.application.commands.create_interview import CreateInterviewCommand
+from src.interview_bc.interview.domain.enums.interview_enums import InterviewModeEnum
+from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import \
+    InterviewTemplateRepositoryInterface
+from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
 from src.shared_bc.customization.field_validation.application.services.interview_validation_service import \
     InterviewValidationService
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
@@ -36,13 +44,19 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
             workflow_stage_repository: WorkflowStageRepositoryInterface,
             workflow_repository: WorkflowRepositoryInterface,
             validation_service: StagePhaseValidationService,
-            interview_validation_service: InterviewValidationService
+            interview_validation_service: InterviewValidationService,
+            candidate_application_repository: CandidateApplicationRepositoryInterface,
+            interview_template_repository: InterviewTemplateRepositoryInterface,
+            command_bus: CommandBus
     ):
         self._repository = repository
         self._workflow_stage_repository = workflow_stage_repository
         self._workflow_repository = workflow_repository
         self._validation_service = validation_service
         self._interview_validation_service = interview_validation_service
+        self._candidate_application_repository = candidate_application_repository
+        self._interview_template_repository = interview_template_repository
+        self._command_bus = command_bus
 
     def execute(self, command: ChangeStageCommand) -> None:
         """Handle the change stage command with automatic phase transition
@@ -140,3 +154,104 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
 
         # Save to repository
         self._repository.save(updated_candidate)
+
+        # Create interviews if the stage has interview configurations
+        self._create_interviews_for_stage(
+            candidate_id=company_candidate.candidate_id,
+            stage=target_stage,
+            company_id=company_candidate.company_id.value
+        )
+
+    def _create_interviews_for_stage(
+            self,
+            candidate_id: CandidateId,
+            stage,
+            company_id: str
+    ) -> None:
+        """
+        Create interviews automatically for a stage if it has interview configurations.
+        
+        Args:
+            candidate_id: ID of the candidate
+            stage: WorkflowStage entity with interview configurations
+            company_id: ID of the company
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"[AUTO INTERVIEW] Checking stage {stage.name} for interview configurations")
+        
+        # Check if stage has interview configurations
+        if not stage.interview_configurations or len(stage.interview_configurations) == 0:
+            logger.info(f"[AUTO INTERVIEW] No interview configurations found for stage {stage.name}")
+            return
+
+        logger.info(f"[AUTO INTERVIEW] Found {len(stage.interview_configurations)} interview configurations")
+
+        # Get candidate applications to find job_position_id
+        applications = self._candidate_application_repository.get_applications_by_candidate(candidate_id)
+        
+        if not applications:
+            logger.warning(f"[AUTO INTERVIEW] No applications found for candidate {candidate_id.value}")
+            return
+
+        logger.info(f"[AUTO INTERVIEW] Found {len(applications)} applications for candidate")
+
+        # Use the first active application's job_position_id
+        # TODO: In the future, we might want to filter by active status or use a different strategy
+        job_position_id = applications[0].job_position_id
+        logger.info(f"[AUTO INTERVIEW] Using job_position_id: {job_position_id.value}")
+
+        # Create interviews for each configuration
+        for config in stage.interview_configurations:
+            logger.info(f"[AUTO INTERVIEW] Processing config - template_id: {config.template_id}, mode: {config.mode}")
+            
+            # Only create interviews for AUTOMATIC mode
+            if config.mode != InterviewModeEnum.AUTOMATIC:
+                logger.info(f"[AUTO INTERVIEW] Skipping - mode is {config.mode}, not AUTOMATIC")
+                continue
+
+            # Get interview template to extract required information
+            template = self._interview_template_repository.get_by_id(
+                InterviewTemplateId.from_string(config.template_id)
+            )
+            
+            if not template:
+                logger.warning(f"[AUTO INTERVIEW] Template {config.template_id} not found")
+                continue
+
+            logger.info(f"[AUTO INTERVIEW] Template found: {template.name}")
+
+            # Get default_role_ids from stage or use empty list
+            required_roles = stage.default_role_ids if stage.default_role_ids else []
+            
+            if not required_roles:
+                logger.warning(f"[AUTO INTERVIEW] No required roles defined for stage {stage.name}")
+                continue
+
+            logger.info(f"[AUTO INTERVIEW] Required roles: {required_roles}")
+
+            # Create interview using command bus
+            logger.info(f"[AUTO INTERVIEW] Creating interview with template {template.name}")
+            
+            create_interview_command = CreateInterviewCommand(
+                candidate_id=candidate_id.value,
+                job_position_id=job_position_id.value,
+                workflow_stage_id=stage.id.value,
+                interview_template_id=config.template_id,
+                interview_mode=config.mode.value,
+                required_roles=required_roles,
+                title=template.name,
+                description=template.intro,
+                interview_type="CUSTOM",  # Default type
+                created_by=company_id
+            )
+
+            logger.info(f"[AUTO INTERVIEW] Executing CreateInterviewCommand")
+            
+            try:
+                # Execute command to create interview
+                self._command_bus.execute(create_interview_command)
+                logger.info(f"[AUTO INTERVIEW] Interview created successfully!")
+            except Exception as e:
+                logger.error(f"[AUTO INTERVIEW] Error creating interview: {e}", exc_info=True)

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, ChevronDown, ChevronRight, Calendar, User, AlertCircle, Clock, CheckCircle, X } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { Plus, ChevronDown, ChevronRight, Calendar, User, AlertCircle, Clock, CheckCircle, X, Ban } from 'lucide-react';
 import { useCandidateInterviews } from '../../hooks/useCandidateInterviews';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
+import { companyInterviewService } from '../../services/companyInterviewService';
 import AssignInterviewModal from './AssignInterviewModal';
 import type { WorkflowStage } from '../../types/workflow';
 import type { Interview } from '../../services/companyInterviewService';
@@ -79,14 +81,14 @@ export default function CandidateInterviewsSection({
   const getStatusIcon = (status: string) => {
     switch (status.toUpperCase()) {
       case 'PENDING':
-      case 'ENABLED':
         return <Clock className="w-4 h-4 text-yellow-600" />;
       case 'IN_PROGRESS':
         return <AlertCircle className="w-4 h-4 text-blue-600" />;
-      case 'COMPLETED':
+      case 'PAUSED':
+        return <Clock className="w-4 h-4 text-orange-600" />;
+      case 'FINISHED':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'CANCELLED':
-      case 'DISABLED':
+      case 'DISCARDED':
         return <X className="w-4 h-4 text-red-600" />;
       default:
         return <Clock className="w-4 h-4 text-gray-600" />;
@@ -97,14 +99,14 @@ export default function CandidateInterviewsSection({
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'PENDING':
-      case 'ENABLED':
         return 'bg-yellow-100 text-yellow-800';
       case 'IN_PROGRESS':
         return 'bg-blue-100 text-blue-800';
-      case 'COMPLETED':
+      case 'PAUSED':
+        return 'bg-orange-100 text-orange-800';
+      case 'FINISHED':
         return 'bg-green-100 text-green-800';
-      case 'CANCELLED':
-      case 'DISABLED':
+      case 'DISCARDED':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -125,6 +127,29 @@ export default function CandidateInterviewsSection({
       });
     } catch {
       return null;
+    }
+  };
+
+  // Handle cancel interview
+  const handleCancelInterview = async (interview: Interview) => {
+    if (!window.confirm(t('company.interviews.confirmCancel', { 
+      defaultValue: 'Are you sure you want to cancel this interview? This action cannot be undone.' 
+    }))) {
+      return;
+    }
+
+    try {
+      await companyInterviewService.cancelInterview(interview.id);
+      toast.success(t('company.interviews.cancelSuccess', { 
+        defaultValue: 'Interview cancelled successfully' 
+      }));
+      // Reload interviews
+      interviewsHook.loadInterviews();
+    } catch (err: any) {
+      toast.error(t('company.interviews.cancelError', { 
+        message: err.message,
+        defaultValue: `Error cancelling interview: ${err.message}` 
+      }));
     }
   };
 
@@ -190,7 +215,7 @@ export default function CandidateInterviewsSection({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-end gap-2">
             <button
               onClick={() => {
                 // TODO: Navigate to interview detail
@@ -200,6 +225,17 @@ export default function CandidateInterviewsSection({
             >
               {t('company.interviews.viewDetails')}
             </button>
+            {/* Only show cancel button if interview is not already cancelled or completed */}
+            {!['DISCARDED', 'FINISHED'].includes(interview.status.toUpperCase()) && (
+              <button
+                onClick={() => handleCancelInterview(interview)}
+                className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 font-medium"
+                title={t('company.interviews.cancelInterview', { defaultValue: 'Cancel Interview' })}
+              >
+                <Ban className="w-4 h-4" />
+                {t('company.interviews.cancel', { defaultValue: 'Cancel' })}
+              </button>
+            )}
           </div>
         </div>
       </div>

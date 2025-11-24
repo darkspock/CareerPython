@@ -9,7 +9,8 @@ from src.framework.application.command_bus import Command, CommandHandler
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewTypeEnum,
     InterviewProcessTypeEnum,
-    InterviewModeEnum
+    InterviewModeEnum,
+    InterviewStatusEnum
 )
 from src.interview_bc.interview.domain.exceptions.interview_exceptions import InterviewNotFoundException
 from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import InterviewRepositoryInterface
@@ -26,6 +27,7 @@ class UpdateInterviewCommand(Command):
     process_type: Optional[str] = None  # InterviewProcessTypeEnum value
     interview_type: Optional[str] = None  # InterviewTypeEnum value
     interview_mode: Optional[str] = None  # InterviewModeEnum value
+    status: Optional[str] = None  # InterviewStatusEnum value
     required_roles: Optional[List[str]] = None  # List of CompanyRole IDs
     interviewers: Optional[List[str]] = None  # List of interviewer names/IDs
     interviewer_notes: Optional[str] = None
@@ -59,6 +61,10 @@ class UpdateInterviewCommandHandler(CommandHandler[UpdateInterviewCommand]):
         if command.interview_mode:
             interview_mode_enum = InterviewModeEnum(command.interview_mode)
 
+        status_enum = None
+        if command.status:
+            status_enum = InterviewStatusEnum(command.status)
+
         # Parse scheduled datetime if provided
         scheduled_at_datetime = None
         if command.scheduled_at:
@@ -79,6 +85,13 @@ class UpdateInterviewCommandHandler(CommandHandler[UpdateInterviewCommand]):
             deadline_date=deadline_date_datetime,
             updated_by=command.updated_by
         )
+
+        # Update status if provided (for cancelling interviews)
+        if status_enum is not None:
+            interview.status = status_enum
+            interview.updated_at = datetime.utcnow()
+            if command.updated_by:
+                interview.updated_by = command.updated_by
 
         # Update scheduled_at if provided
         # Allow updating past dates when editing existing interviews (allow_past=True)

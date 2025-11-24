@@ -52,6 +52,19 @@ function SortablePhaseRow({
     return view === 'KANBAN' ? 'Kanban Board' : 'List View';
   };
 
+  const getWorkflowTypeLabel = (type: string): string => {
+    switch (type) {
+      case 'CA':
+        return 'Candidate Application';
+      case 'PO':
+        return 'Job Position Opening';
+      case 'CO':
+        return 'Candidate Onboarding';
+      default:
+        return type;
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -78,6 +91,10 @@ function SortablePhaseRow({
               <h3 className="text-lg font-semibold text-gray-900">
                 {phase.name}
               </h3>
+              {/* Workflow Type Badge */}
+              <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">
+                {getWorkflowTypeLabel(phase.workflow_type)}
+              </span>
               <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
                 {getDefaultViewLabel(phase.default_view)}
               </span>
@@ -177,12 +194,23 @@ function SortablePhaseRow({
   );
 }
 
+// Workflow Types
+const WORKFLOW_TYPES = {
+  CA: { value: 'CA', label: 'Candidate Application' },
+  PO: { value: 'PO', label: 'Job Position Opening' },
+  CO: { value: 'CO', label: 'Candidate Onboarding' },
+} as const;
+
+type WorkflowTypeFilter = 'CA' | 'PO' | 'CO';
+
 export default function PhasesPage() {
   const [phases, setPhases] = useState<Phase[]>([]);
+  const [filteredPhases, setFilteredPhases] = useState<Phase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<Phase | null>(null);
+  const [activeTypeFilter, setActiveTypeFilter] = useState<WorkflowTypeFilter>('CA');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -205,6 +233,11 @@ export default function PhasesPage() {
   useEffect(() => {
     loadPhases();
   }, []);
+
+  // Filter phases by workflow type
+  useEffect(() => {
+    setFilteredPhases(phases.filter(phase => phase.workflow_type === activeTypeFilter));
+  }, [phases, activeTypeFilter]);
 
   const loadPhases = async () => {
     try {
@@ -400,7 +433,7 @@ export default function PhasesPage() {
   };
 
   const handleInitializeDefaults = async () => {
-    if (!confirm('This will ARCHIVE all existing phases and create 3 new default phases:\n\n1. Sourcing (Kanban) - Screening process\n2. Evaluation (Kanban) - Interview process\n3. Offer and Pre-Onboarding (List) - Offer negotiation\n\nYour existing phases (including Talent Pool) will be archived but not deleted.\n\nContinue?')) {
+    if (!confirm('This will ARCHIVE all existing phases and create 3 new default phases:\n\n1. Sourcing (Kanban) - Screening process\n2. Evaluation (Kanban) - Interview process\n3. Offer and Pre-Onboarding (List) - Offer negotiation\n\nYour existing phases will be archived but not deleted.\n\nContinue?')) {
       return;
     }
 
@@ -463,6 +496,27 @@ export default function PhasesPage() {
         </div>
       )}
 
+      {/* Workflow Type Filter Tabs */}
+      <div className="mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            {Object.values(WORKFLOW_TYPES).map((type) => (
+              <button
+                key={type.value}
+                onClick={() => setActiveTypeFilter(type.value as WorkflowTypeFilter)}
+                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTypeFilter === type.value
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {type.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+
       {/* Phases List */}
       {phases.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
@@ -488,11 +542,19 @@ export default function PhasesPage() {
             </button>
           </div>
         </div>
+      ) : filteredPhases.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <Layers className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No phases found</h3>
+          <p className="text-gray-600 mb-6">
+            No phases match the selected filter. Try selecting a different workflow type.
+          </p>
+        </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={phases.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={filteredPhases.map((p) => p.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
-              {phases.map((phase, index) => (
+              {filteredPhases.map((phase, index) => (
                 <SortablePhaseRow
                   key={phase.id}
                   phase={phase}
@@ -504,7 +566,7 @@ export default function PhasesPage() {
                   onMoveUp={handleMovePhaseUp}
                   onMoveDown={handleMovePhaseDown}
                   isFirst={index === 0}
-                  isLast={index === phases.length - 1}
+                  isLast={index === filteredPhases.length - 1}
                 />
               ))}
             </div>

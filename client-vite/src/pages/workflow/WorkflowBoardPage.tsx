@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import {
   DndContext,
   DragOverlay,
@@ -511,7 +512,7 @@ export default function WorkflowBoardPage() {
           return newMap;
         });
       }
-      alert(t('company.workflowBoard.failedToMoveCandidateMessage', { message: err.message }));
+      toast.error(t('company.workflowBoard.failedToMoveCandidateMessage', { message: err.message }));
     }
   };
 
@@ -537,8 +538,9 @@ export default function WorkflowBoardPage() {
       
       // Reload data to get updated phase assignments and next phase candidates
       await loadStagesAndCandidates();
-    } catch (error) {
-      console.error('Failed to move candidate:', error);
+    } catch (err: any) {
+      console.error('Failed to move candidate:', err);
+      toast.error(t('company.workflowBoard.failedToMoveCandidateMessage', { message: err.message }));
       setError(t('company.workflowBoard.failedToMoveCandidate'));
     }
   };

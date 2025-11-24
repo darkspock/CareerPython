@@ -249,6 +249,7 @@ def update_interview(
         process_type=interview_data.process_type,
         interview_type=interview_data.interview_type,
         interview_mode=interview_data.interview_mode,
+        status=interview_data.status,
         required_roles=interview_data.required_roles,
         interviewers=interview_data.interviewers,
         interviewer_notes=interview_data.interviewer_notes,

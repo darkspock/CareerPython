@@ -535,7 +535,7 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
             models = session.query(InterviewModel).filter(
                 InterviewModel.candidate_id == candidate_id,
                 InterviewModel.workflow_stage_id == workflow_stage_id,
-                InterviewModel.status == InterviewStatusEnum.PENDING  # ENABLED = "PENDING" (see enum definition)
+                InterviewModel.status == InterviewStatusEnum.PENDING.value  # Use .value to get string "PENDING"
             ).order_by(InterviewModel.created_at.desc()).all()
             return [self._to_domain(model) for model in models]
 
