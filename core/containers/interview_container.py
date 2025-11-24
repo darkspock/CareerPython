@@ -118,102 +118,101 @@ class InterviewContainer(containers.DeclarativeContainer):
     # Interview Template Query Handlers
     list_interview_templates_query_handler = providers.Factory(
         ListInterviewTemplatesQueryHandler,
-        repository=interview_template_repository
+        interview_template_repository=interview_template_repository
     )
 
     get_interview_template_by_id_query_handler = providers.Factory(
         GetInterviewTemplateByIdQueryHandler,
-        repository=interview_template_repository
+        interview_template_repository=interview_template_repository
     )
 
     get_interview_template_full_by_id_query_handler = providers.Factory(
         GetInterviewTemplateFullByIdQueryHandler,
-        repository=interview_template_repository,
-        section_repository=interview_template_section_repository,
-        question_repository=interview_template_question_repository
+        interview_template_repository=interview_template_repository,
+        interview_template_section_repository=interview_template_section_repository,
+        interview_template_question_repository=interview_template_question_repository
     )
 
     get_questions_by_section_query_handler = providers.Factory(
         GetQuestionsBySectionQueryHandler,
-        repository=interview_template_question_repository
+        interview_template_question_repository=interview_template_question_repository
     )
 
     # Interview Template Command Handlers
     create_interview_template_command_handler = providers.Factory(
         CreateInterviewTemplateCommandHandler,
-        repository=interview_template_repository
+        interview_template_repository=interview_template_repository
     )
 
     update_interview_template_command_handler = providers.Factory(
         UpdateInterviewTemplateCommandHandler,
-        repository=interview_template_repository
+        template_repository=interview_template_repository
     )
 
     enable_interview_template_command_handler = providers.Factory(
         EnableInterviewTemplateCommandHandler,
-        repository=interview_template_repository
+        template_repository=interview_template_repository
     )
 
     disable_interview_template_command_handler = providers.Factory(
         DisableInterviewTemplateCommandHandler,
-        repository=interview_template_repository
+        template_repository=interview_template_repository
     )
 
     create_interview_template_section_command_handler = providers.Factory(
         CreateInterviewTemplateSectionCommandHandler,
-        repository=interview_template_section_repository,
-        template_repository=interview_template_repository
+        interview_template_section_repository=interview_template_section_repository
     )
 
     update_interview_template_section_command_handler = providers.Factory(
         UpdateInterviewTemplateSectionCommandHandler,
-        repository=interview_template_section_repository
+        section_repository=interview_template_section_repository
     )
 
     enable_interview_template_section_command_handler = providers.Factory(
         EnableInterviewTemplateSectionCommandHandler,
-        repository=interview_template_section_repository
+        section_repository=interview_template_section_repository,
+        question_repository=interview_template_question_repository
     )
 
     disable_interview_template_section_command_handler = providers.Factory(
         DisableInterviewTemplateSectionCommandHandler,
-        repository=interview_template_section_repository
+        section_repository=interview_template_section_repository
     )
 
     delete_interview_template_section_command_handler = providers.Factory(
         DeleteInterviewTemplateSectionCommandHandler,
-        repository=interview_template_section_repository
+        section_repository=interview_template_section_repository
     )
 
     move_section_up_command_handler = providers.Factory(
         MoveSectionUpCommandHandler,
-        repository=interview_template_section_repository
+        section_repository=interview_template_section_repository
     )
 
     move_section_down_command_handler = providers.Factory(
         MoveSectionDownCommandHandler,
-        repository=interview_template_section_repository
+        section_repository=interview_template_section_repository
     )
 
     create_interview_template_question_command_handler = providers.Factory(
         CreateInterviewTemplateQuestionCommandHandler,
-        repository=interview_template_question_repository,
-        section_repository=interview_template_section_repository
+        interview_template_question_repository=interview_template_question_repository
     )
 
     update_interview_template_question_command_handler = providers.Factory(
         UpdateInterviewTemplateQuestionCommandHandler,
-        repository=interview_template_question_repository
+        question_repository=interview_template_question_repository
     )
 
     enable_interview_template_question_command_handler = providers.Factory(
         EnableInterviewTemplateQuestionCommandHandler,
-        repository=interview_template_question_repository
+        question_repository=interview_template_question_repository
     )
 
     disable_interview_template_question_command_handler = providers.Factory(
         DisableInterviewTemplateQuestionCommandHandler,
-        repository=interview_template_question_repository
+        question_repository=interview_template_question_repository
     )
 
     delete_interview_template_command_handler = providers.Factory(

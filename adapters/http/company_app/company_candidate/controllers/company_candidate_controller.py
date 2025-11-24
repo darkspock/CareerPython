@@ -124,6 +124,18 @@ class CompanyCandidateController:
 
         self._command_bus.dispatch(command)
 
+        # If job_position_id is provided, create a CandidateApplication to link them
+        if request.job_position_id:
+            from src.company_bc.candidate_application.application.commands.create_candidate_application import \
+                CreateCandidateApplicationCommand
+            
+            application_command = CreateCandidateApplicationCommand(
+                candidate_id=candidate_id_to_use,
+                job_position_id=request.job_position_id,
+                notes="Application created during candidate creation"
+            )
+            self._command_bus.dispatch(application_command)
+
         # Query to get the created company candidate
         query = GetCompanyCandidateByIdQuery(id=company_candidate_id)
         dto: Optional[CompanyCandidateDto] = self._query_bus.query(query)

@@ -17,15 +17,24 @@ export interface Interview {
 }
 
 export const InterviewType = {
+  CUSTOM: 'CUSTOM',
   TECHNICAL: 'TECHNICAL',
   BEHAVIORAL: 'BEHAVIORAL',
-  SYSTEM_DESIGN: 'SYSTEM_DESIGN',
-  CODING: 'CODING',
-  COMPREHENSIVE: 'COMPREHENSIVE',
-  QUICK: 'QUICK'
+  CULTURAL_FIT: 'CULTURAL_FIT',
+  KNOWLEDGE_CHECK: 'KNOWLEDGE_CHECK',
+  EXPERIENCE_CHECK: 'EXPERIENCE_CHECK'
 } as const;
 
 export type InterviewType = typeof InterviewType[keyof typeof InterviewType];
+
+export const InterviewTemplateType = {
+  EXTENDED_PROFILE: 'EXTENDED_PROFILE',
+  POSITION_INTERVIEW: 'POSITION_INTERVIEW',
+  SCREENING: 'SCREENING',
+  CUSTOM: 'CUSTOM'
+} as const;
+
+export type InterviewTemplateType = typeof InterviewTemplateType[keyof typeof InterviewTemplateType];
 
 export const InterviewStatus = {
   SCHEDULED: 'SCHEDULED',

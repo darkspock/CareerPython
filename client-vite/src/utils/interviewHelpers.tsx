@@ -75,18 +75,30 @@ export function getStatusBadge(status: string): JSX.Element {
 }
 
 /**
- * Get interview type label
+ * Get interview type label (InterviewTypeEnum)
  */
 export function getTypeLabel(type: string): string {
   const typeLabels: Record<string, string> = {
-    EXTENDED_PROFILE: 'Perfil Extendido',
-    POSITION_INTERVIEW: 'Entrevista de Posición',
+    CUSTOM: 'Personalizada',
     TECHNICAL: 'Técnica',
     BEHAVIORAL: 'Conductual',
     CULTURAL_FIT: 'Ajuste Cultural',
-    CUSTOM: 'Personalizada',
     KNOWLEDGE_CHECK: 'Verificación de Conocimientos',
     EXPERIENCE_CHECK: 'Verificación de Experiencia',
+  };
+
+  return typeLabels[type] || type.replace('_', ' ');
+}
+
+/**
+ * Get interview template type label (InterviewTemplateTypeEnum)
+ */
+export function getTemplateTypeLabel(type: string): string {
+  const typeLabels: Record<string, string> = {
+    EXTENDED_PROFILE: 'Perfil Extendido',
+    POSITION_INTERVIEW: 'Entrevista de Posición',
+    SCREENING: 'Screening',
+    CUSTOM: 'Personalizada',
   };
 
   return typeLabels[type] || type.replace('_', ' ');

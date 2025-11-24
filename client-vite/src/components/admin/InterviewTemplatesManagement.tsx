@@ -22,7 +22,7 @@ interface InterviewTemplate {
   prompt?: string;
   goal?: string;
   status: 'ENABLED' | 'DRAFT' | 'DISABLED';
-  type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW';
+  type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
   job_category: string;
   section: 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL';
   tags?: string[];
@@ -50,7 +50,9 @@ const InterviewTemplatesManagement: React.FC = () => {
 
   const templateTypes = [
     { value: 'EXTENDED_PROFILE', label: 'Extended Profile' },
-    { value: 'POSITION_INTERVIEW', label: 'Position Interview' }
+    { value: 'POSITION_INTERVIEW', label: 'Position Interview' },
+    { value: 'SCREENING', label: 'Screening' },
+    { value: 'CUSTOM', label: 'Custom' }
   ];
 
   const statusOptions = [

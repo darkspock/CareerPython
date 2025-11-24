@@ -77,6 +77,7 @@ export interface CreateCompanyCandidateRequest {
   tags?: string[];
   internal_notes?: string;
   visibility_settings?: Partial<VisibilitySettings>;
+  job_position_id?: string; // Job Position ID to associate candidate with
 }
 
 export interface UpdateCompanyCandidateRequest {

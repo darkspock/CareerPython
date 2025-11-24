@@ -1,5 +1,6 @@
 // Company Interview Template API service
 import { ApiClient } from '../lib/api';
+import { InterviewTemplateType } from '../types/interview';
 
 export type InterviewTemplate = {
   id: string;
@@ -8,7 +9,7 @@ export type InterviewTemplate = {
   prompt?: string;
   goal?: string;
   status: 'ENABLED' | 'DRAFT' | 'DISABLED';
-  type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW';
+  type: InterviewTemplateType;
   job_category?: string;
   section?: string;
   tags?: string[];

@@ -27,8 +27,21 @@ export default function CandidateInterviewsSection({
   const { t } = useTranslation();
   const [showOtherStages, setShowOtherStages] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showPositionError, setShowPositionError] = useState(false);
   const [workflowStages, setWorkflowStages] = useState<WorkflowStage[]>(availableStages);
   const [loadingStages, setLoadingStages] = useState(false);
+
+  const handleAssignClick = () => {
+    console.log('🔍 DEBUG: jobPositionId =', jobPositionId);
+    if (!jobPositionId) {
+      console.warn('⚠️ No jobPositionId provided');
+      setShowPositionError(true);
+      setTimeout(() => setShowPositionError(false), 5000); // Auto-hide after 5 seconds
+      return;
+    }
+    console.log('✅ Opening assign interview modal with jobPositionId:', jobPositionId);
+    setShowAssignModal(true);
+  };
 
   const interviewsHook = useCandidateInterviews({
     candidateId,
@@ -219,14 +232,38 @@ export default function CandidateInterviewsSection({
 
   return (
     <div className="space-y-6">
+      {/* Job Position Required Error */}
+      {showPositionError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-red-800">
+                {t('company.interviews.errors.jobPositionRequired', { defaultValue: 'This candidate must be associated with a job position to assign interviews' })}
+              </p>
+              <p className="text-sm text-red-600 mt-1">
+                {t('company.interviews.errors.assignPositionFirst', { defaultValue: 'Please assign this candidate to a job position first from the candidate details.' })}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowPositionError(false)}
+              className="text-red-400 hover:text-red-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header with Assign button */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900">
           {t('company.interviews.title')}
         </h2>
         <button
-          onClick={() => setShowAssignModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          onClick={handleAssignClick}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title={!jobPositionId ? t('company.interviews.errors.jobPositionRequired', { defaultValue: 'This candidate must be associated with a job position to assign interviews' }) : ''}
         >
           <Plus className="w-4 h-4" />
           {t('company.interviews.assignInterview')}
@@ -288,8 +325,9 @@ export default function CandidateInterviewsSection({
               {t('company.interviews.noInterviewsDescription')}
             </p>
             <button
-              onClick={() => setShowAssignModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={handleAssignClick}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title={!jobPositionId ? t('company.interviews.errors.jobPositionRequired', { defaultValue: 'This candidate must be associated with a job position to assign interviews' }) : ''}
             >
               <Plus className="w-4 h-4" />
               {t('company.interviews.assignFirstInterview')}

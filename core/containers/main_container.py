@@ -79,6 +79,8 @@ class Container(containers.DeclarativeContainer):
     SharedDependencies.phase_repository = workflow.phase_repository
     SharedDependencies.entity_customization_repository = workflow.entity_customization_repository
     SharedDependencies.interview_repository = interview.interview_repository
+    SharedDependencies.stage_phase_validation_service = workflow.stage_phase_validation_service
+    SharedDependencies.interview_validation_service = workflow.interview_validation_service
     
     # Company (depends on Workflow and Auth)
     company = providers.Container(
@@ -99,12 +101,10 @@ class Container(containers.DeclarativeContainer):
     )
     
     # Now populate SharedDependencies with remaining cross-BC dependencies
-    # Basic services, Auth repositories, and Workflow repositories were already populated
+    # Basic services, Auth repositories, Workflow repositories, and validation services were already populated
     # Cross-BC dependencies that depend on containers created after Company
     SharedDependencies.candidate_repository = candidate.candidate_repository
     SharedDependencies.job_position_repository = job_position.job_position_repository
-    SharedDependencies.stage_phase_validation_service = workflow.stage_phase_validation_service
-    SharedDependencies.interview_validation_service = workflow.interview_validation_service
     SharedDependencies.candidate_application_repository = candidate.candidate_application_repository
     SharedDependencies.position_stage_assignment_repository = job_position.position_stage_assignment_repository
     

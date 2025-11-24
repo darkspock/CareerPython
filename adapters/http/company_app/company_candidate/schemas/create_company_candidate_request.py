@@ -23,3 +23,4 @@ class CreateCompanyCandidateRequest(BaseModel):
     visibility_settings: Optional[Dict[str, bool]] = Field(default=None,
                                                            description="Visibility settings for candidate data")
     tags: List[str] = Field(default_factory=list, description="Tags for categorization")
+    job_position_id: Optional[str] = Field(default=None, description="Job Position ID to associate candidate with")

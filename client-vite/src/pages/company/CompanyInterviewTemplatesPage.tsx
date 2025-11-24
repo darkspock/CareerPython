@@ -44,7 +44,9 @@ const CompanyInterviewTemplatesPage: React.FC = () => {
 
   const templateTypes = [
     { value: 'EXTENDED_PROFILE', label: t('company.interviewTemplateEditor.templateTypes.EXTENDED_PROFILE') },
-    { value: 'POSITION_INTERVIEW', label: t('company.interviewTemplateEditor.templateTypes.POSITION_INTERVIEW') }
+    { value: 'POSITION_INTERVIEW', label: t('company.interviewTemplateEditor.templateTypes.POSITION_INTERVIEW') },
+    { value: 'SCREENING', label: t('company.interviewTemplateEditor.templateTypes.SCREENING', { defaultValue: 'Screening' }) },
+    { value: 'CUSTOM', label: t('company.interviewTemplateEditor.templateTypes.CUSTOM', { defaultValue: 'Custom' }) }
   ];
   
   // Helper function to get label for template type

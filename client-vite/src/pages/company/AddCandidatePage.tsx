@@ -141,7 +141,7 @@ export default function AddCandidatePage() {
         internal_notes: formData.internal_notes || undefined,
         created_by_user_id: companyUserId,
         job_position_id: formData.job_position_id || undefined,
-      } as any); // Using 'as any' since job_position_id might not be in the type definition yet
+      });
 
       navigate('/company/candidates');
     } catch (err: any) {

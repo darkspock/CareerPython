@@ -284,7 +284,27 @@
       "managePipeline": "Manage your candidate pipeline",
       "backToCandidates": "Back to Candidates",
       "edit": "Edit",
+      "editCandidateDetails": "Edit candidate details",
       "archive": "Archive",
+      "tabs": {
+        "info": "Information",
+        "information": "Information",
+        "comments": "Comments",
+        "reviews": "Reviews",
+        "documents": "Documents",
+        "interviews": "Interviews",
+        "history": "History"
+      },
+      "detail": {
+        "contactInformation": "Contact Information",
+        "currentStatus": "Current Status",
+        "priority": "Priority",
+        "phase": "Phase",
+        "actions": "Actions",
+        "created": "Created",
+        "lastUpdated": "Last Updated",
+        "stageTimeline": "Stage Timeline"
+      },
       "editCandidateDetails": "Edit candidate details",
       "archiveCandidate": "Archive this candidate",
       "tabs": {
@@ -469,35 +489,10 @@
       "customFieldsLinkText": "You can configure custom fields for each stage",
       "customFieldsLinkButton": "here"
     },
-    "candidates": {
-      "backToCandidates": "Back to Candidates",
-      "edit": "Edit",
-      "editCandidateDetails": "Edit candidate details",
-      "applicationStatus": "Application Status",
-      "dates": "Dates",
-      "tabs": {
-        "info": "Information",
-        "information": "Information",
-        "comments": "Comments",
-        "reviews": "Reviews",
-        "documents": "Documents",
-        "interviews": "Interviews",
-        "history": "History"
-      },
-      "detail": {
-        "contactInformation": "Contact Information",
-        "currentStatus": "Current Status",
-        "priority": "Priority",
-        "phase": "Phase",
-        "actions": "Actions",
-        "created": "Created",
-        "lastUpdated": "Last Updated",
-        "stageTimeline": "Stage Timeline"
-      }
-    },
     "interviews": {
       "title": "Interviews",
       "assignInterview": "Assign Interview",
+      "current": "Current",
       "currentStage": "Current",
       "currentStageInterviews": "Current Stage Interviews ({{stage}})",
       "otherStagesInterviews": "Other Stages",
@@ -526,7 +521,29 @@
         "scheduledDateHelp": "Optional - leave empty to schedule later",
         "participants": "Participants",
         "noUsers": "No users available",
-        "participantsHelp": "Optional - select interviewers"
+        "participantsHelp": "Optional - select interviewers",
+        "selectedRoles": "Selected roles",
+        "selectedParticipants": "Selected participants",
+        "rolesSelected": "roles selected",
+        "participantsSelected": "participants selected",
+        "selectRoles": "Select roles",
+        "selectParticipants": "Select participants",
+        "roleAssignments": "Role Assignments",
+        "assigned": "assigned",
+        "assignPeople": "Assign people",
+        "selectPeople": "Select people",
+        "roleAssignmentsHelp": "Assign at least one person to any role. You can leave roles empty and assign people later.",
+        "addRole": "Add Role",
+        "role": "Role",
+        "selectRole": "Select a role",
+        "assignedPeople": "Assigned People",
+        "selectPerson": "Select a person",
+        "add": "Add",
+        "allUsersAssigned": "All users already assigned",
+        "noPeopleAssigned": "No people assigned yet (optional)",
+        "peopleAssigned": "people assigned",
+        "noRolesAssigned": "No roles assigned yet",
+        "clickAddRole": "Click \"Add Role\" to start"
       },
       "errors": {
         "stageRequired": "Stage is required",
@@ -534,14 +551,16 @@
         "templateRequired": "Please select a template",
         "rolesRequired": "At least one role is required",
         "dateInPast": "Scheduled date must be in the future",
-        "jobPositionRequired": "This candidate must be associated with a job position to assign interviews"
+        "jobPositionRequired": "This candidate must be associated with a job position to assign interviews",
+        "assignPositionFirst": "Please assign this candidate to a job position first from the candidate details."
       },
       "types": {
-        "EXTENDED_PROFILE": "Extended Profile",
-        "POSITION_INTERVIEW": "Position Interview",
+        "CUSTOM": "Custom",
         "TECHNICAL": "Technical",
         "BEHAVIORAL": "Behavioral",
-        "CULTURAL_FIT": "Cultural Fit"
+        "CULTURAL_FIT": "Cultural Fit",
+        "KNOWLEDGE_CHECK": "Knowledge Check",
+        "EXPERIENCE_CHECK": "Experience Check"
       }
     }
   },

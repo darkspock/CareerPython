@@ -890,7 +890,7 @@ class InterviewAnalyticsService {
       recommendedType = InterviewType.BEHAVIORAL;
       focusCategories.push(QuestionCategory.BEHAVIORAL, QuestionCategory.SITUATIONAL);
     } else if (profile.weakestCategory === QuestionCategory.SYSTEM_DESIGN) {
-      recommendedType = InterviewType.SYSTEM_DESIGN;
+      recommendedType = InterviewType.TECHNICAL;
       focusCategories.push(QuestionCategory.SYSTEM_DESIGN, QuestionCategory.TECHNICAL);
     } else {
       focusCategories.push(QuestionCategory.TECHNICAL);

@@ -518,7 +518,27 @@
       "managePipeline": "Gestiona tu pipeline de candidatos",
       "backToCandidates": "Volver a Candidatos",
       "edit": "Editar",
+      "editCandidateDetails": "Editar detalles del candidato",
       "archive": "Archivar",
+      "tabs": {
+        "info": "Información",
+        "information": "Información",
+        "comments": "Comentarios",
+        "reviews": "Evaluaciones",
+        "documents": "Documentos",
+        "interviews": "Entrevistas",
+        "history": "Historial"
+      },
+      "detail": {
+        "contactInformation": "Información de Contacto",
+        "currentStatus": "Estado Actual",
+        "priority": "Prioridad",
+        "phase": "Fase",
+        "actions": "Acciones",
+        "created": "Creado",
+        "lastUpdated": "Última Actualización",
+        "stageTimeline": "Línea de Tiempo de Etapas"
+      },
       "editCandidateDetails": "Editar detalles del candidato",
       "archiveCandidate": "Archivar este candidato",
       "tabs": {
@@ -708,35 +728,10 @@
       "customFieldsLinkText": "Puede establecer campos personalizados en cada etapa",
       "customFieldsLinkButton": "aquí"
     },
-    "candidates": {
-      "backToCandidates": "Volver a Candidatos",
-      "edit": "Editar",
-      "editCandidateDetails": "Editar detalles del candidato",
-      "applicationStatus": "Estado de la Aplicación",
-      "dates": "Fechas",
-      "tabs": {
-        "info": "Información",
-        "information": "Información",
-        "comments": "Comentarios",
-        "reviews": "Evaluaciones",
-        "documents": "Documentos",
-        "interviews": "Entrevistas",
-        "history": "Historial"
-      },
-      "detail": {
-        "contactInformation": "Información de Contacto",
-        "currentStatus": "Estado Actual",
-        "priority": "Prioridad",
-        "phase": "Fase",
-        "actions": "Acciones",
-        "created": "Creado",
-        "lastUpdated": "Última Actualización",
-        "stageTimeline": "Línea de Tiempo de Etapas"
-      }
-    },
     "interviews": {
       "title": "Entrevistas",
       "assignInterview": "Asignar Entrevista",
+      "current": "Actual",
       "currentStage": "Actual",
       "currentStageInterviews": "Entrevistas de la Etapa Actual ({{stage}})",
       "otherStagesInterviews": "Otras Etapas",
@@ -765,7 +760,29 @@
         "scheduledDateHelp": "Opcional - deja vacío para programar más tarde",
         "participants": "Participantes",
         "noUsers": "No hay usuarios disponibles",
-        "participantsHelp": "Opcional - selecciona entrevistadores"
+        "participantsHelp": "Opcional - selecciona entrevistadores",
+        "selectedRoles": "Roles seleccionados",
+        "selectedParticipants": "Participantes seleccionados",
+        "rolesSelected": "roles seleccionados",
+        "participantsSelected": "participantes seleccionados",
+        "selectRoles": "Seleccionar roles",
+        "selectParticipants": "Seleccionar participantes",
+        "roleAssignments": "Asignación de Roles",
+        "assigned": "asignados",
+        "assignPeople": "Asignar personas",
+        "selectPeople": "Seleccionar personas",
+        "roleAssignmentsHelp": "Asigna al menos una persona a cualquier rol. Puedes dejar roles vacíos y asignar personas más tarde.",
+        "addRole": "Agregar Rol",
+        "role": "Rol",
+        "selectRole": "Seleccionar un rol",
+        "assignedPeople": "Personas Asignadas",
+        "selectPerson": "Seleccionar una persona",
+        "add": "Agregar",
+        "allUsersAssigned": "Todos los usuarios ya están asignados",
+        "noPeopleAssigned": "No hay personas asignadas aún (opcional)",
+        "peopleAssigned": "personas asignadas",
+        "noRolesAssigned": "No hay roles asignados aún",
+        "clickAddRole": "Haz clic en \"Agregar Rol\" para empezar"
       },
       "errors": {
         "stageRequired": "La etapa es obligatoria",
@@ -773,14 +790,16 @@
         "templateRequired": "Por favor selecciona una plantilla",
         "rolesRequired": "Se requiere al menos un rol",
         "dateInPast": "La fecha programada debe ser futura",
-        "jobPositionRequired": "Este candidato debe estar asociado a una posición de trabajo para asignar entrevistas"
+        "jobPositionRequired": "Este candidato debe estar asociado a una posición de trabajo para asignar entrevistas",
+        "assignPositionFirst": "Por favor asigna este candidato a una posición de trabajo primero desde los detalles del candidato."
       },
       "types": {
-        "EXTENDED_PROFILE": "Perfil Extendido",
-        "POSITION_INTERVIEW": "Entrevista de Posición",
+        "CUSTOM": "Personalizada",
         "TECHNICAL": "Técnica",
         "BEHAVIORAL": "Conductual",
-        "CULTURAL_FIT": "Ajuste Cultural"
+        "CULTURAL_FIT": "Ajuste Cultural",
+        "KNOWLEDGE_CHECK": "Verificación de Conocimientos",
+        "EXPERIENCE_CHECK": "Verificación de Experiencia"
       }
     }
   },

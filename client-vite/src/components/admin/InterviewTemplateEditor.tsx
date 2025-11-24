@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Plus, ChevronUp, ChevronDown, Pencil, MessageSquare, Power, PowerOff, Trash2, X, FileText, Star } from 'lucide-react';
 import { api } from '../../lib/api';
+import { InterviewTemplateType } from '../../types/interview';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,7 +42,7 @@ interface InterviewTemplate {
   prompt?: string;
   goal?: string;
   status: 'ENABLED' | 'DRAFT' | 'DISABLED';
-  type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
+  type: InterviewTemplateType;
   job_category: string | null;
   tags?: string[];
   allow_ai_questions?: boolean;
@@ -85,7 +86,7 @@ const InterviewTemplateEditor: React.FC = () => {
     intro: string;
     prompt: string;
     goal: string;
-    type: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
+    type: InterviewTemplateType;
     job_category: string | null;
     tags: string[];
     allow_ai_questions: boolean;
@@ -560,7 +561,7 @@ const InterviewTemplateEditor: React.FC = () => {
                     <Select
                       value={formData.type}
                       onValueChange={(value) => {
-                        const newType = value as 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
+                        const newType = value as InterviewTemplateType;
                         // Reset scoring_mode if type is not SCREENING
                         setFormData({ 
                           ...formData, 
@@ -1124,7 +1125,7 @@ const SectionFormModal: React.FC<SectionFormModalProps> = ({ section, onSave, on
 // Questions List Component (inline, no modal)
 interface QuestionsListProps {
   section: InterviewTemplateSection;
-  templateType?: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
+  templateType?: InterviewTemplateType;
   scoringMode?: 'DISTANCE' | 'ABSOLUTE' | null;
   apiBasePath: string;
 }
@@ -1426,7 +1427,7 @@ interface QuestionFormModalProps {
   question: any | null;
   sectionId: string;
   sectionType?: 'EXPERIENCE' | 'EDUCATION' | 'PROJECT' | 'SOFT_SKILL' | 'GENERAL';
-  templateType?: 'EXTENDED_PROFILE' | 'POSITION_INTERVIEW' | 'SCREENING' | 'CUSTOM';
+  templateType?: InterviewTemplateType;
   scoringMode?: 'DISTANCE' | 'ABSOLUTE' | null;
   onSave: (questionData: any) => void;
   onCancel: () => void;
