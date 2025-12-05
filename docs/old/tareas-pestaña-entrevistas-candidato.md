@@ -1,7 +1,7 @@
 # Tareas - Pestaña de Entrevistas en Detalle de Candidato
 
 **Proyecto**: CareerPython  
-**Requisito**: [requisito-pestaña-entrevistas-candidato.md](./requisito-pestaña-entrevistas-candidato.md)  
+**Requisito**: [requisito-pestaña-entrevistas-candidato.md](requisito-pestaña-entrevistas-candidato.md)  
 **Fecha**: 2025-01-28  
 **ACTUALIZACIÓN**: workflow_stage_id es OBLIGATORIO - No hay entrevistas globales
 
@@ -674,7 +674,7 @@ TEST-1, TEST-2, TEST-3, TEST-4 (Testing)
 
 ## Referencias
 
-- [Requisito completo](./requisito-pestaña-entrevistas-candidato.md)
+- [Requisito completo](requisito-pestaña-entrevistas-candidato.md)
 - Entidad Interview: `src/interview_bc/interview/domain/entities/interview.py`
 - Repositorio: `src/interview_bc/interview/Infrastructure/repositories/interview_repository.py`
 - Controller: `adapters/http/company_app/interview/controllers/interview_controller.py`
