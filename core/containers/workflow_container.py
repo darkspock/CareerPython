@@ -15,6 +15,9 @@ from src.shared_bc.customization.entity_customization.infrastructure.repositorie
 from src.shared_bc.customization.entity_customization.infrastructure.repositories.custom_field_repository import CustomFieldRepository as NewCustomFieldRepository
 from src.shared_bc.customization.field_validation.infrastructure.repositories.validation_rule_repository import ValidationRuleRepository
 
+# Company User Repository (needed for StagePermissionService)
+from src.company_bc.company.infrastructure.repositories.company_user_repository import CompanyUserRepository
+
 # Workflow Domain Services
 from src.shared_bc.customization.workflow.domain.services.stage_phase_validation_service import StagePhaseValidationService
 from src.shared_bc.customization.field_validation.application.services.field_validation_service import FieldValidationService
@@ -129,7 +132,13 @@ class WorkflowContainer(containers.DeclarativeContainer):
     validation_rule_repository = providers.Factory(
         ValidationRuleRepository
     )
-    
+
+    # Company User Repository (for permission checks)
+    company_user_repository = providers.Factory(
+        CompanyUserRepository,
+        database=shared.database
+    )
+
     # Domain Services
     stage_phase_validation_service = providers.Factory(
         StagePhaseValidationService,
@@ -150,7 +159,8 @@ class WorkflowContainer(containers.DeclarativeContainer):
     
     stage_permission_service = providers.Factory(
         StagePermissionService,
-        position_stage_assignment_repository=shared.position_stage_assignment_repository
+        position_stage_assignment_repository=shared.position_stage_assignment_repository,
+        company_user_repository=company_user_repository
     )
     
     candidate_stage_transition_handler = providers.Factory(

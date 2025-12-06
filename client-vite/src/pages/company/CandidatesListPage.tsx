@@ -13,10 +13,13 @@ import {
   Building2,
   User,
   MessageSquare,
-  Kanban
+  Kanban,
+  Mail,
+  CheckSquare
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import type { CompanyCandidate } from '../../types/companyCandidate';
+import { BulkEmailModal } from '../../components/company/email/BulkEmailModal';
 import {
   Tooltip,
   TooltipContent,
@@ -112,6 +115,10 @@ export default function CandidatesListPage() {
   const [selectedCandidateForPosition, setSelectedCandidateForPosition] = useState<CompanyCandidate | null>(null);
   const [positions, setPositions] = useState<any[]>([]);
   const [loadingPositions, setLoadingPositions] = useState(false);
+
+  // Selection state for bulk actions
+  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+  const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
 
   // Get company_id from JWT token
   const getCompanyId = () => {
@@ -228,6 +235,41 @@ export default function CandidatesListPage() {
     return matchesSearch && matchesStatus && matchesPriority && matchesPhase;
   });
 
+  // Selection handlers for bulk actions
+  const toggleCandidateSelection = (candidateId: string) => {
+    setSelectedCandidates(prev => {
+      const next = new Set(prev);
+      if (next.has(candidateId)) {
+        next.delete(candidateId);
+      } else {
+        next.add(candidateId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCandidates.size === filteredCandidates.length) {
+      setSelectedCandidates(new Set());
+    } else {
+      setSelectedCandidates(new Set(filteredCandidates.map(c => c.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedCandidates(new Set());
+  };
+
+  const getSelectedCandidatesData = (): CompanyCandidate[] => {
+    return filteredCandidates.filter(c => selectedCandidates.has(c.id));
+  };
+
+  // Get workflow_id from first selected candidate (for bulk email)
+  const getSelectedWorkflowId = (): string => {
+    const selected = getSelectedCandidatesData();
+    return selected[0]?.workflow_id || '';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -266,6 +308,35 @@ export default function CandidatesListPage() {
           </div>
         )}
       </div>
+
+      {/* Bulk Actions Bar */}
+      {selectedCandidates.size > 0 && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CheckSquare className="w-5 h-5 text-blue-600" />
+            <span className="text-blue-800 font-medium">
+              {selectedCandidates.size} candidate{selectedCandidates.size !== 1 ? 's' : ''} selected
+            </span>
+            <button
+              onClick={clearSelection}
+              className="text-blue-600 hover:text-blue-800 text-sm underline"
+            >
+              Clear selection
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkEmailModal(true)}
+              disabled={!getSelectedWorkflowId()}
+              title={!getSelectedWorkflowId() ? 'Selected candidates must have a workflow' : ''}
+            >
+              <Mail className="w-4 h-4" />
+              Send Bulk Email
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <Card className="mb-6">
@@ -348,6 +419,14 @@ export default function CandidatesListPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[40px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedCandidates.size === filteredCandidates.length && filteredCandidates.length > 0}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </TableHead>
                   <TableHead className="w-[50px] max-w-[50px] min-w-[50px]">
                     {/* Empty header for icons column */}
                   </TableHead>
@@ -359,7 +438,16 @@ export default function CandidatesListPage() {
               </TableHeader>
               <TableBody>
                 {filteredCandidates.map((candidate) => (
-                  <TableRow key={candidate.id}>
+                  <TableRow key={candidate.id} className={selectedCandidates.has(candidate.id) ? 'bg-blue-50' : ''}>
+                    <TableCell className="w-[40px]">
+                      <input
+                        type="checkbox"
+                        checked={selectedCandidates.has(candidate.id)}
+                        onChange={() => toggleCandidateSelection(candidate.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </TableCell>
                     <TableCell className="w-[50px] max-w-[50px] min-w-[50px]">
                       <div className="flex items-center gap-1 justify-center">
                         {getPriorityIcon(candidate.priority) && (
@@ -545,6 +633,19 @@ export default function CandidatesListPage() {
           Showing {filteredCandidates.length} of {candidates.length} candidates
         </div>
       )}
+
+      {/* Bulk Email Modal */}
+      <BulkEmailModal
+        isOpen={showBulkEmailModal}
+        onClose={() => {
+          setShowBulkEmailModal(false);
+          clearSelection();
+        }}
+        candidates={getSelectedCandidatesData()}
+        workflowId={getSelectedWorkflowId()}
+        companyName="Company"
+        positionTitle="Position"
+      />
 
       {/* Assign Position Modal */}
       {showPositionModal && (

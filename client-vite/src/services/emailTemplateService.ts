@@ -142,4 +142,25 @@ export class EmailTemplateService {
     // Default: return empty array or throw error
     throw new Error('Must provide at least workflow_id or stage_id filter');
   }
+
+  /**
+   * Send bulk emails to multiple recipients
+   */
+  static async sendBulkEmail(
+    templateId: string,
+    recipients: Array<{
+      email: string;
+      name: string;
+      template_data: Record<string, string>;
+    }>
+  ): Promise<{ message: string; total: number; queued: number }> {
+    return await api.authenticatedRequest<{ message: string; total: number; queued: number }>(
+      `${this.BASE_PATH}/send-bulk`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template_id: templateId, recipients })
+      }
+    );
+  }
 }

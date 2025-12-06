@@ -48,16 +48,46 @@ class JobPosition:
         self.stage_id = stage_id
         self.updated_at = datetime.utcnow()
 
-    def can_receive_applications(self) -> bool:
+    def can_receive_applications(
+            self,
+            stage_type: Optional[str] = None
+    ) -> bool:
         """
         Check if job position can receive applications.
 
-        This is determined by the stage's status_mapping being ACTIVE.
-        TODO: This will need access to the workflow repository to check the stage.
+        A job position can receive applications when:
+        1. It has PUBLIC visibility
+        2. Its current stage type is INITIAL or PROGRESS (active stages)
+
+        Args:
+            stage_type: The current stage's type (from WorkflowStageTypeEnum).
+                       If not provided, only visibility is checked.
+
+        Returns:
+            True if the position can receive applications, False otherwise.
+
+        Note:
+            The stage_type should be obtained from the workflow stage repository
+            and passed to this method by the calling service/command handler.
         """
-        # TODO: Implement when we have access to workflow repository
-        # Check if current stage's status_mapping is ACTIVE
-        return False
+        # Check visibility - must be PUBLIC to receive applications
+        if self.visibility != JobPositionVisibilityEnum.PUBLIC:
+            return False
+
+        # If no stage type provided, check only visibility
+        if stage_type is None:
+            # Default to True if only checking visibility
+            # The caller should provide stage_type for complete validation
+            return True
+
+        # Check if stage type allows receiving applications
+        # Only INITIAL and PROGRESS stages can receive applications
+        from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
+        active_stage_types = [
+            WorkflowStageTypeEnum.INITIAL.value,
+            WorkflowStageTypeEnum.PROGRESS.value
+        ]
+        return stage_type in active_stage_types
 
     def get_workflow_for_phase(self, phase_id: PhaseId) -> Optional[str]:
         """Get the workflow ID configured for a specific phase

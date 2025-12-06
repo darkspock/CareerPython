@@ -33,6 +33,8 @@ export interface InterviewTemplate {
   prompt?: string;
   goal?: string;
   scoring_mode?: 'DISTANCE' | 'ABSOLUTE' | null;
+  allow_ai_questions?: boolean;
+  use_conversational_mode?: boolean;
   sections: InterviewSection[];
 }
 

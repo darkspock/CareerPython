@@ -108,6 +108,7 @@ class InterviewTemplateFullDto:
     template_type: InterviewTemplateTypeEnum
     job_category: Optional[JobCategoryEnum]
     allow_ai_questions: bool
+    use_conversational_mode: bool
     scoring_mode: Optional[ScoringModeEnum]
     legal_notice: Optional[str]
 

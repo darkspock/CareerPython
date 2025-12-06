@@ -92,6 +92,8 @@ import CreateCompanyPagePage from './pages/company/CreateCompanyPagePage';
 import EditCompanyPagePage from './pages/company/EditCompanyPagePage';
 import ViewCompanyPagePage from './pages/company/ViewCompanyPagePage';
 import UsersManagementPage from './pages/company/UsersManagementPage';
+import TalentPoolPageWrapper from './pages/company/TalentPoolPageWrapper';
+import WorkflowAnalyticsPageWrapper from './pages/company/WorkflowAnalyticsPageWrapper';
 import PublicPositionsPage from './pages/public/PublicPositionsPage';
 import PublicPositionDetailPage from './pages/public/PublicPositionDetailPage';
 import CompanyPublicPositionsPage from './pages/public/CompanyPublicPositionsPage';
@@ -254,6 +256,8 @@ function App() {
                           <Route path="interviews/create" element={<CreateInterviewPage />} />
                           <Route path="interviews/:interviewId/edit" element={<EditInterviewPage />} />
                           <Route path="users" element={<UsersManagementPage />} />
+                          <Route path="talent-pool" element={<TalentPoolPageWrapper />} />
+                          <Route path="analytics/workflow" element={<WorkflowAnalyticsPageWrapper />} />
                           <Route index element={<CompanyDashboardPage />} />
                         </Route>
                       </Routes>

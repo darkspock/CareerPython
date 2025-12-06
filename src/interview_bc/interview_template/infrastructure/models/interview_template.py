@@ -35,6 +35,8 @@ class InterviewTemplateModel(Base):
     job_category: Mapped[Optional[JobCategoryEnum]] = mapped_column(Enum(JobCategoryEnum), nullable=True, index=True)
     allow_ai_questions: Mapped[bool] = mapped_column(Boolean, nullable=False,
                                                      default=False)  # Allow AI to generate additional questions
+    use_conversational_mode: Mapped[bool] = mapped_column(Boolean, nullable=False,
+                                                          default=False)  # Use chat-style AI conversation
     scoring_mode: Mapped[Optional[ScoringModeEnum]] = mapped_column(Enum(ScoringModeEnum), nullable=True,
                                                                     index=True)  # Scoring mode: DISTANCE or ABSOLUTE
     legal_notice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Legal text for compliance

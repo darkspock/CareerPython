@@ -1,11 +1,17 @@
 """Service for checking user permissions to process applications at specific workflow stages"""
 
-from typing import List
+from typing import List, Optional
 
 from src.company_bc.candidate_application.domain.entities.candidate_application import CandidateApplication
+from src.company_bc.company.domain.enums import CompanyUserRole, CompanyUserStatus
+from src.company_bc.company.domain.infrastructure.company_user_repository_interface import (
+    CompanyUserRepositoryInterface
+)
+from src.company_bc.company.domain.value_objects import CompanyId
 from src.company_bc.position_stage_assignment.domain.repositories.position_stage_assignment_repository_interface import (
     PositionStageAssignmentRepositoryInterface
 )
+from src.auth_bc.user.domain.value_objects.UserId import UserId
 
 
 class StagePermissionService:
@@ -13,9 +19,11 @@ class StagePermissionService:
 
     def __init__(
             self,
-            position_stage_assignment_repository: PositionStageAssignmentRepositoryInterface
+            position_stage_assignment_repository: PositionStageAssignmentRepositoryInterface,
+            company_user_repository: Optional[CompanyUserRepositoryInterface] = None
     ):
         self.position_stage_assignment_repository = position_stage_assignment_repository
+        self.company_user_repository = company_user_repository
 
     def can_user_process_stage(
             self,
@@ -83,20 +91,31 @@ class StagePermissionService:
 
         Returns:
             True if user is company admin, False otherwise
-
-        Note:
-            This is a simplified implementation. In a real system, you would:
-            1. Query the company_users table
-            2. Check the user's role (admin, owner, etc.)
-            3. Return True only if user has admin privileges
-
-            For now, we return False to enforce strict permission checks.
-            This should be implemented in Phase 5.5 or later.
         """
-        # TODO: Implement actual company admin check
-        # Query company_users table and check role
-        # For now, return False to be restrictive
-        return False
+        # If no repository is available, fall back to restrictive behavior
+        if self.company_user_repository is None:
+            return False
+
+        try:
+            # Query the company_users table
+            company_user = self.company_user_repository.get_by_company_and_user(
+                company_id=CompanyId.from_string(company_id),
+                user_id=UserId.from_string(user_id)
+            )
+
+            if company_user is None:
+                return False
+
+            # Check if user is active
+            if company_user.status != CompanyUserStatus.ACTIVE:
+                return False
+
+            # Check if user has ADMIN role
+            return company_user.role == CompanyUserRole.ADMIN
+
+        except Exception:
+            # On any error, return False for security
+            return False
 
     def can_user_change_stage(
             self,

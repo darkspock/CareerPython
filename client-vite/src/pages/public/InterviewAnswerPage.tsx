@@ -2,6 +2,7 @@
  * Public Interview Answer Page
  * Full-page interface for candidates and interviewers to answer interview questions
  * Accessible via secure token link
+ * Supports both form-based and AI conversational interview modes
  */
 
 import { useState, useEffect } from 'react';
@@ -9,6 +10,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { Save, CheckCircle, AlertCircle, Loader2, Star } from 'lucide-react';
 import { publicInterviewService, type InterviewQuestionsResponse, type InterviewSection, type InterviewQuestion } from '../../services/publicInterviewService';
 import { toast } from 'react-toastify';
+import { AIInterviewChat } from '../../components/interview/AIInterviewChat';
 
 export default function InterviewAnswerPage() {
   const { interviewId } = useParams<{ interviewId: string }>();
@@ -376,7 +378,39 @@ export default function InterviewAnswerPage() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {data.template && (
+        {data.template && data.template.use_conversational_mode && data.template.allow_ai_questions ? (
+          // AI Conversational Interview Mode
+          <AIInterviewChat
+            interviewId={interviewId!}
+            interviewTitle={data.interview_title || data.template.name || 'Interview'}
+            sections={data.template.sections.map(section => ({
+              id: section.id,
+              name: section.name,
+              questions: section.questions.map(q => ({
+                id: q.id,
+                name: q.name,
+                description: q.description
+              }))
+            }))}
+            onAnswerSubmit={async (questionId, answerText) => {
+              if (!interviewId || !token) return;
+              const question = data.template?.sections
+                .flatMap(s => s.questions)
+                .find(q => q.id === questionId);
+              await publicInterviewService.submitAnswer(interviewId, token, {
+                question_id: questionId,
+                answer_text: answerText,
+                question_text: question?.name
+              });
+            }}
+            onComplete={() => {
+              toast.success('Interview completed! Thank you for your responses.');
+            }}
+            existingAnswers={answers}
+            allowAIFollowup={data.template.allow_ai_questions}
+          />
+        ) : data.template ? (
+          // Form-based Interview Mode (default)
           <>
             {data.template.intro && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
@@ -389,7 +423,7 @@ export default function InterviewAnswerPage() {
               .sort((a, b) => a.sort_order - b.sort_order)
               .map(section => renderSection(section))}
           </>
-        )}
+        ) : null}
 
         {(!data.template || data.template.sections.length === 0) && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">

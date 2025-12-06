@@ -129,6 +129,7 @@ class GetInterviewTemplateByJobCategoryQueryHandler(
             tags=template.tags or [],
             metadata=template.metadata or {},
             allow_ai_questions=template.allow_ai_questions,
+            use_conversational_mode=template.use_conversational_mode,
             scoring_mode=template.scoring_mode,
             legal_notice=template.legal_notice,
             created_at=template.metadata.get('created_at') if template.metadata else None,

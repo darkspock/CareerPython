@@ -425,6 +425,7 @@ from adapters.http.shared.workflow_analytics.controllers.workflow_analytics_cont
 from src.notification_bc.notification.infrastructure.services.smtp_email_service import SMTPEmailService
 from src.notification_bc.notification.infrastructure.services.mailgun_service import MailgunService
 from src.notification_bc.notification.application.handlers.send_email_command_handler import SendEmailCommandHandler
+from src.notification_bc.notification.application.handlers.send_bulk_email_handler import SendBulkEmailCommandHandler
 
 # Storage Services
 from src.framework.infrastructure.storage.storage_factory import StorageFactory
@@ -1673,7 +1674,8 @@ class Container(containers.DeclarativeContainer):
     # StagePermission Service (Phase 5)
     stage_permission_service = providers.Factory(
         StagePermissionService,
-        position_stage_assignment_repository=position_stage_assignment_repository
+        position_stage_assignment_repository=position_stage_assignment_repository,
+        company_user_repository=company_user_repository
     )
 
     # Phase 12: Candidate Stage Transition Handler
@@ -2187,10 +2189,16 @@ class Container(containers.DeclarativeContainer):
         stage_repository=workflow_stage_repository
     )
 
-    # Email Command Handler
+    # Email Command Handlers
     send_email_command_handler = providers.Factory(
         SendEmailCommandHandler,
         email_service=email_service
+    )
+
+    send_bulk_email_command_handler = providers.Factory(
+        SendBulkEmailCommandHandler,
+        email_service=email_service,
+        email_template_repository=email_template_repository
     )
 
     # Controllers

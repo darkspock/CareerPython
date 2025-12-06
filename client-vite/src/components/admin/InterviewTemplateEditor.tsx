@@ -46,6 +46,7 @@ interface InterviewTemplate {
   job_category: string | null;
   tags?: string[];
   allow_ai_questions?: boolean;
+  use_conversational_mode?: boolean;
   scoring_mode?: 'DISTANCE' | 'ABSOLUTE' | null;
   legal_notice?: string;
   sections?: InterviewTemplateSection[];
@@ -90,6 +91,7 @@ const InterviewTemplateEditor: React.FC = () => {
     job_category: string | null;
     tags: string[];
     allow_ai_questions: boolean;
+    use_conversational_mode: boolean;
     scoring_mode: 'DISTANCE' | 'ABSOLUTE' | null;
     legal_notice: string;
   }>({
@@ -101,6 +103,7 @@ const InterviewTemplateEditor: React.FC = () => {
     job_category: null,
     tags: [],
     allow_ai_questions: false,
+    use_conversational_mode: false,
     scoring_mode: null,
     legal_notice: ''
   });
@@ -164,6 +167,7 @@ const InterviewTemplateEditor: React.FC = () => {
         job_category: template.job_category ?? null,
         tags: template.tags || [],
         allow_ai_questions: template.allow_ai_questions || false,
+        use_conversational_mode: template.use_conversational_mode || false,
         scoring_mode: template.scoring_mode || null,
         legal_notice: template.legal_notice || ''
       });
@@ -685,16 +689,36 @@ const InterviewTemplateEditor: React.FC = () => {
                   </p>
                 </div>
                 {formData.allow_ai_questions && (
-                  <div>
-                    <Label htmlFor="aiPrompt" className="mb-2">{t('company.interviewTemplateEditor.fields.aiPrompt')}</Label>
-                    <Textarea
-                      value={formData.prompt}
-                      onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-                      className="font-mono text-sm"
-                      rows={12}
-                      placeholder={t('company.interviewTemplateEditor.placeholders.aiPrompt')}
-                    />
-                  </div>
+                  <>
+                    <div>
+                      <Label htmlFor="aiPrompt" className="mb-2">{t('company.interviewTemplateEditor.fields.aiPrompt')}</Label>
+                      <Textarea
+                        value={formData.prompt}
+                        onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
+                        className="font-mono text-sm"
+                        rows={12}
+                        placeholder={t('company.interviewTemplateEditor.placeholders.aiPrompt')}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="use_conversational_mode"
+                          checked={formData.use_conversational_mode}
+                          onCheckedChange={(checked) => setFormData({ ...formData, use_conversational_mode: checked === true })}
+                        />
+                        <label
+                          htmlFor="use_conversational_mode"
+                          className="text-sm font-medium text-gray-700 cursor-pointer"
+                        >
+                          {t('company.interviewTemplateEditor.labels.useConversationalMode', 'Use Conversational Mode')}
+                        </label>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500 ml-6">
+                        {t('company.interviewTemplateEditor.labels.useConversationalModeDescription', 'Enable chat-style interview experience where AI asks questions one at a time and generates contextual follow-up questions')}
+                      </p>
+                    </div>
+                  </>
                 )}
                 <div>
                   <Label htmlFor="legalNotice" className="mb-2">{t('company.interviewTemplateEditor.fields.legalNotice')}</Label>

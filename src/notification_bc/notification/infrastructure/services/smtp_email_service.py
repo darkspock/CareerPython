@@ -194,7 +194,39 @@ class SMTPEmailService(EmailServiceInterface):
             self.logger.error(f"Error sending user invitation email: {str(e)}")
             raise EmailSendingException(f"Failed to send user invitation email: {str(e)}")
 
-    def _send_email(self, to_email: str, subject: str, html_content: str) -> bool:
+    async def send_template_email(
+            self,
+            email: str,
+            subject: str,
+            body_html: str,
+            body_text: Optional[str] = None,
+            template_data: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """
+        Send an email using a custom template with variable substitution.
+        Variables are replaced using {{variable_name}} syntax.
+        """
+        try:
+            # Substitute variables in subject and body
+            rendered_subject = subject
+            rendered_body_html = body_html
+            rendered_body_text = body_text
+
+            if template_data:
+                for key, value in template_data.items():
+                    placeholder = f"{{{{{key}}}}}"
+                    rendered_subject = rendered_subject.replace(placeholder, str(value))
+                    rendered_body_html = rendered_body_html.replace(placeholder, str(value))
+                    if rendered_body_text:
+                        rendered_body_text = rendered_body_text.replace(placeholder, str(value))
+
+            return self._send_email(email, rendered_subject, rendered_body_html, rendered_body_text)
+
+        except Exception as e:
+            self.logger.error(f"Error sending template email to {email}: {str(e)}")
+            raise EmailSendingException(f"Failed to send template email: {str(e)}")
+
+    def _send_email(self, to_email: str, subject: str, html_content: str, text_content: Optional[str] = None) -> bool:
         """Send email via SMTP"""
         try:
             # Create message
@@ -202,6 +234,11 @@ class SMTPEmailService(EmailServiceInterface):
             msg["Subject"] = subject
             msg["From"] = self.smtp_from_email
             msg["To"] = to_email
+
+            # Attach plain text content if provided
+            if text_content:
+                text_part = MIMEText(text_content, "plain")
+                msg.attach(text_part)
 
             # Attach HTML content
             html_part = MIMEText(html_content, "html")

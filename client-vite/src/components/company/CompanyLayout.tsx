@@ -11,7 +11,9 @@ import {
   ChevronDown,
   ChevronRight,
   Search,
-  MessageSquare
+  MessageSquare,
+  Star,
+  BarChart2
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -91,6 +93,8 @@ export default function CompanyLayout() {
     { path: '/company/dashboard', icon: LayoutDashboard, label: t('company.navigation.dashboard') },
     { path: '/company/positions', icon: Briefcase, label: t('company.navigation.jobPositions') },
     { path: '/company/interviews', icon: MessageSquare, label: t('company.navigation.interviews') },
+    { path: '/company/talent-pool', icon: Star, label: t('company.navigation.talentPool') },
+    { path: '/company/analytics/workflow', icon: BarChart2, label: t('company.navigation.analytics') },
     { path: '/company/settings', icon: Settings, label: t('company.navigation.settings') },
   ];
 
@@ -103,6 +107,12 @@ export default function CompanyLayout() {
     }
     if (path === '/company/interviews') {
       return location.pathname.startsWith('/company/interviews');
+    }
+    if (path === '/company/talent-pool') {
+      return location.pathname.startsWith('/company/talent-pool');
+    }
+    if (path === '/company/analytics/workflow') {
+      return location.pathname.startsWith('/company/analytics');
     }
     return location.pathname === path;
   };

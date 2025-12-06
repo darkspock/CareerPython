@@ -67,3 +67,27 @@ class EmailServiceInterface(ABC):
     ) -> bool:
         """Send user invitation email to join a company"""
         pass
+
+    @abstractmethod
+    async def send_template_email(
+            self,
+            email: str,
+            subject: str,
+            body_html: str,
+            body_text: Optional[str] = None,
+            template_data: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """
+        Send an email using a custom template with variable substitution.
+
+        Args:
+            email: Recipient email address
+            subject: Email subject (can contain {{variable}} placeholders)
+            body_html: HTML body (can contain {{variable}} placeholders)
+            body_text: Plain text body (optional)
+            template_data: Dictionary of variables to substitute in subject and body
+
+        Returns:
+            True if email was sent successfully
+        """
+        pass

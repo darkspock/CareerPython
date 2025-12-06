@@ -222,7 +222,9 @@
       "settings": "Settings",
       "candidates": "Candidates",
       "searchAllCandidates": "Search All Candidates",
-      "workflowBoard": "Workflow Board"
+      "workflowBoard": "Workflow Board",
+      "talentPool": "Talent Pool",
+      "analytics": "Analytics"
     },
     "userSettings": {
       "title": "User Settings",
@@ -362,6 +364,27 @@
         "notSpecified": "Not specified",
         "yes": "Yes",
         "no": "No"
+      },
+      "bulkEmail": {
+        "title": "Send Bulk Email",
+        "selectTemplate": "Select Email Template",
+        "preview": "Preview Email",
+        "sending": "Sending emails...",
+        "complete": "Emails Sent!",
+        "sendTo": "Send to {{count}} Candidate",
+        "sendToPlural": "Send to {{count}} Candidates",
+        "noTemplates": "No manual email templates available.",
+        "createTemplateHint": "Create a template with \"Manual\" trigger to send bulk emails.",
+        "variablesNote": "Variables like {{candidate_name}} will be replaced with actual candidate data for each recipient.",
+        "queued": "queued",
+        "back": "Back",
+        "cancel": "Cancel",
+        "done": "Done",
+        "selected": "{{count}} candidate selected",
+        "selectedPlural": "{{count}} candidates selected",
+        "clearSelection": "Clear selection",
+        "sendBulkEmail": "Send Bulk Email",
+        "noWorkflow": "Selected candidates must have a workflow"
       }
     },
     "workflowBoard": {

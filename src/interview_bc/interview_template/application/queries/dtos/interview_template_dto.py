@@ -27,6 +27,7 @@ class InterviewTemplateDto:
     template_type: InterviewTemplateTypeEnum
     job_category: Optional[JobCategoryEnum]
     allow_ai_questions: bool
+    use_conversational_mode: bool
     scoring_mode: Optional[ScoringModeEnum]
     legal_notice: Optional[str]
 
@@ -52,6 +53,7 @@ class InterviewTemplateDto:
             template_type=entity.template_type,
             job_category=entity.job_category,
             allow_ai_questions=entity.allow_ai_questions,
+            use_conversational_mode=entity.use_conversational_mode,
             scoring_mode=entity.scoring_mode,
             legal_notice=entity.legal_notice,
             tags=entity.tags or [],

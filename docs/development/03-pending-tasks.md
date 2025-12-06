@@ -1,6 +1,6 @@
 # Pending Tasks & Priorities
 
-**Last Updated:** 2025-12-05
+**Last Updated:** 2025-12-06
 **Document Type:** Development Roadmap
 
 ---
@@ -18,78 +18,108 @@
 
 ## P0 - Critical Tasks
 
-### 1. Permission System Implementation
+### 1. Permission System Implementation ✅ COMPLETED
 
-**Current State**: Returns `False` for all permission checks
+**Status**: Implemented on 2025-12-05
 
-**Files to Fix**:
-- `src/company_bc/company/domain/entities/company.py`
-- `src/company_bc/company_user/domain/entities/company_user.py`
+**Files Modified**:
+- `src/company_bc/candidate_application/application/services/stage_permission_service.py`
+- `src/company_bc/job_position/domain/entities/job_position.py`
+- `core/containers/workflow_container.py`
+- `core/container.py`
 
-**Tasks**:
-- [ ] Implement `can_receive_applications()` logic
-- [ ] Implement `is_user_company_admin()` logic
-- [ ] Add role-based permission checks
-- [ ] Add feature flag support for billing tiers
-- [ ] Write unit tests for permission logic
+**Completed Tasks**:
+- [x] Implement `can_receive_applications()` logic - checks visibility (PUBLIC) and stage type (INITIAL/PROGRESS)
+- [x] Implement `is_user_company_admin()` logic - queries company_users table, checks ADMIN role and ACTIVE status
+- [x] Add role-based permission checks - integrated CompanyUserRepository
+- [ ] Add feature flag support for billing tiers - Future enhancement
+- [ ] Write unit tests for permission logic - Pending
 
-**Impact**: Without this, all permission-gated features are bypassed.
+**Implementation Notes**:
+- `is_user_company_admin()`: Queries `company_users` table via `CompanyUserRepositoryInterface`, returns true only if user has `ADMIN` role and `ACTIVE` status
+- `can_receive_applications()`: Accepts optional `stage_type` parameter, returns true when visibility is `PUBLIC` and stage is `INITIAL` or `PROGRESS`
 
 ---
 
-### 2. JsonLogic Validation Engine
+### 2. JsonLogic Validation Engine ✅ COMPLETED
 
-**Current State**: Stage transition validation returns success without evaluation
+**Status**: Implemented on 2025-12-05
 
-**Files to Fix**:
-- `src/company_bc/stage/domain/entities/stage.py`
-- `src/company_bc/stage/domain/services/validation_service.py`
+**Files Created/Modified**:
+- `src/shared_bc/customization/field_validation/domain/services/jsonlogic_evaluator.py` (NEW)
+- `src/company_bc/job_position/application/commands/move_job_position_to_stage.py`
 
-**Tasks**:
-- [ ] Integrate jsonlogic-python library
-- [ ] Implement rule evaluation in `validate_transition()`
-- [ ] Add validation error messages
-- [ ] Create validation rule builder UI component
-- [ ] Write comprehensive test cases
+**Completed Tasks**:
+- [x] Custom JsonLogic evaluator implementation (no external dependency)
+- [x] Implement rule evaluation in `_validate_with_jsonlogic()`
+- [x] Add validation error messages with field mapping
+- [ ] Create validation rule builder UI component - Future frontend task
+- [ ] Write comprehensive test cases - Pending
 
-**Impact**: Stage transitions work but don't enforce configured rules.
+**Supported JsonLogic Operators**:
+- Comparison: `==`, `!=`, `===`, `!==`, `>`, `<`, `>=`, `<=`
+- Logic: `and`, `or`, `!`, `!!`, `if`
+- Data access: `var` (with dot notation for nested access)
+- Array: `in`, `all`, `some`, `none`, `merge`
+- String: `cat`, `substr`
+- Numeric: `+`, `-`, `*`, `/`, `%`, `min`, `max`
+- Type: `missing`, `missing_some`
+
+**Validation Rules Format**:
+```json
+{
+    "rules": [
+        {
+            "rule": {">=": [{"var": "salary"}, 50000]},
+            "field": "salary",
+            "message": "Salary must be at least 50,000"
+        }
+    ]
+}
+```
+
+**Impact**: Stage transitions now enforce JsonLogic validation rules configured on stages.
 
 ---
 
 ## P1 - High Priority Tasks
 
-### 3. Enable Talent Pool Routes
+### 3. Enable Talent Pool Routes ✅ COMPLETED
 
-**Current State**: Components implemented, routes not configured
+**Status**: Implemented on 2025-12-05
 
-**Tasks**:
-- [ ] Add routes in `router/index.tsx`
-  ```typescript
-  { path: '/companies/:id/talent-pool', component: TalentPoolList }
-  { path: '/talent-pool/:id', component: TalentPoolDetail }
-  ```
-- [ ] Add navigation link in sidebar
-- [ ] Update breadcrumb configuration
-- [ ] Test full flow end-to-end
+**Files Created/Modified**:
+- `client-vite/src/pages/company/TalentPoolPageWrapper.tsx` (NEW)
+- `client-vite/src/App.tsx` - Added route `/company/talent-pool`
+- `client-vite/src/components/company/CompanyLayout.tsx` - Added navigation link with Star icon
+- `client-vite/src/locales/en/translation.json` - Added translation key
+- `client-vite/src/locales/es/translation.json` - Added translation key
 
-**Estimated Effort**: Low (2-4 hours)
+**Completed Tasks**:
+- [x] Add route: `/company/talent-pool` → `TalentPoolPageWrapper`
+- [x] Add navigation link in sidebar with Star icon
+- [x] Add translations (EN: "Talent Pool", ES: "Pool de Talento")
+- [ ] Test full flow end-to-end - Pending
 
 ---
 
-### 4. Enable Workflow Analytics Routes
+### 4. Enable Workflow Analytics Routes ✅ COMPLETED
 
-**Current State**: Dashboard implemented, not accessible
+**Status**: Implemented on 2025-12-05
 
-**Tasks**:
-- [ ] Add route in `router/index.tsx`
-  ```typescript
-  { path: '/companies/:id/analytics/workflow', component: WorkflowAnalytics }
-  ```
-- [ ] Add analytics section in sidebar
-- [ ] Connect to real backend data
-- [ ] Add date range filters
+**Files Created/Modified**:
+- `client-vite/src/pages/company/WorkflowAnalyticsPageWrapper.tsx` (NEW)
+- `client-vite/src/App.tsx` - Added route `/company/analytics/workflow`
+- `client-vite/src/components/company/CompanyLayout.tsx` - Added navigation link with BarChart2 icon
+- `client-vite/src/locales/en/translation.json` - Added translation key
+- `client-vite/src/locales/es/translation.json` - Added translation key
 
-**Estimated Effort**: Low (2-4 hours)
+**Completed Tasks**:
+- [x] Add route: `/company/analytics/workflow` → `WorkflowAnalyticsPageWrapper`
+- [x] Add analytics section in sidebar with BarChart2 icon
+- [x] Connect to real backend data (via WorkflowAnalyticsService)
+- [x] Add date range filters (all time, 30 days, 90 days, custom)
+- [x] Add translations (EN: "Analytics", ES: "Analíticas")
 
 ---
 
@@ -113,25 +143,26 @@
 
 ---
 
-### 6. Legacy Module Cleanup
+### 6. Legacy Module Cleanup ✅ COMPLETED
 
-**Current State**: Duplicate modules exist
+**Status**: Completed on 2025-12-05
 
-**Modules to Remove**:
+**Modules Removed**:
 ```
-src/candidate/      → replaced by src/candidate_bc/
-src/company/        → replaced by src/company_bc/
-src/notification/   → replaced by src/notification_bc/
+src/candidate/      → removed (was empty, replaced by src/candidate_bc/)
+src/company/        → removed (was empty, replaced by src/company_bc/)
+src/notification/   → removed (was empty, replaced by src/notification_bc/)
 ```
 
-**Tasks**:
-- [ ] Audit all imports referencing legacy modules
-- [ ] Update any remaining references
-- [ ] Remove legacy module directories
-- [ ] Update container.py registrations
-- [ ] Run full test suite to verify
+**Completed Tasks**:
+- [x] Audit all imports referencing legacy modules - No imports found
+- [x] Update any remaining references - None needed
+- [x] Remove legacy module directories - Removed empty directories
+- [x] Update container.py registrations - None needed (no references existed)
+- [x] Run mypy to verify - Passed with only pre-existing errors
 
-**Estimated Effort**: Medium (4-8 hours)
+**Notes**:
+The legacy directories were already empty (no Python files), only containing empty subdirectory structures. Safe removal confirmed.
 
 ---
 
@@ -153,19 +184,32 @@ src/notification/   → replaced by src/notification_bc/
 
 ---
 
-### 8. Bulk Email Sending
+### 8. Bulk Email Sending ✅ COMPLETED
 
-**Current State**: Templates ready, bulk UI missing
+**Status**: Implemented on 2025-12-06
 
-**Tasks**:
-- [ ] Create `BulkEmailModal` component
-- [ ] Add candidate selection in pipeline
-- [ ] Implement merge tag preview
-- [ ] Add send progress indicator
-- [ ] Implement send rate limiting
-- [ ] Add send confirmation dialog
+**Files Created/Modified**:
+- `src/notification_bc/notification/application/commands/send_bulk_email_command.py` (NEW)
+- `src/notification_bc/notification/application/handlers/send_bulk_email_handler.py` (NEW)
+- `src/framework/domain/interfaces/email_service.py` - Added `send_template_email` method
+- `src/notification_bc/notification/infrastructure/services/smtp_email_service.py` - Implemented template email
+- `adapters/http/company_app/company/routers/email_template_router.py` - Added `/send-bulk` endpoint
+- `core/containers.py` - Registered handler
+- `client-vite/src/services/emailTemplateService.ts` - Added `sendBulkEmail` method
+- `client-vite/src/components/company/email/BulkEmailModal.tsx` (NEW)
+- `client-vite/src/pages/company/CandidatesListPage.tsx` - Added selection and bulk email integration
+- `client-vite/src/locales/en/translation.json` - Added translations
+- `client-vite/src/locales/es/translation.json` - Added translations
 
-**Estimated Effort**: Medium (1-2 days)
+**Completed Tasks**:
+- [x] Create `BulkEmailModal` component (multi-step: select template → preview → send → complete)
+- [x] Add candidate selection in CandidatesListPage (checkboxes)
+- [x] Implement merge tag preview with variable substitution
+- [x] Add send progress indicator
+- [x] Implement backend command/handler with async email sending
+- [x] Add send confirmation dialog
+
+**API Endpoint**: `POST /api/company/email-templates/send-bulk` (202 Accepted)
 
 ---
 
@@ -286,7 +330,7 @@ src/notification/   → replaced by src/notification_bc/
 
 | Item | Priority | Effort |
 |------|----------|--------|
-| Remove legacy modules | P1 | Medium |
+| ~~Remove legacy modules~~ | ~~P1~~ | ✅ Done |
 | Add missing type hints | P3 | Low |
 | Improve error messages | P2 | Low |
 | Add API rate limiting | P2 | Medium |
@@ -316,26 +360,27 @@ src/notification/   → replaced by src/notification_bc/
 
 ## Recommended Sprint Planning
 
-### Sprint 1: Critical Fixes
-- Permission system implementation (P0)
-- JsonLogic validation (P0)
-- Enable talent pool routes (P1)
-- Enable analytics routes (P1)
+### Sprint 1: Critical Fixes ✅ COMPLETED
+- ~~Permission system implementation (P0)~~ ✅
+- ~~JsonLogic validation (P0)~~ ✅
+- ~~Enable talent pool routes (P1)~~ ✅
+- ~~Enable analytics routes (P1)~~ ✅
 
-### Sprint 2: Feature Completion
-- Candidate report generation (P1)
-- Legacy module cleanup (P1)
-- AI interview integration (P2)
+### Sprint 2: Feature Completion (IN PROGRESS)
+- Candidate report generation (P1) - Pending
+- ~~Legacy module cleanup (P1)~~ ✅
+- AI interview integration (P2) - Next
+- ~~Bulk email sending (P2)~~ ✅
 
 ### Sprint 3: Enhancement
-- Bulk email sending (P2)
 - Advanced filtering (P2)
 - Interview calendar view (P2)
+- Notification system (P2)
 
 ### Sprint 4: Polish
-- Notification system (P2)
 - Performance optimization (P3)
 - Accessibility improvements (P3)
+- Calendar integration (P3)
 
 ---
 

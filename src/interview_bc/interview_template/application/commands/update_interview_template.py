@@ -30,6 +30,7 @@ class UpdateInterviewTemplateCommand(Command):
     type: Optional[InterviewTemplateTypeEnum] = None
     job_category: Optional[JobCategoryEnum] = None
     allow_ai_questions: Optional[bool] = None
+    use_conversational_mode: Optional[bool] = None
     scoring_mode: Optional[ScoringModeEnum] = None
     legal_notice: Optional[str] = None
     tags: Optional[List[str]] = None
@@ -74,6 +75,9 @@ class UpdateInterviewTemplateCommandHandler(CommandHandler[UpdateInterviewTempla
 
         if command.allow_ai_questions is not None:
             template.allow_ai_questions = command.allow_ai_questions
+
+        if command.use_conversational_mode is not None:
+            template.use_conversational_mode = command.use_conversational_mode
 
         if command.scoring_mode is not None:
             template.scoring_mode = command.scoring_mode

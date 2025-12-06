@@ -83,6 +83,7 @@ class GetInterviewTemplateFullByIdQueryHandler(
             metadata=interview_template.metadata or {},
             sections=section_dtos,
             allow_ai_questions=interview_template.allow_ai_questions,
+            use_conversational_mode=interview_template.use_conversational_mode,
             scoring_mode=interview_template.scoring_mode,
             legal_notice=interview_template.legal_notice,
             created_at=interview_template.metadata.get('created_at') if interview_template.metadata else None,

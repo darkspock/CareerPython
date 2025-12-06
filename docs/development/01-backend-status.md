@@ -192,31 +192,30 @@
 
 ## Known Gaps and TODOs
 
-### Permission System
+### Permission System ✅ IMPLEMENTED (2025-12-05)
 
-**File**: `src/company_bc/company/domain/entities/company.py`
-```python
-def can_receive_applications(self) -> bool:
-    # TODO: add feature flag / billing logic
-    return False  # Currently always returns False
-```
+**`is_user_company_admin()`** - `src/company_bc/candidate_application/application/services/stage_permission_service.py`
+- Queries `company_users` table via `CompanyUserRepositoryInterface`
+- Returns `True` only if user has `ADMIN` role and `ACTIVE` status
+- Falls back to `False` if repository not available or on error
 
-**File**: `src/company_bc/company_user/domain/entities/company_user.py`
-```python
-def is_user_company_admin(self) -> bool:
-    # TODO: implement actual permission check
-    return False  # Currently always returns False
-```
+**`can_receive_applications()`** - `src/company_bc/job_position/domain/entities/job_position.py`
+- Accepts optional `stage_type` parameter
+- Returns `True` when:
+  - Visibility is `PUBLIC`
+  - Stage type is `INITIAL` or `PROGRESS`
 
-### JsonLogic Validation
+### JsonLogic Validation ✅ IMPLEMENTED (2025-12-05)
 
-**File**: `src/company_bc/stage/domain/entities/stage.py`
-```python
-def validate_transition(self, candidate_data: dict) -> ValidationResult:
-    # TODO: Implement JsonLogic rule evaluation
-    # Currently returns success without actual validation
-    return ValidationResult(success=True)
-```
+**Custom JsonLogic Evaluator** - `src/shared_bc/customization/field_validation/domain/services/jsonlogic_evaluator.py`
+- Full JsonLogic specification support (comparison, logic, var, array, string, numeric operators)
+- No external dependencies (custom implementation)
+- Comprehensive error handling
+
+**Validation Integration** - `src/company_bc/job_position/application/commands/move_job_position_to_stage.py`
+- `_validate_with_jsonlogic()` evaluates stage validation rules
+- Supports structured rules format with field mapping and custom error messages
+- Blocks stage transitions when validation fails
 
 ### Legacy Modules to Remove
 

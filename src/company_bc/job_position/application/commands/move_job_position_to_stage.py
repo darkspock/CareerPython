@@ -202,25 +202,74 @@ class MoveJobPositionToStageCommandHandler(CommandHandler[MoveJobPositionToStage
     ) -> Dict[str, List[str]]:
         """
         Validate custom field values against JsonLogic validation rules.
-        
-        TODO: Implement proper JsonLogic validation using a JsonLogic library.
-        For now, this is a placeholder that returns no errors.
-        In production, this should use a JsonLogic evaluator to validate the rules.
-        
+
+        The validation_rules should be a dict with the following structure:
+        {
+            "rules": [
+                {
+                    "rule": { JsonLogic rule },
+                    "field": "field_name",  # Optional: field this rule validates
+                    "message": "Error message if rule fails"
+                },
+                ...
+            ]
+        }
+
+        Or a simple JsonLogic rule dict that should evaluate to True for valid data.
+
         Args:
             field_values: Current custom field values
             validation_rules: JsonLogic validation rules from stage
-            
+
         Returns:
             Dict mapping field names to list of error messages
         """
-        errors: Dict[str, List[str]] = {}
+        from src.shared_bc.customization.field_validation.domain.services.jsonlogic_evaluator import (
+            JsonLogicEvaluator,
+            JsonLogicError
+        )
 
-        # TODO: Implement JsonLogic validation
-        # This requires installing a JsonLogic library (e.g., python-json-logic)
-        # and evaluating the rules against field_values
-        # For now, we skip validation to avoid breaking the flow
-        # In production, implement proper JsonLogic evaluation here
+        errors: Dict[str, List[str]] = {}
+        evaluator = JsonLogicEvaluator()
+
+        # Handle structured rules format
+        if "rules" in validation_rules and isinstance(validation_rules["rules"], list):
+            for rule_config in validation_rules["rules"]:
+                if not isinstance(rule_config, dict) or "rule" not in rule_config:
+                    continue
+
+                rule = rule_config["rule"]
+                field = rule_config.get("field", "_general")
+                message = rule_config.get("message", "Validation failed")
+
+                try:
+                    result = evaluator.apply(rule, field_values)
+                    if not result:
+                        if field not in errors:
+                            errors[field] = []
+                        errors[field].append(message)
+                except JsonLogicError as e:
+                    if field not in errors:
+                        errors[field] = []
+                    errors[field].append(f"Rule evaluation error: {str(e)}")
+                except Exception as e:
+                    # Log but don't fail on unexpected errors
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Unexpected error evaluating validation rule: {e}")
+
+        # Handle simple JsonLogic rule format (single rule that must be True)
+        elif validation_rules:
+            try:
+                result = evaluator.apply(validation_rules, field_values)
+                if not result:
+                    errors["_general"] = ["Validation rule failed"]
+            except JsonLogicError as e:
+                errors["_general"] = [f"Rule evaluation error: {str(e)}"]
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Unexpected error evaluating validation rule: {e}")
 
         return errors
 

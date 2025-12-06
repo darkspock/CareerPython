@@ -222,7 +222,9 @@
       "settings": "Configuración",
       "candidates": "Candidatos",
       "searchAllCandidates": "Buscar Todos los Candidatos",
-      "workflowBoard": "Tablero de Flujo"
+      "workflowBoard": "Tablero de Flujo",
+      "talentPool": "Pool de Talento",
+      "analytics": "Analíticas"
     },
     "interviewTemplateEditor": {
         "title": {
@@ -596,6 +598,27 @@
         "notSpecified": "No especificado",
         "yes": "Sí",
         "no": "No"
+      },
+      "bulkEmail": {
+        "title": "Enviar Email Masivo",
+        "selectTemplate": "Seleccionar Plantilla de Email",
+        "preview": "Vista Previa del Email",
+        "sending": "Enviando emails...",
+        "complete": "¡Emails Enviados!",
+        "sendTo": "Enviar a {{count}} Candidato",
+        "sendToPlural": "Enviar a {{count}} Candidatos",
+        "noTemplates": "No hay plantillas de email manuales disponibles.",
+        "createTemplateHint": "Crea una plantilla con disparador \"Manual\" para enviar emails masivos.",
+        "variablesNote": "Variables como {{candidate_name}} serán reemplazadas con los datos reales de cada candidato.",
+        "queued": "en cola",
+        "back": "Atrás",
+        "cancel": "Cancelar",
+        "done": "Hecho",
+        "selected": "{{count}} candidato seleccionado",
+        "selectedPlural": "{{count}} candidatos seleccionados",
+        "clearSelection": "Limpiar selección",
+        "sendBulkEmail": "Enviar Email Masivo",
+        "noWorkflow": "Los candidatos seleccionados deben tener un flujo de trabajo"
       }
     },
     "workflowBoard": {

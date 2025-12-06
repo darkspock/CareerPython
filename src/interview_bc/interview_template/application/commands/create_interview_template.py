@@ -26,6 +26,7 @@ class CreateInterviewTemplateCommand(Command):
     template_type: InterviewTemplateTypeEnum = InterviewTemplateTypeEnum.EXTENDED_PROFILE
     job_category: Optional[JobCategoryEnum] = None
     allow_ai_questions: bool = False
+    use_conversational_mode: bool = False
     scoring_mode: Optional[ScoringModeEnum] = None
     legal_notice: Optional[str] = None
     created_by: str = ""
@@ -48,6 +49,7 @@ class CreateInterviewTemplateCommandHandler(CommandHandler[CreateInterviewTempla
             template_type=command.template_type,
             job_category=command.job_category,
             allow_ai_questions=command.allow_ai_questions,
+            use_conversational_mode=command.use_conversational_mode,
             scoring_mode=command.scoring_mode,
             legal_notice=command.legal_notice,
             tags=command.tags or [],

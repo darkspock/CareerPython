@@ -1,8 +1,9 @@
 """
 Router for email template operations
 Phase 7: Email Integration System
+Phase 8: Bulk Email Sending
 """
-from typing import Annotated, Optional, List
+from typing import Annotated, Optional, List, Dict, Any
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -12,6 +13,11 @@ from adapters.http.company_app.company.controllers.email_template_controller imp
 from core.containers import Container
 from src.notification_bc.email_template.application.dtos.email_template_dto import EmailTemplateDto
 from src.notification_bc.email_template.domain.enums.trigger_event import TriggerEvent
+from src.notification_bc.notification.application.commands.send_bulk_email_command import (
+    SendBulkEmailCommand,
+    BulkEmailRecipient
+)
+from src.framework.application.command_bus import CommandBus
 
 router = APIRouter(
     prefix="/api/company/email-templates",
@@ -281,4 +287,77 @@ def get_templates_by_trigger(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get email templates by trigger: {str(e)}"
+        )
+
+
+# Phase 8: Bulk Email Sending
+
+class BulkEmailRecipientRequest(BaseModel):
+    """A recipient for bulk email"""
+    email: str = Field(..., description="Recipient email address")
+    name: str = Field(..., description="Recipient name")
+    template_data: Dict[str, Any] = Field(default_factory=dict, description="Template variables")
+
+
+class SendBulkEmailRequest(BaseModel):
+    """Request to send bulk emails"""
+    template_id: str = Field(..., description="Email template ID")
+    recipients: List[BulkEmailRecipientRequest] = Field(..., min_length=1, description="List of recipients")
+
+
+class BulkEmailResponse(BaseModel):
+    """Response for bulk email operation"""
+    message: str
+    total: int
+    queued: int
+
+
+@router.post("/send-bulk", status_code=status.HTTP_202_ACCEPTED)
+@inject
+def send_bulk_email(
+        request: SendBulkEmailRequest,
+        command_bus: Annotated[CommandBus, Depends(Provide[Container.command_bus])]
+) -> BulkEmailResponse:
+    """
+    Send bulk emails to multiple recipients using a template.
+
+    Phase 8: Bulk Email Sending - Sends emails to multiple candidates.
+    The emails are queued and sent asynchronously.
+    """
+    try:
+        # Convert request recipients to command recipients
+        recipients = [
+            BulkEmailRecipient(
+                email=r.email,
+                name=r.name,
+                template_data=r.template_data
+            )
+            for r in request.recipients
+        ]
+
+        # Create and execute the command
+        command = SendBulkEmailCommand(
+            template_id=request.template_id,
+            recipients=recipients,
+            company_id="",  # TODO: Get from auth context
+            sent_by_user_id=""  # TODO: Get from auth context
+        )
+
+        command_bus.execute(command)
+
+        return BulkEmailResponse(
+            message="Bulk emails queued successfully",
+            total=len(recipients),
+            queued=len(recipients)
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send bulk emails: {str(e)}"
         )
