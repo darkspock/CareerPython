@@ -1,10 +1,11 @@
-import { useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Edit, Move, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Edit, Move, ChevronDown, FileText } from 'lucide-react';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 import type { WorkflowStage } from '../../types/workflow';
 import { KanbanDisplay } from '../../types/workflow';
+import CandidateReportModal from './CandidateReportModal';
 
 interface CandidateHeaderProps {
   candidate: CompanyCandidate;
@@ -29,6 +30,7 @@ export default function CandidateHeader({
 }: CandidateHeaderProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const stagesToShow = useMemo(() => {
     if (availableStages.length === 0) return [];
@@ -96,6 +98,15 @@ export default function CandidateHeader({
         {/* Actions */}
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowReportModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            title={t('company.candidates.generateReport', 'Generate AI Report')}
+          >
+            <FileText className="w-4 h-4" />
+            {t('company.candidates.report.button', 'Report')}
+          </button>
+
+          <button
             onClick={handleEditClick}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             title={t('company.candidates.editCandidateDetails')}
@@ -149,6 +160,14 @@ export default function CandidateHeader({
           )}
         </div>
       </div>
+
+      {/* Report Modal */}
+      <CandidateReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        companyCandidateId={candidateId}
+        candidateName={candidate.candidate_name || 'Candidate'}
+      />
     </div>
   );
 }

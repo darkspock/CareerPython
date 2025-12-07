@@ -201,6 +201,29 @@
     "deleted": "Deleted successfully",
     "created": "Created successfully"
   },
+  "filters": {
+    "savedFilters": "Saved Filters",
+    "saveCurrentFilters": "Save current filters",
+    "noSavedFilters": "No saved filters yet",
+    "enterName": "Enter filter name...",
+    "setAsDefault": "Set as default",
+    "removeDefault": "Remove as default",
+    "defaultInfo": "Default filter loads automatically",
+    "confirmDelete": "Click again to confirm",
+    "delete": "Delete",
+    "active": "active",
+    "clearAll": "Clear all",
+    "tryAdjusting": "Try adjusting your filters",
+    "allStatus": "All Status",
+    "pendingInvitation": "Pending Invitation",
+    "pendingConfirmation": "Pending Confirmation",
+    "rejected": "Rejected",
+    "archived": "Archived",
+    "allPriorities": "All Priorities",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
   "companyLogin": {
     "footer": {
       "adminQuestion": "System Administrator?",

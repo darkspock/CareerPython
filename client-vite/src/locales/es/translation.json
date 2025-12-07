@@ -201,6 +201,29 @@
     "deleted": "Eliminado exitosamente",
     "created": "Creado exitosamente"
   },
+  "filters": {
+    "savedFilters": "Filtros Guardados",
+    "saveCurrentFilters": "Guardar filtros actuales",
+    "noSavedFilters": "No hay filtros guardados aún",
+    "enterName": "Nombre del filtro...",
+    "setAsDefault": "Establecer como predeterminado",
+    "removeDefault": "Quitar predeterminado",
+    "defaultInfo": "El filtro predeterminado se carga automáticamente",
+    "confirmDelete": "Haz clic de nuevo para confirmar",
+    "delete": "Eliminar",
+    "active": "activos",
+    "clearAll": "Limpiar todo",
+    "tryAdjusting": "Intenta ajustar tus filtros",
+    "allStatus": "Todos los Estados",
+    "pendingInvitation": "Invitación Pendiente",
+    "pendingConfirmation": "Confirmación Pendiente",
+    "rejected": "Rechazado",
+    "archived": "Archivado",
+    "allPriorities": "Todas las Prioridades",
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja"
+  },
   "companyLogin": {
     "footer": {
       "adminQuestion": "¿Administrador del Sistema?",

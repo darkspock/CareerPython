@@ -1,7 +1,8 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 
 from adapters.http.company_app.company_candidate.controllers.company_candidate_controller import \
     CompanyCandidateController
@@ -13,6 +14,7 @@ from adapters.http.company_app.company_candidate.schemas.create_company_candidat
 from adapters.http.company_app.company_candidate.schemas.update_company_candidate_request import \
     UpdateCompanyCandidateRequest
 from core.containers import Container
+from src.framework.application.query_bus import QueryBus
 
 router = APIRouter(
     prefix="/api/company-candidates",
@@ -224,3 +226,85 @@ def change_stage(
         return controller.change_stage(company_candidate_id, request)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+# ============================================================================
+# Candidate Report Generation
+# ============================================================================
+
+class GenerateReportRequest(BaseModel):
+    """Request to generate a candidate report"""
+    company_candidate_id: str = Field(..., description="Company candidate ID")
+    include_comments: bool = Field(True, description="Include comments in report")
+    include_interviews: bool = Field(True, description="Include interviews in report")
+    include_reviews: bool = Field(True, description="Include reviews in report")
+
+
+class ReportSectionsResponse(BaseModel):
+    """Report sections response"""
+    summary: str
+    strengths: List[str]
+    areas_for_improvement: List[str]
+    interview_insights: Optional[str] = None
+    recommendation: str
+
+
+class CandidateReportResponse(BaseModel):
+    """Response containing the generated candidate report"""
+    report_id: str
+    company_candidate_id: str
+    candidate_name: str
+    generated_at: str
+    report_markdown: str
+    sections: ReportSectionsResponse
+
+
+@router.post(
+    "/reports/generate",
+    response_model=CandidateReportResponse,
+    summary="Generate AI-powered candidate report"
+)
+@inject
+def generate_candidate_report(
+        request: GenerateReportRequest,
+        query_bus: QueryBus = Depends(Provide[Container.query_bus])
+) -> CandidateReportResponse:
+    """
+    Generate an AI-powered report for a candidate.
+
+    The report analyzes comments, interviews, and reviews to provide:
+    - Executive summary
+    - Strengths analysis
+    - Areas for improvement
+    - Interview insights
+    - Hiring recommendation
+    """
+    from src.company_bc.company_candidate.application.queries.generate_candidate_report_query import (
+        GenerateCandidateReportQuery
+    )
+
+    try:
+        query = GenerateCandidateReportQuery(
+            company_candidate_id=request.company_candidate_id,
+            include_comments=request.include_comments,
+            include_interviews=request.include_interviews,
+            include_reviews=request.include_reviews
+        )
+
+        result: Any = query_bus.query(query)
+
+        return CandidateReportResponse(
+            report_id=result.report_id,
+            company_candidate_id=result.company_candidate_id,
+            candidate_name=result.candidate_name,
+            generated_at=result.generated_at,
+            report_markdown=result.report_markdown,
+            sections=ReportSectionsResponse(**result.sections)
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate report: {str(e)}"
+        )

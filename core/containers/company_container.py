@@ -86,6 +86,7 @@ from src.company_bc.company_candidate.application.queries.get_candidate_comment_
 from src.company_bc.company_candidate.application.queries.list_candidate_comments_by_company_candidate import ListCandidateCommentsByCompanyCandidateQueryHandler
 from src.company_bc.company_candidate.application.queries.list_candidate_comments_by_stage import ListCandidateCommentsByStageQueryHandler
 from src.company_bc.company_candidate.application.queries.count_pending_comments_query import CountPendingCommentsQueryHandler
+from src.company_bc.company_candidate.application.queries.generate_candidate_report_query import GenerateCandidateReportQueryHandler
 
 # CandidateReview Application Layer
 from src.company_bc.candidate_review.application.commands.create_candidate_review_command import CreateCandidateReviewCommandHandler
@@ -428,7 +429,13 @@ class CompanyContainer(containers.DeclarativeContainer):
         CountPendingCommentsQueryHandler,
         repository=candidate_comment_repository
     )
-    
+
+    generate_candidate_report_query_handler = providers.Factory(
+        GenerateCandidateReportQueryHandler,
+        company_candidate_repository=company_candidate_repository,
+        candidate_comment_repository=candidate_comment_repository
+    )
+
     # CompanyCandidate Command Handlers
     create_company_candidate_command_handler = providers.Factory(
         CreateCompanyCandidateCommandHandler,

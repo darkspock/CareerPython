@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,11 +15,14 @@ import {
   MessageSquare,
   Kanban,
   Mail,
-  CheckSquare
+  CheckSquare,
+  Link as LinkIcon
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 import { BulkEmailModal } from '../../components/company/email/BulkEmailModal';
+import { useFilterState, type FilterConfig } from '../../hooks/useFilterState';
+import { SavedFiltersDropdown } from '../../components/filters/SavedFiltersDropdown';
 import {
   Tooltip,
   TooltipContent,
@@ -97,18 +100,50 @@ const _getStatusLabel = (status: string) => {
 };
 */
 
+// Filter configuration for candidates list
+const candidateFilterConfig: FilterConfig[] = [
+  { key: 'search', type: 'string', defaultValue: '' },
+  { key: 'status', type: 'string', defaultValue: '' },
+  { key: 'priority', type: 'string', defaultValue: '' },
+  { key: 'phase', type: 'string', defaultValue: '' },
+];
+
+interface CandidateFilters {
+  search: string;
+  status: string;
+  priority: string;
+  phase: string;
+}
+
 export default function CandidatesListPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const phaseId = searchParams.get('phase'); // Get phase from URL
+
+  // Get phaseId from URL for backward compatibility with workflow board links
+  const phaseId = searchParams.get('phase') || '';
+
+  // Use the new filter hook with URL persistence
+  const {
+    filters,
+    setFilter,
+    clearFilters,
+    hasActiveFilters,
+    activeFilterCount,
+    savedFilters,
+    saveFilter,
+    loadFilter,
+    deleteFilter,
+    setDefaultFilter
+  } = useFilterState<CandidateFilters>({
+    config: candidateFilterConfig,
+    persistToUrl: true,
+    storageKey: 'candidates_filters'
+  });
 
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [priorityFilter, setPriorityFilter] = useState<string>('');
 
   // Modal state for assigning position
   const [showPositionModal, setShowPositionModal] = useState(false);
@@ -220,20 +255,25 @@ export default function CandidatesListPage() {
     }
   };
 
-  const filteredCandidates = candidates.filter((candidate) => {
-    const matchesSearch =
-      !searchTerm ||
-      candidate.candidate_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.candidate_email?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter((candidate) => {
+      const searchTerm = filters.search.toLowerCase();
+      const matchesSearch =
+        !searchTerm ||
+        candidate.candidate_name?.toLowerCase().includes(searchTerm) ||
+        candidate.candidate_email?.toLowerCase().includes(searchTerm);
 
-    const matchesStatus = !statusFilter || candidate.status === statusFilter;
-    const matchesPriority = !priorityFilter || candidate.priority === priorityFilter;
+      const matchesStatus = !filters.status || candidate.status === filters.status;
+      const matchesPriority = !filters.priority || candidate.priority === filters.priority;
 
-    // Phase 12: Filter by phase_id from URL
-    const matchesPhase = !phaseId || candidate.phase_id === phaseId;
+      // Filter by phase_id from URL (backward compatibility with workflow board links)
+      // or from filter state
+      const effectivePhase = phaseId || filters.phase;
+      const matchesPhase = !effectivePhase || candidate.phase_id === effectivePhase;
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesPhase;
-  });
+      return matchesSearch && matchesStatus && matchesPriority && matchesPhase;
+    });
+  }, [candidates, filters, phaseId]);
 
   // Selection handlers for bulk actions
   const toggleCandidateSelection = (candidateId: string) => {
@@ -341,46 +381,62 @@ export default function CandidatesListPage() {
       {/* Filters */}
       <Card className="mb-6">
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder={t('company.candidates.search')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder={t('company.candidates.search')}
+                  value={filters.search}
+                  onChange={(e) => setFilter('search', e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <Select value={filters.status || "all"} onValueChange={(value) => setFilter('status', value === "all" ? "" : value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('filters.allStatus', 'All Status')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('filters.allStatus', 'All Status')}</SelectItem>
+                  <SelectItem value="PENDING_INVITATION">{t('filters.pendingInvitation', 'Pending Invitation')}</SelectItem>
+                  <SelectItem value="PENDING_CONFIRMATION">{t('filters.pendingConfirmation', 'Pending Confirmation')}</SelectItem>
+                  <SelectItem value="ACTIVE">{t('filters.active', 'Active')}</SelectItem>
+                  <SelectItem value="REJECTED">{t('filters.rejected', 'Rejected')}</SelectItem>
+                  <SelectItem value="ARCHIVED">{t('filters.archived', 'Archived')}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Priority Filter */}
+              <Select value={filters.priority || "all"} onValueChange={(value) => setFilter('priority', value === "all" ? "" : value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('filters.allPriorities', 'All Priorities')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('filters.allPriorities', 'All Priorities')}</SelectItem>
+                  <SelectItem value="HIGH">{t('filters.high', 'High')}</SelectItem>
+                  <SelectItem value="MEDIUM">{t('filters.medium', 'Medium')}</SelectItem>
+                  <SelectItem value="LOW">{t('filters.low', 'Low')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Status Filter */}
-            <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="PENDING_INVITATION">Pending Invitation</SelectItem>
-                <SelectItem value="PENDING_CONFIRMATION">Pending Confirmation</SelectItem>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="REJECTED">Rejected</SelectItem>
-                <SelectItem value="ARCHIVED">Archived</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Priority Filter */}
-            <Select value={priorityFilter || "all"} onValueChange={(value) => setPriorityFilter(value === "all" ? "" : value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Priorities" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priorities</SelectItem>
-                <SelectItem value="HIGH">High</SelectItem>
-                <SelectItem value="MEDIUM">Medium</SelectItem>
-                <SelectItem value="LOW">Low</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Saved Filters */}
+            <div className="flex justify-end">
+              <SavedFiltersDropdown
+                savedFilters={savedFilters}
+                onSaveFilter={saveFilter}
+                onLoadFilter={loadFilter}
+                onDeleteFilter={deleteFilter}
+                onSetDefault={setDefaultFilter}
+                onClearFilters={clearFilters}
+                hasActiveFilters={hasActiveFilters}
+                activeFilterCount={activeFilterCount}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -399,17 +455,17 @@ export default function CandidatesListPage() {
         {filteredCandidates.length === 0 ? (
           <CardContent className="text-center py-12">
             <UserPlus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No candidates found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('company.candidates.noCandidates', 'No candidates found')}</h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm || statusFilter || priorityFilter
-                ? 'Try adjusting your filters'
-                : 'Start by adding your first candidate'}
+              {hasActiveFilters
+                ? t('filters.tryAdjusting', 'Try adjusting your filters')
+                : t('company.candidates.addFirstCandidate', 'Start by adding your first candidate')}
             </p>
-            {!searchTerm && !statusFilter && !priorityFilter && (
+            {!hasActiveFilters && (
               <Button asChild>
                 <Link to="/company/candidates/add">
                   <Plus className="w-5 h-5" />
-                  Add Candidate
+                  {t('company.candidates.addCandidate')}
                 </Link>
               </Button>
             )}
