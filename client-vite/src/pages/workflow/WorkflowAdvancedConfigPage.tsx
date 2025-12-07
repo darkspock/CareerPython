@@ -8,6 +8,7 @@ import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow.ts';
 import type { CustomField, FieldConfiguration } from '../../types/customization.ts';
 import { EntityCustomFieldEditor, FieldVisibilityMatrix } from '../../components/customization';
 import { ValidationRuleEditor } from '../../components/workflow/ValidationRuleEditor.tsx';
+import { ApplicationQuestionsEditor } from '../../components/workflow/ApplicationQuestionsEditor.tsx';
 
 export default function WorkflowAdvancedConfigPage() {
   console.log('WorkflowAdvancedConfigPage component rendered');
@@ -174,6 +175,13 @@ export default function WorkflowAdvancedConfigPage() {
 
       {/* Content */}
       <div className="space-y-6">
+        {/* Application Questions */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <ApplicationQuestionsEditor
+            workflowId={workflowId!}
+          />
+        </div>
+
         {/* Custom Fields */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <EntityCustomFieldEditor

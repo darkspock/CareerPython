@@ -23,6 +23,7 @@ import CandidateReviewsSection from '../../components/candidate/CandidateReviews
 import CandidateInterviewsSection from '../../components/candidate/CandidateInterviewsSection';
 import CandidateHeader from '../../components/candidate/CandidateHeader';
 import CandidateSidebar from '../../components/candidate/CandidateSidebar';
+import CandidateAnswersSection from '../../components/candidate/CandidateAnswersSection';
 import { useCandidateData } from '../../hooks/useCandidateData';
 import { useCandidateFiles } from '../../hooks/useCandidateFiles';
 import { useCandidateComments } from '../../hooks/useCandidateComments';
@@ -33,7 +34,7 @@ export default function CandidateDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'info' | 'comments' | 'reviews' | 'documents' | 'interviews' | 'history'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'answers' | 'comments' | 'reviews' | 'documents' | 'interviews' | 'history'>('info');
   const [changingStage, setChangingStage] = useState(false);
   const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
   const [reviewsRefreshKey, setReviewsRefreshKey] = useState(0);
@@ -239,6 +240,16 @@ export default function CandidateDetailPage() {
                   {t('company.candidates.tabs.information')}
                 </button>
                 <button
+                  onClick={() => setActiveTab('answers')}
+                  className={`py-4 border-b-2 font-medium transition-colors ${
+                    activeTab === 'answers'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t('company.candidates.tabs.answers', { defaultValue: 'Answers' })}
+                </button>
+                <button
                   onClick={() => setActiveTab('comments')}
                   className={`py-4 border-b-2 font-medium transition-colors relative ${
                     activeTab === 'comments'
@@ -339,6 +350,11 @@ export default function CandidateDetailPage() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Answers Tab */}
+              {activeTab === 'answers' && candidate && id && (
+                <CandidateAnswersSection applicationId={id} />
               )}
 
               {/* Comments Tab */}

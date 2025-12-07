@@ -5,6 +5,7 @@ from adapters.http.candidate_app.controllers.application_controller import Appli
 from adapters.http.candidate_app.controllers.onboarding_controller import OnboardingController
 from adapters.http.candidate_app.controllers.resume_controller import ResumeController
 from adapters.http.admin_app.controllers.admin_candidate_controller import AdminCandidateController
+from adapters.http.candidate_app.application_answers.controllers.application_answer_controller import ApplicationAnswerController
 
 # Candidate Infrastructure
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_repository import SQLAlchemyCandidateRepository
@@ -12,6 +13,7 @@ from src.candidate_bc.candidate.infrastructure.repositories.candidate_experience
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_education_repository import SQLAlchemyCandidateEducationRepository
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_project_repository import SQLAlchemyCandidateProjectRepository
 from src.company_bc.candidate_application.infrastructure.repositories.candidate_application_repository import SQLAlchemyCandidateApplicationRepository
+from src.company_bc.candidate_application.infrastructure.repositories.application_question_answer_repository import ApplicationQuestionAnswerRepository
 from src.company_bc.candidate_application_stage.infrastructure.repositories.candidate_application_stage_repository import CandidateApplicationStageRepository
 
 # Candidate Application Layer - Commands
@@ -54,6 +56,13 @@ from src.company_bc.candidate_application.application.commands.unclaim_task_comm
 # Candidate Application Queries
 from src.company_bc.candidate_application.application.queries.get_applications_by_candidate_id import GetApplicationsByCandidateIdQueryHandler
 from src.company_bc.candidate_application.application.queries.get_my_assigned_tasks_query import GetMyAssignedTasksQueryHandler
+
+# Application Question Answer Commands
+from src.company_bc.candidate_application.application.commands.question_answer.save_application_answers_command import SaveApplicationAnswersCommandHandler
+from src.company_bc.candidate_application.application.commands.question_answer.evaluate_application_answers_command import EvaluateApplicationAnswersCommandHandler
+
+# Application Question Answer Queries
+from src.company_bc.candidate_application.application.queries.question_answer.list_application_answers_query import ListApplicationAnswersQueryHandler
 
 # Resume (using string imports for lazy loading)
 RESUME_REPOSITORY_PATH = 'src.candidate_bc.resume.infrastructure.repositories.resume_repository.SQLAlchemyResumeRepository'
@@ -105,7 +114,12 @@ class CandidateContainer(containers.DeclarativeContainer):
         CandidateApplicationStageRepository,
         session=shared.database.provided.session
     )
-    
+
+    application_question_answer_repository = providers.Factory(
+        ApplicationQuestionAnswerRepository,
+        session=shared.database.provided.session
+    )
+
     resume_repository = providers.Factory(
         RESUME_REPOSITORY_PATH,
         database=shared.database
@@ -360,6 +374,34 @@ class CandidateContainer(containers.DeclarativeContainer):
     
     admin_candidate_controller = providers.Factory(
         AdminCandidateController,
+        query_bus=shared.query_bus,
+        command_bus=shared.command_bus
+    )
+
+    # Application Question Answer Query Handlers
+    list_application_answers_query_handler = providers.Factory(
+        ListApplicationAnswersQueryHandler,
+        repository=application_question_answer_repository
+    )
+
+    # Application Question Answer Command Handlers
+    save_application_answers_command_handler = providers.Factory(
+        SaveApplicationAnswersCommandHandler,
+        repository=application_question_answer_repository
+    )
+
+    evaluate_application_answers_command_handler = providers.Factory(
+        EvaluateApplicationAnswersCommandHandler,
+        answer_repository=application_question_answer_repository,
+        application_repository=candidate_application_repository,
+        question_repository=shared.application_question_repository,
+        workflow_repository=shared.workflow_repository,
+        job_position_repository=shared.job_position_repository
+    )
+
+    # Application Answer Controller
+    application_answer_controller = providers.Factory(
+        ApplicationAnswerController,
         query_bus=shared.query_bus,
         command_bus=shared.command_bus
     )

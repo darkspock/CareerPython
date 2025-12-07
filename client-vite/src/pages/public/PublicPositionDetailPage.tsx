@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   MapPin,
@@ -14,9 +15,11 @@ import {
   Building2,
   Send,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  HelpCircle
 } from 'lucide-react';
 import { publicPositionService } from '../../services/publicPositionService';
+import { publicQuestionService, type PublicApplicationQuestion } from '../../services/publicQuestionService';
 import type { Position } from '../../types/position';
 import { getLocation, getIsRemote, getEmploymentType, getSalaryRange, getExperienceLevel, getDepartment, getRequirements } from '../../types/position';
 import '../../components/common/WysiwygEditor.css';
@@ -24,7 +27,9 @@ import '../../components/common/WysiwygEditor.css';
 export default function PublicPositionDetailPage() {
   const { slugOrId } = useParams<{ slugOrId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [position, setPosition] = useState<Position | null>(null);
+  const [questions, setQuestions] = useState<PublicApplicationQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applicationSuccess, _setApplicationSuccess] = useState(false);
@@ -34,6 +39,22 @@ export default function PublicPositionDetailPage() {
       loadPosition();
     }
   }, [slugOrId]);
+
+  useEffect(() => {
+    if (position?.id) {
+      loadQuestions(position.id);
+    }
+  }, [position?.id]);
+
+  const loadQuestions = async (positionId: string) => {
+    try {
+      const data = await publicQuestionService.getQuestionsForPosition(positionId);
+      setQuestions(data.sort((a, b) => a.sort_order - b.sort_order));
+    } catch (err) {
+      // Silently fail - questions are optional
+      console.log('No questions configured for this position');
+    }
+  };
 
   const loadPosition = async () => {
     if (!slugOrId) return;
@@ -229,6 +250,28 @@ export default function PublicPositionDetailPage() {
                   Start Application
                 </button>
               </div>
+
+              {/* Questions Preview */}
+              {questions.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <HelpCircle className="w-5 h-5 text-purple-600" />
+                    <h3 className="text-sm font-semibold text-gray-900">{t('publicQuestions.previewTitle')}</h3>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-4">{t('publicQuestions.previewDescription')}</p>
+                  <ul className="space-y-2">
+                    {questions.map((question) => (
+                      <li key={question.id} className="flex items-start gap-2 text-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 flex-shrink-0" />
+                        <span className="text-gray-700">
+                          {question.label}
+                          {question.is_required && <span className="text-red-500 ml-1">*</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Info Box */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

@@ -83,6 +83,7 @@ class Container(containers.DeclarativeContainer):
     SharedDependencies.workflow_stage_repository = workflow.workflow_stage_repository
     SharedDependencies.phase_repository = workflow.phase_repository
     SharedDependencies.entity_customization_repository = workflow.entity_customization_repository
+    SharedDependencies.application_question_repository = workflow.application_question_repository
     SharedDependencies.stage_phase_validation_service = workflow.stage_phase_validation_service
     SharedDependencies.interview_validation_service = workflow.interview_validation_service
     
@@ -155,6 +156,16 @@ class Container(containers.DeclarativeContainer):
     email_template_controller = company.email_template_controller
     talent_pool_controller = company.talent_pool_controller
     company_page_controller = company.company_page_controller
+    notification_controller = company.notification_controller
+
+    # In-App Notification Handlers
+    list_user_notifications_query_handler = company.list_user_notifications_query_handler
+    get_unread_count_query_handler = company.get_unread_count_query_handler
+    create_notification_command_handler = company.create_notification_command_handler
+    mark_notification_as_read_command_handler = company.mark_notification_as_read_command_handler
+    mark_all_notifications_as_read_command_handler = company.mark_all_notifications_as_read_command_handler
+    delete_notification_command_handler = company.delete_notification_command_handler
+
     # Company Query Handlers (needed by QueryBus)
     get_company_by_id_query_handler = company.get_company_by_id_query_handler
     get_company_by_domain_query_handler = company.get_company_by_domain_query_handler
@@ -175,14 +186,16 @@ class Container(containers.DeclarativeContainer):
     onboarding_controller = candidate.onboarding_controller
     resume_controller = candidate.resume_controller
     admin_candidate_controller = candidate.admin_candidate_controller
-    
+    application_answer_controller = candidate.application_answer_controller
+
     # JobPosition
     job_position_repository = job_position.job_position_repository
     job_position_controller = job_position.job_position_controller
     job_position_comment_controller = job_position.job_position_comment_controller
     public_position_controller = job_position.public_position_controller
     position_stage_assignment_controller = job_position.position_stage_assignment_controller
-    
+    position_question_config_controller = job_position.position_question_config_controller
+
     # Workflow
     workflow_repository = workflow.workflow_repository
     workflow_stage_repository = workflow.workflow_stage_repository
@@ -193,6 +206,7 @@ class Container(containers.DeclarativeContainer):
     entity_customization_controller = workflow.entity_customization_controller
     workflow_analytics_controller = workflow.workflow_analytics_controller
     validation_rule_controller = workflow.validation_rule_controller
+    application_question_controller = workflow.application_question_controller
     stage_phase_validation_service = workflow.stage_phase_validation_service
     interview_validation_service = workflow.interview_validation_service
     # Alias for backward compatibility
@@ -361,7 +375,12 @@ class Container(containers.DeclarativeContainer):
     update_experience_command_handler = candidate.update_experience_command_handler
     update_project_command_handler = candidate.update_project_command_handler
     update_resume_content_command_handler = candidate.update_resume_content_command_handler
-    
+
+    # Application Question Answer Handlers
+    list_application_answers_query_handler = candidate.list_application_answers_query_handler
+    save_application_answers_command_handler = candidate.save_application_answers_command_handler
+    evaluate_application_answers_command_handler = candidate.evaluate_application_answers_command_handler
+
     # JobPosition Handlers
     add_user_to_stage_command_handler = job_position.add_user_to_stage_command_handler
     assign_users_to_stage_command_handler = job_position.assign_users_to_stage_command_handler
@@ -389,7 +408,13 @@ class Container(containers.DeclarativeContainer):
     update_job_position_command_handler = job_position.update_job_position_command_handler
     update_job_position_comment_command_handler = job_position.update_job_position_comment_command_handler
     update_job_position_custom_fields_command_handler = job_position.update_job_position_custom_fields_command_handler
-    
+
+    # Position Question Config Handlers
+    list_position_question_configs_query_handler = job_position.list_position_question_configs_query_handler
+    get_enabled_questions_for_position_query_handler = job_position.get_enabled_questions_for_position_query_handler
+    configure_position_question_command_handler = job_position.configure_position_question_command_handler
+    remove_position_question_config_command_handler = job_position.remove_position_question_config_command_handler
+
     # Workflow Handlers
     activate_phase_command_handler = workflow.activate_phase_command_handler
     activate_stage_command_handler = workflow.activate_stage_command_handler
@@ -439,6 +464,12 @@ class Container(containers.DeclarativeContainer):
     update_stage_command_handler = workflow.update_stage_command_handler
     update_validation_rule_command_handler = workflow.update_validation_rule_command_handler
     update_workflow_command_handler = workflow.update_workflow_command_handler
+
+    # ApplicationQuestion Handlers
+    list_application_questions_query_handler = workflow.list_application_questions_query_handler
+    create_application_question_command_handler = workflow.create_application_question_command_handler
+    update_application_question_command_handler = workflow.update_application_question_command_handler
+    delete_application_question_command_handler = workflow.delete_application_question_command_handler
     
     # Exponer todos los providers del container antiguo para compatibilidad
     # Esto permite una migración gradual sin romper el código existente

@@ -10,6 +10,7 @@ from adapters.http.company_app.company.controllers.task_controller import TaskCo
 from adapters.http.company_app.company.controllers.email_template_controller import EmailTemplateController
 from adapters.http.company_app.talent_pool.controllers.talent_pool_controller import TalentPoolController
 from adapters.http.company_app.company_page.controllers.company_page_controller import CompanyPageController
+from adapters.http.company_app.notification.controllers.notification_controller import NotificationController
 
 # Company Infrastructure
 from src.company_bc.company.infrastructure.repositories.company_repository import CompanyRepository
@@ -20,6 +21,19 @@ from src.company_bc.company_candidate.infrastructure.repositories.company_candid
 from src.company_bc.company_candidate.infrastructure.repositories import CandidateCommentRepository
 from src.company_bc.candidate_review.infrastructure.repositories.candidate_review_repository import CandidateReviewRepository
 from src.company_bc.company_page.infrastructure.repositories.company_page_repository import CompanyPageRepository
+
+# In-App Notification Infrastructure
+from src.notification_bc.in_app_notification.infrastructure.repositories.in_app_notification_repository import InAppNotificationRepository
+
+# In-App Notification Application Layer - Queries
+from src.notification_bc.in_app_notification.application.queries.list_user_notifications_query import ListUserNotificationsQueryHandler
+from src.notification_bc.in_app_notification.application.queries.get_unread_count_query import GetUnreadCountQueryHandler
+
+# In-App Notification Application Layer - Commands
+from src.notification_bc.in_app_notification.application.commands.create_notification_command import CreateNotificationCommandHandler
+from src.notification_bc.in_app_notification.application.commands.mark_notification_as_read_command import MarkNotificationAsReadCommandHandler
+from src.notification_bc.in_app_notification.application.commands.mark_all_notifications_as_read_command import MarkAllNotificationsAsReadCommandHandler
+from src.notification_bc.in_app_notification.application.commands.delete_notification_command import DeleteNotificationCommandHandler
 
 # Company Application Layer - Commands
 from src.company_bc.company.application.commands.create_company_command import CreateCompanyCommandHandler
@@ -630,5 +644,50 @@ class CompanyContainer(containers.DeclarativeContainer):
         CompanyPageController,
         command_bus=shared.command_bus,
         query_bus=shared.query_bus
+    )
+
+    # In-App Notification Repository
+    in_app_notification_repository = providers.Factory(
+        InAppNotificationRepository,
+        session=shared.database.provided.session
+    )
+
+    # In-App Notification Query Handlers
+    list_user_notifications_query_handler = providers.Factory(
+        ListUserNotificationsQueryHandler,
+        repository=in_app_notification_repository
+    )
+
+    get_unread_count_query_handler = providers.Factory(
+        GetUnreadCountQueryHandler,
+        repository=in_app_notification_repository
+    )
+
+    # In-App Notification Command Handlers
+    create_notification_command_handler = providers.Factory(
+        CreateNotificationCommandHandler,
+        repository=in_app_notification_repository
+    )
+
+    mark_notification_as_read_command_handler = providers.Factory(
+        MarkNotificationAsReadCommandHandler,
+        repository=in_app_notification_repository
+    )
+
+    mark_all_notifications_as_read_command_handler = providers.Factory(
+        MarkAllNotificationsAsReadCommandHandler,
+        repository=in_app_notification_repository
+    )
+
+    delete_notification_command_handler = providers.Factory(
+        DeleteNotificationCommandHandler,
+        repository=in_app_notification_repository
+    )
+
+    # Notification Controller
+    notification_controller = providers.Factory(
+        NotificationController,
+        query_bus=shared.query_bus,
+        command_bus=shared.command_bus
     )
 

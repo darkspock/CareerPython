@@ -4,6 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import type { UpdatePositionRequest, Position, JobPositionWorkflow } from '../../types/position';
 import { DynamicCustomFields } from '../../components/jobPosition/DynamicCustomFields';
+import { PositionQuestionsEditor } from '../../components/jobPosition/PositionQuestionsEditor';
 import { WysiwygEditor } from '../../components/common';
 
 export default function EditPositionPage() {
@@ -363,6 +364,16 @@ export default function EditPositionPage() {
               customFieldsValues={formData.custom_fields_values || {}}
               onChange={(values) => setFormData({ ...formData, custom_fields_values: values })}
               readOnly={false}
+            />
+          </div>
+        )}
+
+        {/* Application Questions */}
+        {selectedWorkflow && id && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <PositionQuestionsEditor
+              positionId={id}
+              workflowId={selectedWorkflow.id}
             />
           </div>
         )}

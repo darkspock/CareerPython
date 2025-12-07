@@ -46,6 +46,11 @@ from adapters.http.company_app.company_page.routers.company_page_router import r
 from adapters.http.company_app.company_page.routers.public_company_page_router import router as public_company_page_router
 from adapters.http.company_app.interview.routers.company_interview_template_router import router as company_interview_template_router
 from adapters.http.company_app.interview.routers.company_interview_router import router as company_interview_router
+from adapters.http.company_app.notification.routers.notification_router import router as notification_router
+from adapters.http.company_app.application_question.routers.application_question_router import router as application_question_router
+from adapters.http.company_app.job_position.routers.position_question_config_router import router as position_question_config_router
+from adapters.http.candidate_app.application_answers.routers.application_answer_router import router as application_answer_router
+from adapters.http.candidate_app.application_answers.routers.application_answer_router import public_router as public_application_questions_router
 from adapters.http.auth.routes.user_router import user_router
 from adapters.http.auth.routes.ai_test_router import router as ai_test_router
 from adapters.http.auth.invitations.routers.invitation_router import router as invitation_router
@@ -107,6 +112,11 @@ app.include_router(company_position_router)  # Company job position management (
 app.include_router(job_position_comment_router)  # Job position comment management
 app.include_router(company_interview_template_router)  # Company interview template management
 app.include_router(company_interview_router)  # Company interview management
+app.include_router(notification_router)  # In-app notifications
+app.include_router(application_question_router)  # Application questions for workflows
+app.include_router(position_question_config_router)  # Position question configurations
+app.include_router(application_answer_router)  # Application question answers
+app.include_router(public_application_questions_router)  # Public endpoint for position questions
 app.include_router(validation_rule_router)  # Field validation rules
 app.include_router(position_stage_assignment_router)  # Position stage assignment management
 app.include_router(company_page_router)  # Company pages management
@@ -190,6 +200,9 @@ container.wire(modules=[
     "adapters.http.company_app.interview.routers.company_interview_template_router",  # Company interview template management
     "adapters.http.company_app.interview.routers.company_interview_router",  # Company interview management
     "adapters.http.shared.field_validation.routers.validation_rule_router",
+    "adapters.http.company_app.application_question.routers.application_question_router",
+    "adapters.http.company_app.job_position.routers.position_question_config_router",
+    "adapters.http.candidate_app.application_answers.routers.application_answer_router",
     "adapters.http.candidate_app.routers.position_stage_assignment_router",
     "adapters.http.shared.workflow_analytics.routers.workflow_analytics_router",
     "adapters.http.company_app.job_position.routers.public_position_router",  # Phase 10: Public position endpoints

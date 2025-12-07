@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, ChevronDown, ChevronUp, Filter, Plus, Search, X } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronDown, ChevronUp, Filter, List, Plus, Search, X } from 'lucide-react';
 import { companyInterviewService } from '../../services/companyInterviewService';
 import type { InterviewFilterEnum } from '../../services/companyInterviewService';
 import { Button } from '@/components/ui/button';
@@ -15,11 +15,15 @@ import { useInterviews } from '../../hooks/useInterviews';
 import { useInterviewFilters } from '../../hooks/useInterviewFilters';
 import { InterviewStats } from '../../components/interviews/InterviewStats';
 import { InterviewCalendar } from '../../components/interviews/InterviewCalendar';
+import { InterviewFullCalendar } from '../../components/interviews/InterviewFullCalendar';
 import { InterviewTableRow } from '../../components/interviews/InterviewTableRow';
+
+type ViewMode = 'table' | 'calendar';
 
 const CompanyInterviewsPage: React.FC = () => {
   const navigate = useNavigate();
-  
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
+
   // Use custom hooks
   const {
     interviews,
@@ -271,10 +275,37 @@ const CompanyInterviewsPage: React.FC = () => {
                 Gestiona las entrevistas de candidatos
               </p>
             </div>
-            <Button onClick={handleCreateInterview} className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Nueva Entrevista
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* View Mode Toggle */}
+              <div className="flex rounded-lg border overflow-hidden">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`px-3 py-2 flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                    viewMode === 'table'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                  Lista
+                </button>
+                <button
+                  onClick={() => setViewMode('calendar')}
+                  className={`px-3 py-2 flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                    viewMode === 'calendar'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <CalendarDays className="w-4 h-4" />
+                  Calendario
+                </button>
+              </div>
+              <Button onClick={handleCreateInterview} className="flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Nueva Entrevista
+              </Button>
+            </div>
           </div>
           
           {/* Header with Metrics and Calendar */}
@@ -494,87 +525,100 @@ const CompanyInterviewsPage: React.FC = () => {
           </div>
         )}
         
-        {/* Interviews Table */}
-        {loading ? (
-          <Card>
-            <CardContent className="pt-12 pb-12">
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3 text-gray-600">Cargando entrevistas...</span>
-              </div>
-            </CardContent>
-          </Card>
-        ) : interviews.length === 0 ? (
-          <Card>
-            <CardContent className="pt-12 pb-12 text-center">
-              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No se encontraron entrevistas
-              </h3>
-              <p className="text-gray-600 mb-6">Crea tu primera entrevista para comenzar</p>
-              <Button onClick={handleCreateInterview} className="flex items-center gap-2 mx-auto">
-                <Plus className="w-4 h-4" />
-                Crear Primera Entrevista
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Content - Table or Calendar View */}
+        {viewMode === 'calendar' ? (
+          /* Full Calendar View */
+          <InterviewFullCalendar
+            interviews={calendarInterviews}
+            loading={calendarLoading}
+            onInterviewClick={handleViewInterview}
+            onDateClick={handleDateClick}
+          />
         ) : (
+          /* Table View */
           <>
-            <Card>
-              <CardHeader>
-                <CardTitle>Lista de Entrevistas ({total})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Candidato</TableHead>
-                      <TableHead>Entrevista</TableHead>
-                      <TableHead>Asignado</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Programada</TableHead>
-                      <TableHead>Fecha Límite</TableHead>
-                      <TableHead>Posición</TableHead>
-                      <TableHead>Puntuación</TableHead>
-                      <TableHead>Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {interviews.map((interview) => (
-                      <InterviewTableRow
-                        key={interview.id}
-                        interview={interview}
-                        onView={handleViewInterview}
-                        onGenerateLink={handleGenerateAndOpenLink}
-                        onCopyLink={handleCopyLink}
-                      />
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-            
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(pagination.currentPage - 1)}
-                  disabled={pagination.currentPage === 1}
-                >
-                  Anterior
-                </Button>
-                <span className="text-sm text-gray-600">
-                  Página {pagination.currentPage} de {pagination.totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(pagination.currentPage + 1)}
-                  disabled={pagination.currentPage === pagination.totalPages}
-                >
-                  Siguiente
-                </Button>
-              </div>
+            {loading ? (
+              <Card>
+                <CardContent className="pt-12 pb-12">
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-3 text-gray-600">Cargando entrevistas...</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : interviews.length === 0 ? (
+              <Card>
+                <CardContent className="pt-12 pb-12 text-center">
+                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    No se encontraron entrevistas
+                  </h3>
+                  <p className="text-gray-600 mb-6">Crea tu primera entrevista para comenzar</p>
+                  <Button onClick={handleCreateInterview} className="flex items-center gap-2 mx-auto">
+                    <Plus className="w-4 h-4" />
+                    Crear Primera Entrevista
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Lista de Entrevistas ({total})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Candidato</TableHead>
+                          <TableHead>Entrevista</TableHead>
+                          <TableHead>Asignado</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>Programada</TableHead>
+                          <TableHead>Fecha Límite</TableHead>
+                          <TableHead>Posición</TableHead>
+                          <TableHead>Puntuación</TableHead>
+                          <TableHead>Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {interviews.map((interview) => (
+                          <InterviewTableRow
+                            key={interview.id}
+                            interview={interview}
+                            onView={handleViewInterview}
+                            onGenerateLink={handleGenerateAndOpenLink}
+                            onCopyLink={handleCopyLink}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(pagination.currentPage - 1)}
+                      disabled={pagination.currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    <span className="text-sm text-gray-600">
+                      Página {pagination.currentPage} de {pagination.totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(pagination.currentPage + 1)}
+                      disabled={pagination.currentPage === pagination.totalPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

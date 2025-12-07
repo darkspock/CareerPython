@@ -92,6 +92,20 @@ from src.shared_bc.customization.field_validation.application.queries.get_valida
 from src.shared_bc.customization.field_validation.application.queries.list_validation_rules_by_stage_query import ListValidationRulesByStageQueryHandler
 from src.shared_bc.customization.field_validation.application.queries.list_validation_rules_by_field_query import ListValidationRulesByFieldQueryHandler
 
+# ApplicationQuestion Infrastructure
+from src.shared_bc.customization.workflow.infrastructure.repositories.application_question_repository import ApplicationQuestionRepository
+
+# ApplicationQuestion Application Layer - Queries
+from src.shared_bc.customization.workflow.application.queries.application_question.list_application_questions_query import ListApplicationQuestionsQueryHandler
+
+# ApplicationQuestion Application Layer - Commands
+from src.shared_bc.customization.workflow.application.commands.application_question.create_application_question_command import CreateApplicationQuestionCommandHandler
+from src.shared_bc.customization.workflow.application.commands.application_question.update_application_question_command import UpdateApplicationQuestionCommandHandler
+from src.shared_bc.customization.workflow.application.commands.application_question.delete_application_question_command import DeleteApplicationQuestionCommandHandler
+
+# ApplicationQuestion Controller
+from adapters.http.company_app.application_question.controllers.application_question_controller import ApplicationQuestionController
+
 # WorkflowAnalytics Application Layer - Queries
 from src.shared_bc.customization.workflow_analytics.application.queries.get_workflow_analytics_query import GetWorkflowAnalyticsQueryHandler
 from src.shared_bc.customization.workflow_analytics.application.queries.get_stage_bottlenecks_query import GetStageBottlenecksQueryHandler
@@ -474,3 +488,37 @@ class WorkflowContainer(containers.DeclarativeContainer):
         query_bus=shared.query_bus
     )
 
+    # ApplicationQuestion Repository
+    application_question_repository = providers.Factory(
+        ApplicationQuestionRepository,
+        database=shared.database
+    )
+
+    # ApplicationQuestion Query Handlers
+    list_application_questions_query_handler = providers.Factory(
+        ListApplicationQuestionsQueryHandler,
+        repository=application_question_repository
+    )
+
+    # ApplicationQuestion Command Handlers
+    create_application_question_command_handler = providers.Factory(
+        CreateApplicationQuestionCommandHandler,
+        repository=application_question_repository
+    )
+
+    update_application_question_command_handler = providers.Factory(
+        UpdateApplicationQuestionCommandHandler,
+        repository=application_question_repository
+    )
+
+    delete_application_question_command_handler = providers.Factory(
+        DeleteApplicationQuestionCommandHandler,
+        repository=application_question_repository
+    )
+
+    # ApplicationQuestion Controller
+    application_question_controller = providers.Factory(
+        ApplicationQuestionController,
+        query_bus=shared.query_bus,
+        command_bus=shared.command_bus
+    )

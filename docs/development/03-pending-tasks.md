@@ -1,6 +1,6 @@
 # Pending Tasks & Priorities
 
-**Last Updated:** 2025-12-07
+**Last Updated:** 2025-12-07 (Added Application Questions feature)
 **Document Type:** Development Roadmap
 
 ---
@@ -272,39 +272,218 @@ The legacy directories were already empty (no Python files), only containing emp
 
 ---
 
-### 10. Interview Calendar View
+### 10. Interview Calendar View ✅ COMPLETED
 
-**Current State**: List view only
+**Status**: Implemented on 2025-12-07
 
-**Tasks**:
-- [ ] Create `InterviewCalendar` component
-- [ ] Add week/month view toggle
-- [ ] Implement drag-to-reschedule
-- [ ] Add interviewer availability display
-- [ ] Color code by interview type
+**Files Created/Modified**:
+- `client-vite/src/components/interviews/InterviewFullCalendar.tsx` (NEW) - Full calendar component
+- `client-vite/src/pages/company/CompanyInterviewsPage.tsx` - Added Lista/Calendario toggle
 
-**Estimated Effort**: Medium (2-3 days)
+**Completed Tasks**:
+- [x] Create `InterviewFullCalendar` component
+- [x] Add week/month view toggle
+- [x] Color code by interview type (6 types with distinct colors)
+- [x] Add navigation (previous/next/today)
+- [x] Add interview details on hover (tooltips)
+- [x] Add legend for interview types
+- [ ] Implement drag-to-reschedule - Future enhancement
+- [ ] Add interviewer availability display - Future enhancement
+
+**Implementation Notes**:
+- Week view shows 7 days with interview cards
+- Month view shows 42-day grid with compact entries
+- Colors: Technical (blue), Behavioral (purple), Cultural Fit (green), Knowledge Check (yellow), Experience Check (orange), Custom (gray)
 
 ---
 
-### 11. Notification System Enhancement
+### 11. Notification System Enhancement ✅ COMPLETED
 
-**Current State**: Toast notifications only
+**Status**: Implemented on 2025-12-07
+
+**Files Created/Modified**:
+- `src/notification_bc/in_app_notification/` (NEW directory) - Complete domain, application, infrastructure layers
+- `src/notification_bc/in_app_notification/domain/entities/in_app_notification.py` (NEW) - Core entity
+- `src/notification_bc/in_app_notification/domain/enums/notification_enums.py` (NEW) - Types and priorities
+- `src/notification_bc/in_app_notification/application/queries/*.py` (NEW) - ListUserNotificationsQuery, GetUnreadCountQuery
+- `src/notification_bc/in_app_notification/application/commands/*.py` (NEW) - Create, MarkAsRead, MarkAllAsRead, Delete
+- `src/notification_bc/in_app_notification/infrastructure/repositories/in_app_notification_repository.py` (NEW)
+- `src/notification_bc/in_app_notification/infrastructure/models/in_app_notification_model.py` (NEW)
+- `adapters/http/company_app/notification/` (NEW) - Complete HTTP layer (router, controller, schemas, mappers)
+- `client-vite/src/services/notificationService.ts` (NEW) - Frontend API service
+- `client-vite/src/components/notifications/NotificationBell.tsx` (NEW) - Bell icon with dropdown
+- `client-vite/src/components/company/CompanyLayout.tsx` - Integrated NotificationBell
+- `alembic/versions/bdc7f8f711e4_add_in_app_notifications_table.py` (NEW) - DB migration
+- `core/containers/company_container.py` - Registered notification handlers and repository
+- `core/containers/main_container.py` - Exposed notification controller
+- `main.py` - Registered notification router
+
+**Completed Tasks**:
+- [x] Create notification center UI (NotificationBell with Popover dropdown)
+- [x] Implement in-app notifications (full backend: entity, repository, queries, commands)
+- [x] Create notification bell with badge (unread count badge, polling every 30s)
+- [x] Implement mark as read functionality (individual and mark all)
+- [x] Implement delete notification
+- [x] Add priority levels and notification types
+- [ ] Add notification preferences - Future enhancement
+- [ ] Push notifications - Future enhancement
+
+**API Endpoints**:
+- `GET /api/company/notifications/` - List notifications (paginated)
+- `GET /api/company/notifications/unread-count` - Get unread count
+- `POST /api/company/notifications/{id}/read` - Mark as read
+- `POST /api/company/notifications/read-all` - Mark all as read
+- `DELETE /api/company/notifications/{id}` - Delete notification
+
+**Implementation Notes**:
+- Notification types: NEW_APPLICATION, INTERVIEW_SCHEDULED, NEW_COMMENT, MENTION, SYSTEM_ALERT, INFO, WARNING, ERROR
+- Priority levels: LOW, NORMAL, HIGH, URGENT
+- Polling for real-time updates (30 second intervals)
+- Clickable notifications with optional link navigation
+
+---
+
+### 12. Application Questions (Screening Questions) - Backend Complete
+
+**Current State**: Backend infrastructure implemented, frontend UI pending
+
+**Design Decision**: Hybrid approach - Workflow-Defined, Position-Enabled
+
+**Business Documentation**: See `docs/business/06-workflow-system.md` (FR-WF06)
 
 **Tasks**:
-- [ ] Create notification center UI
-- [ ] Implement in-app notifications
-- [ ] Add notification preferences
-- [ ] Create notification bell with badge
-- [ ] Implement mark as read functionality
 
-**Estimated Effort**: Medium (2-3 days)
+#### Backend - COMPLETED
+- [x] Create `ApplicationQuestion` entity in workflow domain
+- [x] Create `PositionQuestionConfig` entity for position-level enablement
+- [x] Create `ApplicationQuestionRepository` with SQLAlchemy implementation
+- [x] Create `PositionQuestionConfigRepository` with SQLAlchemy implementation
+- [x] Create CRUD commands for application questions (Create, Update, Delete)
+- [x] Create `ListApplicationQuestionsQuery` query
+- [x] Create HTTP layer (router, controller, schemas, mapper)
+- [x] Create database migration for both tables
+- [x] Register in dependency injection containers
+- [x] Create position question toggle command (ConfigurePositionQuestionCommand)
+- [x] Create `ListPositionQuestionConfigsQuery` query
+- [x] Create position question config HTTP layer (router, controller, schemas, mapper)
+- [x] Create `ApplicationQuestionAnswer` entity and repository
+- [x] Create `SaveApplicationAnswersCommand` to save answers
+- [x] Create `ListApplicationAnswersQuery` to retrieve answers
+- [x] Create `GetEnabledQuestionsForPositionQuery` (combines workflow + position config)
+- [x] Create application answers HTTP layer (router, controller, schemas, mapper)
+- [x] Create database migration for `application_question_answers` table
+- [x] Integrate with JsonLogic validation engine for automation rules
+
+**Backend Files Created**:
+- Domain: `src/shared_bc/customization/workflow/domain/entities/application_question.py`
+- Domain: `src/shared_bc/customization/workflow/domain/interfaces/application_question_repository_interface.py`
+- Domain: `src/shared_bc/customization/workflow/domain/enums/application_question_field_type.py`
+- Domain: `src/company_bc/job_position/domain/entities/position_question_config.py`
+- Domain: `src/company_bc/job_position/domain/repositories/position_question_config_repository_interface.py`
+- Infrastructure: `src/shared_bc/customization/workflow/infrastructure/models/application_question_model.py`
+- Infrastructure: `src/shared_bc/customization/workflow/infrastructure/repositories/application_question_repository.py`
+- Infrastructure: `src/company_bc/job_position/infrastructure/models/position_question_config_model.py`
+- Infrastructure: `src/company_bc/job_position/infrastructure/repositories/position_question_config_repository.py`
+- Application: `src/shared_bc/customization/workflow/application/dtos/application_question_dto.py`
+- Application: `src/shared_bc/customization/workflow/application/queries/application_question/list_application_questions_query.py`
+- Application: `src/shared_bc/customization/workflow/application/commands/application_question/create_application_question_command.py`
+- Application: `src/shared_bc/customization/workflow/application/commands/application_question/update_application_question_command.py`
+- Application: `src/shared_bc/customization/workflow/application/commands/application_question/delete_application_question_command.py`
+- HTTP: `adapters/http/company_app/application_question/` (complete layer)
+- Migration: `alembic/versions/c3d4e5f6a7b8_add_application_questions_tables.py`
+
+**API Endpoints - Application Questions (Workflow Level)**:
+- `GET /api/company/workflows/{workflow_id}/questions/` - List questions
+- `POST /api/company/workflows/{workflow_id}/questions/` - Create question
+- `PUT /api/company/workflows/{workflow_id}/questions/{question_id}` - Update question
+- `DELETE /api/company/workflows/{workflow_id}/questions/{question_id}` - Delete question
+
+**API Endpoints - Position Question Config (Position Level)**:
+- `GET /api/company/positions/{position_id}/questions/` - List question configs for position
+- `POST /api/company/positions/{position_id}/questions/` - Configure question for position (enable/disable, set overrides)
+- `DELETE /api/company/positions/{position_id}/questions/{question_id}` - Remove question config (revert to workflow defaults)
+
+**Additional Files Created (Position Question Config)**:
+- Application: `src/company_bc/job_position/application/dtos/position_question_config_dto.py`
+- Application: `src/company_bc/job_position/application/queries/position_question_config/list_position_question_configs_query.py`
+- Application: `src/company_bc/job_position/application/queries/position_question_config/get_enabled_questions_for_position_query.py`
+- Application: `src/company_bc/job_position/application/commands/position_question_config/configure_position_question_command.py`
+- Application: `src/company_bc/job_position/application/commands/position_question_config/remove_position_question_config_command.py`
+- HTTP: `adapters/http/company_app/job_position/schemas/position_question_config_schemas.py`
+- HTTP: `adapters/http/company_app/job_position/controllers/position_question_config_controller.py`
+- HTTP: `adapters/http/company_app/job_position/routers/position_question_config_router.py`
+- HTTP: `adapters/http/company_app/job_position/mappers/position_question_config_mapper.py`
+
+**Additional Files Created (Application Answers)**:
+- Domain: `src/company_bc/candidate_application/domain/entities/application_question_answer.py`
+- Domain: `src/company_bc/candidate_application/domain/repositories/application_question_answer_repository_interface.py`
+- Domain: `src/company_bc/candidate_application/domain/value_objects/application_question_answer_id.py`
+- Infrastructure: `src/company_bc/candidate_application/infrastructure/models/application_question_answer_model.py`
+- Infrastructure: `src/company_bc/candidate_application/infrastructure/repositories/application_question_answer_repository.py`
+- Application: `src/company_bc/candidate_application/application/queries/question_answer/` (DTOs and ListApplicationAnswersQuery)
+- Application: `src/company_bc/candidate_application/application/commands/question_answer/save_application_answers_command.py`
+- HTTP: `adapters/http/candidate_app/application_answers/` (complete layer)
+- Migration: `alembic/versions/d4e5f6a7b8c9_add_application_question_answers_table.py`
+
+**API Endpoints - Application Answers**:
+- `GET /api/applications/{application_id}/answers` - List answers for application
+- `POST /api/applications/{application_id}/answers` - Save answers for application
+- `GET /api/public/positions/{position_id}/questions` - Get enabled questions for position (public)
+
+**Additional Files Created (JsonLogic Evaluation)**:
+- Application Service: `src/company_bc/candidate_application/application/services/application_answer_evaluation_service.py`
+- Application Command: `src/company_bc/candidate_application/application/commands/question_answer/evaluate_application_answers_command.py`
+
+**JsonLogic Integration Notes**:
+- `ApplicationAnswerEvaluationService` evaluates answers against automation rules defined on questions
+- `EvaluateApplicationAnswersCommand` triggers auto-reject/auto-approve based on rule evaluation
+- Rules format follows JsonLogic structure with `should_auto_reject` and `should_auto_approve` flags
+- Type coercion handles NUMBER and BOOLEAN field types from string answers
+- Rule messages support variable substitution from answer data
+
+#### Frontend - COMPLETED
+- [x] Create Application Questions management UI (workflow settings)
+- [x] Add question toggle UI in job position editor
+- [x] Update public application form to render enabled questions
+- [x] Add question answer display in candidate detail view
+- [ ] Create automation rule builder for question-based rules (optional - nice to have)
+
+**Frontend Files Created**:
+- Service: `client-vite/src/services/applicationQuestionService.ts`
+- Service: `client-vite/src/services/positionQuestionConfigService.ts`
+- Service: `client-vite/src/services/publicQuestionService.ts`
+- Component: `client-vite/src/components/workflow/ApplicationQuestionsEditor.tsx`
+- Component: `client-vite/src/components/jobPosition/PositionQuestionsEditor.tsx`
+- Component: `client-vite/src/components/public/ApplicationQuestionsForm.tsx`
+- Component: `client-vite/src/components/candidate/CandidateAnswersSection.tsx`
+- Updated: `client-vite/src/pages/workflow/WorkflowAdvancedConfigPage.tsx`
+- Updated: `client-vite/src/pages/company/EditPositionPage.tsx`
+- Updated: `client-vite/src/pages/public/PublicPositionDetailPage.tsx`
+- Updated: `client-vite/src/pages/company/CandidateDetailPage.tsx`
+
+#### Data Model
+```
+ApplicationQuestion (workflow-level)
+├── id, workflow_id, company_id, field_key, label, description
+├── field_type (TEXT, TEXTAREA, NUMBER, DATE, SELECT, MULTISELECT, BOOLEAN)
+├── options (JSON for SELECT/MULTISELECT)
+├── is_required_default, validation_rules (JSON), sort_order
+├── is_active, created_at, updated_at
+
+PositionQuestionConfig (position-level)
+├── id, position_id, question_id
+├── enabled, is_required_override, sort_order_override
+├── created_at, updated_at
+```
+
+**Priority**: P2
+**Status**: COMPLETED (Backend and Frontend)
 
 ---
 
 ## P3 - Low Priority Tasks
 
-### 12. Calendar Integration
+### 14. Calendar Integration
 
 **Tasks**:
 - [ ] Google Calendar OAuth integration
@@ -316,7 +495,7 @@ The legacy directories were already empty (no Python files), only containing emp
 
 ---
 
-### 13. Mobile PWA Enhancement
+### 15. Mobile PWA Enhancement
 
 **Tasks**:
 - [ ] Improve offline support
@@ -329,7 +508,7 @@ The legacy directories were already empty (no Python files), only containing emp
 
 ---
 
-### 14. Performance Optimization
+### 16. Performance Optimization
 
 **Tasks**:
 - [ ] Implement list virtualization for large datasets
@@ -342,7 +521,7 @@ The legacy directories were already empty (no Python files), only containing emp
 
 ---
 
-### 15. Accessibility Improvements
+### 17. Accessibility Improvements
 
 **Tasks**:
 - [ ] Complete ARIA labeling
@@ -355,7 +534,7 @@ The legacy directories were already empty (no Python files), only containing emp
 
 ---
 
-### 16. Advanced Analytics Dashboard
+### 18. Advanced Analytics Dashboard
 
 **Tasks**:
 - [ ] Implement time-to-hire metrics
@@ -416,12 +595,19 @@ The legacy directories were already empty (no Python files), only containing emp
 - ~~AI interview integration (P2)~~ ✅
 - ~~Bulk email sending (P2)~~ ✅
 
-### Sprint 3: Enhancement (In Progress)
+### Sprint 3: Enhancement ✅ COMPLETED
 - ~~Advanced filtering (P2)~~ ✅
-- Interview calendar view (P2)
-- Notification system (P2)
+- ~~Interview calendar view (P2)~~ ✅
+- ~~Notification system (P2)~~ ✅
 
-### Sprint 4: Polish
+### Sprint 4: Application Questions - COMPLETED
+- Application Questions backend (P2) - ✅ COMPLETED
+- JsonLogic evaluation integration (P2) - ✅ COMPLETED
+- Position question toggle command (P2) - ✅ COMPLETED
+- Application Questions frontend (P2) - ✅ COMPLETED
+- Application submission with question answers - ✅ COMPLETED
+
+### Sprint 5: Polish
 - Performance optimization (P3)
 - Accessibility improvements (P3)
 - Calendar integration (P3)
@@ -432,8 +618,8 @@ The legacy directories were already empty (no Python files), only containing emp
 
 | Metric | Current | Target |
 |--------|---------|--------|
-| Backend completion | 95% | 100% |
-| Frontend completion | 85% | 95% |
+| Backend completion | 98% | 100% |
+| Frontend completion | 92% | 95% |
 | Test coverage | 60% | 80% |
 | Performance score | 75 | 90 |
 | Accessibility score | 70 | 90 |

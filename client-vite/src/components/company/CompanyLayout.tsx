@@ -21,6 +21,7 @@ import { recruiterCompanyService } from '../../services/recruiterCompanyService'
 import { phaseService } from '../../services/phaseService';
 import type { Phase } from '../../types/phase';
 import UserSettingsMenu from './UserSettingsMenu';
+import { NotificationBell } from '../notifications/NotificationBell';
 
 export default function CompanyLayout() {
   const { t } = useTranslation();
@@ -448,11 +449,22 @@ export default function CompanyLayout() {
               <Building2 className="w-6 h-6 text-blue-600" />
               <span className="font-semibold text-gray-900">{t('company.dashboard.title')}</span>
             </div>
-            
-            {/* User Menu */}
-            <UserSettingsMenu onLogout={handleLogout} />
+
+            {/* Notifications and User Menu */}
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <UserSettingsMenu onLogout={handleLogout} />
+            </div>
           </div>
         </header>
+
+        {/* Desktop Top Bar - Notifications */}
+        <div className="hidden lg:flex items-center justify-end px-6 py-3 border-b border-gray-200 bg-white">
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <UserSettingsMenu onLogout={handleLogout} />
+          </div>
+        </div>
 
         {/* Page Content */}
         <main className="flex-1 p-6">

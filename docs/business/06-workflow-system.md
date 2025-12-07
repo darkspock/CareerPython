@@ -2,7 +2,7 @@
 
 **Document Type:** Business Requirements
 **Version:** 1.0
-**Last Updated:** 2025-01-XX
+**Last Updated:** 2025-12-07
 **Module:** Unified Workflow Engine
 
 ---
@@ -252,16 +252,130 @@ StageRule:
 - **Colors**: Text color, background color
 - **Order**: Visual sequence
 
-### FR-WF06: Phase Transitions
+### FR-WF06: Application Questions (Screening Questions)
 
-#### FR-WF06.1: Automatic Phase Advancement
+Application Questions enable companies to collect additional information from candidates during the application process. These questions support automation rules for auto-qualification or disqualification.
+
+#### FR-WF06.1: Design Philosophy (Hybrid Approach)
+
+The system uses a **Workflow-Defined, Position-Enabled** model:
+
+```
+Workflow defines AVAILABLE questions (templates)
+├── "expected_salary" (number)
+├── "relocation_willing" (boolean)
+├── "start_date_available" (date)
+├── "drivers_license" (boolean)
+└── "work_authorization" (select)
+
+Job Position ENABLES specific questions
+├── ✅ expected_salary (enabled for this role)
+├── ✅ relocation_willing (enabled)
+├── ❌ drivers_license (not relevant for remote role)
+└── ❌ start_date_available (disabled)
+```
+
+**Rationale**: This hybrid approach balances:
+- **UX**: Recruiters feel they're customizing the position
+- **Automation**: Questions are workflow-defined, enabling predictable rules
+- **Consistency**: Same question definitions across positions
+- **Flexibility**: Each position shows only relevant questions
+
+#### FR-WF06.2: Application Question Properties
+
+| Property | Description |
+|----------|-------------|
+| `id` | Unique identifier |
+| `workflow_id` | Parent workflow |
+| `field_key` | Unique key for automation rules (e.g., `expected_salary`) |
+| `label` | Display label for candidates |
+| `description` | Help text for candidates |
+| `field_type` | TEXT, NUMBER, DATE, SELECT, MULTISELECT, BOOLEAN |
+| `options` | For SELECT/MULTISELECT types |
+| `is_required_default` | Default required state |
+| `validation_rules` | Field-level validation (min/max, pattern, etc.) |
+| `order` | Display order |
+
+#### FR-WF06.3: Position Question Configuration
+
+| Property | Description |
+|----------|-------------|
+| `position_id` | Job position |
+| `question_id` | Application question from workflow |
+| `enabled` | Whether to show this question |
+| `is_required` | Override required state (optional) |
+| `order_override` | Override display order (optional) |
+
+#### FR-WF06.4: Automation Integration
+
+Application questions can be used in:
+
+1. **Validation Rules** (blocking/warning):
+```json
+{
+  "rule": {">=": [{"var": "expected_salary"}, {"*": [{"var": "position.max_salary"}, 1.2]}]},
+  "field": "expected_salary",
+  "message": "Expected salary exceeds budget by more than 20%"
+}
+```
+
+2. **Auto-Move Rules**:
+```json
+{
+  "rule_type": "AUTO_MOVE",
+  "target_stage_id": "rejected-stage-id",
+  "validations": [{
+    "type": "APPLICATION_FIELD",
+    "field": "work_authorization",
+    "operator": "EQUALS",
+    "value": "NO"
+  }]
+}
+```
+
+3. **Scoring/Qualification**:
+- Questions contribute to candidate qualification scores
+- Can trigger automatic stage transitions
+
+#### FR-WF06.5: Common Application Questions
+
+| Question | Type | Use Case |
+|----------|------|----------|
+| **Expected Salary** | NUMBER | Budget validation |
+| **Available Start Date** | DATE | Timeline alignment |
+| **Relocation Willing** | BOOLEAN | Location requirements |
+| **Work Authorization** | SELECT | Legal compliance |
+| **Driver's License** | BOOLEAN | Role requirements |
+| **Notice Period** | SELECT | Hiring timeline |
+| **How Did You Hear About Us** | SELECT | Source tracking |
+| **Why This Role** | TEXT | Motivation screening |
+
+#### FR-WF06.6: UX Guidelines
+
+**For Recruiters (Position Editor)**:
+- Show inherited questions from workflow
+- Toggle to enable/disable each question
+- Visual indicator for questions with automation rules
+- Cannot create new questions (only at workflow level)
+
+**For Candidates (Application Form)**:
+- Clear, concise question labels
+- Help text for complex questions
+- Progress indicator for multi-step forms
+- Mobile-optimized input controls
+
+---
+
+### FR-WF07: Phase Transitions
+
+#### FR-WF07.1: Automatic Phase Advancement
 ```
 Candidate in Stage A (SUCCESS, next_phase_id = Phase B)
     ↓ [Automatic Transition]
 Move to Phase B → Default Workflow → INITIAL Stage
 ```
 
-#### FR-WF06.2: Cross-Phase Display
+#### FR-WF07.2: Cross-Phase Display
 - SUCCESS stages can show candidates from next phase's INITIAL
 - Enables drag back within original phase kanban
 - Updates phase_id when moved
