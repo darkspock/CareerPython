@@ -7,10 +7,11 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Save, CheckCircle, AlertCircle, Loader2, Star } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, Loader2, Star, Calendar } from 'lucide-react';
 import { publicInterviewService, type InterviewQuestionsResponse, type InterviewSection, type InterviewQuestion } from '../../services/publicInterviewService';
 import { toast } from 'react-toastify';
 import { AIInterviewChat } from '../../components/interview/AIInterviewChat';
+import { InterviewCalendarButton } from '../../components/public/InterviewCalendarButton';
 
 export default function InterviewAnswerPage() {
   const { interviewId } = useParams<{ interviewId: string }>();
@@ -367,12 +368,32 @@ export default function InterviewAnswerPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {data.interview_title || 'Interview Questions'}
-          </h1>
-          {data.interview_description && (
-            <p className="text-gray-600">{data.interview_description}</p>
-          )}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {data.interview_title || 'Interview Questions'}
+              </h1>
+              {data.interview_description && (
+                <p className="text-gray-600">{data.interview_description}</p>
+              )}
+              {data.scheduled_at && (
+                <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    Scheduled: {new Date(data.scheduled_at).toLocaleDateString()} at{' '}
+                    {new Date(data.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              )}
+            </div>
+            {interviewId && token && data.scheduled_at && (
+              <InterviewCalendarButton
+                interviewId={interviewId}
+                token={token}
+                scheduledAt={data.scheduled_at}
+              />
+            )}
+          </div>
         </div>
       </div>
 

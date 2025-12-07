@@ -1,4 +1,5 @@
 """Public interview schemas for token-based access"""
+from datetime import datetime
 from typing import Optional, List, Dict
 
 from pydantic import BaseModel, Field
@@ -48,6 +49,7 @@ class InterviewQuestionsPublicResponse(BaseModel):
     interview_id: str
     interview_title: Optional[str] = None
     interview_description: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
     template: Optional[InterviewTemplatePublicResponse] = None
     existing_answers: Dict[str, Optional[str]] = Field(default_factory=dict)
 
@@ -63,3 +65,21 @@ class SubmitAnswerResponse(BaseModel):
     """Response after submitting an answer"""
     message: str
     status: str
+
+
+class AIFollowUpRequest(BaseModel):
+    """Request for AI follow-up question generation"""
+    question: str = Field(..., description="The original interview question")
+    candidate_response: str = Field(..., description="The candidate's response to the question")
+    position_context: Optional[str] = Field(None, description="Optional context about the position")
+    conversation_history: Optional[List[Dict[str, str]]] = Field(
+        default=None,
+        description="Optional conversation history [{role: 'user'|'assistant', content: '...'}]"
+    )
+
+
+class AIFollowUpResponse(BaseModel):
+    """Response containing AI-generated follow-up question"""
+    follow_up_question: str
+    success: bool
+    error_message: Optional[str] = None

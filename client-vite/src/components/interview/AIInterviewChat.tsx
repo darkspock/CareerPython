@@ -7,6 +7,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Loader2, Pause, Play, CheckCircle, AlertCircle } from 'lucide-react';
 import type { ConversationalQuestion } from '../../types/interview';
+import { ApiClient } from '../../lib/api';
 
 export interface ChatMessage {
   id: string;
@@ -173,26 +174,63 @@ export function AIInterviewChat({
   const handleFollowUpQuestion = async (userResponse: string, originalQuestion: any) => {
     setIsTyping(true);
 
-    // Simulate AI generating a follow-up question
-    await new Promise(resolve => setTimeout(resolve, 1200 + Math.random() * 800));
+    try {
+      // Build conversation history from recent messages for context
+      const recentMessages = messages.slice(-6).map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
 
-    const followUpQuestions = generateMockFollowUp(userResponse, originalQuestion.name);
+      // Call the AI follow-up endpoint
+      const response = await ApiClient.post<{
+        follow_up_question: string;
+        success: boolean;
+        error_message?: string;
+      }>('/api/candidate/interviews/ai/follow-up', {
+        question: originalQuestion.name,
+        candidate_response: userResponse,
+        position_context: interviewTitle,
+        conversation_history: recentMessages
+      });
 
-    const followUpMessage: ChatMessage = {
-      id: `msg_followup_${Date.now()}`,
-      role: 'assistant',
-      content: followUpQuestions,
-      timestamp: new Date(),
-      questionId: originalQuestion.id,
-      isFollowUp: true
-    };
+      const followUpContent = response.follow_up_question || generateMockFollowUp(userResponse, originalQuestion.name);
 
-    setMessages(prev => [...prev, followUpMessage]);
-    setIsTyping(false);
-    setState(prev => ({ ...prev, waitingForResponse: true }));
+      const followUpMessage: ChatMessage = {
+        id: `msg_followup_${Date.now()}`,
+        role: 'assistant',
+        content: followUpContent,
+        timestamp: new Date(),
+        questionId: originalQuestion.id,
+        isFollowUp: true
+      };
+
+      setMessages(prev => [...prev, followUpMessage]);
+      setIsTyping(false);
+      setState(prev => ({ ...prev, waitingForResponse: true }));
+
+    } catch (err) {
+      console.error('Error generating AI follow-up:', err);
+
+      // Fallback to mock follow-up on error
+      const fallbackFollowUp = generateMockFollowUp(userResponse, originalQuestion.name);
+
+      const followUpMessage: ChatMessage = {
+        id: `msg_followup_${Date.now()}`,
+        role: 'assistant',
+        content: fallbackFollowUp,
+        timestamp: new Date(),
+        questionId: originalQuestion.id,
+        isFollowUp: true
+      };
+
+      setMessages(prev => [...prev, followUpMessage]);
+      setIsTyping(false);
+      setState(prev => ({ ...prev, waitingForResponse: true }));
+    }
   };
 
   const generateMockFollowUp = (response: string, questionText: string): string => {
+    // Fallback follow-up questions used when API fails
     const followUps = [
       `That's interesting! Could you elaborate more on that point? Specifically, what was the outcome of that approach?`,
       `Thank you for sharing. Can you give me a specific example of when you applied this in practice?`,

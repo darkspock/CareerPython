@@ -42,6 +42,7 @@ export interface InterviewQuestionsResponse {
   interview_id: string;
   interview_title?: string;
   interview_description?: string;
+  scheduled_at?: string | null;
   template?: InterviewTemplate;
   existing_answers: Record<string, string | null>;
 }

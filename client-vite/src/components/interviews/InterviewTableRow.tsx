@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Copy,
   AlertTriangle,
+  CalendarPlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +24,7 @@ import {
 } from '@/components/ui/tooltip';
 import type { Interview } from '../../services/companyInterviewService';
 import { formatDate, getStatusBadge } from '../../utils/interviewHelpers';
+import { InterviewCalendarExport } from './InterviewCalendarExport';
 
 interface InterviewTableRowProps {
   interview: Interview;
@@ -235,6 +237,14 @@ export const InterviewTableRow: React.FC<InterviewTableRowProps> = memo(({
                 <p>Copiar link</p>
               </TooltipContent>
             </Tooltip>
+          )}
+
+          {interview.scheduled_at && (
+            <InterviewCalendarExport
+              interviewId={interview.id}
+              scheduledAt={interview.scheduled_at}
+              variant="inline"
+            />
           )}
         </div>
       </TableCell>

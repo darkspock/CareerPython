@@ -1,5 +1,6 @@
 """Get interview questions by token query"""
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 from src.framework.application.query_bus import Query, QueryHandler, QueryBus
@@ -25,6 +26,7 @@ class InterviewQuestionsResponse:
     interview_id: str
     interview_title: Optional[str]
     interview_description: Optional[str]
+    scheduled_at: Optional[datetime]
     template: Optional[InterviewTemplateFullDto]
     existing_answers: dict  # question_id -> answer_text mapping
 
@@ -67,6 +69,7 @@ class GetInterviewQuestionsByTokenQueryHandler(
             interview_id=query.interview_id,
             interview_title=interview.title,
             interview_description=interview.description,
+            scheduled_at=interview.scheduled_at,
             template=template,
             existing_answers=existing_answers
         )

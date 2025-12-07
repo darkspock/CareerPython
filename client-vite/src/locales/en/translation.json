@@ -851,5 +851,15 @@
     "deleteSuccess": "Question deleted successfully",
     "deleteError": "Failed to delete question",
     "reorderError": "Failed to reorder questions"
+  },
+  "calendar": {
+    "addToCalendar": "Add to Calendar",
+    "addToGoogle": "Add to Google Calendar",
+    "addToOutlook": "Add to Outlook",
+    "download": "Download .ics",
+    "copyLink": "Copy Calendar Link",
+    "linkCopied": "Link copied!",
+    "subscribe": "Subscribe to Calendar",
+    "notScheduled": "Interview not scheduled yet"
   }
 }

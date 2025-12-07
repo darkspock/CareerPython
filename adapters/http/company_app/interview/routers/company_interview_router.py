@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordBearer
 
 from adapters.http.company_app.interview.controllers.interview_controller import InterviewController
@@ -19,6 +20,7 @@ from adapters.http.company_app.interview.schemas.interview_management import (
 )
 from core.containers import Container
 from src.framework.application.query_bus import QueryBus
+from src.framework.infrastructure.services.calendar import ICSService, ICSEvent
 
 log = logging.getLogger(__name__)
 
@@ -317,5 +319,123 @@ def generate_interview_link(
         expires_in_days=expires_in_days,
         generated_by=company_user_id
     )
+
+
+# ============================================================================
+# Calendar Export Endpoints
+# ============================================================================
+
+@router.get("/{interview_id}/calendar.ics")
+@inject
+def download_interview_ics(
+        interview_id: str,
+        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
+        company_id: str = Depends(get_company_id_from_token),
+) -> Response:
+    """Download a single interview as an .ics calendar file"""
+    try:
+        # Get interview details
+        interview = controller.get_interview_view(interview_id)
+
+        if not interview.scheduled_at:
+            raise HTTPException(
+                status_code=400,
+                detail="Interview is not scheduled yet"
+            )
+
+        # Build event description
+        description_parts = []
+        if interview.description:
+            description_parts.append(interview.description)
+        if interview.candidate_name:
+            description_parts.append(f"Candidate: {interview.candidate_name}")
+        if interview.job_position_title:
+            description_parts.append(f"Position: {interview.job_position_title}")
+        if interview.interview_type:
+            description_parts.append(f"Type: {interview.interview_type}")
+
+        # Create ICS event
+        event = ICSEvent(
+            uid=f"interview-{interview_id}@careerpython.com",
+            summary=interview.title or f"Interview - {interview.candidate_name or 'Candidate'}",
+            start=interview.scheduled_at,
+            end=interview.deadline_date,  # Use deadline as end if available
+            description="\n".join(description_parts) if description_parts else None,
+        )
+
+        # Generate ICS content
+        ics_service = ICSService()
+        ics_content = ics_service.generate_event(event)
+
+        # Return as downloadable file
+        filename = f"interview-{interview_id}.ics"
+        return Response(
+            content=ics_content,
+            media_type="text/calendar",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Type": "text/calendar; charset=utf-8"
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error generating ICS for interview {interview_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate calendar file")
+
+
+@router.get("/{interview_id}/calendar-links")
+@inject
+def get_interview_calendar_links(
+        interview_id: str,
+        controller: Annotated[InterviewController, Depends(Provide[Container.interview_controller])],
+        company_id: str = Depends(get_company_id_from_token),
+) -> dict:
+    """Get calendar links for an interview (Google Calendar, Outlook, etc.)"""
+    try:
+        # Get interview details
+        interview = controller.get_interview_view(interview_id)
+
+        if not interview.scheduled_at:
+            raise HTTPException(
+                status_code=400,
+                detail="Interview is not scheduled yet"
+            )
+
+        # Build event description
+        description_parts = []
+        if interview.description:
+            description_parts.append(interview.description)
+        if interview.candidate_name:
+            description_parts.append(f"Candidate: {interview.candidate_name}")
+        if interview.job_position_title:
+            description_parts.append(f"Position: {interview.job_position_title}")
+
+        # Create ICS event for URL generation
+        event = ICSEvent(
+            uid=f"interview-{interview_id}@careerpython.com",
+            summary=interview.title or f"Interview - {interview.candidate_name or 'Candidate'}",
+            start=interview.scheduled_at,
+            end=interview.deadline_date,
+            description="\n".join(description_parts) if description_parts else None,
+        )
+
+        # Generate calendar URLs
+        ics_service = ICSService()
+
+        return {
+            "google_calendar_url": ics_service.generate_google_calendar_url(event),
+            "outlook_url": ics_service.generate_outlook_url(event),
+            "ics_download_url": f"/api/company/interviews/{interview_id}/calendar.ics",
+            "interview_id": interview_id,
+            "scheduled_at": interview.scheduled_at.isoformat() if interview.scheduled_at else None,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error generating calendar links for interview {interview_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate calendar links")
 
 

@@ -2,12 +2,16 @@
 Generate Candidate Report Query
 Generates an AI-powered report from candidate comments, interviews, and reviews
 """
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from src.framework.application.query_bus import Query, QueryHandler
 from src.framework.domain.entities.base import generate_id
+from src.framework.infrastructure.services.ai.groq_chat_service import get_chat_service
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -94,14 +98,33 @@ class GenerateCandidateReportQueryHandler(QueryHandler[GenerateCandidateReportQu
         candidate_name: str,
         comments: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-        """Generate report sections (mock AI for now - replace with real AI later)"""
+        """Generate report sections using AI service with fallback to mock"""
 
         # Analyze comments to extract insights
         comment_count = len(comments)
         comment_text = " ".join([c.get('content', '') for c in comments])
 
-        # Mock AI-generated sections
-        # In production, this would call an AI service like Anthropic/OpenAI
+        # Try to use AI service for report generation
+        try:
+            ai_service = get_chat_service()
+            ai_response = ai_service.generate_candidate_report(
+                candidate_name=candidate_name,
+                comments=comments,
+                interview_data=None,  # Can be extended later
+                position_info=None  # Can be extended later
+            )
+
+            if ai_response.success and ai_response.content:
+                # AI generated a full report - parse sections from markdown
+                return self._parse_ai_report(ai_response.content, candidate_name, comments)
+
+            logger.warning(f"AI report generation failed: {ai_response.error_message}")
+
+        except Exception as e:
+            logger.error(f"Error calling AI service for report: {e}")
+
+        # Fallback to mock implementation
+        logger.info("Using fallback mock report generation")
         sections = {
             'summary': self._generate_summary(candidate_name, comment_count, comment_text),
             'strengths': self._extract_strengths(comment_text),
@@ -111,6 +134,79 @@ class GenerateCandidateReportQueryHandler(QueryHandler[GenerateCandidateReportQu
         }
 
         return sections
+
+    def _parse_ai_report(
+        self,
+        ai_content: str,
+        candidate_name: str,
+        comments: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Parse AI-generated markdown report into sections"""
+        # Store the full AI content as summary
+        # The AI generates structured markdown, so we'll extract key sections
+        lines = ai_content.split('\n')
+
+        summary = ""
+        strengths: List[str] = []
+        improvements: List[str] = []
+        insights = ""
+        recommendation = ""
+
+        current_section = None
+
+        for line in lines:
+            line_lower = line.lower().strip()
+
+            # Detect section headers
+            if 'executive summary' in line_lower or 'summary' in line_lower:
+                current_section = 'summary'
+            elif 'strength' in line_lower:
+                current_section = 'strengths'
+            elif 'development' in line_lower or 'improvement' in line_lower or 'area' in line_lower:
+                current_section = 'improvements'
+            elif 'interview' in line_lower or 'insight' in line_lower:
+                current_section = 'insights'
+            elif 'recommendation' in line_lower:
+                current_section = 'recommendation'
+            elif line.startswith('#'):
+                # New section header we don't recognize
+                continue
+            elif line.strip():
+                # Content line
+                if current_section == 'summary':
+                    summary += line + " "
+                elif current_section == 'strengths':
+                    if line.strip().startswith(('-', '*', '•')):
+                        strengths.append(line.strip().lstrip('-*• ').strip())
+                    elif line.strip():
+                        strengths.append(line.strip())
+                elif current_section == 'improvements':
+                    if line.strip().startswith(('-', '*', '•')):
+                        improvements.append(line.strip().lstrip('-*• ').strip())
+                    elif line.strip():
+                        improvements.append(line.strip())
+                elif current_section == 'insights':
+                    insights += line + " "
+                elif current_section == 'recommendation':
+                    recommendation += line + " "
+
+        # Ensure we have content - fallback if parsing failed
+        if not summary.strip():
+            summary = f"{candidate_name} has been evaluated through {len(comments)} feedback entries."
+        if not strengths:
+            strengths = ["Professional approach demonstrated", "Engaged with the process"]
+        if not improvements:
+            improvements = ["Further evaluation recommended"]
+        if not recommendation.strip():
+            recommendation = f"Review the detailed feedback for {candidate_name} to make an informed decision."
+
+        return {
+            'summary': summary.strip(),
+            'strengths': strengths[:5],  # Limit to 5
+            'areas_for_improvement': improvements[:3],  # Limit to 3
+            'interview_insights': insights.strip() if insights.strip() else None,
+            'recommendation': recommendation.strip()
+        }
 
     def _generate_summary(self, name: str, comment_count: int, text: str) -> str:
         """Generate executive summary"""

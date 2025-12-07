@@ -1,6 +1,6 @@
 # Pending Tasks & Priorities
 
-**Last Updated:** 2025-12-07 (Added Application Questions feature)
+**Last Updated:** 2025-12-07 (Added Groq AI integration for interviews and reports)
 **Document Type:** Development Roadmap
 
 ---
@@ -141,16 +141,17 @@
 - [x] Implement backend query handler with mock AI analysis
 - [x] Add API endpoint for report generation
 - [x] Implement markdown download functionality
-- [ ] Connect real AI service (Anthropic/OpenAI) - Future enhancement
+- [x] Connect real AI service - Groq AI (llama-3.3-70b-versatile)
 - [ ] Add PDF export with proper formatting - Future enhancement
 - [ ] Implement report caching - Future enhancement
 
 **API Endpoint**: `POST /api/company-candidates/reports/generate`
 
 **Implementation Notes**:
-- AI analysis is currently mocked (generates report based on comments count/content)
+- AI analysis now uses Groq AI service (llama-3.3-70b-versatile model)
 - Report includes: Summary, Strengths, Areas for Improvement, Interview Insights, Recommendation
 - Download currently exports as Markdown (PDF generation can be added later)
+- Fallback to mock implementation if Groq API fails
 
 ---
 
@@ -203,13 +204,20 @@ The legacy directories were already empty (no Python files), only containing emp
 - [x] Conditional rendering based on template settings
 - [x] Add pause/resume functionality
 - [x] Progress tracking across sections
+- [x] Connect real AI service - Groq AI (llama-3.3-70b-versatile)
 - [ ] Test conversation flow end-to-end - Pending manual testing
-- [ ] Connect real AI service (Anthropic/OpenAI) - Future enhancement
 
 **Implementation Notes**:
-- AI responses are currently mocked (simulated typing delays and contextual follow-ups)
-- Real AI integration can be added later by connecting to Anthropic/OpenAI APIs
+- AI follow-ups now use Groq AI service for intelligent, contextual questions
+- API endpoint: `POST /api/candidate/interviews/ai/follow-up`
+- Fallback to mock responses if Groq API is unavailable
 - Template must have both `allow_ai_questions` AND `use_conversational_mode` enabled
+
+**AI Service Files Created** (2025-12-07):
+- Interface: `src/framework/domain/interfaces/ai_chat_service_interface.py`
+- Implementation: `src/framework/infrastructure/services/ai/groq_chat_service.py`
+- Router update: `adapters/http/candidate_app/routers/interview_router.py` (added AI endpoint)
+- Frontend update: `client-vite/src/components/interview/AIInterviewChat.tsx` (API integration)
 
 ---
 

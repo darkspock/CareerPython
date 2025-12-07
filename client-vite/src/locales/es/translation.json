@@ -1088,5 +1088,15 @@
     "deleteSuccess": "Pregunta eliminada exitosamente",
     "deleteError": "Error al eliminar la pregunta",
     "reorderError": "Error al reordenar las preguntas"
+  },
+  "calendar": {
+    "addToCalendar": "Agregar al Calendario",
+    "addToGoogle": "Agregar a Google Calendar",
+    "addToOutlook": "Agregar a Outlook",
+    "download": "Descargar .ics",
+    "copyLink": "Copiar Enlace",
+    "linkCopied": "¡Enlace copiado!",
+    "subscribe": "Suscribirse al Calendario",
+    "notScheduled": "Entrevista no programada aún"
   }
 }

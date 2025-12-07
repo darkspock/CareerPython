@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, FileText, Users, X } from 'lucide-react';
 import { companyInterviewService, type UpdateInterviewRequest } from '../../services/companyInterviewService';
+import { InterviewCalendarExport } from '../../components/interviews/InterviewCalendarExport';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -207,12 +208,22 @@ export default function EditInterviewPage() {
                 <Calendar className="w-4 h-4" />
                 Fecha y Hora Programada (Opcional)
               </Label>
-              <Input
-                id="scheduled_at"
-                type="datetime-local"
-                value={formData.scheduled_at || ''}
-                onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value || undefined })}
-              />
+              <div className="flex items-center gap-3">
+                <Input
+                  id="scheduled_at"
+                  type="datetime-local"
+                  value={formData.scheduled_at || ''}
+                  onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value || undefined })}
+                  className="flex-1"
+                />
+                {interviewId && formData.scheduled_at && (
+                  <InterviewCalendarExport
+                    interviewId={interviewId}
+                    scheduledAt={formData.scheduled_at}
+                    variant="dropdown"
+                  />
+                )}
+              </div>
             </div>
 
             <div>
