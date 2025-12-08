@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic, Any, Dict, Type
+from typing import TypeVar, Generic, Any, Dict, Type, Optional
 
 
 class Query(ABC):
@@ -20,16 +20,12 @@ class QueryHandler(ABC, Generic[TQuery, TResult]):
 
 
 class QueryBus:
-    def __init__(self, container=None) -> None:
-        """Initialize QueryBus with optional container dependency
-        
+    def __init__(self, container: Any) -> None:
+        """Initialize QueryBus with container dependency
+
         Args:
-            container: Optional container instance. If not provided, creates a new one for backward compatibility.
+            container: Container instance for resolving handlers.
         """
-        if container is None:
-            # Backward compatibility: create container if not provided
-            from core.containers import Container
-            container = Container()
         self.container = container
         self._handlers_cache: Dict[Type[Query], Any] = {}
 

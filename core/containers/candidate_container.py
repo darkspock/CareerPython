@@ -4,6 +4,7 @@ from adapters.http.candidate_app.controllers.candidate import CandidateControlle
 from adapters.http.candidate_app.controllers.application_controller import ApplicationController
 from adapters.http.candidate_app.controllers.onboarding_controller import OnboardingController
 from adapters.http.candidate_app.controllers.resume_controller import ResumeController
+from adapters.http.candidate_app.controllers.file_attachment_controller import FileAttachmentController
 from adapters.http.admin_app.controllers.admin_candidate_controller import AdminCandidateController
 from adapters.http.candidate_app.application_answers.controllers.application_answer_controller import ApplicationAnswerController
 
@@ -12,6 +13,7 @@ from src.candidate_bc.candidate.infrastructure.repositories.candidate_repository
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_experience_repository import SQLAlchemyCandidateExperienceRepository
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_education_repository import SQLAlchemyCandidateEducationRepository
 from src.candidate_bc.candidate.infrastructure.repositories.candidate_project_repository import SQLAlchemyCandidateProjectRepository
+from src.candidate_bc.candidate.infrastructure.repositories.file_attachment_repository import SQLAlchemyFileAttachmentRepository
 from src.company_bc.candidate_application.infrastructure.repositories.candidate_application_repository import SQLAlchemyCandidateApplicationRepository
 from src.company_bc.candidate_application.infrastructure.repositories.application_question_answer_repository import ApplicationQuestionAnswerRepository
 from src.company_bc.candidate_application_stage.infrastructure.repositories.candidate_application_stage_repository import CandidateApplicationStageRepository
@@ -29,6 +31,8 @@ from src.candidate_bc.candidate.application.commands.create_project import Creat
 from src.candidate_bc.candidate.application.commands.update_project import UpdateProjectCommandHandler
 from src.candidate_bc.candidate.application.commands.delete_project import DeleteProjectCommandHandler
 from src.candidate_bc.candidate.application.commands.populate_candidate_from_pdf_analysis import PopulateCandidateFromPdfAnalysisCommandHandler
+from src.candidate_bc.candidate.application.commands.upload_file_attachment import UploadFileAttachmentCommandHandler
+from src.candidate_bc.candidate.application.commands.delete_file_attachment import DeleteFileAttachmentCommandHandler
 
 # Candidate Application Layer - Queries
 from src.candidate_bc.candidate.application import GetCandidateByUserIdQueryHandler
@@ -45,6 +49,8 @@ from src.candidate_bc.candidate.application.queries.list_candidate_projects_by_c
 from src.candidate_bc.candidate.application.queries.get_experience_by_id import GetExperienceByIdQueryHandler
 from src.candidate_bc.candidate.application import GetEducationByIdQueryHandler
 from src.candidate_bc.candidate.application import GetProjectByIdQueryHandler
+from src.candidate_bc.candidate.application.queries.get_file_attachment_by_id import GetFileAttachmentByIdQueryHandler
+from src.candidate_bc.candidate.application.queries.list_file_attachments_by_candidate import ListFileAttachmentsByCandidateQueryHandler
 
 # Candidate Application Commands
 from src.company_bc.candidate_application.application.commands.create_candidate_application import CreateCandidateApplicationCommandHandler
@@ -124,7 +130,12 @@ class CandidateContainer(containers.DeclarativeContainer):
         RESUME_REPOSITORY_PATH,
         database=shared.database
     )
-    
+
+    file_attachment_repository = providers.Factory(
+        SQLAlchemyFileAttachmentRepository,
+        database=shared.database
+    )
+
     resume_generation_service = providers.Factory(
         RESUME_GENERATION_SERVICE_PATH
     )
@@ -202,7 +213,18 @@ class CandidateContainer(containers.DeclarativeContainer):
         GetProjectByIdQueryHandler,
         project_repository=candidate_project_repository
     )
-    
+
+    # File Attachment Query Handlers
+    get_file_attachment_by_id_query_handler = providers.Factory(
+        GetFileAttachmentByIdQueryHandler,
+        file_attachment_repository=file_attachment_repository
+    )
+
+    list_file_attachments_by_candidate_query_handler = providers.Factory(
+        ListFileAttachmentsByCandidateQueryHandler,
+        file_attachment_repository=file_attachment_repository
+    )
+
     # Candidate Command Handlers
     create_candidate_command_handler = providers.Factory(
         CreateCandidateCommandHandler,
@@ -259,7 +281,20 @@ class CandidateContainer(containers.DeclarativeContainer):
         DeleteProjectCommandHandler,
         project_repository=candidate_project_repository
     )
-    
+
+    # File Attachment Command Handlers
+    upload_file_attachment_command_handler = providers.Factory(
+        UploadFileAttachmentCommandHandler,
+        file_attachment_repository=file_attachment_repository,
+        storage_service=shared.storage_service
+    )
+
+    delete_file_attachment_command_handler = providers.Factory(
+        DeleteFileAttachmentCommandHandler,
+        file_attachment_repository=file_attachment_repository,
+        storage_service=shared.storage_service
+    )
+
     populate_candidate_from_pdf_analysis_command_handler = providers.Factory(
         PopulateCandidateFromPdfAnalysisCommandHandler,
         candidate_repository=candidate_repository,
@@ -376,6 +411,12 @@ class CandidateContainer(containers.DeclarativeContainer):
         AdminCandidateController,
         query_bus=shared.query_bus,
         command_bus=shared.command_bus
+    )
+
+    file_attachment_controller = providers.Factory(
+        FileAttachmentController,
+        command_bus=shared.command_bus,
+        query_bus=shared.query_bus
     )
 
     # Application Question Answer Query Handlers

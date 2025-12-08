@@ -7,11 +7,6 @@ from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict
 
 from core.config import settings
-from src.candidate_bc.candidate.application import GetCandidateByIdQuery
-from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
-from src.company_bc.job_position.application import GetJobPositionByIdQuery
-from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
-from src.framework.application import QueryBus
 from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 from src.interview_bc.interview.application.queries.dtos.interview_list_dto import InterviewListDto
 from src.interview_bc.interview.application.queries.dtos.interview_statistics_dto import InterviewStatisticsDto
@@ -19,10 +14,6 @@ from src.interview_bc.interview.application.queries.get_interview_score_summary 
 from src.interview_bc.interview.domain.enums.interview_enums import (
     InterviewTypeEnum
 )
-from src.interview_bc.interview_template.application.queries import GetInterviewTemplateByIdQuery
-from src.interview_bc.interview_template.application.queries.dtos.interview_template_dto import InterviewTemplateDto
-from src.shared_bc.customization.workflow.application import GetStageByIdQuery
-from src.shared_bc.customization.workflow.application.dtos.workflow_stage_dto import WorkflowStageDto
 
 
 class InterviewCreateRequest(BaseModel):
@@ -106,67 +97,7 @@ class InterviewFullResource(BaseModel):
     updated_at: Optional[datetime] = Field(None, description="Updated datetime")
 
     @classmethod
-    def from_dto(cls, queryBus: QueryBus, dto: InterviewDto) -> "InterviewFullResource":
-        """Convert DTO to response schema"""
-        candidate: Optional[CandidateDto] = queryBus.query(GetCandidateByIdQuery(dto.candidate_id))
-        if not candidate:
-            raise ValueError(f"Candidate with id {dto.candidate_id} not found")
-
-        job_position: JobPositionDto = queryBus.query(GetJobPositionByIdQuery(dto.job_position_id))
-        if not job_position:
-            raise ValueError(f"Job position with id {dto.job_position_id} not found")
-
-        if dto.interview_template_id:
-            interview_template: Optional[InterviewTemplateDto] = queryBus.query(
-                GetInterviewTemplateByIdQuery(dto.interview_template_id))
-        else:
-            interview_template = None
-
-        workflow_stage: Optional[WorkflowStageDto] = queryBus.query(GetStageByIdQuery(dto.workflow_stage_id))
-        if not workflow_stage:
-            raise ValueError(f"Workflow stage with id {dto.workflow_stage_id} not found")
-
-        return cls(
-            id=dto.id.value,
-            candidate_id=dto.candidate_id.value,
-            candidate_name=candidate.name,
-            candidate_email=candidate.email,
-            required_roles=dto.required_roles,
-            job_position_id=dto.job_position_id.value if dto.job_position_id else None,
-            job_position_title=job_position.title,
-            application_id=dto.application_id.value if dto.application_id else None,
-            interview_template_id=dto.interview_template_id.value if dto.interview_template_id else None,
-            interview_template_name=interview_template.name if interview_template else None,
-            workflow_stage_name=workflow_stage.name,
-            workflow_stage_id=dto.workflow_stage_id.value if dto.workflow_stage_id else None,
-            process_type=dto.process_type,
-            interview_type=dto.interview_type,
-            interview_mode=dto.interview_mode,
-            status=dto.status,
-            title=dto.title,
-            description=dto.description,
-            scheduled_at=dto.scheduled_at,
-            deadline_date=dto.deadline_date,
-            started_at=dto.started_at,
-            finished_at=dto.finished_at,
-            duration_minutes=dto.duration_minutes,
-            interviewers=dto.interviewers,
-            interviewer_notes=dto.interviewer_notes,
-            candidate_notes=dto.candidate_notes,
-            score=dto.score,
-            feedback=dto.feedback,
-            free_answers=dto.free_answers,
-            link_token=dto.link_token,
-            link_expires_at=dto.link_expires_at,
-            shareable_link=cls._generate_shareable_link(dto.id.value if hasattr(dto.id, 'value') else str(dto.id),
-                                                        dto.link_token) if dto.link_token else None,
-            is_incomplete=dto.is_incomplete,
-            created_at=dto.created_at,
-            updated_at=dto.updated_at
-        )
-
-    @classmethod
-    def from_list_dto(cls, dto: InterviewListDto) -> "InterviewFullResource":
+    def from_list_dto(cls, dto: "InterviewListDto") -> "InterviewFullResource":
         """Convert InterviewListDto to response schema"""
 
         return cls(

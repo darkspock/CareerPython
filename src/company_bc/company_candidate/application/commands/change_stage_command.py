@@ -17,6 +17,7 @@ from src.interview_bc.interview_template.domain.value_objects.interview_template
 from src.shared_bc.customization.field_validation.application.services.interview_validation_service import \
     InterviewValidationService
 from src.shared_bc.customization.phase.domain.value_objects.phase_id import PhaseId
+from src.shared_bc.customization.workflow.domain.entities.workflow_stage import WorkflowStage
 from src.shared_bc.customization.workflow.domain.enums.workflow_stage_type_enum import WorkflowStageTypeEnum
 from src.shared_bc.customization.workflow.domain.enums.workflow_type import WorkflowTypeEnum
 from src.shared_bc.customization.workflow.domain.interfaces.workflow_repository_interface import \
@@ -165,7 +166,7 @@ class ChangeStageCommandHandler(CommandHandler[ChangeStageCommand]):
     def _create_interviews_for_stage(
             self,
             candidate_id: CandidateId,
-            stage,
+            stage:WorkflowStage,
             company_id: str
     ) -> None:
         """

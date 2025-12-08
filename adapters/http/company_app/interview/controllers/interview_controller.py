@@ -7,6 +7,7 @@ from typing import List, Optional
 
 from fastapi import HTTPException
 
+from adapters.http.company_app.interview.mappers.interview_mapper import InterviewMapper
 from adapters.http.company_app.interview.schemas.interview_management import (
     InterviewResource, InterviewFullResource, InterviewListResource, InterviewStatsResource,
     InterviewActionResource, InterviewScoreSummaryResource, InterviewLinkResource
@@ -27,6 +28,7 @@ from src.interview_bc.interview.application.queries.dtos.interview_list_dto impo
 from src.interview_bc.interview.application.queries.dtos.interview_statistics_dto import InterviewStatisticsDto
 from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQuery
 from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQuery
+from src.interview_bc.interview.application.queries.get_interview_full_by_id import GetInterviewFullByIdQuery
 from src.interview_bc.interview.application.queries.get_interview_questions_by_token import \
     GetInterviewQuestionsByTokenQuery, InterviewQuestionsResponse
 from src.interview_bc.interview.application.queries.get_interview_score_summary import GetInterviewScoreSummaryQuery, \
@@ -75,9 +77,7 @@ class InterviewController:
                 InterviewTypeEnum,
                 InterviewProcessTypeEnum
             )
-            from src.interview_bc.interview.domain.infrastructure.interview_repository_interface import \
-                InterviewRepositoryInterface
-            from core.containers import Container
+            from src.interview_bc.interview.application.queries.count_interviews import CountInterviewsQuery
 
             # Convert string enums to enum values for count query
             interview_type_enum = None
@@ -122,10 +122,8 @@ class InterviewController:
                             except (KeyError, ValueError):
                                 status_enum = None  # Invalid status, ignore filter
 
-            # Get total count
-            container = Container()
-            interview_repository: InterviewRepositoryInterface = container.interview_repository()
-            total = interview_repository.count_by_filters(
+            # Get total count using query
+            count_query = CountInterviewsQuery(
                 candidate_id=candidate_id,
                 candidate_name=candidate_name,
                 job_position_id=job_position_id,
@@ -140,6 +138,7 @@ class InterviewController:
                 filter_by=filter_by,
                 has_scheduled_at_and_interviewers=has_scheduled_filter
             )
+            total: int = self._query_bus.query(count_query)
 
             # Get paginated results
             query = ListInterviewsQuery(
@@ -165,7 +164,7 @@ class InterviewController:
             current_page = (offset // limit) + 1 if limit > 0 else 1
             
             return InterviewListResource(
-                interviews=[InterviewFullResource.from_list_dto(dto) for dto in interviews],
+                interviews=InterviewMapper.list_dtos_to_full_responses(interviews),
                 total=total,
                 page=current_page,
                 page_size=limit
@@ -184,7 +183,7 @@ class InterviewController:
             if not interview:
                 raise HTTPException(status_code=404, detail="Interview not found")
 
-            return InterviewResource.from_dto(interview)
+            return InterviewMapper.dto_to_resource(interview)
 
         except HTTPException:
             raise
@@ -195,13 +194,13 @@ class InterviewController:
     def get_interview_view(self, interview_id: str) -> InterviewFullResource:
         """Get interview by ID with full denormalized information (for viewing)"""
         try:
-            query = GetInterviewByIdQuery(interview_id=interview_id)
-            interview: InterviewDto = self._query_bus.query(query)
+            query = GetInterviewFullByIdQuery(interview_id=interview_id)
+            interview: Optional[InterviewListDto] = self._query_bus.query(query)
 
             if not interview:
                 raise HTTPException(status_code=404, detail="Interview not found")
 
-            return InterviewFullResource.from_dto(self._query_bus, interview)
+            return InterviewMapper.list_dto_to_full_response(interview)
 
         except HTTPException:
             raise
@@ -215,12 +214,15 @@ class InterviewController:
     ) -> List[InterviewFullResource]:
         """Get interviews for a specific candidate"""
         try:
-            query = GetInterviewsByCandidateQuery(
+            # Use ListInterviewsQuery which returns InterviewListDto with all denormalized data
+            query = ListInterviewsQuery(
                 candidate_id=candidate_id,
+                limit=100,
+                offset=0
             )
 
-            interviews: List[InterviewDto] = self._query_bus.query(query)
-            return [InterviewFullResource.from_dto(self._query_bus, dto) for dto in interviews]
+            interviews: List[InterviewListDto] = self._query_bus.query(query)
+            return InterviewMapper.list_dtos_to_full_responses(interviews)
 
         except Exception as e:
             logger.error(f"Error getting interviews for candidate {candidate_id}: {e}")
@@ -233,13 +235,17 @@ class InterviewController:
     ) -> List[InterviewFullResource]:
         """Get scheduled interviews"""
         try:
-            query = GetScheduledInterviewsQuery(
+            # Use ListInterviewsQuery with date filter for scheduled interviews
+            query = ListInterviewsQuery(
                 from_date=from_date if from_date else datetime(2000, 1, 1),
                 to_date=to_date if to_date else datetime.now(),
+                filter_by='scheduled',
+                limit=100,
+                offset=0
             )
 
-            interviews: List[InterviewDto] = self._query_bus.query(query)
-            return [InterviewFullResource.from_dto(self._query_bus, dto) for dto in interviews]
+            interviews: List[InterviewListDto] = self._query_bus.query(query)
+            return InterviewMapper.list_dtos_to_full_responses(interviews)
 
         except Exception as e:
             logger.error(f"Error getting scheduled interviews: {e}")
@@ -401,7 +407,7 @@ class InterviewController:
             query = GetInterviewScoreSummaryQuery(interview_id=interview_id)
             score_summary: InterviewScoreSummaryDto = self._query_bus.query(query)
 
-            return InterviewScoreSummaryResource.from_dto(score_summary)
+            return InterviewMapper.score_summary_dto_to_response(score_summary)
 
         except Exception as e:
             logger.error(f"Error getting score summary for interview {interview_id}: {e}")
@@ -425,7 +431,7 @@ class InterviewController:
 
             # Get the updated interview to retrieve the link
             interview_dto: InterviewDto = self._query_bus.query(GetInterviewByIdQuery(interview_id=interview_id))
-            interview = InterviewResource.from_dto(interview_dto)
+            interview = InterviewMapper.dto_to_resource(interview_dto)
 
             return InterviewLinkResource(
                 message="Interview link generated successfully",
@@ -450,14 +456,27 @@ class InterviewController:
     ) -> InterviewFullResource:
         """Get interview by ID and token for secure link access (with full denormalized information)"""
         try:
-            query = GetInterviewByTokenQuery(
+            # First validate the token
+            token_query = GetInterviewByTokenQuery(
                 interview_id=interview_id,
                 token=token
             )
+            interview_basic: InterviewDto = self._query_bus.query(token_query)
 
-            interview: InterviewDto = self._query_bus.query(query)
-            return InterviewFullResource.from_dto(self._query_bus, interview)
+            if not interview_basic:
+                raise HTTPException(status_code=404, detail="Interview not found or token is invalid/expired")
 
+            # Then get the full interview data
+            full_query = GetInterviewFullByIdQuery(interview_id=interview_id)
+            interview: Optional[InterviewListDto] = self._query_bus.query(full_query)
+
+            if not interview:
+                raise HTTPException(status_code=404, detail="Interview not found")
+
+            return InterviewMapper.list_dto_to_full_response(interview)
+
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Error getting interview {interview_id} by token: {e}")
             raise HTTPException(status_code=404, detail="Interview not found or token is invalid/expired")
@@ -470,7 +489,7 @@ class InterviewController:
         try:
             query = GetInterviewStatisticsQuery(company_id=CompanyId(company_id))
             stats: InterviewStatisticsDto = self._query_bus.query(query)
-            return InterviewStatsResource.from_dto(stats)
+            return InterviewMapper.stats_dto_to_response(stats)
         except Exception as e:
             logger.error(f"Error getting interview statistics: {e}", exc_info=True)
             error_message = str(e) if str(e) else "Failed to retrieve interview statistics"

@@ -1,7 +1,7 @@
 import io
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Header
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Header, HTTPException
 from fastapi.responses import StreamingResponse
 
 from adapters.http.candidate_app.controllers.file_attachment_controller import FileAttachmentController
@@ -17,14 +17,10 @@ router = APIRouter(prefix="/api/candidates", tags=["file-attachments"])
 
 
 def get_file_attachment_controller() -> FileAttachmentController:
-    """Dependency to get file attachment controller"""
-    from src.candidate_bc.candidate.infrastructure.repositories.file_attachment_repository import \
-        FileAttachmentRepository
-
+    """Dependency to get file attachment controller from container"""
     container = Container()
-    storage_service = container.storage_service()
-    file_repository = FileAttachmentRepository()
-    return FileAttachmentController(storage_service, file_repository)
+    controller: FileAttachmentController = container.candidate_container().file_attachment_controller()
+    return controller
 
 
 @router.post("/{candidate_id}/files", response_model=FileAttachmentResponse)
@@ -77,10 +73,7 @@ async def download_file(
 ) -> StreamingResponse:
     """Download a file"""
     # Get file info first to set proper headers
-    file_attachment = controller._file_repository.get_by_id(file_id)
-    if not file_attachment:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="File not found")
+    file_response = await controller.get_file_by_id(file_id)
 
     # Get file content
     file_content = await controller.download_file(file_id)
@@ -88,8 +81,8 @@ async def download_file(
     # Create a streaming response
     return StreamingResponse(
         io.BytesIO(file_content),
-        media_type=file_attachment.content_type,
+        media_type=file_response.content_type,
         headers={
-            "Content-Disposition": f"attachment; filename={file_attachment.original_name}"
+            "Content-Disposition": f"attachment; filename={file_response.original_name}"
         }
     )

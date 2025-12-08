@@ -12,6 +12,7 @@ from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordBearer
 
 from adapters.http.company_app.interview.controllers.interview_controller import InterviewController
+from adapters.http.company_app.interview.mappers.interview_mapper import InterviewMapper
 from adapters.http.company_app.interview.schemas.interview_management import (
     InterviewCreateRequest, InterviewUpdateRequest,
     InterviewResource, InterviewFullResource, InterviewListResource, InterviewStatsResource,
@@ -21,6 +22,8 @@ from adapters.http.company_app.interview.schemas.interview_management import (
 from core.containers import Container
 from src.framework.application.query_bus import QueryBus
 from src.framework.infrastructure.services.calendar import ICSService, ICSEvent
+from src.interview_bc.interview.application.queries.dtos.interview_list_dto import InterviewListDto
+from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQuery
 
 log = logging.getLogger(__name__)
 
@@ -157,14 +160,16 @@ def get_interview_calendar(
         GetInterviewsByDateRangeQuery
     from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
 
-    query = GetInterviewsByDateRangeQuery(
+    # Use ListInterviewsQuery which returns denormalized data
+    query = ListInterviewsQuery(
         from_date=from_date,
         to_date=to_date,
-        company_id=company_id,
-        filter_by=filter_by
+        filter_by=filter_by,
+        limit=100,
+        offset=0
     )
-    interviews: List[InterviewDto] = query_bus.query(query)
-    return [InterviewFullResource.from_dto(query_bus, interview) for interview in interviews]
+    interviews: List[InterviewListDto] = query_bus.query(query)
+    return InterviewMapper.list_dtos_to_full_responses(interviews)
 
 
 @router.get("/overdue", response_model=List[InterviewFullResource])
@@ -174,12 +179,17 @@ def get_overdue_interviews(
         company_id: str = Depends(get_company_id_from_token),
 ) -> List[InterviewFullResource]:
     """Get overdue interviews for the authenticated company"""
-    from src.interview_bc.interview.application.queries.get_overdue_interviews import GetOverdueInterviewsQuery
-    from src.interview_bc.interview.application.queries.dtos.interview_dto import InterviewDto
+    from datetime import datetime as dt
 
-    query = GetOverdueInterviewsQuery(company_id=company_id)
-    interviews: List[InterviewDto] = query_bus.query(query)
-    return [InterviewFullResource.from_dto(query_bus, interview) for interview in interviews]
+    # Use ListInterviewsQuery with OVERDUE filter which returns denormalized data
+    query = ListInterviewsQuery(
+        filter_by='OVERDUE',
+        to_date=dt.utcnow(),
+        limit=100,
+        offset=0
+    )
+    interviews: List[InterviewListDto] = query_bus.query(query)
+    return InterviewMapper.list_dtos_to_full_responses(interviews)
 
 
 @router.get("/{interview_id}", response_model=InterviewResource)

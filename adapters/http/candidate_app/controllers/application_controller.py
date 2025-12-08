@@ -14,16 +14,13 @@ from src.company_bc.candidate_application.application.commands.create_candidate_
     CreateCandidateApplicationCommand
 from src.company_bc.candidate_application.application.commands.update_application_status import \
     UpdateApplicationStatusCommand
+from src.company_bc.candidate_application.application.queries.can_user_process_application_query import \
+    CanUserProcessApplicationQuery
 from src.company_bc.candidate_application.application.queries.get_applications_by_candidate_id import \
     GetApplicationsByCandidateIdQuery
 from src.company_bc.candidate_application.application.queries.shared.candidate_application_dto import \
     CandidateApplicationDto
-from src.company_bc.candidate_application.application.services.stage_permission_service import StagePermissionService
 from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
-from src.company_bc.candidate_application.domain.repositories.candidate_application_repository_interface import (
-    CandidateApplicationRepositoryInterface
-)
-from src.company_bc.candidate_application.domain.value_objects.candidate_application_id import CandidateApplicationId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 
@@ -36,14 +33,10 @@ class ApplicationController:
     def __init__(
             self,
             command_bus: CommandBus,
-            query_bus: QueryBus,
-            stage_permission_service: Optional[StagePermissionService] = None,
-            application_repository: Optional[CandidateApplicationRepositoryInterface] = None
+            query_bus: QueryBus
     ):
         self._command_bus = command_bus
         self._query_bus = query_bus
-        self._stage_permission_service = stage_permission_service
-        self._application_repository = application_repository
 
     def get_applications_by_candidate(
             self,
@@ -145,27 +138,13 @@ class ApplicationController:
         Returns:
             True if user can process, False otherwise
         """
-        if not self._stage_permission_service or not self._application_repository:
-            logger.warning("Permission service or repository not available, denying access")
-            return False
-
         try:
-            # Get application
-            application = self._application_repository.get_by_id(
-                CandidateApplicationId(application_id)
-            )
-
-            if not application:
-                logger.error(f"Application {application_id} not found")
-                return False
-
-            # Check permission
-            can_process = self._stage_permission_service.can_user_process_stage(
+            query = CanUserProcessApplicationQuery(
                 user_id=user_id,
-                application=application,
+                application_id=application_id,
                 company_id=company_id
             )
-
+            can_process: bool = self._query_bus.query(query)
             return can_process
 
         except Exception as e:

@@ -25,6 +25,10 @@ from src.shared_bc.customization.field_validation.application.services.interview
 from src.company_bc.candidate_application.application.services.stage_permission_service import StagePermissionService
 from src.shared_bc.customization.workflow.application.services.workflow_response_service import WorkflowResponseService
 
+# Candidate Application Query for permission checking
+from src.company_bc.candidate_application.application.queries.can_user_process_application_query import \
+    CanUserProcessApplicationQueryHandler
+
 # Workflow Application Layer - Commands
 from src.shared_bc.customization.workflow.application import CreateWorkflowCommandHandler
 from src.shared_bc.customization.workflow.application.commands.workflow.update_workflow_command import UpdateWorkflowCommandHandler
@@ -176,7 +180,14 @@ class WorkflowContainer(containers.DeclarativeContainer):
         position_stage_assignment_repository=shared.position_stage_assignment_repository,
         company_user_repository=company_user_repository
     )
-    
+
+    # Permission Query Handler
+    can_user_process_application_query_handler = providers.Factory(
+        CanUserProcessApplicationQueryHandler,
+        application_repository=shared.candidate_application_repository,
+        stage_permission_service=stage_permission_service
+    )
+
     candidate_stage_transition_handler = providers.Factory(
         CandidateStageTransitionHandler,
         application_repository=shared.candidate_application_repository,

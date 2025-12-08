@@ -31,13 +31,17 @@ src/
 │   │   │   ├── events/           # Domain events
 │   │   │   ├── exceptions/       # Domain-specific exceptions
 │   │   │   └── interfaces/       # Repository interfaces (ports)
-│   │   ├── infrastructure/
-│   │   │   ├── models/           # SQLAlchemy ORM models
-│   │   │   └── repositories/     # Repository implementations (adapters)
-│   │   └── presentation/
-│   │       ├── controllers/      # HTTP controllers
-│   │       ├── routers/          # FastAPI routers
-│   │       └── mappers/          # DTO to Response mappers
+│   │   └── infrastructure/
+│   │       ├── models/           # SQLAlchemy ORM models
+│   │       └── repositories/     # Repository implementations (adapters)
+
+adapters/http/                    # HTTP Layer (Presentation)
+├── {app}/                        # company_app, candidate_app, admin_app, public_app
+│   └── {feature}/                # Feature folders (candidate, interview, job_position, etc.)
+│       ├── controllers/          # HTTP controllers (may query multiple BCs)
+│       ├── routers/              # FastAPI routers
+│       ├── schemas/              # Request/Response Pydantic models
+│       └── mappers/              # DTO to Response mappers
 ```
 
 ### Key Concepts:
@@ -64,7 +68,8 @@ src/
 - Commands: Write operations (return None)
 - Handlers: Event handlers
 
-#### Presentation Layer
+#### Presentation Layer (HTTP Adapters)
+- Located in `adapters/http/` (NOT in `src/{bc}/presentation/`)
 - FastAPI controllers and routers
 - Call Application layer (Queries/Commands)
 - Transform DTOs to Response schemas using Mappers
@@ -245,20 +250,20 @@ Infrastructure Layer (Repositories, External Services)
 
 ### Routers
 - Define HTTP routes and OpenAPI documentation
-- Located in `presentation/routers/`
+- Located in `adapters/http/{app}/{feature}/routers/`
 - Minimal logic - just route to controllers
 - Handle request parsing and response formatting
 
 ### Controllers
 - Business orchestration
-- Located in `presentation/controllers/`
-- Call Command/Query bus
+- Located in `adapters/http/{app}/{feature}/controllers/`
+- Call Command/Query bus (can query multiple BCs)
 - Use Mappers for response conversion
 
 ### Example Structure:
 
 ```python
-# presentation/routers/candidate_router.py
+# adapters/http/company_app/candidate/routers/candidate_router.py
 router = APIRouter(prefix="/api/candidates", tags=["candidates"])
 
 @router.get("/{candidate_id}", response_model=CandidateResponse)
@@ -271,15 +276,17 @@ def get_candidate(
 ```
 
 ```python
-# presentation/controllers/candidate_controller.py
+# adapters/http/company_app/candidate/controllers/candidate_controller.py
 class CandidateController:
     def __init__(self, query_bus: QueryBus, command_bus: CommandBus):
         self.query_bus = query_bus
         self.command_bus = command_bus
 
     def get_candidate(self, candidate_id: str) -> CandidateResponse:
-        dto = self.query_bus.query(GetCandidateByIdQuery(candidate_id))
-        return CandidateMapper.dto_to_response(dto)
+        # Controller can query multiple BCs via bus
+        candidate = self.query_bus.query(GetCandidateByIdQuery(candidate_id))
+        interviews = self.query_bus.query(GetInterviewsByCandidateQuery(candidate_id))
+        return CandidateMapper.dto_to_response(candidate, interviews)
 ```
 
 ---

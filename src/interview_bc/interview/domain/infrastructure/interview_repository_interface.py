@@ -126,3 +126,8 @@ class InterviewRepositoryInterface(ABC):
     ) -> List[InterviewListReadModel]:
         """Find interviews by multiple filters with JOINs to get all related information (ReadModel)"""
         pass
+
+    @abstractmethod
+    def get_by_id_with_joins(self, interview_id: str) -> Optional[InterviewListReadModel]:
+        """Get a single interview by ID with all JOINs (candidate, job position, etc.)"""
+        pass

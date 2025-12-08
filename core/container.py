@@ -468,8 +468,8 @@ class Container(containers.DeclarativeContainer):
     event_bus = providers.Singleton(EventBus)
     
     # Buses
-    query_bus = providers.Factory(QueryBus)
-    command_bus = providers.Factory(CommandBus)
+    query_bus = providers.Factory(QueryBus, container=providers.Self())
+    command_bus = providers.Factory(CommandBus, container=providers.Self())
 
     # Auth Services
     user_repository = providers.Factory(

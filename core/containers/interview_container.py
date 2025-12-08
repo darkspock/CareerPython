@@ -55,6 +55,7 @@ from src.interview_bc.interview.application.commands.accept_interviewer_invitati
 
 # Interview Management Application Layer - Queries
 from src.interview_bc.interview.application.queries.list_interviews import ListInterviewsQueryHandler
+from src.interview_bc.interview.application.queries.count_interviews import CountInterviewsQueryHandler
 from src.interview_bc.interview.application.queries.get_interview_by_id import GetInterviewByIdQueryHandler
 from src.interview_bc.interview.application.queries.get_interviews_by_candidate import GetInterviewsByCandidateQueryHandler
 from src.interview_bc.interview.application.queries.get_scheduled_interviews import GetScheduledInterviewsQueryHandler
@@ -68,6 +69,7 @@ from src.interview_bc.interview.application.queries.get_pending_interviews_by_ca
 from src.interview_bc.interview.application.queries.get_interview_by_token import GetInterviewByTokenQueryHandler
 from src.interview_bc.interview.application.queries.get_interview_questions_by_token import GetInterviewQuestionsByTokenQueryHandler
 from src.interview_bc.interview.application.queries.get_interviewers_by_interview import GetInterviewersByInterviewQueryHandler
+from src.interview_bc.interview.application.queries.get_interview_full_by_id import GetInterviewFullByIdQueryHandler
 
 
 class InterviewContainer(containers.DeclarativeContainer):
@@ -227,6 +229,11 @@ class InterviewContainer(containers.DeclarativeContainer):
         interview_repository=interview_repository
     )
 
+    count_interviews_query_handler = providers.Factory(
+        CountInterviewsQueryHandler,
+        interview_repository=interview_repository
+    )
+
     get_interview_by_id_query_handler = providers.Factory(
         GetInterviewByIdQueryHandler,
         interview_repository=interview_repository
@@ -294,6 +301,11 @@ class InterviewContainer(containers.DeclarativeContainer):
     get_interviewers_by_interview_query_handler = providers.Factory(
         GetInterviewersByInterviewQueryHandler,
         repository=interview_interviewer_repository
+    )
+
+    get_interview_full_by_id_query_handler = providers.Factory(
+        GetInterviewFullByIdQueryHandler,
+        interview_repository=interview_repository
     )
 
     # Interview Management Command Handlers

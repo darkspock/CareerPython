@@ -24,6 +24,7 @@ from src.auth_bc.user.application import CreateAccessTokenQueryHandler
 from src.auth_bc.user.application.queries.get_current_user_from_token_query import GetCurrentUserFromTokenQueryHandler
 from src.auth_bc.user.application.queries.get_user_language_query import GetUserLanguageQueryHandler
 from src.auth_bc.user.application import GetUserByEmailQueryHandler
+from src.auth_bc.user.application.queries.get_user_by_id_query import GetUserByIdQueryHandler
 
 
 class AuthContainer(containers.DeclarativeContainer):
@@ -75,9 +76,15 @@ class AuthContainer(containers.DeclarativeContainer):
     
     get_user_by_email_query_handler = providers.Factory(
         GetUserByEmailQueryHandler,
+        user_repository=user_repository,
+        staff_repository=staff_repository
+    )
+
+    get_user_by_id_query_handler = providers.Factory(
+        GetUserByIdQueryHandler,
         user_repository=user_repository
     )
-    
+
     # Command Handlers
     create_user_command_handler = providers.Factory(
         CreateUserCommandHandler,

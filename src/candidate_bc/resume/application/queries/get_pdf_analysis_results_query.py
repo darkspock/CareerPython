@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.framework.application.query_bus import Query, QueryHandler
-from src.framework.domain.dtos.resume_analysis_dto import AsyncJobResultDto
+from src.framework.application.dtos.resume_analysis_dto import AsyncJobResultDto
 from src.framework.infrastructure.jobs.async_job_service import AsyncJobService
 
 

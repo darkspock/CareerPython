@@ -798,3 +798,124 @@ class SQLAlchemyInterviewRepository(InterviewRepositoryInterface):
                 read_models.append(read_model)
 
             return read_models
+
+    def get_by_id_with_joins(self, interview_id: str) -> Optional[InterviewListReadModel]:
+        """Get a single interview by ID with all JOINs (candidate, job position, etc.)"""
+        from src.candidate_bc.candidate.infrastructure.models.candidate_model import CandidateModel
+        from src.company_bc.job_position.infrastructure.models.job_position_model import JobPositionModel
+        from src.interview_bc.interview_template.infrastructure.models.interview_template import InterviewTemplateModel
+        from src.shared_bc.customization.workflow.infrastructure.models.workflow_stage_model import WorkflowStageModel
+        from src.company_bc.company_role.infrastructure.models.company_role_model import CompanyRoleModel
+        from src.company_bc.company.infrastructure.models.company_user_model import CompanyUserModel
+        from src.auth_bc.user.infrastructure.models.user_model import UserModel
+
+        with self.database.get_session() as session:
+            # Query with JOINs
+            result = session.query(
+                InterviewModel,
+                CandidateModel.name.label('candidate_name'),
+                CandidateModel.email.label('candidate_email'),
+                JobPositionModel.title.label('job_position_title'),
+                InterviewTemplateModel.name.label('interview_template_name'),
+                WorkflowStageModel.name.label('workflow_stage_name')
+            ).outerjoin(
+                CandidateModel,
+                InterviewModel.candidate_id == CandidateModel.id
+            ).outerjoin(
+                JobPositionModel,
+                InterviewModel.job_position_id == JobPositionModel.id
+            ).outerjoin(
+                InterviewTemplateModel,
+                InterviewModel.interview_template_id == InterviewTemplateModel.id
+            ).outerjoin(
+                WorkflowStageModel,
+                InterviewModel.workflow_stage_id == WorkflowStageModel.id
+            ).filter(
+                InterviewModel.id == interview_id
+            ).first()
+
+            if not result:
+                return None
+
+            interview_model = result[0]
+            candidate_name = result[1]
+            candidate_email = result[2]
+            job_position_title = result[3]
+            interview_template_name = result[4]
+            workflow_stage_name = result[5]
+
+            # Fetch interviewer names
+            interviewer_names = []
+            if interview_model.interviewers:
+                company_users = session.query(CompanyUserModel, UserModel).join(
+                    UserModel,
+                    CompanyUserModel.user_id == UserModel.id
+                ).filter(CompanyUserModel.id.in_(interview_model.interviewers)).all()
+
+                interviewer_name_map = {
+                    cu.id: u.email or u.name or cu.id
+                    for cu, u in company_users
+                }
+                interviewer_names = [
+                    interviewer_name_map.get(iid, iid)
+                    for iid in interview_model.interviewers
+                ]
+
+            # Fetch required role names
+            required_role_names = []
+            if interview_model.required_roles:
+                roles = session.query(CompanyRoleModel).filter(
+                    CompanyRoleModel.id.in_(interview_model.required_roles)
+                ).all()
+                role_name_map = {r.id: r.name for r in roles}
+                required_role_names = [
+                    role_name_map.get(rid, rid)
+                    for rid in interview_model.required_roles
+                ]
+
+            # Calculate is_incomplete
+            is_incomplete = (
+                interview_model.scheduled_at is not None and
+                (not interview_model.required_roles or not interview_model.interviewers)
+            )
+
+            return InterviewListReadModel(
+                id=interview_model.id,
+                candidate_id=interview_model.candidate_id,
+                required_roles=interview_model.required_roles or [],
+                interview_type=interview_model.interview_type or '',
+                status=interview_model.status or '',
+                interviewers=interview_model.interviewers or [],
+                job_position_id=interview_model.job_position_id,
+                application_id=interview_model.application_id,
+                interview_template_id=interview_model.interview_template_id,
+                workflow_stage_id=interview_model.workflow_stage_id,
+                process_type=interview_model.process_type,
+                interview_mode=interview_model.interview_mode,
+                title=interview_model.title,
+                description=interview_model.description,
+                scheduled_at=interview_model.scheduled_at,
+                deadline_date=interview_model.deadline_date,
+                started_at=interview_model.started_at,
+                finished_at=interview_model.finished_at,
+                duration_minutes=interview_model.duration_minutes,
+                interviewer_notes=interview_model.interviewer_notes,
+                candidate_notes=interview_model.candidate_notes,
+                score=interview_model.score,
+                feedback=interview_model.feedback,
+                free_answers=interview_model.free_answers,
+                link_token=interview_model.link_token,
+                link_expires_at=interview_model.link_expires_at,
+                created_at=interview_model.created_at,
+                updated_at=interview_model.updated_at,
+                created_by=interview_model.created_by,
+                updated_by=interview_model.updated_by,
+                candidate_name=candidate_name,
+                candidate_email=candidate_email,
+                job_position_title=job_position_title,
+                interview_template_name=interview_template_name,
+                workflow_stage_name=workflow_stage_name,
+                interviewer_names=interviewer_names,
+                required_role_names=required_role_names,
+                is_incomplete=is_incomplete
+            )

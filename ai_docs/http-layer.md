@@ -17,14 +17,25 @@ The HTTP Layer contains:
 ```
 adapters/http/
 ├── company_app/               # Company-facing API
-│   └── {domain}/
-│       ├── controllers/       # Business orchestration
-│       ├── routers/           # FastAPI routes
-│       ├── schemas/           # Pydantic request/response models
-│       └── mappers/           # DTO → Response mappers
+│   ├── candidate/             # Feature: Candidate management
+│   │   ├── controllers/
+│   │   ├── routers/
+│   │   ├── schemas/
+│   │   └── mappers/
+│   ├── interview/             # Feature: Interview management
+│   │   └── ...
+│   └── job_position/          # Feature: Job positions
+│       └── ...
 ├── candidate_app/             # Candidate-facing API
-└── public_app/                # Public API
+├── admin_app/                 # Admin-facing API
+└── public_app/                # Public API (no auth)
 ```
+
+**Key Points:**
+- HTTP layer is organized by **app** (API consumer), then by **feature** (API resource)
+- Feature folders are NOT the same as bounded contexts - a feature may query multiple BCs
+- A `candidate` feature might need data from `candidate_bc`, `interview_bc`, `company_bc`
+- Controllers aggregate data from multiple BCs via the Query/Command bus
 
 ---
 
@@ -32,7 +43,7 @@ adapters/http/
 
 ### Router Location
 
-Located in: `adapters/http/{app}/{domain}/routers/` or `presentation/routers/`
+Located in: `adapters/http/{app}/{feature}/routers/`
 
 ### Router Structure
 
@@ -99,7 +110,7 @@ def create_candidate(
 
 ### Controller Location
 
-Located in: `adapters/http/{app}/{domain}/controllers/` or `presentation/controllers/`
+Located in: `adapters/http/{app}/{feature}/controllers/`
 
 ### Controller Structure
 
@@ -233,7 +244,7 @@ def get_candidate(self, candidate_id: str) -> CandidateResponse:
 
 ### Request Location
 
-Located in: `adapters/http/{app}/{domain}/schemas/` or `presentation/schemas/`
+Located in: `adapters/http/{app}/{feature}/schemas/`
 
 ### Request Structure
 
@@ -277,7 +288,7 @@ class UpdateCandidateRequest(BaseModel):
 
 ### Response Location
 
-Located in: `adapters/http/{app}/{domain}/schemas/`
+Located in: `adapters/http/{app}/{feature}/schemas/`
 
 ### Response Structure (Simple, No Magic)
 
@@ -351,7 +362,7 @@ class CandidateDtoMapper:
 
 ### ResponseMapper (DTO → Response)
 
-**Location:** `adapters/http/{app}/{domain}/mappers/` or `presentation/mappers/`
+**Location:** `adapters/http/{app}/{feature}/mappers/`
 
 ```python
 class CandidateMapper:
@@ -580,7 +591,7 @@ def from_model(candidate: Candidate) -> CandidateDto:
 ### 6. ResponseMapper (DTO → Response)
 
 ```python
-# In presentation/mappers/candidate_mapper.py
+# In adapters/http/company_app/candidate/mappers/candidate_mapper.py
 @staticmethod
 def dto_to_response(dto: CandidateDto) -> CandidateResponse:
     return CandidateResponse(
@@ -594,7 +605,7 @@ def dto_to_response(dto: CandidateDto) -> CandidateResponse:
 ### 7. Response Schema (Simple)
 
 ```python
-# In adapters/http/{app}/schemas/candidate.py
+# In adapters/http/company_app/candidate/schemas/candidate_response.py
 class CandidateResponse(BaseModel):
     id: str
     name: str
@@ -611,7 +622,7 @@ class CandidateResponse(BaseModel):
 - [ ] Controller method created using Command/Query bus
 - [ ] Request schema defined with validation
 - [ ] Response schema defined (simple, primitives only)
-- [ ] ResponseMapper created for DTO → Response (in presentation layer)
+- [ ] ResponseMapper created for DTO → Response (in adapters/http/{app}/{feature}/mappers/)
 - [ ] DtoMapper created for Entity → DTO (in application layer)
 - [ ] Query + Handler in same file
 - [ ] Command + Handler in same file

@@ -27,6 +27,7 @@ class CurrentUserDto:
     is_active: bool
     is_staff: Optional[bool] = None
     roles: Optional[List[str]] = None
+    has_password: Optional[bool] = None
 
 
 @dataclass(frozen=True)

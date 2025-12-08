@@ -4,14 +4,16 @@ Admin controller for candidate and user management
 from datetime import datetime
 from typing import List, Optional
 
-from src.auth_bc.user.application import UpdateUserPasswordCommand
-from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
-from src.auth_bc.user.domain.services.password_service import PasswordService
+from src.auth_bc.user.application.commands.create_user_command import CreateUserCommand
+from src.auth_bc.user.application.commands.update_user_password_command import UpdateUserPasswordCommand
+from src.auth_bc.user.application.queries.dtos.auth_dto import CurrentUserDto
+from src.auth_bc.user.application.queries.get_user_by_email_query import GetUserByEmailQuery
+from src.auth_bc.user.application.queries.get_user_by_id_query import GetUserByIdQuery
+from src.auth_bc.user.domain.exceptions.user_exceptions import EmailAlreadyExistException
 from src.auth_bc.user.domain.value_objects import UserId
 from src.candidate_bc.candidate.application.queries.get_candidate_by_id import GetCandidateByIdQuery
 from src.candidate_bc.candidate.application.queries.list_candidates import ListCandidatesQuery
 from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
-from src.candidate_bc.candidate.domain.repositories.candidate_repository_interface import CandidateRepositoryInterface
 from src.candidate_bc.candidate.domain.value_objects import CandidateId
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
@@ -23,14 +25,10 @@ class AdminCandidateController:
     def __init__(
             self,
             command_bus: CommandBus,
-            query_bus: QueryBus,
-            user_repository: UserRepositoryInterface,
-            candidate_repository: CandidateRepositoryInterface
+            query_bus: QueryBus
     ):
         self.command_bus = command_bus
         self.query_bus = query_bus
-        self.user_repository = user_repository
-        self.candidate_repository = candidate_repository
 
     def list_candidates(
             self,
@@ -89,11 +87,13 @@ class AdminCandidateController:
         if not candidate_dto:
             raise ValueError(f"Candidate with id {candidate_id} not found")
 
-        # Get associated user information using repository
-        user = None
+        # Get associated user information using query
+        user_dto: Optional[CurrentUserDto] = None
         if candidate_dto.user_id:
             try:
-                user = self.user_repository.get_by_id(candidate_dto.user_id)
+                user_dto = self.query_bus.query(
+                    GetUserByIdQuery(user_id=candidate_dto.user_id)
+                )
             except Exception:
                 pass  # User not found or error
 
@@ -110,12 +110,12 @@ class AdminCandidateController:
                 "created_at": candidate_dto.created_at.isoformat() if candidate_dto.created_at else None,
             },
             "user": {
-                "id": user.id.value if user else None,
-                "email": user.email if user else candidate_dto.email,
-                "is_active": user.is_active if user else True,
+                "id": user_dto.user_id if user_dto else None,
+                "email": user_dto.email if user_dto else candidate_dto.email,
+                "is_active": user_dto.is_active if user_dto else True,
                 "created_at": None,  # User entity doesn't have created_at currently
                 "last_login": None,  # User entity doesn't have last_login currently
-                "has_password": bool(user.hashed_password) if user else False
+                "has_password": user_dto.has_password if user_dto else False
             }
         }
 
@@ -131,28 +131,32 @@ class AdminCandidateController:
             raise ValueError(f"Candidate with id {candidate_id} not found")
 
         # Check if candidate already has an associated user via user_id
-        user = None
+        user_dto: Optional[CurrentUserDto] = None
         found_by_user_id = False
         if candidate_dto.user_id:
             try:
-                # candidate_dto.user_id is already a UserId object, no conversion needed
-                user = self.user_repository.get_by_id(candidate_dto.user_id)
-                if user:
+                result: Optional[CurrentUserDto] = self.query_bus.query(
+                    GetUserByIdQuery(user_id=candidate_dto.user_id)
+                )
+                if result:
+                    user_dto = result
                     found_by_user_id = True
             except Exception:
                 pass  # User not found
 
         # If no user associated by user_id, check if one exists with the same email
-        if not user:
+        if not user_dto:
             try:
-                user = self.user_repository.get_by_email(candidate_dto.email)
+                user_dto = self.query_bus.query(
+                    GetUserByEmailQuery(email=candidate_dto.email)
+                )
             except Exception:
                 pass  # User not found by email
 
-        if user:
+        if user_dto:
             # User already exists, just update password
             command = UpdateUserPasswordCommand(
-                user_id=user.id,
+                user_id=UserId.from_string(user_dto.user_id),
                 new_password=new_password,
                 updated_by_admin_id=admin_id
             )
@@ -172,26 +176,18 @@ class AdminCandidateController:
             }
         else:
             # Candidate has no associated user, create a new one
-            # Use candidate's email as user's login email
-            from src.auth_bc.user.domain.entities.user import User
-
             try:
                 # Generate ID for new user
                 new_user_id = UserId.generate()
 
-                # Hash password using PasswordService
-                hashed_password = PasswordService.hash_password(new_password)
-
-                # Create user using candidate's email as access email
-                new_user = User(
+                # Create user using command
+                create_command = CreateUserCommand(
                     id=new_user_id,
-                    email=candidate_dto.email,  # Candidate's email becomes login email
-                    hashed_password=hashed_password,
+                    email=candidate_dto.email,
+                    password=new_password,
                     is_active=True
                 )
-
-                # Create user in repository
-                self.user_repository.create(new_user)
+                self.command_bus.dispatch(create_command)
 
                 # TODO: Update candidate.user_id relationship when method is implemented
                 # For now user is created but relationship is not automatically established
@@ -206,27 +202,21 @@ class AdminCandidateController:
                     "login_email": candidate_dto.email
                 }
 
+            except EmailAlreadyExistException:
+                # Duplicate email - handle more clearly for admin
+                return {
+                    "success": False,
+                    "message": (
+                        f"A user account with email '{candidate_dto.email}' already exists. "
+                        "This candidate's contact email is already being used as a login email by another user. "
+                        "Please either: 1) Use a different email for the candidate's contact info, or "
+                        "2) Contact system administrator to resolve the email conflict."
+                    ),
+                    "error": "duplicate_email",
+                    "candidate_email": candidate_dto.email,
+                    "suggested_action": "check_existing_users_or_change_candidate_email"
+                }
             except Exception as e:
-                # If there's an error (like duplicate email), try to find existing user with that email
-                error_message = str(e).lower()
-                if ("already exists" in error_message or
-                        "unique constraint" in error_message or
-                        "ya está registrado" in error_message or
-                        "email already" in error_message):
-                    # Duplicate email - handle more clearly for admin
-                    return {
-                        "success": False,
-                        "message": (
-                            f"A user account with email '{candidate_dto.email}' already exists. "
-                            "This candidate's contact email is already being used as a login email by another user. "
-                            "Please either: 1) Use a different email for the candidate's contact info, or "
-                            "2) Contact system administrator to resolve the email conflict."
-                        ),
-                        "error": "duplicate_email",
-                        "candidate_email": candidate_dto.email,
-                        "suggested_action": "check_existing_users_or_change_candidate_email"
-                    }
-
                 # General error
                 raise ValueError(f"Failed to create user account: {str(e)}")
 
