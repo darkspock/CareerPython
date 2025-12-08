@@ -28,21 +28,13 @@ services:
       timeout: 3s
       retries: 5
 
-  # Optional: Database admin interface
-  adminer:
-    image: adminer
-    ports:
-      - "8089:8080"
-    depends_on:
-      - db
-    restart: unless-stopped
 
   # Email testing service
   mailpit:
     image: axllent/mailpit:latest
     ports:
-      - "8025:8025"  # Web UI
-      - "1025:1025"  # SMTP server
+      - "8026:8025"  # Web UI
+      - "1026:1025"  # SMTP server
     restart: unless-stopped
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
