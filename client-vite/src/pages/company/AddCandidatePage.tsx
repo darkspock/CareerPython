@@ -1,11 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, X, Plus } from 'lucide-react';
+import { ArrowLeft, Save, Plus, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import { PositionService } from '../../services/positionService';
 import type { Priority } from '../../types/companyCandidate';
 import type { Position } from '../../types/position';
-// import { getStatusFromStage } from '../../types/position';
 
 export default function AddCandidatePage() {
   const navigate = useNavigate();
@@ -59,7 +72,7 @@ export default function AddCandidatePage() {
     if (!token) return null;
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.company_user_id || payload.sub; // Try company_user_id first, fallback to sub
+      return payload.company_user_id || payload.sub;
     } catch {
       return null;
     }
@@ -72,18 +85,14 @@ export default function AddCandidatePage() {
 
       try {
         setLoadingPositions(true);
-        // Try to use is_active filter first
         const response = await PositionService.getPositions({
           company_id: companyId,
-          page_size: 100, // Get a reasonable number of positions
-          is_active: true, // Filter for active positions
+          page_size: 100,
+          is_active: true,
         });
-
-        // Use all positions returned (backend should filter by is_active)
         setPositions(response.positions);
       } catch (err) {
         console.error('Error loading positions:', err);
-        // If error, try without is_active filter
         try {
           const response = await PositionService.getPositions({
             company_id: companyId,
@@ -156,134 +165,136 @@ export default function AddCandidatePage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => navigate('/company/candidates')}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+          className="mb-4"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Candidates
-        </button>
+        </Button>
         <h1 className="text-2xl font-bold text-gray-900">Add New Candidate</h1>
-        <p className="text-gray-600 mt-1">Create a new candidate profile</p>
+        <p className="text-muted-foreground mt-1">Create a new candidate profile</p>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Form */}
       <form onSubmit={handleSubmit}>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-          {/* Basic Information */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Candidate Information</h2>
+        <Card>
+          <CardHeader>
+            <CardTitle>Candidate Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Name */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="md:col-span-2 space-y-2">
+                <Label htmlFor="candidate_name">
                   Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="candidate_name"
                   type="text"
                   required
                   value={formData.candidate_name}
                   onChange={(e) =>
                     setFormData({ ...formData, candidate_name: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="John Doe"
                 />
               </div>
 
               {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <Label htmlFor="candidate_email">
                   Email <span className="text-red-500">*</span>
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="candidate_email"
                   type="email"
                   required
                   value={formData.candidate_email}
                   onChange={(e) =>
                     setFormData({ ...formData, candidate_email: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="john@example.com"
                 />
               </div>
 
               {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone
-                </label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="candidate_phone">Phone</Label>
+                <Input
+                  id="candidate_phone"
                   type="tel"
                   value={formData.candidate_phone}
                   onChange={(e) =>
                     setFormData({ ...formData, candidate_phone: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="+1 234 567 8900"
                 />
               </div>
 
               {/* Priority */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Priority
-                </label>
-                <select
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Select
                   value={formData.priority}
-                  onChange={(e) =>
-                    setFormData({ ...formData, priority: e.target.value as Priority })
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, priority: value as Priority })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Job Position */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <Label htmlFor="job_position_id">
                   Job Position <span className="text-red-500">*</span>
-                </label>
-                <select
-                  required
+                </Label>
+                <Select
                   value={formData.job_position_id || ''}
-                  onChange={(e) =>
-                    setFormData({ ...formData, job_position_id: e.target.value || undefined })
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, job_position_id: value || undefined })
                   }
                   disabled={loadingPositions}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
-                  <option value="">Select a position</option>
-                  {positions.map((position) => (
-                    <option key={position.id} value={position.id}>
-                      {position.title}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a position" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {positions.map((position) => (
+                      <SelectItem key={position.id} value={position.id}>
+                        {position.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {loadingPositions && (
-                  <p className="mt-1 text-xs text-gray-500">Loading positions...</p>
+                  <p className="text-xs text-muted-foreground">Loading positions...</p>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Tags */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Tags</h2>
+            {/* Tags */}
             <div className="space-y-3">
-              {/* Tag Input */}
+              <Label>Tags</Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
@@ -293,76 +304,71 @@ export default function AddCandidatePage() {
                       handleAddTag();
                     }
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Add a tag (e.g., Frontend, React, Senior)"
+                  className="flex-1"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={handleAddTag}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                  title="Add tag"
+                  size="icon"
                 >
-                  <Plus className="w-5 h-5" />
-                </button>
+                  <Plus className="w-4 h-4" />
+                </Button>
               </div>
 
-              {/* Tags Display */}
               {formData.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {formData.tags.map((tag, idx) => (
-                    <span
+                    <Badge
                       key={idx}
-                      className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                      variant="secondary"
+                      className="flex items-center gap-1"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
-                        className="hover:text-blue-900"
-                        title="Remove tag"
+                        className="ml-1 hover:text-destructive"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 h-3" />
                       </button>
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Internal Notes */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Internal Notes</h2>
-            <textarea
-              value={formData.internal_notes}
-              onChange={(e) =>
-                setFormData({ ...formData, internal_notes: e.target.value })
-              }
-              rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Add any internal notes about this candidate..."
-            />
-          </div>
+            {/* Internal Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="internal_notes">Internal Notes</Label>
+              <Textarea
+                id="internal_notes"
+                value={formData.internal_notes}
+                onChange={(e) =>
+                  setFormData({ ...formData, internal_notes: e.target.value })
+                }
+                rows={4}
+                placeholder="Add any internal notes about this candidate..."
+              />
+            </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={() => navigate('/company/candidates')}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save className="w-5 h-5" />
-              {loading ? 'Adding...' : 'Add Candidate'}
-            </button>
-          </div>
-        </div>
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/company/candidates')}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                <Save className="w-4 h-4 mr-2" />
+                {loading ? 'Adding...' : 'Add Candidate'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </form>
     </div>
   );

@@ -6,6 +6,21 @@ import { companyPageService } from '../../services/companyPageService';
 import type { CreateCompanyPageRequest } from '../../types/companyPage';
 import { PageType, LANGUAGE_OPTIONS } from '../../types/companyPage';
 import { PAGE_TYPE_OPTIONS } from '../../types/companyPage';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function CreateCompanyPagePage() {
   const navigate = useNavigate();
@@ -27,7 +42,7 @@ export default function CreateCompanyPagePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
       setError('Title is required');
       return;
@@ -81,32 +96,32 @@ export default function CreateCompanyPagePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => navigate('/company/pages')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 mr-2" />
             Back
-          </button>
+          </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Create New Page</h1>
             <p className="text-gray-600 mt-1">Create a new content page for your company</p>
           </div>
         </div>
-        <button
+        <Button
+          variant="outline"
           onClick={() => setPreviewMode(!previewMode)}
-          className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
         >
-          {previewMode ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          {previewMode ? <EyeOff className="w-5 h-5 mr-2" /> : <Eye className="w-5 h-5 mr-2" />}
           {previewMode ? 'Edit' : 'Preview'}
-        </button>
+        </Button>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -114,39 +129,43 @@ export default function CreateCompanyPagePage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-              
-              <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {/* Page Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Label htmlFor="page_type">
                     Page Type <span className="text-red-500">*</span>
-                  </label>
-                  <select
+                  </Label>
+                  <Select
                     value={formData.page_type}
-                    onChange={(e) => setFormData(prev => ({ ...prev, page_type: e.target.value as typeof PageType[keyof typeof PageType] }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, page_type: value as typeof PageType[keyof typeof PageType] }))}
                   >
-                    {PAGE_TYPE_OPTIONS.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_TYPE_OPTIONS.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Label htmlFor="title">
                     Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
+                  </Label>
+                  <Input
+                    id="title"
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Page title"
                     required
                   />
@@ -154,75 +173,77 @@ export default function CreateCompanyPagePage() {
 
                 {/* Language */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Language
-                  </label>
-                  <select
+                  <Label htmlFor="language">Language</Label>
+                  <Select
                     value={formData.language}
-                    onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}
                   >
-                    {LANGUAGE_OPTIONS.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGE_OPTIONS.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Default Page */}
                 <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="is_default"
                     checked={formData.is_default}
-                    onChange={(e) => setFormData(prev => ({ ...prev, is_default: e.target.checked }))}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_default: checked as boolean }))}
                   />
-                  <label htmlFor="is_default" className="text-sm font-medium text-gray-700">
+                  <Label htmlFor="is_default" className="text-sm font-medium cursor-pointer">
                     Set as default page for this type
-                  </label>
+                  </Label>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Content Editor */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Contenido</h2>
-              
-              {previewMode ? (
-                <div 
-                  className="prose max-w-none min-h-[400px] p-4 border border-gray-200 rounded-lg bg-gray-50"
-                  dangerouslySetInnerHTML={{ __html: formData.html_content || '<p class="text-gray-500 italic">No hay contenido para mostrar</p>' }}
-                />
-              ) : (
-                <WysiwygEditor
-                  value={formData.html_content}
-                  onChange={(content) => setFormData(prev => ({ ...prev, html_content: content }))}
-                  placeholder="Write your page content here..."
-                  height={400}
-                />
-              )}
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Contenido</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {previewMode ? (
+                  <div
+                    className="prose max-w-none min-h-[400px] p-4 border border-gray-200 rounded-lg bg-gray-50"
+                    dangerouslySetInnerHTML={{ __html: formData.html_content || '<p class="text-gray-500 italic">No hay contenido para mostrar</p>' }}
+                  />
+                ) : (
+                  <WysiwygEditor
+                    value={formData.html_content}
+                    onChange={(content) => setFormData(prev => ({ ...prev, html_content: content }))}
+                    placeholder="Write your page content here..."
+                    height={400}
+                  />
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* SEO Settings */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">SEO Configuration</h3>
-              
-              <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>SEO Configuration</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {/* Meta Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Meta Description
-                  </label>
-                  <textarea
+                  <Label htmlFor="meta_description">Meta Description</Label>
+                  <Textarea
+                    id="meta_description"
                     value={formData.meta_description || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Description for search engines (max 160 characters)"
                     maxLength={160}
                   />
@@ -233,34 +254,30 @@ export default function CreateCompanyPagePage() {
 
                 {/* Keywords */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Keywords
-                  </label>
+                  <Label htmlFor="keywords">Keywords</Label>
                   <div className="flex gap-2 mb-2">
-                    <input
+                    <Input
+                      id="keywords"
                       type="text"
                       value={keywordInput}
                       onChange={(e) => setKeywordInput(e.target.value)}
                       onKeyPress={handleKeywordKeyPress}
                       placeholder="Add keyword"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1"
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={handleAddKeyword}
-                      className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      size="sm"
                     >
                       Add
-                    </button>
+                    </Button>
                   </div>
-                  
+
                   {(formData.meta_keywords || []).length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {(formData.meta_keywords || []).map((keyword, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                        >
+                        <Badge key={index} variant="secondary" className="gap-1">
                           {keyword}
                           <button
                             type="button"
@@ -269,37 +286,39 @@ export default function CreateCompanyPagePage() {
                           >
                             ×
                           </button>
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Actions */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
-              
-              <div className="space-y-3">
-                <button
+            <Card>
+              <CardHeader>
+                <CardTitle>Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full"
                 >
-                  <Save className="w-5 h-5" />
+                  <Save className="w-5 h-5 mr-2" />
                   {loading ? 'Creating...' : 'Create Page'}
-                </button>
-                
-                <button
+                </Button>
+
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => navigate('/company/pages')}
-                  className="w-full px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="w-full"
                 >
                   Cancel
-                </button>
-              </div>
-            </div>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </form>

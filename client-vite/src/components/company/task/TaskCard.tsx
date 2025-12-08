@@ -3,6 +3,10 @@
 
 import React, { useState } from 'react';
 import { Clock, AlertCircle, User, Briefcase, PlayCircle, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type {
   Task
 } from '../../../types/task';
@@ -89,50 +93,50 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const loading = isLoading || actionInProgress;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
-      <div className="p-4">
+    <Card className="hover:shadow-md transition-shadow duration-200">
+      <CardHeader>
         {/* Header: Priority and Status */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className={`px-2 py-1 text-xs font-medium rounded border ${getPriorityColor(task.priority_level as PriorityLevel)}`}>
+            <Badge variant="outline" className={getPriorityColor(task.priority_level as PriorityLevel)}>
               {getPriorityLabel(task.priority_level as PriorityLevel)} Priority
-            </span>
-            <span className={`px-2 py-1 text-xs font-medium rounded border ${getTaskStatusColor(task.task_status)}`}>
+            </Badge>
+            <Badge variant="outline" className={getTaskStatusColor(task.task_status)}>
               {getTaskStatusLabel(task.task_status)}
-            </span>
+            </Badge>
           </div>
-          <span className={`px-2 py-1 text-xs font-medium rounded ${getApplicationStatusColor(task.application_status)}`}>
+          <Badge className={getApplicationStatusColor(task.application_status)}>
             {getApplicationStatusLabel(task.application_status)}
-          </span>
+          </Badge>
         </div>
+      </CardHeader>
 
+      <CardContent className="space-y-3">
         {/* Candidate Information */}
-        <div className="mb-3">
-          <div className="flex items-center gap-2 mb-2">
-            {task.candidate_photo_url ? (
-              <img
-                src={task.candidate_photo_url}
-                alt={task.candidate_name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-500" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base font-semibold text-gray-900 truncate">
-                {task.candidate_name}
-              </h3>
-              {task.candidate_email && (
-                <p className="text-sm text-gray-500 truncate">{task.candidate_email}</p>
-              )}
+        <div className="flex items-center gap-2">
+          {task.candidate_photo_url ? (
+            <img
+              src={task.candidate_photo_url}
+              alt={task.candidate_name}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+              <User className="w-5 h-5 text-gray-500" />
             </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-gray-900 truncate">
+              {task.candidate_name}
+            </h3>
+            {task.candidate_email && (
+              <p className="text-sm text-gray-500 truncate">{task.candidate_email}</p>
+            )}
           </div>
         </div>
 
         {/* Position and Stage */}
-        <div className="space-y-2 mb-3">
+        <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
             <Briefcase className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <span className="text-gray-700 truncate">{task.position_title}</span>
@@ -149,7 +153,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
         {/* Deadline and Time in Stage */}
         {(task.stage_deadline || task.stage_entered_at) && (
-          <div className="border-t pt-3 mb-3 space-y-2">
+          <div className="border-t pt-3 space-y-2">
             {task.stage_deadline && (
               <div className={`flex items-center gap-2 text-sm ${deadlinePassed ? 'text-red-600' : 'text-gray-600'}`}>
                 <Clock className="w-4 h-4" />
@@ -168,16 +172,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
         {/* Overdue Warning */}
         {deadlinePassed && (
-          <div className="mb-3 flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-            <span className="text-xs text-red-700">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
               This task is overdue and requires immediate attention
-            </span>
-          </div>
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Priority Score Info */}
-        <div className="text-xs text-gray-500 mb-3">
+        <div className="text-xs text-gray-500">
           Priority Score: {task.priority_score} / 150
         </div>
 
@@ -185,47 +189,48 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         {showActions && (
           <div className="flex gap-2 border-t pt-3">
             {canClaim && onClaim && (
-              <button
+              <Button
                 onClick={handleClaim}
                 disabled={loading}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="flex-1"
               >
                 {loading ? (
                   <span className="text-sm">Processing...</span>
                 ) : (
                   <>
-                    <PlayCircle className="w-4 h-4" />
+                    <PlayCircle className="w-4 h-4 mr-2" />
                     <span className="text-sm font-medium">Claim Task</span>
                   </>
                 )}
-              </button>
+              </Button>
             )}
 
             {canUnclaim && onUnclaim && (
-              <button
+              <Button
                 onClick={handleUnclaim}
                 disabled={loading}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                variant="secondary"
+                className="flex-1"
               >
                 {loading ? (
                   <span className="text-sm">Processing...</span>
                 ) : (
                   <>
-                    <XCircle className="w-4 h-4" />
+                    <XCircle className="w-4 h-4 mr-2" />
                     <span className="text-sm font-medium">Release Task</span>
                   </>
                 )}
-              </button>
+              </Button>
             )}
 
             {onViewDetails && (
-              <button
+              <Button
                 onClick={handleViewDetails}
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+                variant="outline"
               >
                 <span className="text-sm font-medium">View Details</span>
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -238,8 +243,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

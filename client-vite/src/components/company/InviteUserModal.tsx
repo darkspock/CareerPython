@@ -1,15 +1,15 @@
 /**
  * InviteUserModal Component
- * 
+ *
  * Modal component for inviting new users to a company. Allows administrators
  * to send invitations with a specific role (admin, recruiter, viewer).
- * 
+ *
  * Features:
  * - Email validation
  * - Role selection
  * - Success state with invitation link to copy
  * - Error handling with user-friendly messages
- * 
+ *
  * @component
  * @param {Object} props - Component props
  * @param {string} props.companyId - The company ID to invite the user to
@@ -17,9 +17,26 @@
  * @param {Function} props.onClose - Callback when modal is closed
  * @param {Function} [props.onSuccess] - Callback when invitation is sent successfully
  */
-// Modal for inviting a new user to the company
 import React, { useState, useEffect } from 'react';
-import { X, Mail, UserPlus, Copy, Check, AlertCircle } from 'lucide-react';
+import { Mail, UserPlus, Copy, Check, AlertCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type {
   InviteCompanyUserRequest,
   CompanyUserRole
@@ -88,74 +105,53 @@ export default function InviteUserModal({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center space-x-3">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
             <UserPlus className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-900">
-              {invitationLink ? 'Invitación Enviada' : 'Invitar Usuario'}
-            </h2>
-          </div>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+            {invitationLink ? 'Invitacion Enviada' : 'Invitar Usuario'}
+          </DialogTitle>
+        </DialogHeader>
 
-        {/* Content */}
-        <div className="p-6">
+        <div className="py-4">
           {invitationLink ? (
             // Success State
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Check className="w-5 h-5 text-green-600" />
-                  <p className="text-green-800 font-medium">¡Invitación enviada exitosamente!</p>
-                </div>
-                <p className="text-green-700 text-sm">
-                  Se ha enviado un email a <strong>{invitationLink.email}</strong>
-                </p>
-              </div>
+              <Alert className="border-green-200 bg-green-50">
+                <Check className="w-5 h-5 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  Invitacion enviada exitosamente a <strong>{invitationLink.email}</strong>
+                </AlertDescription>
+              </Alert>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Link de Invitación
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
+              <div className="space-y-2">
+                <Label>Link de Invitacion</Label>
+                <div className="flex items-center gap-2">
+                  <Input
                     value={invitationLink.invitation_link}
                     readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
+                    className="flex-1 bg-gray-50"
                   />
-                  <button
+                  <Button
                     onClick={handleCopyLink}
-                    className={`px-4 py-2 rounded-lg transition ${
-                      copied
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
+                    variant={copied ? 'secondary' : 'default'}
+                    size="icon"
                   >
                     {copied ? (
-                      <Check className="w-5 h-5" />
+                      <Check className="w-4 h-4" />
                     ) : (
-                      <Copy className="w-5 h-5" />
+                      <Copy className="w-4 h-4" />
                     )}
-                  </button>
+                  </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground">
                   Comparte este link manualmente si es necesario
                 </p>
               </div>
 
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 <p>
                   <strong>Expira:</strong>{' '}
                   {new Date(invitationLink.expires_at).toLocaleDateString('es-ES', {
@@ -168,98 +164,82 @@ export default function InviteUserModal({
                 </p>
               </div>
 
-              <button
-                onClick={handleClose}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
-              >
-                Cerrar
-              </button>
+              <DialogFooter>
+                <Button onClick={handleClose} className="w-full">
+                  Cerrar
+                </Button>
+              </DialogFooter>
             </div>
           ) : (
             // Form State
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-red-800 text-sm">{error}</p>
-                </div>
+                <Alert variant="destructive">
+                  <AlertCircle className="w-4 h-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
 
               {/* Email Field */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email del Usuario
-                </label>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email del Usuario</Label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
                     id="email"
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="pl-10"
                     placeholder="usuario@ejemplo.com"
                   />
                 </div>
               </div>
 
               {/* Role Field */}
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                  Rol
-                </label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as CompanyUserRole)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {COMPANY_USER_ROLE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  El usuario recibirá permisos según su rol
+              <div className="space-y-2">
+                <Label htmlFor="role">Rol</Label>
+                <Select value={role} onValueChange={(value) => setRole(value as CompanyUserRole)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMPANY_USER_ROLE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  El usuario recibira permisos segun su rol
                 </p>
               </div>
 
-              {/* Submit Button */}
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                >
+              {/* Submit Buttons */}
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button type="button" variant="outline" onClick={handleClose}>
                   Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !email.trim()}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                >
+                </Button>
+                <Button type="submit" disabled={loading || !email.trim()}>
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Enviando...</span>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Enviando...
                     </>
                   ) : (
                     <>
                       <UserPlus className="w-4 h-4" />
-                      <span>Enviar Invitación</span>
+                      Enviar Invitacion
                     </>
                   )}
-                </button>
-              </div>
+                </Button>
+              </DialogFooter>
             </form>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
-

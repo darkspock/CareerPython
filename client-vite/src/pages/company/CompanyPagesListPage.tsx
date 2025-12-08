@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, FileText, Grid, List } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CompanyPageCard } from '../../components/company/CompanyPageCard';
 import { companyPageService } from '../../services/companyPageService';
 import type { CompanyPage, CompanyPageFilters } from '../../types/companyPage';
@@ -16,7 +27,7 @@ export default function CompanyPagesListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(12);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
+
   // Filters
   const [filters, setFilters] = useState<CompanyPageFilters>({
     page: 1,
@@ -34,7 +45,7 @@ export default function CompanyPagesListPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await companyPageService.getPages(filters);
       setPages(response.pages);
       setTotal(response.total);
@@ -124,116 +135,115 @@ export default function CompanyPagesListPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Páginas de Contenido</h1>
-          <p className="text-gray-600 mt-1">Gestiona las páginas de contenido de tu empresa</p>
+          <p className="text-muted-foreground mt-1">Gestiona las páginas de contenido de tu empresa</p>
         </div>
-        <button
-          onClick={() => navigate('/company/pages/create')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
+        <Button onClick={() => navigate('/company/pages/create')}>
+          <Plus className="w-4 h-4 mr-2" />
           Nueva Página
-        </button>
+        </Button>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Buscar páginas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="Buscar páginas..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Page Type Filter */}
+            <div className="lg:w-64">
+              <Select
+                value={selectedPageType}
+                onValueChange={(value) => setSelectedPageType(value as keyof typeof PageType | '')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos los tipos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos los tipos</SelectItem>
+                  {PAGE_TYPE_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Status Filter */}
+            <div className="lg:w-48">
+              <Select
+                value={selectedStatus}
+                onValueChange={(value) => setSelectedStatus(value as keyof typeof PageStatus | '')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos los estados" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos los estados</SelectItem>
+                  {PAGE_STATUS_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button onClick={handleSearch}>
+                <Search className="w-4 h-4 mr-2" />
+                Buscar
+              </Button>
+              <Button variant="outline" onClick={handleClearFilters}>
+                Limpiar
+              </Button>
             </div>
           </div>
-
-          {/* Page Type Filter */}
-          <div className="lg:w-64">
-            <select
-              value={selectedPageType}
-                    onChange={(e) => setSelectedPageType(e.target.value as keyof typeof PageType | '')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Todos los tipos</option>
-              {PAGE_TYPE_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div className="lg:w-48">
-            <select
-              value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value as keyof typeof PageStatus | '')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Todos los estados</option>
-              {PAGE_STATUS_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <button
-              onClick={handleSearch}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Search className="w-4 h-4" />
-              Buscar
-            </button>
-            <button
-              onClick={handleClearFilters}
-              className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              Limpiar
-            </button>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* View Mode Toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-muted-foreground">
             {total} página{total !== 1 ? 's' : ''} encontrada{total !== 1 ? 's' : ''}
           </span>
         </div>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-          <button
+        <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+          <Button
+            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+            size="icon"
             onClick={() => setViewMode('grid')}
-            className={`p-2 rounded-md transition-colors ${
-              viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
           >
             <Grid className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            size="icon"
             onClick={() => setViewMode('list')}
-            className={`p-2 rounded-md transition-colors ${
-              viewMode === 'list' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
           >
             <List className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -242,22 +252,21 @@ export default function CompanyPagesListPage() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 mt-2">Cargando páginas...</p>
+            <p className="text-muted-foreground mt-2">Cargando páginas...</p>
           </div>
         </div>
       ) : pages.length === 0 ? (
-        <div className="text-center py-12">
-          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay páginas</h3>
-          <p className="text-gray-600 mb-4">Comienza creando tu primera página de contenido.</p>
-          <button
-            onClick={() => navigate('/company/pages/create')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Crear Primera Página
-          </button>
-        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay páginas</h3>
+            <p className="text-muted-foreground mb-4">Comienza creando tu primera página de contenido.</p>
+            <Button onClick={() => navigate('/company/pages/create')}>
+              <Plus className="w-4 h-4 mr-2" />
+              Crear Primera Página
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <>
           {/* Pages Grid/List */}
@@ -283,35 +292,34 @@ export default function CompanyPagesListPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-8">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Anterior
-              </button>
-              
+              </Button>
+
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
+                <Button
                   key={page}
+                  variant={page === currentPage ? 'default' : 'outline'}
+                  size="sm"
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 text-sm rounded-lg ${
-                    page === currentPage
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 bg-white border border-gray-300 hover:bg-gray-50'
-                  }`}
                 >
                   {page}
-                </button>
+                </Button>
               ))}
-              
-              <button
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente
-              </button>
+              </Button>
             </div>
           )}
         </>

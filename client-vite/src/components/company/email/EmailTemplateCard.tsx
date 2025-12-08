@@ -4,6 +4,9 @@
  */
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { EmailTemplate } from '../../../types/emailTemplate';
 import { getTriggerEventLabel } from '../../../types/emailTemplate';
 
@@ -41,33 +44,29 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg border ${template.is_active ? 'border-gray-200' : 'border-gray-300 opacity-75'} shadow-sm hover:shadow-md transition-shadow`}>
-      <div className="p-4">
+    <Card className={`hover:shadow-md transition-shadow ${template.is_active ? '' : 'opacity-75'}`}>
+      <CardHeader>
         {/* Header */}
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">{template.template_name}</h3>
+            <CardTitle>{template.template_name}</CardTitle>
             <p className="text-sm text-gray-500 mt-1">Key: {template.template_key}</p>
           </div>
           <div className="flex items-center gap-2">
             {/* Active Badge */}
-            <span
-              className={`px-2 py-1 text-xs font-medium rounded ${
-                template.is_active
-                  ? 'bg-green-100 text-green-800 border border-green-200'
-                  : 'bg-gray-100 text-gray-800 border border-gray-200'
-              }`}
-            >
+            <Badge variant={template.is_active ? "default" : "secondary"}>
               {template.is_active ? 'Active' : 'Inactive'}
-            </span>
+            </Badge>
           </div>
         </div>
+      </CardHeader>
 
+      <CardContent className="space-y-3">
         {/* Trigger Event */}
-        <div className="mb-3">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+        <div>
+          <Badge variant="outline">
             {getTriggerEventLabel(template.trigger_event)}
-          </span>
+          </Badge>
           {template.stage_id && (
             <span className="ml-2 text-xs text-gray-600">
               Stage-specific
@@ -76,13 +75,13 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
         </div>
 
         {/* Subject Preview */}
-        <div className="mb-3">
+        <div>
           <p className="text-sm font-medium text-gray-700 mb-1">Subject:</p>
           <p className="text-sm text-gray-600 line-clamp-1">{template.subject}</p>
         </div>
 
         {/* Body Preview */}
-        <div className="mb-3">
+        <div>
           <p className="text-sm font-medium text-gray-700 mb-1">Body Preview:</p>
           <div
             className="text-sm text-gray-600 line-clamp-2"
@@ -91,16 +90,13 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
         </div>
 
         {/* Variables */}
-        <div className="mb-4">
+        <div>
           <p className="text-sm font-medium text-gray-700 mb-2">Variables:</p>
           <div className="flex flex-wrap gap-1">
             {template.available_variables.slice(0, 5).map((variable: string) => (
-              <span
-                key={variable}
-                className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700 border border-gray-200"
-              >
+              <Badge key={variable} variant="secondary">
                 {`{{ ${variable} }}`}
-              </span>
+              </Badge>
             ))}
             {template.available_variables.length > 5 && (
               <span className="text-xs text-gray-500 self-center">
@@ -111,7 +107,7 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
         </div>
 
         {/* Timestamps */}
-        <div className="text-xs text-gray-500 mb-3">
+        <div className="text-xs text-gray-500">
           <p>Created: {new Date(template.created_at).toLocaleDateString()}</p>
           {template.updated_at !== template.created_at && (
             <p>Updated: {new Date(template.updated_at).toLocaleDateString()}</p>
@@ -121,40 +117,38 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
         {/* Actions */}
         <div className="flex items-center gap-2 pt-3 border-t border-gray-200">
           {onEdit && (
-            <button
+            <Button
               onClick={handleEdit}
               disabled={isLoading}
-              className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="secondary"
+              className="flex-1"
             >
               Edit
-            </button>
+            </Button>
           )}
 
           {onToggleActive && (
-            <button
+            <Button
               onClick={handleToggleActive}
               disabled={isLoading}
-              className={`flex-1 px-3 py-2 text-sm font-medium rounded border disabled:opacity-50 disabled:cursor-not-allowed ${
-                template.is_active
-                  ? 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50'
-                  : 'text-green-700 bg-green-50 border-green-300 hover:bg-green-100'
-              }`}
+              variant={template.is_active ? "secondary" : "default"}
+              className="flex-1"
             >
               {template.is_active ? 'Deactivate' : 'Activate'}
-            </button>
+            </Button>
           )}
 
           {onDelete && (
-            <button
+            <Button
               onClick={handleDelete}
               disabled={isLoading}
-              className="px-3 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="destructive"
             >
               Delete
-            </button>
+            </Button>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

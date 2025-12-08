@@ -6,6 +6,7 @@
 import React from 'react';
 import { Clock, ArrowRight, User, CheckCircle } from 'lucide-react';
 import type { ApplicationHistoryEntry } from '../../../types/candidateApplication';
+import { Badge } from '@/components/ui/badge';
 
 interface ApplicationHistoryProps {
   history: ApplicationHistoryEntry[];
@@ -132,9 +133,9 @@ export const ApplicationHistory: React.FC<ApplicationHistoryProps> = ({
                             {getStageName(entry.to_stage_id)}
                           </span>
                           {isCurrentStage && (
-                            <span className="px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
+                            <Badge className="bg-blue-50 text-blue-600 hover:bg-blue-50">
                               Current
-                            </span>
+                            </Badge>
                           )}
                         </div>
 

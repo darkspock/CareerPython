@@ -4,6 +4,8 @@ import {
   getCompanyUserRoleColor,
   getCompanyUserRoleLabel
 } from '../../types/companyUser';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface UserRoleBadgeProps {
   role: CompanyUserRole;
@@ -11,14 +13,14 @@ interface UserRoleBadgeProps {
 }
 
 export default function UserRoleBadge({ role, className = '' }: UserRoleBadgeProps) {
+  // Map the color classes to badge variants or keep custom colors
+  const colorClass = getCompanyUserRoleColor(role);
+
   return (
-    <span
-      className={`px-2 py-1 rounded-full text-xs font-medium ${getCompanyUserRoleColor(
-        role
-      )} ${className}`}
+    <Badge
+      className={cn(colorClass, className)}
     >
       {getCompanyUserRoleLabel(role)}
-    </span>
+    </Badge>
   );
 }
-

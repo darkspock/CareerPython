@@ -4,6 +4,11 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { DragEndEvent } from '@dnd-kit/core';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { phaseService } from '../../services/phaseService';
 import type { Phase } from '../../types/phase';
 import { PhaseStatus } from '../../types/phase';
@@ -66,18 +71,18 @@ function SortablePhaseRow({
   };
 
   return (
-    <div
+    <Card
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+      className="hover:shadow-md transition-shadow"
     >
-      <div className="p-6">
+      <CardContent className="p-6">
         <div className="flex items-start justify-between">
           {/* Drag Handle */}
           <div
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 mr-4 mt-1"
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground mr-4 mt-1"
           >
             <GripVertical className="w-5 h-5" />
           </div>
@@ -85,38 +90,47 @@ function SortablePhaseRow({
           {/* Phase Info */}
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium text-muted-foreground">
                 #{phase.sort_order}
               </span>
               <h3 className="text-lg font-semibold text-gray-900">
                 {phase.name}
               </h3>
               {/* Workflow Type Badge */}
-              <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">
+              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
                 {getWorkflowTypeLabel(phase.workflow_type)}
-              </span>
-              <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+              </Badge>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                 {getDefaultViewLabel(phase.default_view)}
-              </span>
-              {/* Always show status */}
-              <span className={`px-2 py-1 text-xs font-medium rounded ${
-                phase.status === PhaseStatus.ACTIVE
-                  ? 'bg-green-100 text-green-800'
-                  : phase.status === PhaseStatus.DRAFT
-                  ? 'bg-gray-100 text-gray-700'
-                  : 'bg-red-100 text-red-700'
-              }`}>
+              </Badge>
+              {/* Status Badge */}
+              <Badge
+                variant={
+                  phase.status === PhaseStatus.ACTIVE
+                    ? 'default'
+                    : phase.status === PhaseStatus.DRAFT
+                    ? 'secondary'
+                    : 'destructive'
+                }
+                className={
+                  phase.status === PhaseStatus.ACTIVE
+                    ? 'bg-green-100 text-green-800'
+                    : phase.status === PhaseStatus.DRAFT
+                    ? 'bg-gray-100 text-gray-700'
+                    : 'bg-red-100 text-red-700'
+                }
+              >
                 {phase.status}
-              </span>
+              </Badge>
             </div>
 
             {phase.objective && (
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 {phase.objective}
               </p>
             )}
 
-            <div className="mt-3 text-xs text-gray-500">
+            <div className="mt-3 text-xs text-muted-foreground">
               <span>Created: {new Date(phase.created_at).toLocaleDateString()}</span>
               {phase.updated_at !== phase.created_at && (
                 <span className="ml-3">
@@ -127,70 +141,74 @@ function SortablePhaseRow({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 ml-4">
-            {/* Move Up */}
-            <button
+          <div className="flex items-center gap-1 ml-4">
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onMoveUp(index)}
               disabled={isFirst}
-              className="p-2 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed rounded-lg hover:bg-gray-100 transition-colors"
               title="Move up"
             >
-              <ArrowUp className="w-5 h-5" />
-            </button>
+              <ArrowUp className="w-4 h-4" />
+            </Button>
 
-            {/* Move Down */}
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onMoveDown(index)}
               disabled={isLast}
-              className="p-2 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed rounded-lg hover:bg-gray-100 transition-colors"
               title="Move down"
             >
-              <ArrowDown className="w-5 h-5" />
-            </button>
+              <ArrowDown className="w-4 h-4" />
+            </Button>
 
-            {/* Activate (only if not ACTIVE) */}
             {phase.status !== PhaseStatus.ACTIVE && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => onActivate(phase.id)}
-                className="p-2 text-green-600 hover:text-green-800 rounded-lg hover:bg-green-50 transition-colors"
+                className="text-green-600 hover:text-green-800 hover:bg-green-50"
                 title="Activate phase"
               >
-                <CheckCircle className="w-5 h-5" />
-              </button>
+                <CheckCircle className="w-4 h-4" />
+              </Button>
             )}
 
-            {/* Archive (only if ACTIVE) */}
             {phase.status === PhaseStatus.ACTIVE && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => onArchive(phase.id)}
-                className="p-2 text-orange-600 hover:text-orange-800 rounded-lg hover:bg-orange-50 transition-colors"
+                className="text-orange-600 hover:text-orange-800 hover:bg-orange-50"
                 title="Archive phase"
               >
-                <Archive className="w-5 h-5" />
-              </button>
+                <Archive className="w-4 h-4" />
+              </Button>
             )}
 
-            {/* Edit */}
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onEdit(phase)}
-              className="p-2 text-blue-600 hover:text-blue-800 rounded-lg hover:bg-blue-50 transition-colors"
+              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
               title="Edit phase"
             >
-              <Edit className="w-5 h-5" />
-            </button>
+              <Edit className="w-4 h-4" />
+            </Button>
 
-            {/* Delete */}
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onDelete(phase.id)}
-              className="p-2 text-red-600 hover:text-red-800 rounded-lg hover:bg-red-50 transition-colors"
+              className="text-red-600 hover:text-red-800 hover:bg-red-50"
               title="Delete phase"
             >
-              <Trash2 className="w-5 h-5" />
-            </button>
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -234,7 +252,6 @@ export default function PhasesPage() {
     loadPhases();
   }, []);
 
-  // Filter phases by workflow type
   useEffect(() => {
     setFilteredPhases(phases.filter(phase => phase.workflow_type === activeTypeFilter));
   }, [phases, activeTypeFilter]);
@@ -249,7 +266,6 @@ export default function PhasesPage() {
       }
 
       const data = await phaseService.listPhases(companyId);
-      // Sort by sort_order
       const sortedData = data.sort((a, b) => a.sort_order - b.sort_order);
       setPhases(sortedData);
       setError(null);
@@ -325,7 +341,7 @@ export default function PhasesPage() {
   };
 
   const handleMovePhaseUp = async (index: number) => {
-    if (index === 0) return; // Already at the top
+    if (index === 0) return;
 
     const companyId = getCompanyId();
     if (!companyId) return;
@@ -334,7 +350,6 @@ export default function PhasesPage() {
       const currentPhase = phases[index];
       const previousPhase = phases[index - 1];
 
-      // Swap sort orders
       await phaseService.updatePhase(companyId, currentPhase.id, {
         name: currentPhase.name,
         sort_order: previousPhase.sort_order,
@@ -356,7 +371,7 @@ export default function PhasesPage() {
   };
 
   const handleMovePhaseDown = async (index: number) => {
-    if (index === phases.length - 1) return; // Already at the bottom
+    if (index === phases.length - 1) return;
 
     const companyId = getCompanyId();
     if (!companyId) return;
@@ -365,7 +380,6 @@ export default function PhasesPage() {
       const currentPhase = phases[index];
       const nextPhase = phases[index + 1];
 
-      // Swap sort orders
       await phaseService.updatePhase(companyId, currentPhase.id, {
         name: currentPhase.name,
         sort_order: nextPhase.sort_order,
@@ -399,12 +413,10 @@ export default function PhasesPage() {
     const newPhases = arrayMove(phases, oldIndex, newIndex);
     setPhases(newPhases);
 
-    // Update sort_order on backend for all affected phases
     try {
       const companyId = getCompanyId();
       if (!companyId) return;
 
-      // Update each phase with new sort_order
       await Promise.all(
         newPhases.map((phase, index) =>
           phaseService.updatePhase(companyId, phase.id, {
@@ -416,10 +428,10 @@ export default function PhasesPage() {
         )
       );
 
-      loadPhases(); // Refresh to get updated data
+      loadPhases();
     } catch (err: any) {
       setError('Failed to reorder phases: ' + err.message);
-      loadPhases(); // Revert on error
+      loadPhases();
     }
   };
 
@@ -464,9 +476,9 @@ export default function PhasesPage() {
   const companyId = getCompanyId();
   if (!companyId) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Company ID not found. Please log in again.</p>
-      </div>
+      <Alert variant="destructive">
+        <AlertDescription>Company ID not found. Please log in again.</AlertDescription>
+      </Alert>
     );
   }
 
@@ -476,80 +488,67 @@ export default function PhasesPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Phase Management v2</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             Organize your recruitment process into high-level phases
           </p>
         </div>
-        <button
-          onClick={handleCreatePhase}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
+        <Button onClick={handleCreatePhase}>
+          <Plus className="w-4 h-4 mr-2" />
           Create Phase
-        </button>
+        </Button>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Workflow Type Filter Tabs */}
       <div className="mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
+        <Tabs value={activeTypeFilter} onValueChange={(value) => setActiveTypeFilter(value as WorkflowTypeFilter)}>
+          <TabsList>
             {Object.values(WORKFLOW_TYPES).map((type) => (
-              <button
-                key={type.value}
-                onClick={() => setActiveTypeFilter(type.value as WorkflowTypeFilter)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTypeFilter === type.value
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
+              <TabsTrigger key={type.value} value={type.value}>
                 {type.label}
-              </button>
+              </TabsTrigger>
             ))}
-          </nav>
-        </div>
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Phases List */}
       {phases.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <Layers className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No phases yet</h3>
-          <p className="text-gray-600 mb-6">
-            Get started quickly with our default phases or create your own custom phase
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <button
-              onClick={handleInitializeDefaults}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Layers className="w-5 h-5" />
-              Initialize Default Phases
-            </button>
-            <button
-              onClick={handleCreatePhase}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              Create Custom Phase
-            </button>
-          </div>
-        </div>
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Layers className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No phases yet</h3>
+            <p className="text-muted-foreground mb-6">
+              Get started quickly with our default phases or create your own custom phase
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <Button onClick={handleInitializeDefaults}>
+                <Layers className="w-4 h-4 mr-2" />
+                Initialize Default Phases
+              </Button>
+              <Button variant="outline" onClick={handleCreatePhase}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Custom Phase
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : filteredPhases.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <Layers className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No phases found</h3>
-          <p className="text-gray-600 mb-6">
-            No phases match the selected filter. Try selecting a different workflow type.
-          </p>
-        </div>
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Layers className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No phases found</h3>
+            <p className="text-muted-foreground mb-6">
+              No phases match the selected filter. Try selecting a different workflow type.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={filteredPhases.map((p) => p.id)} strategy={verticalListSortingStrategy}>
@@ -575,23 +574,21 @@ export default function PhasesPage() {
       )}
 
       {/* Info Box */}
-      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <div className="flex items-start gap-3">
-          <Layers className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-          <div>
-            <h4 className="font-semibold text-blue-900 mb-1">About Phases</h4>
-            <p className="text-blue-800 text-sm mb-2">
-              Phases are high-level organizational structures that group related workflows together.
-              For example, you might have phases like "Sourcing & Screening", "Interview", and
-              "Offer & Onboarding". Each phase can contain one or more workflows, and workflows can
-              automatically transition candidates to the next phase when they reach a success stage.
-            </p>
-            <p className="text-blue-800 text-sm">
-              <strong>Tip:</strong> Drag and drop phases using the grip handle to reorder them, or use the arrow buttons for precise positioning.
-            </p>
-          </div>
-        </div>
-      </div>
+      <Alert className="mt-8 border-blue-200 bg-blue-50">
+        <Layers className="w-5 h-5 text-blue-600" />
+        <AlertDescription className="text-blue-800">
+          <h4 className="font-semibold text-blue-900 mb-1">About Phases</h4>
+          <p className="text-sm mb-2">
+            Phases are high-level organizational structures that group related workflows together.
+            For example, you might have phases like "Sourcing & Screening", "Interview", and
+            "Offer & Onboarding". Each phase can contain one or more workflows, and workflows can
+            automatically transition candidates to the next phase when they reach a success stage.
+          </p>
+          <p className="text-sm">
+            <strong>Tip:</strong> Drag and drop phases using the grip handle to reorder them, or use the arrow buttons for precise positioning.
+          </p>
+        </AlertDescription>
+      </Alert>
 
       {/* Form Modal */}
       <PhaseFormModal

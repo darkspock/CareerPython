@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 
 export function useCompanyId(): string | null {
-  return useMemo(() => {
+  const [companyId] = useState<string | null>(() => {
     const token = localStorage.getItem('access_token');
     if (!token) return null;
     try {
@@ -10,5 +10,6 @@ export function useCompanyId(): string | null {
     } catch {
       return null;
     }
-  }, []);
+  });
+  return companyId;
 }

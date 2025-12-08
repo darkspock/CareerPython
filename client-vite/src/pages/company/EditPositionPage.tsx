@@ -6,6 +6,18 @@ import type { UpdatePositionRequest, Position, JobPositionWorkflow } from '../..
 import { DynamicCustomFields } from '../../components/jobPosition/DynamicCustomFields';
 import { PositionQuestionsEditor } from '../../components/jobPosition/PositionQuestionsEditor';
 import { WysiwygEditor } from '../../components/common';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function EditPositionPage() {
   const { id } = useParams<{ id: string }>();
@@ -177,224 +189,245 @@ export default function EditPositionPage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => navigate(`/company/positions/${id}`)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+          className="mb-4"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Position
-        </button>
+        </Button>
         <h1 className="text-2xl font-bold text-gray-900">Edit Position</h1>
         <p className="text-gray-600 mt-1">Update job opening details</p>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Job Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., Senior Software Engineer"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Job Category</label>
-              <select
-                value={formData.job_category}
-                onChange={(e) => setFormData({ ...formData, job_category: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="other">Other</option>
-                <option value="engineering">Engineering</option>
-                <option value="design">Design</option>
-                <option value="product">Product</option>
-                <option value="marketing">Marketing</option>
-                <option value="sales">Sales</option>
-                <option value="operations">Operations</option>
-                <option value="hr">HR</option>
-                <option value="finance">Finance</option>
-                <option value="legal">Legal</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
-              <select
-                value={formData.visibility}
-                onChange={(e) => setFormData({ ...formData, visibility: e.target.value as any })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="hidden">Hidden</option>
-                <option value="internal">Internal</option>
-                <option value="public">Public</option>
-              </select>
-            </div>
-
-            {/* Workflow Selector */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Workflow</label>
-              <select
-                value={formData.job_position_workflow_id || ''}
-                onChange={(e) => handleWorkflowChange(e.target.value || null)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">No Workflow (Legacy)</option>
-                {workflows.map((workflow) => (
-                  <option key={workflow.id} value={workflow.id}>
-                    {workflow.name}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-sm text-gray-500">
-                Select a workflow to manage this position through stages
-              </p>
-            </div>
-
-            {/* Stage Selector */}
-            {selectedWorkflow && selectedWorkflow.stages.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Basic Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Current Stage</label>
-                <select
-                  value={formData.stage_id || ''}
-                  onChange={(e) => setFormData({ ...formData, stage_id: e.target.value || null })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">No Stage</option>
-                  {selectedWorkflow.stages.map((stage) => (
-                    <option key={stage.id} value={stage.id}>
-                      {stage.name} ({stage.status_mapping})
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1 text-sm text-gray-500">
-                  Current stage in the workflow
-                </p>
-              </div>
-            )}
-
-            {/* Description */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Job Description
-              </label>
-              <div className="border border-gray-300 rounded-lg overflow-hidden">
-                <WysiwygEditor
-                  value={formData.description || ''}
-                  onChange={(content) => setFormData({ ...formData, description: content })}
-                  placeholder="Describe the role, responsibilities, and what you're looking for..."
-                  height={400}
-                  className="w-full"
+                <Label htmlFor="title">
+                  Job Title <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="title"
+                  type="text"
+                  required
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g., Senior Software Engineer"
                 />
               </div>
-            </div>
 
-            {/* Dates */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Open At</label>
-              <input
-                type="datetime-local"
-                value={formData.open_at ? new Date(formData.open_at).toISOString().slice(0, 16) : ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    open_at: e.target.value ? new Date(e.target.value).toISOString() : null,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+              <div>
+                <Label htmlFor="job_category">Job Category</Label>
+                <Select
+                  value={formData.job_category}
+                  onValueChange={(value) => setFormData({ ...formData, job_category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="engineering">Engineering</SelectItem>
+                    <SelectItem value="design">Design</SelectItem>
+                    <SelectItem value="product">Product</SelectItem>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="sales">Sales</SelectItem>
+                    <SelectItem value="operations">Operations</SelectItem>
+                    <SelectItem value="hr">HR</SelectItem>
+                    <SelectItem value="finance">Finance</SelectItem>
+                    <SelectItem value="legal">Legal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Application Deadline</label>
-              <input
-                type="date"
-                value={formData.application_deadline || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    application_deadline: e.target.value || null,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+              <div>
+                <Label htmlFor="visibility">Visibility</Label>
+                <Select
+                  value={formData.visibility}
+                  onValueChange={(value) => setFormData({ ...formData, visibility: value as any })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hidden">Hidden</SelectItem>
+                    <SelectItem value="internal">Internal</SelectItem>
+                    <SelectItem value="public">Public</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Public Slug */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Public Slug (SEO)</label>
-              <input
-                type="text"
-                value={formData.public_slug || ''}
-                onChange={(e) => setFormData({ ...formData, public_slug: e.target.value || null })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., senior-software-engineer"
-              />
-              <p className="mt-1 text-sm text-gray-500">
-                URL-friendly identifier for public job board
-              </p>
+              {/* Workflow Selector */}
+              <div className="md:col-span-2">
+                <Label htmlFor="workflow">Workflow</Label>
+                <Select
+                  value={formData.job_position_workflow_id || ''}
+                  onValueChange={(value) => handleWorkflowChange(value || null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="No Workflow (Legacy)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No Workflow (Legacy)</SelectItem>
+                    {workflows.map((workflow) => (
+                      <SelectItem key={workflow.id} value={workflow.id}>
+                        {workflow.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-1 text-sm text-gray-500">
+                  Select a workflow to manage this position through stages
+                </p>
+              </div>
+
+              {/* Stage Selector */}
+              {selectedWorkflow && selectedWorkflow.stages.length > 0 && (
+                <div className="md:col-span-2">
+                  <Label htmlFor="stage">Current Stage</Label>
+                  <Select
+                    value={formData.stage_id || ''}
+                    onValueChange={(value) => setFormData({ ...formData, stage_id: value || null })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="No Stage" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Stage</SelectItem>
+                      {selectedWorkflow.stages.map((stage) => (
+                        <SelectItem key={stage.id} value={stage.id}>
+                          {stage.name} ({stage.status_mapping})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Current stage in the workflow
+                  </p>
+                </div>
+              )}
+
+              {/* Description */}
+              <div className="md:col-span-2">
+                <Label htmlFor="description">Job Description</Label>
+                <div className="border border-gray-300 rounded-lg overflow-hidden">
+                  <WysiwygEditor
+                    value={formData.description || ''}
+                    onChange={(content) => setFormData({ ...formData, description: content })}
+                    placeholder="Describe the role, responsibilities, and what you're looking for..."
+                    height={400}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div>
+                <Label htmlFor="open_at">Open At</Label>
+                <Input
+                  id="open_at"
+                  type="datetime-local"
+                  value={formData.open_at ? new Date(formData.open_at).toISOString().slice(0, 16) : ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      open_at: e.target.value ? new Date(e.target.value).toISOString() : null,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="application_deadline">Application Deadline</Label>
+                <Input
+                  id="application_deadline"
+                  type="date"
+                  value={formData.application_deadline || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      application_deadline: e.target.value || null,
+                    })
+                  }
+                />
+              </div>
+
+              {/* Public Slug */}
+              <div className="md:col-span-2">
+                <Label htmlFor="public_slug">Public Slug (SEO)</Label>
+                <Input
+                  id="public_slug"
+                  type="text"
+                  value={formData.public_slug || ''}
+                  onChange={(e) => setFormData({ ...formData, public_slug: e.target.value || null })}
+                  placeholder="e.g., senior-software-engineer"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  URL-friendly identifier for public job board
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Custom Fields */}
         {selectedWorkflow && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Custom Fields</h2>
-            <DynamicCustomFields
-              workflow={selectedWorkflow}
-              currentStage={currentStage}
-              customFieldsValues={formData.custom_fields_values || {}}
-              onChange={(values) => setFormData({ ...formData, custom_fields_values: values })}
-              readOnly={false}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom Fields</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DynamicCustomFields
+                workflow={selectedWorkflow}
+                currentStage={currentStage}
+                customFieldsValues={formData.custom_fields_values || {}}
+                onChange={(values) => setFormData({ ...formData, custom_fields_values: values })}
+                readOnly={false}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Application Questions */}
         {selectedWorkflow && id && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <PositionQuestionsEditor
-              positionId={id}
-              workflowId={selectedWorkflow.id}
-            />
-          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <PositionQuestionsEditor
+                positionId={id}
+                workflowId={selectedWorkflow.id}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => navigate(`/company/positions/${id}`)}
-            className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save className="w-5 h-5" />
+          </Button>
+          <Button type="submit" disabled={saving}>
+            <Save className="w-5 h-5 mr-2" />
             {saving ? 'Saving...' : 'Save Changes'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

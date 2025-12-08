@@ -6,6 +6,14 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Lock, AlertCircle } from 'lucide-react';
 import { CandidateApplicationService } from '../../../services/candidateApplicationService';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 interface StageTransitionButtonProps {
   applicationId: string;
@@ -121,30 +129,24 @@ export const StageTransitionButton: React.FC<StageTransitionButtonProps> = ({
   };
 
   return (
-    <div className="relative group">
-      <button
-        onClick={handleTransition}
-        disabled={isDisabled}
-        className={`
-          flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
-          ${isDisabled
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
-          }
-          ${className}
-        `}
-        title={getTooltipMessage()}
-      >
-        {getButtonContent()}
-      </button>
-
-      {/* Tooltip */}
-      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-        {getTooltipMessage()}
-        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-          <div className="border-4 border-transparent border-t-gray-900"></div>
-        </div>
-      </div>
+    <div className="relative">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={handleTransition}
+              disabled={isDisabled}
+              variant={isDisabled ? 'secondary' : 'default'}
+              className={className}
+            >
+              {getButtonContent()}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{getTooltipMessage()}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Permission Warning */}
       {!checking && !canProcess && (
@@ -162,10 +164,10 @@ export const StageTransitionButton: React.FC<StageTransitionButtonProps> = ({
 
       {/* Error Message */}
       {error && (
-        <div className="mt-2 flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg text-sm">
-          <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-          <span className="text-red-700">{error}</span>
-        </div>
+        <Badge variant="destructive" className="mt-2 flex items-center gap-2 w-fit">
+          <AlertCircle className="w-4 h-4" />
+          <span>{error}</span>
+        </Badge>
       )}
     </div>
   );

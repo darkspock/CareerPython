@@ -5,6 +5,21 @@ import { WysiwygEditor } from '../../components/common';
 import { companyPageService } from '../../services/companyPageService';
 import type { CompanyPage, UpdateCompanyPageRequest } from '../../types/companyPage';
 import { LANGUAGE_OPTIONS, PageStatus, getPageTypeLabel, normalizePageStatus, getPageStatusLabel, getPageStatusColor } from '../../types/companyPage';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function EditCompanyPagePage() {
   const navigate = useNavigate();
@@ -38,7 +53,7 @@ export default function EditCompanyPagePage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const pageData = await companyPageService.getPageById(pageId);
       setPage(pageData);
       setFormData({
@@ -59,7 +74,7 @@ export default function EditCompanyPagePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!pageId) return;
     if (!formData.title?.trim()) {
       setError('El título es obligatorio');
@@ -186,13 +201,10 @@ export default function EditCompanyPagePage() {
       <div className="text-center py-12">
         <h3 className="text-lg font-medium text-gray-900 mb-2">Página no encontrada</h3>
         <p className="text-gray-600 mb-4">La página que buscas no existe o ha sido eliminada.</p>
-        <button
-          onClick={() => navigate('/company/pages')}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
+        <Button onClick={() => navigate('/company/pages')}>
+          <ArrowLeft className="w-5 h-5 mr-2" />
           Volver a Páginas
-        </button>
+        </Button>
       </div>
     );
   }
@@ -202,34 +214,34 @@ export default function EditCompanyPagePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => navigate('/company/pages')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 mr-2" />
             Volver
-          </button>
+          </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Editar Página</h1>
             <p className="text-gray-600 mt-1">{page.title}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="outline"
             onClick={() => setPreviewMode(!previewMode)}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            {previewMode ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {previewMode ? <EyeOff className="w-5 h-5 mr-2" /> : <Eye className="w-5 h-5 mr-2" />}
             {previewMode ? 'Editar' : 'Vista Previa'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -237,15 +249,14 @@ export default function EditCompanyPagePage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Información Básica</h2>
-              
-              <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Información Básica</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {/* Page Type (Read-only) */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de Página
-                  </label>
+                  <Label htmlFor="page_type">Tipo de Página</Label>
                   <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">
                     {getPageTypeLabel(page.page_type)}
                   </div>
@@ -253,14 +264,14 @@ export default function EditCompanyPagePage() {
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Label htmlFor="title">
                     Título <span className="text-red-500">*</span>
-                  </label>
-                  <input
+                  </Label>
+                  <Input
+                    id="title"
                     type="text"
                     value={formData.title || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Título de la página"
                     required
                   />
@@ -268,113 +279,116 @@ export default function EditCompanyPagePage() {
 
                 {/* Language */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Idioma
-                  </label>
-                  <select
+                  <Label htmlFor="language">Idioma</Label>
+                  <Select
                     value={formData.language || 'es'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}
                   >
-                    {LANGUAGE_OPTIONS.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGE_OPTIONS.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Default Page */}
                 <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="is_default"
                     checked={formData.is_default || false}
-                    onChange={(e) => setFormData(prev => ({ ...prev, is_default: e.target.checked }))}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_default: checked as boolean }))}
                   />
-                  <label htmlFor="is_default" className="text-sm font-medium text-gray-700">
+                  <Label htmlFor="is_default" className="text-sm font-medium cursor-pointer">
                     Marcar como página por defecto para este tipo
-                  </label>
+                  </Label>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Content Editor */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Contenido</h2>
-              
-              {previewMode ? (
-                <div 
-                  className="prose max-w-none min-h-[400px] p-4 border border-gray-200 rounded-lg bg-gray-50"
-                  dangerouslySetInnerHTML={{ __html: formData.html_content || '<p class="text-gray-500 italic">No hay contenido para mostrar</p>' }}
-                />
-              ) : (
-                <WysiwygEditor
-                  value={formData.html_content || ''}
-                  onChange={(content) => setFormData(prev => ({ ...prev, html_content: content }))}
-                  placeholder="Escribe el contenido de tu página aquí..."
-                  height={400}
-                />
-              )}
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Contenido</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {previewMode ? (
+                  <div
+                    className="prose max-w-none min-h-[400px] p-4 border border-gray-200 rounded-lg bg-gray-50"
+                    dangerouslySetInnerHTML={{ __html: formData.html_content || '<p class="text-gray-500 italic">No hay contenido para mostrar</p>' }}
+                  />
+                ) : (
+                  <WysiwygEditor
+                    value={formData.html_content || ''}
+                    onChange={(content) => setFormData(prev => ({ ...prev, html_content: content }))}
+                    placeholder="Escribe el contenido de tu página aquí..."
+                    height={400}
+                  />
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Page Status */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Estado de la Página</h3>
-              
-              <div className="space-y-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Estado de la Página</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Estado:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPageStatusColor(page.status)}`}>
+                  <Badge className={getPageStatusColor(page.status)}>
                     {getPageStatusLabel(page.status)}
-                  </span>
+                  </Badge>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Versión:</span>
                   <span className="text-sm font-medium">{page.version}</span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Palabras:</span>
                   <span className="text-sm font-medium">{page.word_count}</span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Creado:</span>
                   <span className="text-sm font-medium">
                     {new Date(page.created_at).toLocaleDateString('es-ES')}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Actualizado:</span>
                   <span className="text-sm font-medium">
                     {new Date(page.updated_at).toLocaleDateString('es-ES')}
                   </span>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* SEO Settings */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Configuración SEO</h3>
-              
-              <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuración SEO</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {/* Meta Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Meta Descripción
-                  </label>
-                  <textarea
+                  <Label htmlFor="meta_description">Meta Descripción</Label>
+                  <Textarea
+                    id="meta_description"
                     value={formData.meta_description || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Description for search engines (max 160 characters)"
                     maxLength={160}
                   />
@@ -385,34 +399,30 @@ export default function EditCompanyPagePage() {
 
                 {/* Keywords */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Keywords
-                  </label>
+                  <Label htmlFor="keywords">Keywords</Label>
                   <div className="flex gap-2 mb-2">
-                    <input
+                    <Input
+                      id="keywords"
                       type="text"
                       value={keywordInput}
                       onChange={(e) => setKeywordInput(e.target.value)}
                       onKeyPress={handleKeywordKeyPress}
                       placeholder="Agregar palabra clave"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1"
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={handleAddKeyword}
-                      className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      size="sm"
                     >
                       Agregar
-                    </button>
+                    </Button>
                   </div>
-                  
+
                   {formData.meta_keywords && formData.meta_keywords.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {formData.meta_keywords.map((keyword, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                        >
+                        <Badge key={index} variant="secondary" className="gap-1">
                           {keyword}
                           <button
                             type="button"
@@ -421,82 +431,85 @@ export default function EditCompanyPagePage() {
                           >
                             ×
                           </button>
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Actions */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
-              
-              <div className="space-y-3">
-                <button
+            <Card>
+              <CardHeader>
+                <CardTitle>Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
                   type="submit"
                   disabled={saving}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full"
                 >
-                  <Save className="w-5 h-5" />
+                  <Save className="w-5 h-5 mr-2" />
                   {saving ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
+                </Button>
 
                 {normalizePageStatus(page.status) === PageStatus.DRAFT && (
-                  <button
+                  <Button
                     type="button"
                     onClick={handlePublish}
                     disabled={saving}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-green-600 hover:bg-green-700"
                   >
                     Publicar
-                  </button>
+                  </Button>
                 )}
 
                 {normalizePageStatus(page.status) === PageStatus.PUBLISHED && (
-                  <button
+                  <Button
                     type="button"
                     onClick={handleArchive}
                     disabled={saving}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-orange-600 hover:bg-orange-700"
                   >
-                    <Archive className="w-5 h-5" />
+                    <Archive className="w-5 h-5 mr-2" />
                     Archivar
-                  </button>
+                  </Button>
                 )}
 
                 {page.status === PageStatus.PUBLISHED && !page.is_default && (
-                  <button
+                  <Button
                     type="button"
                     onClick={handleSetDefault}
                     disabled={saving}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-yellow-600 hover:bg-yellow-700"
                   >
-                    <Star className="w-5 h-5" />
+                    <Star className="w-5 h-5 mr-2" />
                     Establecer como Defecto
-                  </button>
+                  </Button>
                 )}
-                
-                <button
+
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => navigate('/company/pages')}
-                  className="w-full px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="w-full"
                 >
                   Cancel
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
                   onClick={handleDelete}
                   disabled={saving}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="destructive"
+                  className="w-full"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-5 h-5 mr-2" />
                   Eliminar Página
-                </button>
-              </div>
-            </div>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </form>

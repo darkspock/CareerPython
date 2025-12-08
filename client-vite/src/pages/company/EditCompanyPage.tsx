@@ -9,6 +9,11 @@ import { Building2, ArrowLeft, Save, AlertCircle, Upload, Image as ImageIcon, Ed
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import type { RecruiterCompany, UpdateRecruiterCompanyRequest } from '../../types/recruiter-company';
 import { ImageEditor } from '../../components/common';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function EditCompanyPage() {
   const navigate = useNavigate();
@@ -160,7 +165,7 @@ export default function EditCompanyPage() {
 
   const handleCropComplete = (croppedImage: string) => {
     console.log('Starting image conversion...');
-    
+
     // Convert base64 to File
     fetch(croppedImage)
       .then(res => res.blob())
@@ -168,15 +173,15 @@ export default function EditCompanyPage() {
         console.log('Blob created:', blob.size, 'bytes');
         const file = new File([blob], 'logo.png', { type: 'image/png' });
         console.log('File created:', file.name, file.size, 'bytes', file.type);
-        
+
         setSelectedFile(file);
         setPreviewUrl(croppedImage);
-        
+
         console.log('File set in state, closing editor');
         // Close editor after successful conversion
         setShowImageEditor(false);
         setImageToEdit(null);
-        
+
         // Auto-upload the cropped image
         console.log('Starting auto-upload...');
         uploadCroppedImage(file);
@@ -253,13 +258,14 @@ export default function EditCompanyPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => navigate('/company/settings')}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+          className="mb-4"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Settings
-        </button>
+        </Button>
 
         <div className="flex items-center gap-3 mb-2">
           <Building2 className="w-8 h-8 text-gray-700" />
@@ -272,223 +278,217 @@ export default function EditCompanyPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <p className="text-red-800">{error}</p>
-          </div>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-        {/* Company Name */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            Company Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="name"
-            value={formData.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-            required
-            minLength={3}
-            maxLength={255}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter company name"
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            The official name of your company
-          </p>
-        </div>
-
-        {/* Domain */}
-        <div>
-          <label htmlFor="domain" className="block text-sm font-medium text-gray-700 mb-2">
-            Company Domain <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="domain"
-            value={formData.domain}
-            onChange={(e) => handleChange('domain', e.target.value)}
-            required
-            minLength={3}
-            maxLength={255}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="company.com"
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            Your company's email domain (e.g., company.com)
-          </p>
-        </div>
-
-        {/* Slug */}
-        <div>
-          <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-            Public URL Slug
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              id="slug"
-              value={formData.slug}
-              onChange={(e) => handleChange('slug', e.target.value)}
-              pattern="[a-z0-9\-]*"
-              maxLength={255}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="your-company"
-            />
-            <button
-              type="button"
-              onClick={generateSlugFromName}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
-            >
-              Generate from Name
-            </button>
-          </div>
-          <p className="text-sm text-gray-500 mt-1">
-            This will be used in your public job listings URL: /companies/<strong>{formData.slug || 'your-slug'}</strong>/open-positions
-          </p>
-          <p className="text-sm text-gray-400 mt-1">
-            Only lowercase letters, numbers, and hyphens are allowed
-          </p>
-        </div>
-
-        {/* Logo Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Company Logo
-          </label>
-
-          {/* Current Logo Preview */}
-          {(formData.logo_url || previewUrl) && (
-            <div className="mb-4">
-              <div className="flex items-start gap-4">
-                <div className="w-32 h-32 border border-gray-300 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                  {previewUrl ? (
-                    <img
-                      src={previewUrl}
-                      alt="Logo preview"
-                      className="w-full h-full object-contain"
-                    />
-                  ) : formData.logo_url ? (
-                    <img
-                      src={formData.logo_url}
-                      alt="Current logo"
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <ImageIcon className="w-12 h-12 text-gray-400" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  {previewUrl && (
-                    <div className="mb-2">
-                      <p className="text-sm font-medium text-gray-700">New logo selected</p>
-                      <p className="text-sm text-gray-500">{selectedFile?.name}</p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setImageToEdit(previewUrl);
-                          setShowImageEditor(true);
-                        }}
-                        className="mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors flex items-center gap-1"
-                      >
-                        <Edit3 className="w-3 h-3" />
-                        Edit Image
-                      </button>
-                    </div>
-                  )}
-                  {formData.logo_url && !previewUrl && (
-                    <div className="mb-2">
-                      <p className="text-sm font-medium text-gray-700">Current logo</p>
-                      <p className="text-sm text-gray-500 break-all">{formData.logo_url}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* File Upload */}
-          <div className="flex gap-3">
-            <label className="flex-1">
-              <div className="flex items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 cursor-pointer transition-colors">
-                <Upload className="w-5 h-5 text-gray-400 mr-2" />
-                <span className="text-sm text-gray-600">
-                  {selectedFile ? selectedFile.name : 'Choose logo image'}
-                </span>
-              </div>
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
-                onChange={handleFileSelect}
-                className="hidden"
+      <form onSubmit={handleSubmit}>
+        <Card>
+          <CardContent className="pt-6 space-y-6">
+            {/* Company Name */}
+            <div>
+              <Label htmlFor="name">
+                Company Name <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                required
+                minLength={3}
+                maxLength={255}
+                placeholder="Enter company name"
               />
-            </label>
+              <p className="text-sm text-gray-500 mt-1">
+                The official name of your company
+              </p>
+            </div>
 
-            {selectedFile && (
+            {/* Domain */}
+            <div>
+              <Label htmlFor="domain">
+                Company Domain <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="domain"
+                type="text"
+                value={formData.domain}
+                onChange={(e) => handleChange('domain', e.target.value)}
+                required
+                minLength={3}
+                maxLength={255}
+                placeholder="company.com"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Your company's email domain (e.g., company.com)
+              </p>
+            </div>
+
+            {/* Slug */}
+            <div>
+              <Label htmlFor="slug">Public URL Slug</Label>
               <div className="flex gap-2">
-                <button
+                <Input
+                  id="slug"
+                  type="text"
+                  value={formData.slug}
+                  onChange={(e) => handleChange('slug', e.target.value)}
+                  pattern="[a-z0-9\-]*"
+                  maxLength={255}
+                  placeholder="your-company"
+                  className="flex-1"
+                />
+                <Button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    console.log('Upload button clicked!');
-                    handleUploadLogo();
-                  }}
-                  disabled={uploading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  variant="outline"
+                  onClick={generateSlugFromName}
                 >
-                  {uploading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      Upload
-                    </>
-                  )}
-                </button>
+                  Generate from Name
+                </Button>
               </div>
-            )}
-          </div>
+              <p className="text-sm text-gray-500 mt-1">
+                This will be used in your public job listings URL: /companies/<strong>{formData.slug || 'your-slug'}</strong>/open-positions
+              </p>
+              <p className="text-sm text-gray-400 mt-1">
+                Only lowercase letters, numbers, and hyphens are allowed
+              </p>
+            </div>
 
-          <p className="text-sm text-gray-500 mt-2">
-            Accepted formats: JPEG, PNG, WebP, SVG (max 5MB)
-          </p>
-        </div>
+            {/* Logo Upload */}
+            <div>
+              <Label>Company Logo</Label>
 
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={() => navigate('/company/settings')}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Save Changes
-              </>
-            )}
-          </button>
-        </div>
+              {/* Current Logo Preview */}
+              {(formData.logo_url || previewUrl) && (
+                <div className="mb-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-32 h-32 border border-gray-300 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                      {previewUrl ? (
+                        <img
+                          src={previewUrl}
+                          alt="Logo preview"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : formData.logo_url ? (
+                        <img
+                          src={formData.logo_url}
+                          alt="Current logo"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <ImageIcon className="w-12 h-12 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      {previewUrl && (
+                        <div className="mb-2">
+                          <p className="text-sm font-medium text-gray-700">New logo selected</p>
+                          <p className="text-sm text-gray-500">{selectedFile?.name}</p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setImageToEdit(previewUrl);
+                              setShowImageEditor(true);
+                            }}
+                            className="mt-2"
+                          >
+                            <Edit3 className="w-3 h-3 mr-1" />
+                            Edit Image
+                          </Button>
+                        </div>
+                      )}
+                      {formData.logo_url && !previewUrl && (
+                        <div className="mb-2">
+                          <p className="text-sm font-medium text-gray-700">Current logo</p>
+                          <p className="text-sm text-gray-500 break-all">{formData.logo_url}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* File Upload */}
+              <div className="flex gap-3">
+                <Label htmlFor="logo-upload" className="flex-1 cursor-pointer">
+                  <div className="flex items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors">
+                    <Upload className="w-5 h-5 text-gray-400 mr-2" />
+                    <span className="text-sm text-gray-600">
+                      {selectedFile ? selectedFile.name : 'Choose logo image'}
+                    </span>
+                  </div>
+                  <input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </Label>
+
+                {selectedFile && (
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        console.log('Upload button clicked!');
+                        handleUploadLogo();
+                      }}
+                      disabled={uploading}
+                    >
+                      {uploading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-sm text-gray-500 mt-2">
+                Accepted formats: JPEG, PNG, WebP, SVG (max 5MB)
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/company/settings')}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </form>
 
       {/* Image Editor Modal */}

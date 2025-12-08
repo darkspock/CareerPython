@@ -22,6 +22,7 @@ import { phaseService } from '../../services/phaseService';
 import type { Phase } from '../../types/phase';
 import UserSettingsMenu from './UserSettingsMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
+import { Button } from '@/components/ui/button';
 
 export default function CompanyLayout() {
   const { t } = useTranslation();
@@ -142,8 +143,8 @@ export default function CompanyLayout() {
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
               {companyLogo ? (
-                <img 
-                  src={companyLogo} 
+                <img
+                  src={companyLogo}
                   alt={companyName}
                   className="w-8 h-8 rounded object-cover"
                 />
@@ -152,12 +153,13 @@ export default function CompanyLayout() {
               )}
               <span className="font-bold text-xl text-gray-900">{companyName}</span>
             </div>
-            <button
+            <Button
               onClick={() => setSidebarOpen(false)}
-              className="text-gray-500 hover:text-gray-700"
+              variant="ghost"
+              size="icon"
             >
               <X className="w-6 h-6" />
-            </button>
+            </Button>
           </div>
 
           {/* Navigation */}
@@ -188,8 +190,9 @@ export default function CompanyLayout() {
 
             {/* Candidates Menu with Phases */}
             <div>
-              <button
+              <Button
                 onClick={() => setCandidatesMenuOpen(!candidatesMenuOpen)}
+                variant="ghost"
                 className={`
                   flex items-center justify-between w-full gap-3 px-4 py-3 rounded-lg transition-colors
                   ${
@@ -208,7 +211,7 @@ export default function CompanyLayout() {
                 ) : (
                   <ChevronRight className="w-4 h-4" />
                 )}
-              </button>
+              </Button>
 
               {/* Phase Submenu */}
               {candidatesMenuOpen && (
@@ -229,7 +232,7 @@ export default function CompanyLayout() {
                     <Search className="w-4 h-4" />
                     <span>{t('company.navigation.searchAllCandidates')}</span>
                   </Link>
-                  
+
                   {/* Phase-specific views */}
                   {phases.map((phase) => (
                     <Link
@@ -293,8 +296,8 @@ export default function CompanyLayout() {
           <div className="flex items-center p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
               {companyLogo ? (
-                <img 
-                  src={companyLogo} 
+                <img
+                  src={companyLogo}
                   alt={companyName}
                   className="w-8 h-8 rounded object-cover"
                 />
@@ -333,8 +336,9 @@ export default function CompanyLayout() {
 
             {/* Candidates Menu with Phases */}
             <div>
-              <button
+              <Button
                 onClick={() => setCandidatesMenuOpen(!candidatesMenuOpen)}
+                variant="ghost"
                 className={`
                   flex items-center justify-between w-full gap-3 px-4 py-3 rounded-lg transition-colors
                   ${
@@ -353,7 +357,7 @@ export default function CompanyLayout() {
                 ) : (
                   <ChevronRight className="w-4 h-4" />
                 )}
-              </button>
+              </Button>
 
               {/* Phase Submenu */}
               {candidatesMenuOpen && (
@@ -374,7 +378,7 @@ export default function CompanyLayout() {
                     <Search className="w-4 h-4" />
                     <span>{t('company.navigation.searchAllCandidates')}</span>
                   </Link>
-                  
+
                   {/* Phase-specific views */}
                   {phases.map((phase) => (
                     <Link
@@ -437,13 +441,14 @@ export default function CompanyLayout() {
         <header className="bg-white border-b border-gray-200 lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
             {/* Mobile Menu Button */}
-            <button
+            <Button
               onClick={() => setSidebarOpen(true)}
-              className="text-gray-500 hover:text-gray-700"
+              variant="ghost"
+              size="icon"
             >
               <Menu className="w-6 h-6" />
-            </button>
-            
+            </Button>
+
             {/* Title */}
             <div className="flex items-center gap-2">
               <Building2 className="w-6 h-6 text-blue-600" />

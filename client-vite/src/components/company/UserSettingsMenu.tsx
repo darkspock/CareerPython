@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { User, LogOut, Globe, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
+import { Button } from '@/components/ui/button';
 
 interface UserSettingsMenuProps {
   onLogout: () => void;
@@ -11,29 +12,11 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
   const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language || 'es');
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const languages = [
     { code: 'es', name: 'Español', flag: '🇪🇸' },
     { code: 'en', name: 'English', flag: '🇺🇸' },
   ];
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
 
   // Load user's language preference on mount
   useEffect(() => {
@@ -49,7 +32,7 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
       try {
         const response = await api.getUserLanguagePreference() as { preferred_language?: string; language_code?: string };
         const preferredLanguage = response.preferred_language || response.language_code;
-        
+
         if (preferredLanguage && preferredLanguage !== i18n.language) {
           await i18n.changeLanguage(preferredLanguage);
           setCurrentLanguage(preferredLanguage);
@@ -85,20 +68,19 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
       // Also save in localStorage as fallback
       localStorage.setItem('preferredLanguage', languageCode);
       localStorage.setItem('i18nextLng', languageCode);
-      
+
       setIsOpen(false);
     } catch (error) {
       console.error('Failed to change language:', error);
     }
   };
 
-  // const _currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
-
   return (
-    <div ref={menuRef}>
+    <div>
       {/* User Menu Button */}
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
+        variant="ghost"
         className={`
           flex items-center justify-between w-full gap-3 px-4 py-3 rounded-lg transition-colors
           ${
@@ -118,18 +100,19 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
         ) : (
           <ChevronRight className="w-4 h-4" />
         )}
-      </button>
+      </Button>
 
       {/* Submenu */}
       {isOpen && (
         <div className="ml-4 mt-1 space-y-1">
           {/* Language Selection */}
           {languages.map((language) => (
-            <button
+            <Button
               key={language.code}
               onClick={() => handleLanguageChange(language.code)}
+              variant="ghost"
               className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm w-full
+                flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm w-full justify-start
                 ${
                   currentLanguage === language.code
                     ? 'bg-blue-50 text-blue-700 font-medium'
@@ -139,23 +122,23 @@ export default function UserSettingsMenu({ onLogout }: UserSettingsMenuProps) {
             >
               <Globe className="w-4 h-4" />
               <span>{language.name}</span>
-            </button>
+            </Button>
           ))}
 
           {/* Logout */}
-          <button
+          <Button
             onClick={() => {
               setIsOpen(false);
               onLogout();
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm w-full text-red-600 hover:bg-red-50"
+            variant="ghost"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-600"
           >
             <LogOut className="w-4 h-4" />
             <span>{t('company.userSettings.logout')}</span>
-          </button>
+          </Button>
         </div>
       )}
     </div>
   );
 }
-

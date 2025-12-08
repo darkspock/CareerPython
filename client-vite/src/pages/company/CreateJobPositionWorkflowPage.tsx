@@ -4,6 +4,18 @@ import { ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import { api } from '../../lib/api';
 import type { CompanyRole } from '../../types/company';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface StageFormData {
   id: string;
@@ -190,236 +202,254 @@ export default function CreateJobPositionWorkflowPage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => navigate('/company/settings/job-position-workflows')}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+          className="mb-4"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Workflows
-        </button>
+        </Button>
         <h1 className="text-2xl font-bold text-gray-900">Create Job Position Workflow</h1>
         <p className="text-gray-600 mt-1">Create a new workflow for managing job positions</p>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Workflow Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={workflowName}
-                onChange={(e) => setWorkflowName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., Standard Hiring Process"
-              />
-            </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Basic Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="workflow_name">
+                  Workflow Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="workflow_name"
+                  type="text"
+                  required
+                  value={workflowName}
+                  onChange={(e) => setWorkflowName(e.target.value)}
+                  placeholder="e.g., Standard Hiring Process"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Default View</label>
-              <select
-                value={defaultView}
-                onChange={(e) => setDefaultView(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="kanban">Kanban</option>
-                <option value="list">List</option>
-              </select>
+              <div>
+                <Label htmlFor="default_view">Default View</Label>
+                <Select value={defaultView} onValueChange={setDefaultView}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kanban">Kanban</SelectItem>
+                    <SelectItem value="list">List</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Stages */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Stages</h2>
-            <button
-              type="button"
-              onClick={handleAddStage}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Stage
-            </button>
-          </div>
-
-          {stages.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No stages yet. Click "Add Stage" to create one.
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Stages</CardTitle>
+              <Button
+                type="button"
+                onClick={handleAddStage}
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Stage
+              </Button>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {stages.map((stage, index) => (
-                <div key={stage.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{stage.icon}</span>
-                      <h3 className="font-semibold text-gray-900">Stage {index + 1}</h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleMoveStageUp(index)}
-                        disabled={index === 0}
-                        className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Move up"
-                      >
-                        <ArrowUp className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveStageDown(index)}
-                        disabled={index === stages.length - 1}
-                        className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Move down"
-                      >
-                        <ArrowDown className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveStage(index)}
-                        className="p-1 text-red-600 hover:text-red-900"
-                        title="Remove stage"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+          </CardHeader>
+          <CardContent>
+            {stages.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No stages yet. Click "Add Stage" to create one.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {stages.map((stage, index) => (
+                  <Card key={stage.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{stage.icon}</span>
+                          <h3 className="font-semibold text-gray-900">Stage {index + 1}</h3>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleMoveStageUp(index)}
+                            disabled={index === 0}
+                            title="Move up"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleMoveStageDown(index)}
+                            disabled={index === stages.length - 1}
+                            title="Move down"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveStage(index)}
+                            title="Remove stage"
+                          >
+                            <X className="w-4 h-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Stage Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={stage.name}
-                        onChange={(e) => handleStageChange(index, 'name', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label>Stage Name *</Label>
+                          <Input
+                            type="text"
+                            required
+                            value={stage.name}
+                            onChange={(e) => handleStageChange(index, 'name', e.target.value)}
+                          />
+                        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Icon (Emoji)</label>
-                      <input
-                        type="text"
-                        value={stage.icon}
-                        onChange={(e) => handleStageChange(index, 'icon', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="📝"
-                      />
-                    </div>
+                        <div>
+                          <Label>Icon (Emoji)</Label>
+                          <Input
+                            type="text"
+                            value={stage.icon}
+                            onChange={(e) => handleStageChange(index, 'icon', e.target.value)}
+                            placeholder="📝"
+                          />
+                        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
-                      <input
-                        type="color"
-                        value={stage.background_color}
-                        onChange={(e) => handleStageChange(index, 'background_color', e.target.value)}
-                        className="w-full h-10 border border-gray-300 rounded-lg"
-                      />
-                    </div>
+                        <div>
+                          <Label>Background Color</Label>
+                          <Input
+                            type="color"
+                            value={stage.background_color}
+                            onChange={(e) => handleStageChange(index, 'background_color', e.target.value)}
+                            className="h-10"
+                          />
+                        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Text Color</label>
-                      <input
-                        type="color"
-                        value={stage.text_color}
-                        onChange={(e) => handleStageChange(index, 'text_color', e.target.value)}
-                        className="w-full h-10 border border-gray-300 rounded-lg"
-                      />
-                    </div>
+                        <div>
+                          <Label>Text Color</Label>
+                          <Input
+                            type="color"
+                            value={stage.text_color}
+                            onChange={(e) => handleStageChange(index, 'text_color', e.target.value)}
+                            className="h-10"
+                          />
+                        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Status Mapping *</label>
-                      <select
-                        value={stage.status_mapping}
-                        onChange={(e) => handleStageChange(index, 'status_mapping', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        required
-                      >
-                        <option value="draft">Draft</option>
-                        <option value="active">Active</option>
-                        <option value="paused">Paused</option>
-                        <option value="closed">Closed</option>
-                      </select>
-                    </div>
+                        <div>
+                          <Label>Status Mapping *</Label>
+                          <Select
+                            value={stage.status_mapping}
+                            onValueChange={(value) => handleStageChange(index, 'status_mapping', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="draft">Draft</SelectItem>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="paused">Paused</SelectItem>
+                              <SelectItem value="closed">Closed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Kanban Display</label>
-                      <select
-                        value={stage.kanban_display}
-                        onChange={(e) => handleStageChange(index, 'kanban_display', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="vertical">Vertical (Column)</option>
-                        <option value="horizontal_bottom">Horizontal (Row)</option>
-                        <option value="hidden">Hidden</option>
-                      </select>
-                    </div>
+                        <div>
+                          <Label>Kanban Display</Label>
+                          <Select
+                            value={stage.kanban_display}
+                            onValueChange={(value) => handleStageChange(index, 'kanban_display', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="vertical">Vertical (Column)</SelectItem>
+                              <SelectItem value="horizontal_bottom">Horizontal (Row)</SelectItem>
+                              <SelectItem value="hidden">Hidden</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Responsible Role</label>
-                      <select
-                        value={stage.role || ''}
-                        onChange={(e) => handleStageChange(index, 'role', e.target.value || null)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Not assigned</option>
-                        {companyRoles.map((role) => (
-                          <option key={role.id} value={role.id}>
-                            {role.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+                        <div>
+                          <Label>Responsible Role</Label>
+                          <Select
+                            value={stage.role || ''}
+                            onValueChange={(value) => handleStageChange(index, 'role', value || null)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Not assigned" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Not assigned</SelectItem>
+                              {companyRoles.map((role) => (
+                                <SelectItem key={role.id} value={role.id}>
+                                  {role.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
 
-                  {/* Preview */}
-                  <div className="mt-4 p-3 rounded" style={{ backgroundColor: stage.background_color, color: stage.text_color }}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg" dangerouslySetInnerHTML={{ __html: stage.icon }} />
-                      <span className="font-semibold">{stage.name}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                      {/* Preview */}
+                      <div className="mt-4 p-3 rounded" style={{ backgroundColor: stage.background_color, color: stage.text_color }}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg" dangerouslySetInnerHTML={{ __html: stage.icon }} />
+                          <span className="font-semibold">{stage.name}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => navigate('/company/settings/job-position-workflows')}
-            className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save className="w-5 h-5" />
+          </Button>
+          <Button type="submit" disabled={loading}>
+            <Save className="w-5 h-5 mr-2" />
             {loading ? 'Creating...' : 'Create Workflow'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
   );
 }
-

@@ -1,6 +1,8 @@
 // Badge component for displaying user status
 import type { CompanyUserStatus } from '../../types/companyUser';
 import { getCompanyUserStatusColor } from '../../types/companyUser';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface UserStatusBadgeProps {
   status: CompanyUserStatus;
@@ -13,14 +15,13 @@ export default function UserStatusBadge({ status, className = '' }: UserStatusBa
     inactive: 'Inactivo'
   };
 
+  const colorClass = getCompanyUserStatusColor(status);
+
   return (
-    <span
-      className={`px-2 py-1 rounded-full text-xs font-medium ${getCompanyUserStatusColor(
-        status
-      )} ${className}`}
+    <Badge
+      className={cn(colorClass, className)}
     >
       {labels[status]}
-    </span>
+    </Badge>
   );
 }
-
