@@ -1,5 +1,5 @@
+import type { ReactElement } from 'react';
 import { Badge } from '@/components/ui/badge';
-import type { Interview } from '../services/companyInterviewService';
 
 /**
  * Format date string to localized format
@@ -65,7 +65,7 @@ export function getStatusBadgeConfig(status: string): {
 /**
  * Get status badge JSX element
  */
-export function getStatusBadge(status: string): JSX.Element {
+export function getStatusBadge(status: string): ReactElement {
   const config = getStatusBadgeConfig(status);
   return (
     <Badge variant={config.variant}>

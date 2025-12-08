@@ -1,4 +1,4 @@
-import api from '@/lib/api';
+import { ApiClient } from '@/lib/api';
 
 export interface InAppNotification {
   id: string;
@@ -39,37 +39,48 @@ export const notificationService = {
       offset: offset.toString(),
       unread_only: unreadOnly.toString(),
     });
-    const response = await api.get(`/company/notifications/?${params}`);
-    return response.data;
+    return ApiClient.authenticatedRequest<NotificationListResponse>(
+      `/company/notifications/?${params}`
+    );
   },
 
   /**
    * Get unread notification count
    */
   async getUnreadCount(): Promise<UnreadCountResponse> {
-    const response = await api.get('/company/notifications/unread-count');
-    return response.data;
+    return ApiClient.authenticatedRequest<UnreadCountResponse>(
+      '/company/notifications/unread-count'
+    );
   },
 
   /**
    * Mark a notification as read
    */
   async markAsRead(notificationId: string): Promise<void> {
-    await api.post(`/company/notifications/${notificationId}/read`);
+    await ApiClient.authenticatedRequest(
+      `/company/notifications/${notificationId}/read`,
+      { method: 'POST' }
+    );
   },
 
   /**
    * Mark all notifications as read
    */
   async markAllAsRead(): Promise<void> {
-    await api.post('/company/notifications/read-all');
+    await ApiClient.authenticatedRequest(
+      '/company/notifications/read-all',
+      { method: 'POST' }
+    );
   },
 
   /**
    * Delete a notification
    */
   async deleteNotification(notificationId: string): Promise<void> {
-    await api.delete(`/company/notifications/${notificationId}`);
+    await ApiClient.authenticatedRequest(
+      `/company/notifications/${notificationId}`,
+      { method: 'DELETE' }
+    );
   },
 };
 

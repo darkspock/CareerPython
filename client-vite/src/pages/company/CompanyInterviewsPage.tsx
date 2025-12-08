@@ -32,15 +32,15 @@ const CompanyInterviewsPage: React.FC = () => {
     loading,
     calendarLoading,
     error,
-    filters,
+    filters: _filters,
     total,
     pagination,
     fetchInterviews,
-    fetchStats,
+    fetchStats: _fetchStats,
     fetchCalendar,
     setFilters,
     setCurrentPage,
-    clearError,
+    clearError: _clearError,
   } = useInterviews({ pageSize: 20 });
   
   const {

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Edit, Move, ChevronDown, FileText } from 'lucide-react';
@@ -32,8 +32,8 @@ export default function CandidateHeader({
   const navigate = useNavigate();
   const [showReportModal, setShowReportModal] = useState(false);
 
-  const stagesToShow = useMemo(() => {
-    if (availableStages.length === 0) return [];
+  const stagesToShow = useMemo((): { stages: WorkflowStage[]; nextStageOption: WorkflowStage | null } => {
+    if (availableStages.length === 0) return { stages: [], nextStageOption: null };
 
     const currentStage = candidate.current_stage_id
       ? availableStages.find((s) => s.id === candidate.current_stage_id)
@@ -42,7 +42,7 @@ export default function CandidateHeader({
     const nextStageOption = currentStage
       ? availableStages
           .filter((s) => s.order > currentStage.order && s.is_active)
-          .sort((a, b) => a.order - b.order)[0]
+          .sort((a, b) => a.order - b.order)[0] || null
       : null;
 
     const hiddenOrRowStages = availableStages.filter((s) => {

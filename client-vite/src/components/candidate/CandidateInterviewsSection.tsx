@@ -31,7 +31,7 @@ export default function CandidateInterviewsSection({
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showPositionError, setShowPositionError] = useState(false);
   const [workflowStages, setWorkflowStages] = useState<WorkflowStage[]>(availableStages);
-  const [loadingStages, setLoadingStages] = useState(false);
+  const [_loadingStages, setLoadingStages] = useState(false);
 
   const handleAssignClick = () => {
     console.log('🔍 DEBUG: jobPositionId =', jobPositionId);

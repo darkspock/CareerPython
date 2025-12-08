@@ -99,9 +99,9 @@ export type InterviewFilters = {
   candidate_id?: string;
   candidate_name?: string; // Search by candidate name
   job_position_id?: string;
-  interview_type?: InterviewType;
-  process_type?: InterviewProcessType;
-  status?: InterviewStatus;
+  interview_type?: InterviewType | 'all';
+  process_type?: InterviewProcessType | 'all';
+  status?: InterviewStatus | 'all';
   required_role_id?: string; // Filter by CompanyRole ID
   interviewer_user_id?: string; // Filter by interviewer (CompanyUserId)
   from_date?: string;

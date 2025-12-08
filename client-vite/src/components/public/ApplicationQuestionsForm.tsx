@@ -9,7 +9,6 @@ import { HelpCircle, AlertCircle } from 'lucide-react';
 import {
   publicQuestionService,
   type PublicApplicationQuestion,
-  type ApplicationAnswerValue,
 } from '../../services/publicQuestionService';
 
 interface ApplicationQuestionsFormProps {

@@ -9,7 +9,7 @@ interface UseCandidateInterviewsProps {
 
 export function useCandidateInterviews({
   candidateId,
-  companyCandidateId,
+  companyCandidateId: _companyCandidateId,
   currentStageId,
 }: UseCandidateInterviewsProps) {
   const [allInterviews, setAllInterviews] = useState<Interview[]>([]);
@@ -91,9 +91,9 @@ export function useCandidateInterviews({
         workflow_stage_id: data.workflow_stage_id,
         interview_type: data.interview_type as any, // TODO: Fix typing
         interview_mode: 'MANUAL', // Por defecto MANUAL
-        interview_template_id: data.interview_template_id,
+        interview_template_id: data.interview_template_id ?? undefined,
         required_roles: data.required_roles,
-        scheduled_at: data.scheduled_at,
+        scheduled_at: data.scheduled_at ?? undefined,
         interviewers: data.interviewers,
       });
 

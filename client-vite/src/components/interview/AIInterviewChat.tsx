@@ -6,7 +6,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Loader2, Pause, Play, CheckCircle, AlertCircle } from 'lucide-react';
-import type { ConversationalQuestion } from '../../types/interview';
 import { ApiClient } from '../../lib/api';
 
 export interface ChatMessage {
@@ -46,7 +45,7 @@ interface InterviewState {
 }
 
 export function AIInterviewChat({
-  interviewId,
+  interviewId: _interviewId,
   interviewTitle,
   sections,
   onAnswerSubmit,
@@ -229,7 +228,7 @@ export function AIInterviewChat({
     }
   };
 
-  const generateMockFollowUp = (response: string, questionText: string): string => {
+  const generateMockFollowUp = (_response: string, _questionText: string): string => {
     // Fallback follow-up questions used when API fails
     const followUps = [
       `That's interesting! Could you elaborate more on that point? Specifically, what was the outcome of that approach?`,

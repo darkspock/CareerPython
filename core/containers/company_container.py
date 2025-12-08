@@ -230,8 +230,7 @@ class CompanyContainer(containers.DeclarativeContainer):
     # Company Command Handlers
     create_company_command_handler = providers.Factory(
         CreateCompanyCommandHandler,
-        repository=company_repository,
-        event_bus=shared.event_bus
+        repository=company_repository
     )
     
     register_company_with_user_command_handler = providers.Factory(
@@ -239,8 +238,7 @@ class CompanyContainer(containers.DeclarativeContainer):
         company_repository=company_repository,
         user_repository=shared.user_repository,
         company_user_repository=company_user_repository,
-        event_bus=shared.event_bus,
-        email_service=shared.email_service
+        command_bus=shared.command_bus
     )
     
     link_user_to_company_command_handler = providers.Factory(
@@ -248,13 +246,12 @@ class CompanyContainer(containers.DeclarativeContainer):
         company_repository=company_repository,
         user_repository=shared.user_repository,
         company_user_repository=company_user_repository,
-        event_bus=shared.event_bus
+        command_bus=shared.command_bus
     )
     
     update_company_command_handler = providers.Factory(
         UpdateCompanyCommandHandler,
-        repository=company_repository,
-        event_bus=shared.event_bus
+        repository=company_repository
     )
     
     initialize_sample_data_command_handler = providers.Factory(
@@ -272,26 +269,22 @@ class CompanyContainer(containers.DeclarativeContainer):
     upload_company_logo_command_handler = providers.Factory(
         UploadCompanyLogoCommandHandler,
         repository=company_repository,
-        storage_service=shared.storage_service,
-        event_bus=shared.event_bus
+        storage_service=shared.storage_service
     )
     
     suspend_company_command_handler = providers.Factory(
         SuspendCompanyCommandHandler,
-        repository=company_repository,
-        event_bus=shared.event_bus
+        repository=company_repository
     )
     
     activate_company_command_handler = providers.Factory(
         ActivateCompanyCommandHandler,
-        repository=company_repository,
-        event_bus=shared.event_bus
+        repository=company_repository
     )
     
     delete_company_command_handler = providers.Factory(
         DeleteCompanyCommandHandler,
-        repository=company_repository,
-        event_bus=shared.event_bus
+        repository=company_repository
     )
     
     delete_company_with_all_data_command_handler = providers.Factory(

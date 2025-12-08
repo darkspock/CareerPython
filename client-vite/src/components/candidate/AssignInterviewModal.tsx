@@ -36,9 +36,9 @@ interface AssignInterviewModalProps {
 
 export default function AssignInterviewModal({
   candidateId,
-  companyCandidateId,
+  companyCandidateId: _companyCandidateId,
   currentStageId,
-  currentWorkflowId,
+  currentWorkflowId: _currentWorkflowId,
   availableStages,
   jobPositionId,
   isOpen,

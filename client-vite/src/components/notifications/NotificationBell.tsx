@@ -9,7 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { notificationService, InAppNotification } from '../../services/notificationService';
+import { notificationService, type InAppNotification } from '../../services/notificationService';
 
 const priorityColors: Record<string, string> = {
   LOW: 'bg-gray-100 text-gray-600',
@@ -18,16 +18,6 @@ const priorityColors: Record<string, string> = {
   URGENT: 'bg-red-100 text-red-600',
 };
 
-const typeIcons: Record<string, string> = {
-  NEW_APPLICATION: 'user-plus',
-  INTERVIEW_SCHEDULED: 'calendar',
-  NEW_COMMENT: 'message-square',
-  MENTION: 'at-sign',
-  SYSTEM_ALERT: 'alert-triangle',
-  INFO: 'info',
-  WARNING: 'alert-circle',
-  ERROR: 'x-circle',
-};
 
 const formatTimeAgo = (dateString: string): string => {
   const date = new Date(dateString);

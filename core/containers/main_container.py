@@ -28,9 +28,25 @@ class Container(containers.DeclarativeContainer):
     _old_container = providers.Container(OldContainer)
     
     # Command Bus y Query Bus - Create first (needed by bounded contexts)
-    # Note: These will be overridden in main.py after container is created
-    command_bus = providers.Singleton(CommandBus)
-    query_bus = providers.Singleton(QueryBus)
+    # These will be configured in main.py with the actual container reference
+    # Using Singleton so the same instance is shared across the application
+    _command_bus_instance: CommandBus = None  # Will be set in main.py
+    _query_bus_instance: QueryBus = None  # Will be set in main.py
+
+    @staticmethod
+    def _get_command_bus():
+        if Container._command_bus_instance is None:
+            raise RuntimeError("CommandBus not initialized. Call Container.init_buses() first.")
+        return Container._command_bus_instance
+
+    @staticmethod
+    def _get_query_bus():
+        if Container._query_bus_instance is None:
+            raise RuntimeError("QueryBus not initialized. Call Container.init_buses() first.")
+        return Container._query_bus_instance
+
+    command_bus = providers.Callable(_get_command_bus)
+    query_bus = providers.Callable(_get_query_bus)
     
     # Create a container class for shared dependencies that will be passed to BC containers
     # This needs to be defined after shared, command_bus, and query_bus

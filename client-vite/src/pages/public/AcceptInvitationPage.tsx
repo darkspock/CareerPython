@@ -18,6 +18,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useInvitation, useAcceptInvitation } from '../../hooks/useInvitations';
+import { decodeJWTPayload } from '../../utils/jwt';
 import InvitationDetails from '../../components/invitations/InvitationDetails';
 import type {
   AcceptInvitationRequest
@@ -161,7 +162,6 @@ export default function AcceptInvitationPage() {
     // Decode JWT to get user_id
     let userId: string | undefined;
     try {
-      const { decodeJWTPayload } = await import('../../utils/jwt');
       const payload = decodeJWTPayload(accessToken);
       userId = payload?.sub || payload?.user_id || payload?.id;
     } catch (err) {

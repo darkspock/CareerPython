@@ -16,9 +16,10 @@ import {
   Kanban,
   Mail,
   CheckSquare,
-  Link as LinkIcon
 } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
+import { PositionService } from '../../services/positionService';
+import { ApiClient } from '../../lib/api';
 import type { CompanyCandidate } from '../../types/companyCandidate';
 import { BulkEmailModal } from '../../components/company/email/BulkEmailModal';
 import { useFilterState, type FilterConfig } from '../../hooks/useFilterState';
@@ -212,8 +213,6 @@ export default function CandidatesListPage() {
       const companyId = getCompanyId();
       if (!companyId) return;
 
-      // Import PositionService dynamically to avoid circular dependencies
-      const { PositionService } = await import('../../services/positionService');
       const response = await PositionService.getPositions({
         company_id: companyId,
       });
@@ -230,9 +229,6 @@ export default function CandidatesListPage() {
     if (!selectedCandidateForPosition) return;
 
     try {
-      // Import ApiClient
-      const { ApiClient } = await import('../../lib/api');
-
       // Create candidate_application via company endpoint
       await ApiClient.post('/api/company/candidate-applications/', {
         candidate_id: selectedCandidateForPosition.candidate_id,

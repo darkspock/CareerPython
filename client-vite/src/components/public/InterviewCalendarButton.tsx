@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, ExternalLink, Download, ChevronDown } from 'lucide-react';
+import { Calendar, Download, ChevronDown } from 'lucide-react';
 import { ApiClient } from '../../lib/api';
 
 interface CalendarLinks {

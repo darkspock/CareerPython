@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { 
   CreateInterviewRequest, 
   UpdateInterviewRequest,
@@ -36,7 +36,7 @@ export interface UseInterviewFormReturn {
 }
 
 export function useInterviewForm(options: UseInterviewFormOptions): UseInterviewFormReturn {
-  const { initialData, roles, companyUsers, onSuccess } = options;
+  const { initialData, roles, companyUsers, onSuccess: _onSuccess } = options;
   
   const isEditMode = !!initialData;
   
@@ -95,7 +95,7 @@ export function useInterviewForm(options: UseInterviewFormOptions): UseInterview
     return [];
   });
   
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Update selectedInterviewerIds when companyUsers are loaded in edit mode

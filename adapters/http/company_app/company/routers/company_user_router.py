@@ -190,19 +190,25 @@ async def get_company_user_language(
         company_user_id: str = Depends(get_company_user_id_from_token),
 ) -> UserLanguageResponse:
     """Get current company user's preferred language"""
-    from src.company_bc.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQuery
-    from src.company_bc.company.application.dtos.company_user_dto import CompanyUserDto
+    import traceback
+    try:
+        from src.company_bc.company.application.queries.get_company_user_by_id import GetCompanyUserByIdQuery
+        from src.company_bc.company.application.dtos.company_user_dto import CompanyUserDto
 
-    # Get company user to extract user_id
-    company_user_query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
-    company_user_dto: CompanyUserDto = query_bus.query(company_user_query)
+        # Get company user to extract user_id
+        company_user_query = GetCompanyUserByIdQuery(company_user_id=company_user_id)
+        company_user_dto: CompanyUserDto = query_bus.query(company_user_query)
 
-    if not company_user_dto:
-        raise HTTPException(status_code=404, detail="Company user not found")
+        if not company_user_dto:
+            raise HTTPException(status_code=404, detail="Company user not found")
 
-    # Get language preference using user_id
-    language_code = user_controller.get_user_language(company_user_dto.user_id)
-    return UserLanguageResponse(language_code=language_code)
+        # Get language preference using user_id
+        language_code = user_controller.get_user_language(company_user_dto.user_id)
+        return UserLanguageResponse(language_code=language_code)
+    except Exception as e:
+        logging.error(f"Error in get_company_user_language: {e}")
+        logging.error(traceback.format_exc())
+        raise
 
 
 @router.put("/me/language", response_model=UserLanguageUpdateResponse)

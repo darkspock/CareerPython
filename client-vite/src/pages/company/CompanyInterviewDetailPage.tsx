@@ -96,7 +96,7 @@ export default function CompanyInterviewDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {interview.status === 'SCHEDULED' && (
+            {interview.status === 'PENDING' && (
               <Button
                 onClick={startInterview}
                 disabled={actionLoading}

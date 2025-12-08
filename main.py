@@ -14,7 +14,6 @@ from adapters.http.shared.field_validation.routers.validation_rule_router import
 from core.containers import Container
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
-from dependency_injector import providers
 
 # Initialize Dramatiq broker for web service
 from adapters.http.admin_app.routes.admin_router import router as admin_router
@@ -158,22 +157,10 @@ async def cors_test():
 container = Container()
 app.container = container
 
-# Inject container reference into buses after container is created
-# This ensures buses use the same container instance
-# IMPORTANT: Override must happen BEFORE wiring
-container.command_bus.override(providers.Singleton(
-    CommandBus,
-    container=container
-))
-container.query_bus.override(providers.Singleton(
-    QueryBus,
-    container=container
-))
-
-# Update SharedDependencies with the overridden buses
-# This ensures all BC containers get the correct bus instances
-Container.SharedDependencies.command_bus = container.command_bus
-Container.SharedDependencies.query_bus = container.query_bus
+# Initialize the buses with the container reference
+# This must happen BEFORE wiring so the buses are available
+Container._command_bus_instance = CommandBus(container=container)
+Container._query_bus_instance = QueryBus(container=container)
 
 # Wire solo el admin router y onboarding
 container.wire(modules=[

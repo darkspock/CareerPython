@@ -3,6 +3,8 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
+from sqlalchemy.exc import IntegrityError
+
 from src.auth_bc.user.domain.entities.user import User
 from src.auth_bc.user.domain.exceptions.user_exceptions import EmailAlreadyExistException
 from src.auth_bc.user.domain.repositories.user_repository_interface import UserRepositoryInterface
@@ -69,8 +71,9 @@ class RegisterCompanyWithUserCommandHandler(CommandHandler[RegisterCompanyWithUs
     def execute(self, command: RegisterCompanyWithUserCommand) -> None:
         """
         Execute the registration command
-        
+
         Steps:
+        0. Validate company name/slug uniqueness BEFORE creating anything
         1. Create new user
         2. Create new company
         3. Link user to company with ADMIN role
@@ -82,6 +85,17 @@ class RegisterCompanyWithUserCommandHandler(CommandHandler[RegisterCompanyWithUs
             f"RegisterCompanyWithUserCommand called with email: {command.user_email}, domain: {command.company_domain}")
 
         try:
+            # Step 0: Validate company slug uniqueness BEFORE creating user
+            # This prevents orphan user records if company creation fails
+            slug = command.company_name.strip().lower().replace(" ", "-").replace("_", "-")
+            slug = "".join(c for c in slug if c.isalnum() or c == "-")
+
+            existing_company_by_slug = self.company_repository.get_by_slug(slug)
+            if existing_company_by_slug:
+                raise CompanyValidationError(
+                    f"A company with the name '{command.company_name}' already exists. Please choose a different name."
+                )
+
             # Step 1: Validate and create user
             existing_user = self.user_repository.get_by_email(command.user_email)
             if existing_user:
@@ -175,6 +189,18 @@ class RegisterCompanyWithUserCommandHandler(CommandHandler[RegisterCompanyWithUs
         except (EmailAlreadyExistException, CompanyDomainAlreadyExistsError, CompanyValidationError):
             # Re-raise domain exceptions
             raise
+        except IntegrityError as e:
+            log.error(f"Database integrity error in RegisterCompanyWithUserCommand: {str(e)}")
+            # Parse the error to provide a user-friendly message
+            error_str = str(e.orig) if hasattr(e, 'orig') else str(e)
+            if 'ix_companies_slug' in error_str or 'slug' in error_str.lower():
+                raise CompanyValidationError(f"A company with the name '{command.company_name}' already exists. Please choose a different name.")
+            elif 'ix_companies_domain' in error_str or 'domain' in error_str.lower():
+                raise CompanyDomainAlreadyExistsError(command.company_domain)
+            elif 'ix_users_email' in error_str or 'email' in error_str.lower():
+                raise EmailAlreadyExistException(command.user_email)
+            else:
+                raise CompanyValidationError("A company or user with these details already exists. Please use different values.")
         except Exception as e:
             log.error(f"Error in RegisterCompanyWithUserCommand: {str(e)}")
             raise CompanyValidationError(f"Failed to register company: {str(e)}")

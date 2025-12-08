@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PositionService } from '../services/positionService';
 import { CompanyUserService } from '../services/companyUserService';
 import { api } from '../lib/api';

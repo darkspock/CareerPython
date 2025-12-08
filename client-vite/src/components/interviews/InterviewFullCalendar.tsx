@@ -47,9 +47,6 @@ const formatTime = (dateString: string) => {
   return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 };
 
-const formatDateHeader = (date: Date) => {
-  return date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
-};
 
 export const InterviewFullCalendar: React.FC<InterviewFullCalendarProps> = ({
   interviews,
