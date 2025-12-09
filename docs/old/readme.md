@@ -35,9 +35,9 @@ The platform is **production-ready** for core recruitment workflows. Most busine
 
 | Document | Description |
 |----------|-------------|
-| [01-backend-status.md](./01-backend-status.md) | Backend implementation analysis by domain |
-| [02-frontend-status.md](./02-frontend-status.md) | Frontend components and routes status |
-| [03-pending-tasks.md](./03-pending-tasks.md) | Priority tasks and implementation gaps |
+| [01-backend-status.md](01-backend-status.md) | Backend implementation analysis by domain |
+| [02-frontend-status.md](02-frontend-status.md) | Frontend components and routes status |
+| [03-pending-tasks.md](03-pending-tasks.md) | Priority tasks and implementation gaps |
 
 ---
 

@@ -318,7 +318,7 @@ export default function WorkflowsSettingsPage({
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
                   <p className="text-xs font-medium text-gray-500 uppercase mb-2">{t('company.workflows.stages')}</p>
                   <div className="flex flex-wrap gap-1">
-                    {workflow.stages.slice(0, 3).map((stage: { id: string; name: string }) => (
+                    {workflow.stages.map((stage: { id: string; name: string }) => (
                       <span
                         key={stage.id}
                         className="px-2 py-1 text-xs bg-white border border-gray-200 rounded text-gray-700"
@@ -326,11 +326,6 @@ export default function WorkflowsSettingsPage({
                         {stage.name}
                       </span>
                     ))}
-                    {workflow.stages.length > 3 && (
-                      <span className="px-2 py-1 text-xs bg-white border border-gray-200 rounded text-gray-700">
-                        {t('company.workflows.moreStages', { count: workflow.stages.length - 3 })}
-                      </span>
-                    )}
                   </div>
                 </div>
               )}
