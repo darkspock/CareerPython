@@ -13,7 +13,6 @@ export default function EditPositionPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
   const [workflow, setWorkflow] = useState<JobPositionWorkflow | null>(null);
@@ -64,40 +63,6 @@ export default function EditPositionPage() {
     navigate(`/company/positions/${id}`);
   };
 
-  const handleRequestApproval = async () => {
-    if (!id) return;
-
-    try {
-      setActionLoading(true);
-      await PositionService.requestApproval(id);
-      // Reload position to get updated status
-      await loadPosition();
-    } catch (err: unknown) {
-      console.error('Error requesting approval:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to request approval';
-      setError(errorMessage);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handlePublish = async () => {
-    if (!id) return;
-
-    try {
-      setActionLoading(true);
-      await PositionService.publish(id);
-      // Reload position to get updated status
-      await loadPosition();
-    } catch (err: unknown) {
-      console.error('Error publishing:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to publish';
-      setError(errorMessage);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -129,9 +94,7 @@ export default function EditPositionPage() {
         position={position}
         workflow={workflow}
         onSave={handleSave}
-        onRequestApproval={handleRequestApproval}
-        onPublish={handlePublish}
-        isLoading={loading || actionLoading}
+        isLoading={loading}
         canEditBudget={true}
       />
     </div>

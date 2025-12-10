@@ -13,6 +13,8 @@ from adapters.http.admin_app.schemas.job_position import (
     JobPositionListResponse,
     JobPositionResponse,
     JobPositionActionResponse,
+    JobPositionCreate,
+    JobPositionUpdate,
     RejectJobPositionRequest,
     CloseJobPositionRequest,
     CreateInlineScreeningTemplateRequest,
@@ -139,6 +141,87 @@ def get_position(
         raise
     except Exception as e:
         log.error(f"Error getting position: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("", response_model=JobPositionActionResponse)
+@inject
+def company_create_position(
+        position_data: JobPositionCreate,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Create a new job position"""
+    try:
+        # Ensure the position is created for the authenticated company
+        if position_data.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Cannot create position for another company"
+            )
+        return controller.create_position(position_data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error creating position: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.put("/{position_id}", response_model=JobPositionActionResponse)
+@inject
+def company_update_position(
+        position_id: str,
+        position_data: JobPositionUpdate,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Update an existing job position"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+        return controller.update_position(position_id, position_data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error updating position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.delete("/{position_id}", response_model=JobPositionActionResponse)
+@inject
+def company_delete_position(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Delete a job position"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+        return controller.delete_position(position_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error deleting position {position_id}: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

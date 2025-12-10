@@ -1003,5 +1003,9 @@
       "lockedApproved": "This field was locked when the position was approved",
       "lockedPublished": "This field cannot be changed while the position is published"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "You have no notifications"
   }
 }

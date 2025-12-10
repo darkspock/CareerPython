@@ -19,7 +19,7 @@ class CustomFieldDefinition:
     field_key: str                              # Unique identifier
     label: str                                  # Display name for recruiters/candidates
     field_type: str                             # TEXT, NUMBER, SELECT, MULTISELECT, DATE, BOOLEAN, URL
-    options: Optional[List[str]]                # For SELECT/MULTISELECT types
+    options: Optional[List[Any]]                # For SELECT/MULTISELECT types (strings or i18n objects)
     is_required: bool                           # Whether field must be filled
     candidate_visible: bool                     # Whether candidates see this field
     validation_rules: Optional[Dict[str, Any]]  # Min/max, patterns, etc.

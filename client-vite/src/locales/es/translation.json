@@ -1285,5 +1285,9 @@
       "publishedAt": "Publicado el",
       "closedAt": "Cerrado el"
     }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "empty": "No tienes notificaciones"
   }
 }

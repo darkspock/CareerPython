@@ -99,7 +99,7 @@ export interface CustomFieldDefinition {
   field_key: string;
   label: string;
   field_type: 'TEXT' | 'NUMBER' | 'SELECT' | 'MULTISELECT' | 'DATE' | 'BOOLEAN' | 'URL';
-  options?: string[] | null;
+  options?: any[] | null;  // Can be strings or i18n objects {id, sort, labels: [{language, label}]}
   is_required: boolean;
   candidate_visible: boolean;
   validation_rules?: Record<string, unknown> | null;

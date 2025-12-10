@@ -2,9 +2,9 @@
  * PositionFormTabs Component
  * Multi-tab form for creating/editing job positions with publishing flow
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Send, Rocket, Lock, Info } from 'lucide-react';
+import { ArrowLeft, Save, Lock, Info, Plus, Trash2, ChevronUp, ChevronDown, Pencil, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/tooltip';
 import { WysiwygEditor } from '@/components/common';
 import { StatusBadge, LockedFieldIndicator } from '../publishing';
+import { FieldConfigEditor } from '@/components/workflow/FieldConfigEditor';
+import type { FieldType } from '@/types/workflow';
 
 import type {
   Position,
@@ -44,7 +46,6 @@ import {
   WorkLocationType,
   SalaryPeriod,
   isFieldLocked,
-  getAvailableTransitions,
   getEmploymentTypeLabel,
   getExperienceLevelLabel,
   getWorkLocationTypeLabel,
@@ -57,8 +58,6 @@ interface PositionFormTabsProps {
   position?: Position | null;
   workflow?: JobPositionWorkflow | null;
   onSave: (data: CreatePositionRequest | UpdatePositionRequest) => Promise<void>;
-  onRequestApproval?: () => Promise<void>;
-  onPublish?: () => Promise<void>;
   isLoading?: boolean;
   canEditBudget?: boolean;
 }
@@ -68,8 +67,6 @@ export function PositionFormTabs({
   position,
   workflow,
   onSave,
-  onRequestApproval,
-  onPublish,
   isLoading = false,
   canEditBudget = true,
 }: PositionFormTabsProps) {
@@ -79,7 +76,6 @@ export function PositionFormTabs({
   const [saving, setSaving] = useState(false);
 
   const status = position?.status || JobPositionStatus.DRAFT;
-  const availableTransitions = getAvailableTransitions(status);
 
   // Form state
   const [formData, setFormData] = useState<CreatePositionRequest | UpdatePositionRequest>({
@@ -128,9 +124,13 @@ export function PositionFormTabs({
   // Office location input
   const [locationInput, setLocationInput] = useState('');
 
-  // Initialize form data from position
+  // Track if form has been initialized to prevent re-initialization on position reference changes
+  const initializedRef = useRef(false);
+
+  // Initialize form data from position (only once)
   useEffect(() => {
-    if (position) {
+    if (position && !initializedRef.current) {
+      initializedRef.current = true;
       setFormData({
         title: position.title || '',
         description: position.description || '',
@@ -258,6 +258,181 @@ export function PositionFormTabs({
       'office_locations',
       (formData.office_locations || []).filter((l) => l !== location)
     );
+  };
+
+  // Custom fields state for inline editor
+  const [isAddingField, setIsAddingField] = useState(false);
+  const [editingFieldIndex, setEditingFieldIndex] = useState<number | null>(null);
+  const [fieldFormData, setFieldFormData] = useState({
+    field_name: '',
+    field_key: '',
+    field_type: 'TEXT' as FieldType,
+    field_config: {} as Record<string, any>,
+    is_required: false,
+  });
+
+  const FIELD_TYPES: FieldType[] = [
+    'TEXT', 'TEXTAREA', 'NUMBER', 'CURRENCY', 'DATE',
+    'DROPDOWN', 'MULTI_SELECT', 'RADIO', 'CHECKBOX',
+    'FILE', 'URL', 'EMAIL', 'PHONE'
+  ];
+
+  const getFieldTypeLabel = (type: FieldType): string => {
+    const labels: Record<FieldType, string> = {
+      TEXT: 'Text',
+      TEXTAREA: 'Text Area',
+      NUMBER: 'Number',
+      CURRENCY: 'Currency',
+      DATE: 'Date',
+      DROPDOWN: 'Dropdown',
+      MULTI_SELECT: 'Multi-Select',
+      RADIO: 'Radio Buttons',
+      CHECKBOX: 'Checkbox',
+      FILE: 'File Upload',
+      URL: 'URL',
+      EMAIL: 'Email',
+      PHONE: 'Phone',
+    };
+    return labels[type] || type;
+  };
+
+  const generateFieldKey = (): string => {
+    // Generate a unique UUID-based key
+    return `field_${crypto.randomUUID().replace(/-/g, '').substring(0, 12)}`;
+  };
+
+  const handleFieldNameChange = (value: string) => {
+    setFieldFormData(prev => ({
+      ...prev,
+      field_name: value,
+      // Don't auto-generate field_key from name anymore - will be generated on save
+    }));
+  };
+
+  const handleAddFieldClick = () => {
+    setIsAddingField(true);
+    setEditingFieldIndex(null);
+    setFieldFormData({
+      field_name: '',
+      field_key: '',
+      field_type: 'TEXT',
+      field_config: {},
+      is_required: false,
+    });
+  };
+
+  const handleEditField = (index: number) => {
+    const field = formData.custom_fields_config?.[index];
+    if (!field) return;
+
+    setEditingFieldIndex(index);
+    setIsAddingField(false);
+
+    // Merge options into field_config for FieldConfigEditor compatibility
+    const fieldConfig = { ...(field.validation_rules || {}) };
+    if (field.options && field.options.length > 0) {
+      fieldConfig.options = field.options;
+    }
+
+    setFieldFormData({
+      field_name: field.label,
+      field_key: field.field_key,
+      field_type: (field.field_type === 'SELECT' ? 'DROPDOWN' : field.field_type === 'MULTISELECT' ? 'MULTI_SELECT' : field.field_type) as FieldType,
+      field_config: fieldConfig,
+      is_required: field.is_required,
+    });
+  };
+
+  const handleCancelFieldEdit = () => {
+    setIsAddingField(false);
+    setEditingFieldIndex(null);
+    setFieldFormData({
+      field_name: '',
+      field_key: '',
+      field_type: 'TEXT',
+      field_config: {},
+      is_required: false,
+    });
+  };
+
+  const handleSaveField = () => {
+    if (!fieldFormData.field_name.trim()) {
+      setError('Field name is required');
+      return;
+    }
+
+    // Use existing key or generate a new UUID-based key
+    const fieldKey = fieldFormData.field_key.trim() || generateFieldKey();
+    const currentConfig = formData.custom_fields_config || [];
+
+    // Map workflow field types to position field types
+    const mapFieldType = (type: FieldType): CustomFieldDefinition['field_type'] => {
+      if (type === 'DROPDOWN') return 'SELECT';
+      if (type === 'MULTI_SELECT') return 'MULTISELECT';
+      if (['TEXT', 'NUMBER', 'DATE', 'BOOLEAN', 'URL'].includes(type)) {
+        return type as CustomFieldDefinition['field_type'];
+      }
+      return 'TEXT';
+    };
+
+    const newField: CustomFieldDefinition = {
+      field_key: fieldKey,
+      label: fieldFormData.field_name,
+      field_type: mapFieldType(fieldFormData.field_type),
+      options: fieldFormData.field_config.options || null,
+      is_required: fieldFormData.is_required,
+      candidate_visible: true,
+      validation_rules: Object.keys(fieldFormData.field_config).length > 0 ? fieldFormData.field_config : null,
+      sort_order: isAddingField ? currentConfig.length : (editingFieldIndex ?? 0),
+      is_active: true,
+    };
+
+    if (isAddingField) {
+      // Check for duplicate key
+      if (currentConfig.some(f => f.field_key === fieldKey)) {
+        setError(`Field with key "${fieldKey}" already exists`);
+        return;
+      }
+      updateField('custom_fields_config', [...currentConfig, newField]);
+    } else if (editingFieldIndex !== null) {
+      const updatedConfig = [...currentConfig];
+      updatedConfig[editingFieldIndex] = { ...newField, field_key: currentConfig[editingFieldIndex].field_key };
+      updateField('custom_fields_config', updatedConfig);
+    }
+
+    handleCancelFieldEdit();
+    setError(null);
+  };
+
+  const handleDeleteField = (index: number) => {
+    const currentConfig = formData.custom_fields_config || [];
+    const fieldKey = currentConfig[index]?.field_key;
+
+    updateField('custom_fields_config', currentConfig.filter((_, i) => i !== index));
+
+    // Also remove the value
+    if (fieldKey) {
+      const currentValues = { ...formData.custom_fields_values };
+      delete currentValues[fieldKey];
+      updateField('custom_fields_values', currentValues);
+    }
+  };
+
+  const handleMoveField = (index: number, direction: 'up' | 'down') => {
+    const currentConfig = [...(formData.custom_fields_config || [])];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (newIndex < 0 || newIndex >= currentConfig.length) return;
+
+    [currentConfig[index], currentConfig[newIndex]] = [currentConfig[newIndex], currentConfig[index]];
+    currentConfig.forEach((f, i) => f.sort_order = i);
+    updateField('custom_fields_config', currentConfig);
+  };
+
+  const toggleFieldActive = (index: number) => {
+    const currentConfig = [...(formData.custom_fields_config || [])];
+    currentConfig[index] = { ...currentConfig[index], is_active: !currentConfig[index].is_active };
+    updateField('custom_fields_config', currentConfig);
   };
 
   const renderLockIcon = (fieldName: string) => {
@@ -1024,38 +1199,217 @@ export function PositionFormTabs({
           {/* Tab 5: Custom Fields */}
           <TabsContent value="custom">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Custom Fields</CardTitle>
+                {!isLocked('custom_fields_config') && !isAddingField && editingFieldIndex === null && (
+                  <Button type="button" variant="outline" size="sm" onClick={handleAddFieldClick}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Field
+                  </Button>
+                )}
               </CardHeader>
-              <CardContent>
-                {formData.custom_fields_config && formData.custom_fields_config.length > 0 ? (
-                  <div className="space-y-4">
-                    {formData.custom_fields_config
-                      .filter((field) => field.is_active)
-                      .sort((a, b) => a.sort_order - b.sort_order)
-                      .map((field) => (
-                        <CustomFieldInputWrapper
-                          key={field.field_key}
-                          field={field}
-                          value={formData.custom_fields_values?.[field.field_key]}
-                          onChange={(value) => {
-                            updateField('custom_fields_values', {
-                              ...formData.custom_fields_values,
-                              [field.field_key]: value,
-                            });
-                          }}
-                          disabled={isLocked('custom_fields_values')}
+              <CardContent className="space-y-6">
+                {/* Add/Edit Field Form */}
+                {(isAddingField || editingFieldIndex !== null) && (
+                  <div className="p-4 border rounded-lg bg-gray-50 space-y-4">
+                    <h4 className="font-semibold">
+                      {isAddingField ? 'Add New Field' : 'Edit Field'}
+                    </h4>
+
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Field Name *</Label>
+                        <Input
+                          value={fieldFormData.field_name}
+                          onChange={(e) => handleFieldNameChange(e.target.value)}
+                          placeholder="e.g., Expected Salary"
                         />
-                      ))}
+                      </div>
+
+                      {/* Hidden field key - auto-generated from field name */}
+                      <input
+                        type="hidden"
+                        value={fieldFormData.field_key}
+                        onChange={(e) => setFieldFormData(prev => ({ ...prev, field_key: e.target.value }))}
+                      />
+
+                      <div>
+                        <Label>Field Type *</Label>
+                        <select
+                          value={fieldFormData.field_type}
+                          onChange={(e) => setFieldFormData(prev => ({
+                            ...prev,
+                            field_type: e.target.value as FieldType,
+                            field_config: {}
+                          }))}
+                          className="w-full px-3 py-2 border rounded"
+                        >
+                          {FIELD_TYPES.map(type => (
+                            <option key={type} value={type}>
+                              {getFieldTypeLabel(type)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Field Configuration Editor - for options, validation, etc. */}
+                      <FieldConfigEditor
+                        fieldType={fieldFormData.field_type}
+                        config={fieldFormData.field_config}
+                        onChange={(newConfig) => setFieldFormData(prev => ({ ...prev, field_config: newConfig }))}
+                      />
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="field_required"
+                          checked={fieldFormData.is_required}
+                          onChange={(e) => setFieldFormData(prev => ({ ...prev, is_required: e.target.checked }))}
+                          className="rounded"
+                        />
+                        <Label htmlFor="field_required" className="cursor-pointer">Required field</Label>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          onClick={handleSaveField}
+                          disabled={!fieldFormData.field_name.trim()}
+                          size="sm"
+                        >
+                          Save
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={handleCancelFieldEdit}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No custom fields configured for this position.</p>
-                    {workflow && (
-                      <p className="text-sm mt-2">
-                        Custom fields can be configured in the workflow settings.
-                      </p>
-                    )}
+                )}
+
+                {/* Fields List */}
+                <div className="space-y-2">
+                  {(!formData.custom_fields_config || formData.custom_fields_config.length === 0) ? (
+                    <div className="p-8 text-center text-muted-foreground border-2 border-dashed rounded-lg">
+                      <p>No custom fields configured.</p>
+                      <p className="text-sm mt-1">Click "Add Field" to create one.</p>
+                    </div>
+                  ) : (
+                    formData.custom_fields_config
+                      .sort((a, b) => a.sort_order - b.sort_order)
+                      .map((field, index) => (
+                        <div
+                          key={field.field_key}
+                          className={`flex items-center justify-between p-4 border rounded-lg ${
+                            !field.is_active ? 'opacity-50 bg-muted' : 'hover:bg-muted/50'
+                          }`}
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium">{field.label}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {field.field_type}
+                              {field.is_required && <span className="ml-2 text-red-600">Required</span>}
+                            </div>
+                            {/* Show options - check both field.options and field.validation_rules.options */}
+                            {(() => {
+                              const options = field.options || (field.validation_rules as Record<string, any>)?.options;
+                              if (!options || !Array.isArray(options) || options.length === 0) return null;
+                              const optionLabels = (options as any[]).map((opt: any) => {
+                                if (typeof opt === 'string') return opt;
+                                if (opt && typeof opt === 'object') {
+                                  // i18n format: {id, sort, labels: [{language, label}]}
+                                  if (opt.labels && Array.isArray(opt.labels) && opt.labels.length > 0) {
+                                    return String(opt.labels[0].label || opt.id || '');
+                                  }
+                                  return String(opt.id || opt.label || '');
+                                }
+                                return String(opt);
+                              }).filter(Boolean);
+                              if (optionLabels.length === 0) return null;
+                              return (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  Options: {optionLabels.join(' • ')}
+                                </div>
+                              );
+                            })()}
+                          </div>
+
+                          {!isLocked('custom_fields_config') && (
+                            <div className="flex gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleMoveField(index, 'up')}
+                                disabled={index === 0}
+                              >
+                                <ChevronUp className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleMoveField(index, 'down')}
+                                disabled={index === (formData.custom_fields_config?.length ?? 0) - 1}
+                              >
+                                <ChevronDown className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleFieldActive(index)}
+                                title={field.is_active ? 'Disable field' : 'Enable field'}
+                              >
+                                {field.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditField(index)}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteField(index)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                  )}
+                </div>
+
+                {/* Field Values for active fields */}
+                {formData.custom_fields_config && formData.custom_fields_config.filter(f => f.is_active).length > 0 && (
+                  <div className="mt-6 pt-6 border-t">
+                    <h4 className="text-lg font-semibold mb-4">Field Values</h4>
+                    <div className="space-y-4">
+                      {formData.custom_fields_config
+                        .filter((field) => field.is_active)
+                        .sort((a, b) => a.sort_order - b.sort_order)
+                        .map((field) => (
+                          <CustomFieldInputWrapper
+                            key={field.field_key}
+                            field={field}
+                            value={formData.custom_fields_values?.[field.field_key]}
+                            onChange={(value) => {
+                              updateField('custom_fields_values', {
+                                ...formData.custom_fields_values,
+                                [field.field_key]: value,
+                              });
+                            }}
+                            disabled={isLocked('custom_fields_values')}
+                          />
+                        ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -1129,48 +1483,33 @@ export function PositionFormTabs({
             Cancel
           </Button>
 
-          <div className="flex items-center gap-3">
-            {/* Save as Draft */}
-            <Button type="submit" variant="outline" disabled={saving || isLoading}>
-              <Save className="w-4 h-4 mr-2" />
-              {saving ? 'Saving...' : 'Save Draft'}
-            </Button>
-
-            {/* Request Approval (if in DRAFT and controlled mode) */}
-            {mode === 'edit' &&
-              status === JobPositionStatus.DRAFT &&
-              availableTransitions.includes(JobPositionStatus.PENDING_APPROVAL) &&
-              onRequestApproval && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={onRequestApproval}
-                  disabled={saving || isLoading}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  Request Approval
-                </Button>
-              )}
-
-            {/* Publish (if available) */}
-            {mode === 'edit' &&
-              availableTransitions.includes(JobPositionStatus.PUBLISHED) &&
-              onPublish && (
-                <Button
-                  type="button"
-                  onClick={onPublish}
-                  disabled={saving || isLoading}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Rocket className="w-4 h-4 mr-2" />
-                  Publish
-                </Button>
-              )}
-          </div>
+          <Button type="submit" disabled={saving || isLoading}>
+            <Save className="w-4 h-4 mr-2" />
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
         </div>
       </form>
     </div>
   );
+}
+
+// Helper to extract option value and label from options (can be string or i18n object)
+function getOptionValueAndLabel(option: any): { value: string; label: string } {
+  if (typeof option === 'string') {
+    return { value: option, label: option };
+  }
+  if (option && typeof option === 'object') {
+    // i18n format: {id, sort, labels: [{language, label}]}
+    const id = option.id || '';
+    let label = id;
+    if (option.labels && Array.isArray(option.labels) && option.labels.length > 0) {
+      label = option.labels[0].label || id;
+    } else if (option.label) {
+      label = option.label;
+    }
+    return { value: String(id), label: String(label) };
+  }
+  return { value: String(option), label: String(option) };
 }
 
 // Helper component for rendering custom field inputs
@@ -1245,11 +1584,14 @@ function CustomFieldInputWrapper({
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
-              {field.options?.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
+              {field.options?.map((option, idx) => {
+                const { value: optValue, label: optLabel } = getOptionValueAndLabel(option);
+                return (
+                  <SelectItem key={optValue || idx} value={optValue}>
+                    {optLabel}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         );
@@ -1258,22 +1600,25 @@ function CustomFieldInputWrapper({
         const selectedValues = (value as string[]) || [];
         return (
           <div className="space-y-2">
-            {field.options?.map((option) => (
-              <div key={option} className="flex items-center gap-2">
-                <Checkbox
-                  checked={selectedValues.includes(option)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      onChange([...selectedValues, option]);
-                    } else {
-                      onChange(selectedValues.filter((v) => v !== option));
-                    }
-                  }}
-                  disabled={disabled}
-                />
-                <span className="text-sm text-gray-700">{option}</span>
-              </div>
-            ))}
+            {field.options?.map((option, idx) => {
+              const { value: optValue, label: optLabel } = getOptionValueAndLabel(option);
+              return (
+                <div key={optValue || idx} className="flex items-center gap-2">
+                  <Checkbox
+                    checked={selectedValues.includes(optValue)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        onChange([...selectedValues, optValue]);
+                      } else {
+                        onChange(selectedValues.filter((v) => v !== optValue));
+                      }
+                    }}
+                    disabled={disabled}
+                  />
+                  <span className="text-sm text-gray-700">{optLabel}</span>
+                </div>
+              );
+            })}
           </div>
         );
 

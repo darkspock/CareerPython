@@ -608,42 +608,8 @@ def get_position(
     return controller.get_position_by_id(position_id)
 
 
-@router.post("/positions", response_model=JobPositionActionResponse)
-@inject
-def create_position(
-        position_data: JobPositionCreate,
-        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionActionResponse:
-    """Create a new job position"""
-    return controller.create_position(position_data)
-
-
-@router.put("/positions/{position_id}", response_model=JobPositionActionResponse)
-@inject
-def update_position(
-        position_id: str,
-        position_data: JobPositionUpdate,
-        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionActionResponse:
-    """Update an existing job position"""
-    return controller.update_position(position_id, position_data)
-
-
-# Status management endpoints (activate, pause, resume, close, archive) have been removed.
-# Use workflow endpoints instead: /workflows/{workflow_id}/positions/{position_id}/move-to-stage
-
-
-@router.delete("/positions/{position_id}", response_model=JobPositionActionResponse)
-@inject
-def delete_position(
-        position_id: str,
-        controller: Annotated[JobPositionController, Depends(Provide[Container.job_position_controller])],
-        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
-) -> JobPositionActionResponse:
-    """Delete a job position"""
-    return controller.delete_position(position_id)
+# Position CRUD operations (create, update, delete) are handled by company_position_router
+# at /api/company/positions. Use those endpoints instead.
 
 
 # ====================================

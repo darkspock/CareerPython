@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PositionService } from '../../services/positionService';
-import type { Position, JobPositionWorkflow, ClosedReason } from '../../types/position';
+import type { Position, JobPositionWorkflow } from '../../types/position';
 import {
   getStatusColorFromStage,
   getStatusLabelFromStage,
@@ -27,7 +27,6 @@ import type { WorkflowStage } from '../../types/workflow';
 import { KanbanDisplay } from '../../types/workflow';
 import {
   StatusBadge,
-  PositionActionButtons,
   EmploymentTypeBadge,
   LocationTypeBadge,
   ExperienceLevelBadge,
@@ -56,8 +55,6 @@ export default function PositionDetailPage() {
   const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
   const moveToStageDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Publishing flow action state
-  const [actionLoading, setActionLoading] = useState(false);
 
   // Comments refresh key
   const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
@@ -154,136 +151,6 @@ export default function PositionDetailPage() {
     }
   };
 
-  // Publishing flow action handlers
-  const handleRequestApproval = async () => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.requestApproval(id);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to request approval: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleApprove = async () => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.approve(id);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to approve: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleReject = async (reason: string) => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.reject(id, reason);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to reject: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handlePublish = async () => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.publish(id);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to publish: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleHold = async () => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.hold(id);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to put on hold: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleResume = async () => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.resume(id);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to resume: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleClose = async (reason: ClosedReason, note?: string) => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.close(id, reason, note);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to close: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleArchive = async () => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.archive(id);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to archive: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleRevertToDraft = async () => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      await PositionService.revertToDraft(id);
-      await loadPosition();
-    } catch (err: any) {
-      setError(`Failed to revert to draft: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleClone = async () => {
-    if (!id) return;
-    setActionLoading(true);
-    try {
-      const cloned = await PositionService.clone(id);
-      navigate(`/company/positions/${cloned.id}/edit`);
-    } catch (err: any) {
-      setError(`Failed to clone: ${err.message}`);
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -485,27 +352,6 @@ export default function PositionDetailPage() {
           </div>
         </div>
 
-        {/* Publishing Flow Action Buttons */}
-        <div className="mt-4 pt-4 border-t">
-          <PositionActionButtons
-            positionId={position.id}
-            positionTitle={position.title}
-            status={position.status}
-            onRequestApproval={handleRequestApproval}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onPublish={handlePublish}
-            onHold={handleHold}
-            onResume={handleResume}
-            onClose={handleClose}
-            onArchive={handleArchive}
-            onRevertToDraft={handleRevertToDraft}
-            onClone={handleClone}
-            isLoading={actionLoading}
-            layout="horizontal"
-            size="md"
-          />
-        </div>
       </div>
 
       {/* Tabs */}

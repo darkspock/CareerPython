@@ -69,12 +69,26 @@ class JobPositionCreate(BaseModel):
         use_enum_values = True
 
 
+class CustomFieldDefinitionSchema(BaseModel):
+    """Schema for custom field definition"""
+    field_key: str = Field(..., description="Unique field identifier")
+    label: str = Field(..., description="Display label")
+    field_type: str = Field(..., description="Field type: TEXT, NUMBER, SELECT, MULTISELECT, DATE, BOOLEAN, URL")
+    options: Optional[List[Any]] = Field(None, description="Options for SELECT/MULTISELECT types - can be strings or i18n objects")
+    is_required: bool = Field(False, description="Whether field is required")
+    candidate_visible: bool = Field(True, description="Whether candidates can see this field")
+    validation_rules: Optional[Dict[str, Any]] = Field(None, description="Validation rules")
+    sort_order: int = Field(0, description="Display order")
+    is_active: bool = Field(True, description="Whether field is active")
+
+
 class JobPositionUpdate(BaseModel):
     """Schema for updating a job position"""
     job_position_workflow_id: Optional[str] = Field(None, description="Workflow ID")
     stage_id: Optional[str] = Field(None, description="Stage ID")
     phase_workflows: Optional[Dict[str, str]] = Field(None, description="Phase workflows mapping")
     custom_fields_values: Optional[Dict[str, Any]] = Field(None, description="Custom field values")
+    custom_fields_config: Optional[List[CustomFieldDefinitionSchema]] = Field(None, description="Custom field definitions (position-specific)")
     title: Optional[str] = Field(None, description="Position title")
     description: Optional[str] = Field(None, description="Position description")
     job_category: Optional[str] = Field(None, description="Job category")
@@ -138,6 +152,7 @@ class JobPositionResponse(BaseModel):
     stage_id: Optional[str] = None
     phase_workflows: Optional[Dict[str, str]] = None
     custom_fields_values: Dict[str, Any] = Field(default_factory=dict)
+    custom_fields_config: List[CustomFieldDefinitionSchema] = Field(default_factory=list)
     company_name: Optional[str] = None
     description: Optional[str] = None
     job_category: str = "other"
@@ -178,6 +193,24 @@ class JobPositionResponse(BaseModel):
     @classmethod
     def from_dto(cls, dto: JobPositionDto, company_name: Optional[str] = None) -> 'JobPositionResponse':
         """Convert JobPositionDto to JobPositionResponse"""
+        # Convert custom_fields_config dicts to schema objects
+        custom_fields_config = []
+        if dto.custom_fields_config:
+            custom_fields_config = [
+                CustomFieldDefinitionSchema(
+                    field_key=cf.get("field_key", ""),
+                    label=cf.get("label", ""),
+                    field_type=cf.get("field_type", "TEXT"),
+                    options=cf.get("options"),
+                    is_required=cf.get("is_required", False),
+                    candidate_visible=cf.get("candidate_visible", True),
+                    validation_rules=cf.get("validation_rules"),
+                    sort_order=cf.get("sort_order", 0),
+                    is_active=cf.get("is_active", True),
+                )
+                for cf in dto.custom_fields_config
+            ]
+
         return cls(
             id=dto.id.value,
             title=dto.title,
@@ -186,6 +219,7 @@ class JobPositionResponse(BaseModel):
             stage_id=dto.stage_id,
             phase_workflows=dto.phase_workflows,
             custom_fields_values=dto.custom_fields_values,
+            custom_fields_config=custom_fields_config,
             company_name=company_name,
             description=dto.description,
             job_category=dto.job_category.value,

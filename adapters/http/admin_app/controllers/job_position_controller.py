@@ -1,5 +1,6 @@
 """Job position admin controller"""
 import logging
+from decimal import Decimal
 from typing import List, Optional, Dict, Any
 
 from adapters.http.admin_app.mappers.job_position_mapper import JobPositionMapper
@@ -19,13 +20,24 @@ from src.company_bc.job_position.application.queries.job_position_dto import Job
 # Job position queries
 from src.company_bc.job_position.application.queries.list_job_positions import ListJobPositionsQuery
 # Domain enums
-from src.company_bc.job_position.domain.enums import JobPositionVisibilityEnum
+from src.company_bc.job_position.domain.enums import (
+    JobPositionVisibilityEnum,
+    EmploymentTypeEnum,
+    ExperienceLevelEnum,
+    WorkLocationTypeEnum,
+    SalaryPeriodEnum,
+)
 from src.company_bc.job_position.domain.value_objects import JobPositionId
 from src.company_bc.job_position.domain.value_objects.job_position_workflow_id import JobPositionWorkflowId
 from src.company_bc.job_position.domain.value_objects.stage_id import StageId
+from src.company_bc.job_position.domain.value_objects.custom_field_definition import CustomFieldDefinition
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 from src.framework.domain.enums.job_category import JobCategoryEnum
+from src.shared_bc.customization.workflow.application.queries.stage.list_stages_by_workflow import (
+    ListStagesByWorkflowQuery
+)
+from src.shared_bc.customization.workflow.domain.value_objects.workflow_id import WorkflowId
 
 # DTOs and schemas
 
@@ -160,6 +172,20 @@ class JobPositionController:
             stage_id = None
             if position_data.stage_id:
                 stage_id = StageId.from_string(position_data.stage_id)
+            elif job_position_workflow_id:
+                # If no stage_id provided but workflow is, get the first stage of the workflow
+                try:
+                    stages_query = ListStagesByWorkflowQuery(
+                        workflow_id=WorkflowId.from_string(job_position_workflow_id.value)
+                    )
+                    stages: List[Any] = self.query_bus.query(stages_query)
+                    if stages:
+                        # Stages are ordered by position, get the first one
+                        first_stage = min(stages, key=lambda s: s.order)
+                        stage_id = StageId.from_string(first_stage.id)
+                        logger.info(f"Auto-assigned first stage {first_stage.id} for workflow {job_position_workflow_id.value}")
+                except Exception as e:
+                    logger.warning(f"Could not auto-assign first stage for workflow: {e}")
 
             id = JobPositionId.generate()
             command = CreateJobPositionCommand(
@@ -248,6 +274,53 @@ class JobPositionController:
             elif not custom_fields_values:
                 custom_fields_values = current_dto.custom_fields_values
 
+            # Convert enum strings to enums
+            employment_type = None
+            if position_data.employment_type:
+                try:
+                    employment_type = EmploymentTypeEnum(position_data.employment_type)
+                except ValueError:
+                    pass
+
+            experience_level = None
+            if position_data.experience_level:
+                try:
+                    experience_level = ExperienceLevelEnum(position_data.experience_level)
+                except ValueError:
+                    pass
+
+            work_location_type = None
+            if position_data.work_location_type:
+                try:
+                    work_location_type = WorkLocationTypeEnum(position_data.work_location_type)
+                except ValueError:
+                    pass
+
+            salary_period = None
+            if position_data.salary_period:
+                try:
+                    salary_period = SalaryPeriodEnum(position_data.salary_period)
+                except ValueError:
+                    pass
+
+            # Convert custom_fields_config schemas to domain objects
+            custom_fields_config = None
+            if position_data.custom_fields_config is not None:
+                custom_fields_config = [
+                    CustomFieldDefinition(
+                        field_key=cf.field_key,
+                        label=cf.label,
+                        field_type=cf.field_type,
+                        options=cf.options,
+                        is_required=cf.is_required,
+                        candidate_visible=cf.candidate_visible,
+                        validation_rules=cf.validation_rules,
+                        sort_order=cf.sort_order,
+                        is_active=cf.is_active,
+                    )
+                    for cf in position_data.custom_fields_config
+                ]
+
             command = UpdateJobPositionCommand(
                 id=JobPositionId.from_string(position_id),
                 job_position_workflow_id=job_position_workflow_id,
@@ -264,7 +337,30 @@ class JobPositionController:
                     else current_dto.application_deadline
                 ),
                 visibility=visibility,
-                public_slug=position_data.public_slug if position_data.public_slug is not None else current_dto.public_slug
+                public_slug=position_data.public_slug if position_data.public_slug is not None else current_dto.public_slug,
+                screening_template_id=position_data.screening_template_id,
+                # Job details fields
+                skills=position_data.skills,
+                department_id=position_data.department_id,
+                employment_type=employment_type,
+                experience_level=experience_level,
+                work_location_type=work_location_type,
+                office_locations=position_data.office_locations,
+                remote_restrictions=position_data.remote_restrictions,
+                number_of_openings=position_data.number_of_openings,
+                requisition_id=position_data.requisition_id,
+                # Financial fields
+                salary_currency=position_data.salary_currency,
+                salary_min=Decimal(str(position_data.salary_min)) if position_data.salary_min is not None else None,
+                salary_max=Decimal(str(position_data.salary_max)) if position_data.salary_max is not None else None,
+                salary_period=salary_period,
+                show_salary=position_data.show_salary,
+                budget_max=Decimal(str(position_data.budget_max)) if position_data.budget_max is not None else None,
+                # Ownership fields
+                hiring_manager_id=position_data.hiring_manager_id,
+                recruiter_id=position_data.recruiter_id,
+                # Custom fields config
+                custom_fields_config=custom_fields_config,
             )
 
             self.command_bus.dispatch(command)
