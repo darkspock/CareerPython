@@ -6,6 +6,7 @@ from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum,
     InterviewTemplateTypeEnum,
+    InterviewTemplateScopeEnum,
     ScoringModeEnum
 )
 from src.interview_bc.interview_template.domain.value_objects.interview_template_id import InterviewTemplateId
@@ -21,6 +22,7 @@ class InterviewTemplate:
     goal: str  # what to achieve with this template
     status: InterviewTemplateStatusEnum
     template_type: InterviewTemplateTypeEnum
+    scope: InterviewTemplateScopeEnum  # Where this template can be used
     job_category: Optional[JobCategoryEnum]
     allow_ai_questions: bool = False  # If True, AI can generate additional questions beyond the defined ones
     use_conversational_mode: bool = False  # If True, interview uses chat-style AI conversation instead of form
@@ -33,6 +35,7 @@ class InterviewTemplate:
     def create(id: InterviewTemplateId, company_id: Optional[CompanyId], name: str, intro: str, prompt: str, goal: str,
                status: InterviewTemplateStatusEnum, template_type: InterviewTemplateTypeEnum,
                job_category: Optional[JobCategoryEnum],
+               scope: InterviewTemplateScopeEnum = InterviewTemplateScopeEnum.STANDALONE,
                allow_ai_questions: bool = False,
                use_conversational_mode: bool = False,
                scoring_mode: Optional[ScoringModeEnum] = None,
@@ -47,6 +50,7 @@ class InterviewTemplate:
             goal=goal,
             status=status,
             template_type=template_type,
+            scope=scope,
             job_category=job_category,
             allow_ai_questions=allow_ai_questions,
             use_conversational_mode=use_conversational_mode,
@@ -58,6 +62,7 @@ class InterviewTemplate:
 
     def update_details(self, company_id: Optional[CompanyId], name: str, status: InterviewTemplateStatusEnum,
                        template_type: InterviewTemplateTypeEnum, job_category: Optional[JobCategoryEnum],
+                       scope: Optional[InterviewTemplateScopeEnum] = None,
                        allow_ai_questions: bool = False,
                        use_conversational_mode: bool = False,
                        scoring_mode: Optional[ScoringModeEnum] = None,
@@ -68,6 +73,8 @@ class InterviewTemplate:
         self.status = status
         self.template_type = template_type
         self.job_category = job_category
+        if scope is not None:
+            self.scope = scope
         self.allow_ai_questions = allow_ai_questions
         self.use_conversational_mode = use_conversational_mode
         self.scoring_mode = scoring_mode

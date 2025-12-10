@@ -11,6 +11,7 @@ from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateTypeEnum,
     InterviewTemplateStatusEnum,
+    InterviewTemplateScopeEnum,
     ScoringModeEnum
 )
 
@@ -30,6 +31,10 @@ class InterviewTemplateModel(Base):
     prompt: Mapped[str] = mapped_column(Text, nullable=False)  # Instructions for the interviewer
     goal: Mapped[str] = mapped_column(Text, nullable=False)  # What to achieve with this template
     type: Mapped[InterviewTemplateTypeEnum] = mapped_column(Enum(InterviewTemplateTypeEnum), nullable=False, index=True)
+    scope: Mapped[InterviewTemplateScopeEnum] = mapped_column(
+        Enum(InterviewTemplateScopeEnum), nullable=False,
+        default=InterviewTemplateScopeEnum.STANDALONE, index=True
+    )
     status: Mapped[InterviewTemplateStatusEnum] = mapped_column(Enum(InterviewTemplateStatusEnum), nullable=False,
                                                                 default=InterviewTemplateStatusEnum.DRAFT, index=True)
     job_category: Mapped[Optional[JobCategoryEnum]] = mapped_column(Enum(JobCategoryEnum), nullable=True, index=True)

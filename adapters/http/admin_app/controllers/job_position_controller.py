@@ -363,3 +363,420 @@ class JobPositionController:
         except Exception as e:
             logger.error(f"Error updating custom fields for position {position_id}: {str(e)}")
             raise
+
+    # ==================== STATUS TRANSITION METHODS ====================
+
+    def request_approval(
+            self,
+            position_id: str,
+            company_id: str
+    ) -> JobPositionActionResponse:
+        """Request approval for a job position (DRAFT -> PENDING_APPROVAL)"""
+        from src.company_bc.job_position.application.commands import (
+            RequestJobPositionApprovalCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError,
+            JobPositionBudgetExceededError
+        )
+
+        try:
+            command = RequestJobPositionApprovalCommand(
+                job_position_id=position_id,
+                company_id=company_id
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Approval requested successfully",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except JobPositionBudgetExceededError as e:
+            logger.warning(f"Budget exceeded for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error requesting approval for position {position_id}: {str(e)}")
+            raise
+
+    def approve_position(
+            self,
+            position_id: str,
+            approver_id: str,
+            company_id: str
+    ) -> JobPositionActionResponse:
+        """Approve a job position (PENDING_APPROVAL -> APPROVED)"""
+        from src.company_bc.job_position.application.commands import (
+            ApproveJobPositionCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError
+        )
+
+        try:
+            command = ApproveJobPositionCommand(
+                job_position_id=position_id,
+                approver_id=approver_id,
+                company_id=company_id
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position approved successfully",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error approving position {position_id}: {str(e)}")
+            raise
+
+    def reject_position(
+            self,
+            position_id: str,
+            company_id: str,
+            reason: Optional[str] = None
+    ) -> JobPositionActionResponse:
+        """Reject a job position (PENDING_APPROVAL -> REJECTED)"""
+        from src.company_bc.job_position.application.commands import (
+            RejectJobPositionCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError
+        )
+
+        try:
+            command = RejectJobPositionCommand(
+                job_position_id=position_id,
+                company_id=company_id,
+                reason=reason
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position rejected",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error rejecting position {position_id}: {str(e)}")
+            raise
+
+    def publish_position(
+            self,
+            position_id: str,
+            company_id: str
+    ) -> JobPositionActionResponse:
+        """Publish a job position (APPROVED/DRAFT -> PUBLISHED)"""
+        from src.company_bc.job_position.application.commands import (
+            PublishJobPositionCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError
+        )
+
+        try:
+            command = PublishJobPositionCommand(
+                job_position_id=position_id,
+                company_id=company_id
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position published successfully",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error publishing position {position_id}: {str(e)}")
+            raise
+
+    def hold_position(
+            self,
+            position_id: str,
+            company_id: str
+    ) -> JobPositionActionResponse:
+        """Put a job position on hold (PUBLISHED -> ON_HOLD)"""
+        from src.company_bc.job_position.application.commands import (
+            HoldJobPositionCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError
+        )
+
+        try:
+            command = HoldJobPositionCommand(
+                job_position_id=position_id,
+                company_id=company_id
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position put on hold",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error putting position {position_id} on hold: {str(e)}")
+            raise
+
+    def resume_position(
+            self,
+            position_id: str,
+            company_id: str
+    ) -> JobPositionActionResponse:
+        """Resume a held job position (ON_HOLD -> PUBLISHED)"""
+        from src.company_bc.job_position.application.commands import (
+            ResumeJobPositionCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError
+        )
+
+        try:
+            command = ResumeJobPositionCommand(
+                job_position_id=position_id,
+                company_id=company_id
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position resumed",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error resuming position {position_id}: {str(e)}")
+            raise
+
+    def close_position(
+            self,
+            position_id: str,
+            company_id: str,
+            closed_reason: str
+    ) -> JobPositionActionResponse:
+        """Close a job position (PUBLISHED/ON_HOLD -> CLOSED)"""
+        from src.company_bc.job_position.application.commands import (
+            CloseJobPositionCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError
+        )
+
+        try:
+            command = CloseJobPositionCommand(
+                job_position_id=position_id,
+                company_id=company_id,
+                closed_reason=closed_reason
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position closed",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except ValueError as e:
+            # Invalid closed_reason enum value
+            logger.warning(f"Invalid closed_reason for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=f"Invalid closed reason: {closed_reason}",
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error closing position {position_id}: {str(e)}")
+            raise
+
+    def archive_position(
+            self,
+            position_id: str,
+            company_id: str
+    ) -> JobPositionActionResponse:
+        """Archive a job position (various -> ARCHIVED)"""
+        from src.company_bc.job_position.application.commands import (
+            ArchiveJobPositionCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError
+        )
+
+        try:
+            command = ArchiveJobPositionCommand(
+                job_position_id=position_id,
+                company_id=company_id
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position archived",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error archiving position {position_id}: {str(e)}")
+            raise
+
+    def revert_to_draft(
+            self,
+            position_id: str,
+            company_id: str
+    ) -> JobPositionActionResponse:
+        """Revert a job position to draft (REJECTED/APPROVED/CLOSED -> DRAFT)"""
+        from src.company_bc.job_position.application.commands import (
+            RevertJobPositionToDraftCommand
+        )
+        from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
+            JobPositionInvalidStatusTransitionError
+        )
+
+        try:
+            command = RevertJobPositionToDraftCommand(
+                job_position_id=position_id,
+                company_id=company_id
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position reverted to draft",
+                position_id=position_id
+            )
+        except JobPositionInvalidStatusTransitionError as e:
+            logger.warning(f"Invalid status transition for position {position_id}: {str(e)}")
+            return JobPositionActionResponse(
+                success=False,
+                message=str(e),
+                position_id=position_id
+            )
+        except Exception as e:
+            logger.error(f"Error reverting position {position_id} to draft: {str(e)}")
+            raise
+
+    def clone_position(
+            self,
+            source_position_id: str,
+            company_id: str
+    ) -> JobPositionActionResponse:
+        """Clone a job position (creates new position in DRAFT)"""
+        from src.company_bc.job_position.application.commands import (
+            CloneJobPositionCommand
+        )
+
+        try:
+            new_position_id = JobPositionId.generate()
+            command = CloneJobPositionCommand(
+                source_job_position_id=source_position_id,
+                company_id=company_id,
+                new_job_position_id=new_position_id.value
+            )
+            self.command_bus.dispatch(command)
+
+            return JobPositionActionResponse(
+                success=True,
+                message="Position cloned successfully",
+                position_id=new_position_id.value
+            )
+        except Exception as e:
+            logger.error(f"Error cloning position {source_position_id}: {str(e)}")
+            raise
+
+    def create_inline_screening_template(
+            self,
+            position_id: str,
+            company_id: str,
+            name: Optional[str] = None,
+            intro: Optional[str] = None,
+            prompt: Optional[str] = None,
+            goal: Optional[str] = None,
+            created_by: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Create a screening template inline and link it to a job position"""
+        from adapters.http.admin_app.schemas.job_position import CreateInlineScreeningTemplateResponse
+        from src.company_bc.job_position.application.commands.create_inline_screening_template import (
+            CreateInlineScreeningTemplateCommand
+        )
+
+        try:
+            command = CreateInlineScreeningTemplateCommand(
+                position_id=JobPositionId.from_string(position_id),
+                company_id=CompanyId.from_string(company_id),
+                name=name,
+                intro=intro,
+                prompt=prompt,
+                goal=goal,
+                created_by=created_by
+            )
+            self.command_bus.dispatch(command)
+
+            # Get the updated position to retrieve the template ID
+            position = self.get_position_by_id(position_id)
+
+            return CreateInlineScreeningTemplateResponse(
+                success=True,
+                message="Screening template created and linked successfully",
+                template_id=position.screening_template_id,
+                position_id=position_id
+            ).model_dump()
+        except Exception as e:
+            logger.error(f"Error creating inline screening template for position {position_id}: {str(e)}")
+            raise

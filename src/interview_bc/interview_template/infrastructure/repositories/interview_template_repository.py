@@ -8,7 +8,7 @@ from core.database import DatabaseInterface
 from src.framework.domain.enums.job_category import JobCategoryEnum
 from src.interview_bc.interview_template.domain.entities.interview_template import InterviewTemplate
 from src.interview_bc.interview_template.domain.enums import (
-    InterviewTemplateStatusEnum, InterviewTemplateTypeEnum
+    InterviewTemplateStatusEnum, InterviewTemplateTypeEnum, InterviewTemplateScopeEnum
 )
 from src.interview_bc.interview_template.domain.exceptions.interview_exceptions import (
     InterviewTemplateNotFoundException,
@@ -38,6 +38,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
                     goal=template.goal,
                     status=template.status,
                     type=template.template_type,
+                    scope=template.scope,
                     job_category=template.job_category,
                     allow_ai_questions=template.allow_ai_questions,
                     use_conversational_mode=template.use_conversational_mode,
@@ -95,6 +96,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             db_template.goal = template.goal
             db_template.status = template.status
             db_template.type = template.template_type
+            db_template.scope = template.scope
             db_template.job_category = template.job_category
             db_template.allow_ai_questions = template.allow_ai_questions
             db_template.use_conversational_mode = template.use_conversational_mode
@@ -247,6 +249,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             goal=db_template.goal,
             status=db_template.status,
             template_type=db_template.type,
+            scope=db_template.scope,
             job_category=db_template.job_category,
             allow_ai_questions=db_template.allow_ai_questions,
             use_conversational_mode=db_template.use_conversational_mode,
@@ -275,6 +278,7 @@ class InterviewTemplateRepository(InterviewTemplateRepositoryInterface):
             goal=original.goal,
             status=InterviewTemplateStatusEnum.DRAFT,  # Clones start as draft
             template_type=original.template_type,
+            scope=original.scope,
             job_category=original.job_category,
             allow_ai_questions=original.allow_ai_questions,
             use_conversational_mode=original.use_conversational_mode,

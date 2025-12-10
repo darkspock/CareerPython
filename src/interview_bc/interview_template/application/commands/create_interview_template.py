@@ -8,6 +8,7 @@ from src.interview_bc.interview_template.domain.entities.interview_template impo
 from src.interview_bc.interview_template.domain.enums import (
     InterviewTemplateStatusEnum,
     InterviewTemplateTypeEnum,
+    InterviewTemplateScopeEnum,
     ScoringModeEnum
 )
 from src.interview_bc.interview_template.domain.infrastructure.interview_template_repository_interface import \
@@ -24,6 +25,7 @@ class CreateInterviewTemplateCommand(Command):
     prompt: Optional[str] = None
     goal: Optional[str] = None
     template_type: InterviewTemplateTypeEnum = InterviewTemplateTypeEnum.EXTENDED_PROFILE
+    scope: InterviewTemplateScopeEnum = InterviewTemplateScopeEnum.STANDALONE
     job_category: Optional[JobCategoryEnum] = None
     allow_ai_questions: bool = False
     use_conversational_mode: bool = False
@@ -47,6 +49,7 @@ class CreateInterviewTemplateCommandHandler(CommandHandler[CreateInterviewTempla
             goal=command.goal or "",
             status=InterviewTemplateStatusEnum.DRAFT,  # New templates start as DRAFT
             template_type=command.template_type,
+            scope=command.scope,
             job_category=command.job_category,
             allow_ai_questions=command.allow_ai_questions,
             use_conversational_mode=command.use_conversational_mode,
@@ -54,6 +57,6 @@ class CreateInterviewTemplateCommandHandler(CommandHandler[CreateInterviewTempla
             legal_notice=command.legal_notice,
             tags=command.tags or [],
             metadata=command.template_metadata or {},
-            company_id=command.company_id  # Company association can be set later
+            company_id=command.company_id
         )
         self.interview_template_repository.create(new_interview_template)

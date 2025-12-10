@@ -12,6 +12,11 @@ from adapters.http.admin_app.controllers.job_position_controller import JobPosit
 from adapters.http.admin_app.schemas.job_position import (
     JobPositionListResponse,
     JobPositionResponse,
+    JobPositionActionResponse,
+    RejectJobPositionRequest,
+    CloseJobPositionRequest,
+    CreateInlineScreeningTemplateRequest,
+    CreateInlineScreeningTemplateResponse,
 )
 from adapters.http.admin_app.schemas.job_position_workflow import MoveJobPositionToStageRequest
 from core.containers import Container
@@ -181,6 +186,450 @@ def move_position_to_stage(
         )
     except Exception as e:
         log.error(f"Error moving position {position_id} to stage: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+# ==================== STATUS TRANSITION ENDPOINTS ====================
+
+@router.post("/{position_id}/request-approval", response_model=JobPositionActionResponse)
+@inject
+def request_approval(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Request approval for a job position (DRAFT -> PENDING_APPROVAL)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.request_approval(
+            position_id=position_id,
+            company_id=company_id
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error requesting approval for position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/approve", response_model=JobPositionActionResponse)
+@inject
+def approve_position(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token),
+        company_user_id: Optional[str] = Depends(get_company_user_id_from_token)
+) -> JobPositionActionResponse:
+    """Approve a job position (PENDING_APPROVAL -> APPROVED)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        if not company_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Approver ID is required"
+            )
+
+        result = controller.approve_position(
+            position_id=position_id,
+            approver_id=company_user_id,
+            company_id=company_id
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error approving position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/reject", response_model=JobPositionActionResponse)
+@inject
+def reject_position(
+        position_id: str,
+        request: RejectJobPositionRequest,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Reject a job position (PENDING_APPROVAL -> REJECTED)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.reject_position(
+            position_id=position_id,
+            company_id=company_id,
+            reason=request.reason
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error rejecting position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/publish", response_model=JobPositionActionResponse)
+@inject
+def publish_position(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Publish a job position (APPROVED/DRAFT -> PUBLISHED)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.publish_position(
+            position_id=position_id,
+            company_id=company_id
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error publishing position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/hold", response_model=JobPositionActionResponse)
+@inject
+def hold_position(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Put a job position on hold (PUBLISHED -> ON_HOLD)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.hold_position(
+            position_id=position_id,
+            company_id=company_id
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error putting position {position_id} on hold: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/resume", response_model=JobPositionActionResponse)
+@inject
+def resume_position(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Resume a held job position (ON_HOLD -> PUBLISHED)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.resume_position(
+            position_id=position_id,
+            company_id=company_id
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error resuming position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/close", response_model=JobPositionActionResponse)
+@inject
+def close_position(
+        position_id: str,
+        request: CloseJobPositionRequest,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Close a job position (PUBLISHED/ON_HOLD -> CLOSED)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.close_position(
+            position_id=position_id,
+            company_id=company_id,
+            closed_reason=request.reason
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error closing position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/archive", response_model=JobPositionActionResponse)
+@inject
+def archive_position(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Archive a job position (various -> ARCHIVED)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.archive_position(
+            position_id=position_id,
+            company_id=company_id
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error archiving position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/revert-to-draft", response_model=JobPositionActionResponse)
+@inject
+def revert_to_draft(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Revert a job position to draft (REJECTED/APPROVED/CLOSED -> DRAFT)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.revert_to_draft(
+            position_id=position_id,
+            company_id=company_id
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error reverting position {position_id} to draft: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/clone", response_model=JobPositionActionResponse)
+@inject
+def clone_position(
+        position_id: str,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token)
+) -> JobPositionActionResponse:
+    """Clone a job position (creates new position in DRAFT)"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.clone_position(
+            source_position_id=position_id,
+            company_id=company_id
+        )
+
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.message
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error cloning position {position_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/{position_id}/screening-template", response_model=CreateInlineScreeningTemplateResponse)
+@inject
+def create_inline_screening_template(
+        position_id: str,
+        request: CreateInlineScreeningTemplateRequest,
+        controller: JobPositionController = Depends(Provide[Container.job_position_controller]),
+        company_id: str = Depends(get_company_id_from_token),
+        company_user_id: Optional[str] = Depends(get_company_user_id_from_token)
+) -> CreateInlineScreeningTemplateResponse:
+    """Create a screening template inline and link it to a job position"""
+    try:
+        # Verify the position belongs to the company
+        position = controller.get_position_by_id(position_id)
+        if position.company_id != company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Position does not belong to your company"
+            )
+
+        result = controller.create_inline_screening_template(
+            position_id=position_id,
+            company_id=company_id,
+            name=request.name,
+            intro=request.intro,
+            prompt=request.prompt,
+            goal=request.goal,
+            created_by=company_user_id
+        )
+
+        return CreateInlineScreeningTemplateResponse(**result)
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error creating inline screening template for position {position_id}: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

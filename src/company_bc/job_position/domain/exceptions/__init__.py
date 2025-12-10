@@ -3,7 +3,11 @@ from .job_position_exceptions import (
     JobPositionValidationError,
     JobPositionNotApprovedException,
     JobPositionCompanyNotApprovedException,
-    JobPositionNotFoundException
+    JobPositionNotFoundException,
+    JobPositionInvalidStatusTransitionError,
+    JobPositionFieldLockedError,
+    JobPositionBudgetExceededError,
+    JobPositionInvalidScreeningTemplateError
 )
 
 __all__ = [
@@ -11,5 +15,9 @@ __all__ = [
     "JobPositionValidationError",
     "JobPositionNotApprovedException",
     "JobPositionCompanyNotApprovedException",
-    "JobPositionNotFoundException"
+    "JobPositionNotFoundException",
+    "JobPositionInvalidStatusTransitionError",
+    "JobPositionFieldLockedError",
+    "JobPositionBudgetExceededError",
+    "JobPositionInvalidScreeningTemplateError"
 ]

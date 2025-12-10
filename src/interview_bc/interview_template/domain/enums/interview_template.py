@@ -26,3 +26,10 @@ class ScoringModeEnum(str, Enum):
     """Enum for interview template scoring mode"""
     DISTANCE = "DISTANCE"  # Better when closer to requirements
     ABSOLUTE = "ABSOLUTE"  # Better when higher score
+
+
+class InterviewTemplateScopeEnum(str, Enum):
+    """Enum for interview template scope - where the template can be used"""
+    PIPELINE = "PIPELINE"  # Used in candidate pipeline (phase-level interviews)
+    APPLICATION = "APPLICATION"  # Used for job application screening
+    STANDALONE = "STANDALONE"  # Standalone interview, not tied to pipeline or application

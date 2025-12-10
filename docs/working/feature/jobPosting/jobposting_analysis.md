@@ -74,7 +74,7 @@ The company onboarding process (`InitializeCompanyPhasesCommand`) already create
 | **Custom Fields Snapshot** | High | Copy config from workflow at creation |
 | **Skills/Tags Field** | Medium | List of strings for SEO/matching |
 | **Languages Field** | Medium | Structured language requirements |
-| **Quick/Controlled Mode** | Medium | Company setting for approval bypass |
+| **Quick/Controlled Mode** | ❌ Removed | Solved via workflow configuration (2-stage vs multi-stage workflow) |
 | **Interview Template Scope** | Medium | PIPELINE vs APPLICATION vs STANDALONE |
 | **Inline Screening Creation** | Medium | Create template without leaving job form |
 
@@ -507,12 +507,13 @@ class PublicJobPositionResponse(BaseModel):
 | Inline creation from job form | Medium | Scope field |
 | Link screening_template_id to position | Low | Scope field |
 
-### Phase 6: Quick/Controlled Mode (Low Priority)
+### ~~Phase 6: Quick/Controlled Mode~~ (REMOVED)
 
-| Task | Complexity | Dependencies |
-|------|------------|--------------|
-| Company setting for mode | Low | None |
-| Conditional approval bypass | Low | Mode setting |
+> **Note:** This phase has been removed. The Quick/Controlled mode can be achieved through workflow configuration:
+> - **Quick Mode:** Configure a 2-stage workflow (Draft → Published)
+> - **Controlled Mode:** Configure a multi-stage workflow (Draft → Pending Approval → Content Review → Published)
+>
+> This approach leverages the existing workflow system and eliminates the need for a separate company setting.
 
 ---
 
@@ -527,8 +528,8 @@ class PublicJobPositionResponse(BaseModel):
 - [ ] Custom fields freeze on publish
 
 ### Integration Tests
-- [ ] Full publishing flow: Draft → Approval → Published
-- [ ] Quick mode: Draft → Published (skip approval)
+- [ ] Full publishing flow: Draft → Approval → Published (multi-stage workflow)
+- [ ] Simple publishing flow: Draft → Published (2-stage workflow)
 - [ ] Rejection flow: Draft → Pending → Rejected → Draft
 - [ ] Close with reason
 - [ ] Clone position
@@ -555,6 +556,7 @@ The Job Posting & Publishing Flow feature requires:
 **Estimated Effort:**
 - Phase 1-2 (Core + Flow): High priority, foundational
 - Phase 3-4 (Snapshot + Financial): High priority, critical for Enterprise
-- Phase 5-6 (Screening + Modes): Medium priority, enhances UX
+- Phase 5 (Screening): Medium priority, enhances UX
+- ~~Phase 6 (Quick/Controlled Mode)~~: Removed - solved via workflow configuration
 
-The existing workflow/stage infrastructure provides a solid foundation. Main work is extending the JobPosition entity and adding the publishing flow logic.
+The existing workflow/stage infrastructure provides a solid foundation. Main work is extending the JobPosition entity and adding the publishing flow logic. The Quick/Controlled mode is inherently supported by configuring different workflows (2-stage for quick, multi-stage for controlled).
