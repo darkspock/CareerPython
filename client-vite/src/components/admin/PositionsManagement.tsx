@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { usePositions } from '../../hooks/usePositions';
 import { useLanguageEnums, usePositionEnums } from '../../hooks/useEnums';
-import type { Position, PositionFormData } from '../../types/position';
+import type { Position, PositionFormData, EmploymentType, ExperienceLevel } from '../../types/position';
+import { WorkLocationType } from '../../types/position';
 import {
   getDepartment,
   getLocation,
@@ -144,8 +145,8 @@ export const PositionsManagement: React.FC = () => {
       company_id: companyFilter || undefined,
       department: departmentFilter || undefined,
       location: locationFilter || undefined,
-      employment_type: employmentTypeFilter || undefined,
-      experience_level: experienceLevelFilter || undefined,
+      employment_type: (employmentTypeFilter || undefined) as EmploymentType | undefined,
+      experience_level: (experienceLevelFilter || undefined) as ExperienceLevel | undefined,
       is_remote: isRemoteFilter,
       is_active: isActiveFilter,
       page: 1 // Reset to first page when filters change
@@ -172,15 +173,15 @@ export const PositionsManagement: React.FC = () => {
         description: formData.description,
         department: formData.department || undefined,
         location: formData.location,
-        employment_type: formData.employment_type,
-        experience_level: formData.experience_level,
+        employment_type: formData.employment_type as EmploymentType,
+        experience_level: formData.experience_level as ExperienceLevel,
         salary_min: formData.salary_min ? parseInt(formData.salary_min) : undefined,
         salary_max: formData.salary_max ? parseInt(formData.salary_max) : undefined,
         salary_currency: formData.salary_currency || undefined,
         requirements: formData.requirements ? formData.requirements.split('\n').filter(r => r.trim()) : [],
         benefits: formData.benefits ? formData.benefits.split('\n').filter(b => b.trim()) : [],
         skills: formData.skills ? formData.skills.split('\n').filter(s => s.trim()) : [],
-        work_location_type: formData.work_location_type,
+        work_location_type: formData.work_location_type as WorkLocationType,
         application_deadline: formData.application_deadline || undefined,
         application_url: formData.application_url || undefined,
         application_email: formData.application_email || undefined,
@@ -219,15 +220,15 @@ export const PositionsManagement: React.FC = () => {
         description: formData.description,
         department: formData.department || undefined,
         location: formData.location,
-        employment_type: formData.employment_type,
-        experience_level: formData.experience_level,
+        employment_type: formData.employment_type as EmploymentType,
+        experience_level: formData.experience_level as ExperienceLevel,
         salary_min: formData.salary_min ? parseInt(formData.salary_min) : undefined,
         salary_max: formData.salary_max ? parseInt(formData.salary_max) : undefined,
         salary_currency: formData.salary_currency || undefined,
         requirements: formData.requirements ? formData.requirements.split('\n').filter(r => r.trim()) : [],
         benefits: formData.benefits ? formData.benefits.split('\n').filter(b => b.trim()) : [],
         skills: formData.skills ? formData.skills.split('\n').filter(s => s.trim()) : [],
-        work_location_type: formData.work_location_type,
+        work_location_type: formData.work_location_type as WorkLocationType,
         application_deadline: formData.application_deadline || undefined,
         application_url: formData.application_url || undefined,
         application_email: formData.application_email || undefined,

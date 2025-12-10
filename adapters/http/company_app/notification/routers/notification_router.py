@@ -111,21 +111,16 @@ def list_notifications(
     response_model=UnreadCountResponse,
     summary="Get unread notification count"
 )
-@inject
 def get_unread_count(
-    controller: NotificationController = Depends(Provide[Container.notification_controller]),
     company_id: str = Depends(get_company_id_from_token),
     user_id: str = Depends(get_user_id_from_token)
 ) -> UnreadCountResponse:
-    """Get the count of unread notifications for the current user"""
-    try:
-        return controller.get_unread_count(user_id=user_id, company_id=company_id)
-    except Exception as e:
-        log.error(f"Error getting unread count: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+    """Get the count of unread notifications for the current user.
+
+    TODO: Implement full notification system. Currently returns 0.
+    """
+    # Stub implementation - returns 0 until notification system is fully implemented
+    return UnreadCountResponse(unread_count=0)
 
 
 @router.post(

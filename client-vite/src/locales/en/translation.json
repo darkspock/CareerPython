@@ -861,5 +861,147 @@
     "linkCopied": "Link copied!",
     "subscribe": "Subscribe to Calendar",
     "notScheduled": "Interview not scheduled yet"
+  },
+  "jobPosition": {
+    "title": "Job Positions",
+    "createPosition": "Create Position",
+    "editPosition": "Edit Position",
+    "viewDetails": "View Details",
+    "noPositions": "No positions yet",
+    "createFirst": "Create your first job position to start attracting candidates",
+    "status": {
+      "draft": "Draft",
+      "pending_approval": "Pending Approval",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "published": "Published",
+      "on_hold": "On Hold",
+      "closed": "Closed",
+      "archived": "Archived"
+    },
+    "closedReason": {
+      "filled": "Position Filled",
+      "cancelled": "Cancelled",
+      "budget_cut": "Budget Cut",
+      "duplicate": "Duplicate",
+      "other": "Other"
+    },
+    "employmentType": {
+      "full_time": "Full Time",
+      "part_time": "Part Time",
+      "contract": "Contract",
+      "freelance": "Freelance",
+      "internship": "Internship",
+      "temporary": "Temporary"
+    },
+    "experienceLevel": {
+      "entry": "Entry Level",
+      "junior": "Junior",
+      "mid": "Mid Level",
+      "senior": "Senior",
+      "lead": "Lead",
+      "director": "Director",
+      "executive": "Executive"
+    },
+    "workLocationType": {
+      "on_site": "On-site",
+      "remote": "Remote",
+      "hybrid": "Hybrid"
+    },
+    "salaryPeriod": {
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "actions": {
+      "requestApproval": "Request Approval",
+      "approve": "Approve",
+      "reject": "Reject",
+      "publish": "Publish",
+      "hold": "Put on Hold",
+      "resume": "Resume",
+      "close": "Close Position",
+      "archive": "Archive",
+      "revertToDraft": "Revert to Draft",
+      "clone": "Clone Position"
+    },
+    "form": {
+      "basicInfo": "Basic Information",
+      "jobDetails": "Job Details",
+      "compensation": "Compensation",
+      "pipeline": "Pipeline & Screening",
+      "customFields": "Custom Fields",
+      "team": "Team Assignment",
+      "title": "Job Title",
+      "titleRequired": "Title is required",
+      "requisitionId": "Requisition ID",
+      "jobCategory": "Job Category",
+      "description": "Job Description",
+      "visibility": "Visibility",
+      "visibilityHidden": "Hidden - Only accessible by direct link",
+      "visibilityInternal": "Internal - Visible to company users",
+      "visibilityPublic": "Public - Visible on job board",
+      "employmentType": "Employment Type",
+      "experienceLevel": "Experience Level",
+      "workLocation": "Work Location",
+      "numberOfOpenings": "Number of Openings",
+      "applicationDeadline": "Application Deadline",
+      "officeLocations": "Office Locations",
+      "remoteRestrictions": "Remote Restrictions",
+      "skills": "Skills / Tags",
+      "languages": "Language Requirements",
+      "salaryRange": "Salary Range",
+      "currency": "Currency",
+      "minimum": "Minimum",
+      "maximum": "Maximum",
+      "period": "Period",
+      "showSalary": "Show salary range to candidates",
+      "budget": "Internal Budget",
+      "budgetMax": "Maximum Budget",
+      "budgetNote": "This will never be shown to candidates",
+      "approvedBudget": "Approved Budget",
+      "hiringManager": "Hiring Manager",
+      "recruiter": "Recruiter",
+      "saveDraft": "Save Draft",
+      "saving": "Saving..."
+    },
+    "modal": {
+      "closeTitle": "Close Position",
+      "closeDescription": "You are about to close the position:",
+      "closeReason": "Reason for closing",
+      "additionalNotes": "Additional notes",
+      "rejectTitle": "Reject Position",
+      "rejectDescription": "You are about to reject the position:",
+      "rejectReason": "Reason for rejection",
+      "rejectReasonRequired": "Please provide a reason for rejection",
+      "rejectReasonMinLength": "Please provide a more detailed reason (at least 10 characters)",
+      "rejectNote": "This reason will be visible to the position creator."
+    },
+    "approval": {
+      "title": "Pending Approvals",
+      "subtitle": "Review and approve job positions waiting for approval",
+      "allCaughtUp": "All caught up!",
+      "noPositionsPending": "There are no positions pending approval at this time",
+      "requestedBy": "Requested by",
+      "submittedOn": "Submitted",
+      "budgetLabel": "Budget:"
+    },
+    "publicBoard": {
+      "title": "Open Positions",
+      "subtitle": "Browse our current job openings and join our team",
+      "noPositions": "No positions found",
+      "noPositionsDesc": "We don't have any open positions matching your criteria at the moment",
+      "clearFilters": "Clear Filters",
+      "positionsAvailable": "positions available",
+      "viewDetails": "View Details"
+    },
+    "fieldLocking": {
+      "lockedMessage": "This field is locked because the position is {{status}}",
+      "lockedDraft": "This field cannot be edited after leaving draft status",
+      "lockedApproved": "This field was locked when the position was approved",
+      "lockedPublished": "This field cannot be changed while the position is published"
+    }
   }
 }

@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Workflow, Eye, EyeOff, FileText, MessageSquare, History, Move, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Edit, Workflow, Eye, EyeOff, FileText, MessageSquare, History, Move, ChevronDown, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PositionService } from '../../services/positionService';
-import type { Position, JobPositionWorkflow } from '../../types/position';
+import type { Position, JobPositionWorkflow, ClosedReason } from '../../types/position';
 import {
   getStatusColorFromStage,
   getStatusLabelFromStage,
@@ -25,6 +25,16 @@ import type { JobPositionActivity } from '../../types/jobPositionActivity';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import type { WorkflowStage } from '../../types/workflow';
 import { KanbanDisplay } from '../../types/workflow';
+import {
+  StatusBadge,
+  PositionActionButtons,
+  EmploymentTypeBadge,
+  LocationTypeBadge,
+  ExperienceLevelBadge,
+  SalaryRange,
+  SkillsChips,
+  LanguagesList
+} from '../../components/jobPosition/publishing';
 
 export default function PositionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -45,6 +55,9 @@ export default function PositionDetailPage() {
   // Move to Stage dropdown state
   const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
   const moveToStageDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Publishing flow action state
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Comments refresh key
   const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
@@ -138,6 +151,137 @@ export default function PositionDetailPage() {
       alert(`Failed to move position: ${err.message}`);
     } finally {
       setChangingStage(false);
+    }
+  };
+
+  // Publishing flow action handlers
+  const handleRequestApproval = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.requestApproval(id);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to request approval: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.approve(id);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to approve: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async (reason: string) => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.reject(id, reason);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to reject: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.publish(id);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to publish: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleHold = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.hold(id);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to put on hold: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResume = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.resume(id);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to resume: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleClose = async (reason: ClosedReason, note?: string) => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.close(id, reason, note);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to close: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.archive(id);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to archive: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRevertToDraft = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      await PositionService.revertToDraft(id);
+      await loadPosition();
+    } catch (err: any) {
+      setError(`Failed to revert to draft: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleClone = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      const cloned = await PositionService.clone(id);
+      navigate(`/company/positions/${cloned.id}/edit`);
+    } catch (err: any) {
+      setError(`Failed to clone: ${err.message}`);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -237,6 +381,10 @@ export default function PositionDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Publishing Flow Status */}
+            <StatusBadge status={position.status} size="md" />
+
+            {/* Stage Badge (if using workflow) */}
             {position.stage && (
               <Badge className={getStatusColorFromStage(position.stage)}>
                 {getStatusLabelFromStage(position.stage)}
@@ -335,6 +483,28 @@ export default function PositionDetailPage() {
               );
             })()}
           </div>
+        </div>
+
+        {/* Publishing Flow Action Buttons */}
+        <div className="mt-4 pt-4 border-t">
+          <PositionActionButtons
+            positionId={position.id}
+            positionTitle={position.title}
+            status={position.status}
+            onRequestApproval={handleRequestApproval}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            onPublish={handlePublish}
+            onHold={handleHold}
+            onResume={handleResume}
+            onClose={handleClose}
+            onArchive={handleArchive}
+            onRevertToDraft={handleRevertToDraft}
+            onClone={handleClone}
+            isLoading={actionLoading}
+            layout="horizontal"
+            size="md"
+          />
         </div>
       </div>
 
@@ -466,6 +636,103 @@ export default function PositionDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Job Details Card (Publishing Flow) */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Job Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Employment Type */}
+                {position.employment_type && (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Employment Type</p>
+                    <EmploymentTypeBadge type={position.employment_type} size="sm" />
+                  </div>
+                )}
+
+                {/* Experience Level */}
+                {position.experience_level && (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Experience Level</p>
+                    <ExperienceLevelBadge level={position.experience_level} size="sm" />
+                  </div>
+                )}
+
+                {/* Work Location */}
+                {position.work_location_type && (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Work Location</p>
+                    <LocationTypeBadge type={position.work_location_type} size="sm" />
+                    {position.office_locations && position.office_locations.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {position.office_locations.join(', ')}
+                      </p>
+                    )}
+                    {position.remote_restrictions && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {position.remote_restrictions}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Salary Range */}
+                {(position.salary_min || position.salary_max) && position.show_salary && (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Salary Range</p>
+                    <SalaryRange
+                      min={position.salary_min}
+                      max={position.salary_max}
+                      currency={position.salary_currency}
+                      period={position.salary_period}
+                    />
+                  </div>
+                )}
+
+                {/* Number of Openings */}
+                {position.number_of_openings && position.number_of_openings > 1 && (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Number of Openings</p>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-gray-400" />
+                      <span className="font-medium">{position.number_of_openings}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Requisition ID */}
+                {position.requisition_id && (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Requisition ID</p>
+                    <p className="font-mono text-sm text-gray-900">{position.requisition_id}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Skills & Languages Card */}
+            {((position.skills?.length ?? 0) > 0 || (position.languages?.length ?? 0) > 0) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Skills & Languages</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {position.skills && position.skills.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Skills</p>
+                      <SkillsChips skills={position.skills} />
+                    </div>
+                  )}
+                  {position.languages && position.languages.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Languages</p>
+                      <LanguagesList languages={position.languages} />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Workflow & Stage Info */}
             {workflow && (
               <Card>

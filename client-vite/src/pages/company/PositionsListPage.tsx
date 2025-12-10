@@ -12,13 +12,14 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, ExternalLink, Kanban, List, MessageCircle } from 'lucide-react';
+import { Plus, Briefcase, MapPin, DollarSign, Users, Eye, Edit, ExternalLink, Kanban, List, MessageCircle, MoreHorizontal, Send, Rocket, Pause, Play, Archive, Copy, RotateCcw, X } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
-import type { Position, JobPositionWorkflow, JobPositionWorkflowStage } from '../../types/position';
+import type { Position, JobPositionWorkflow, JobPositionWorkflowStage, ClosedReason } from '../../types/position';
 import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow.ts';
-import { getVisibilityLabel, getVisibilityColor, getStatusLabelFromStage, getStatusColorFromStage } from '../../types/position';
+import { getVisibilityLabel, getVisibilityColor, getStatusLabelFromStage, getStatusColorFromStage, JobPositionStatus, getJobPositionStatusLabel, getAvailableTransitions } from '../../types/position';
+import { StatusBadge, ClosePositionModal, RejectPositionModal } from '../../components/jobPosition/publishing';
 import {
   Tooltip,
   TooltipContent,
@@ -36,6 +37,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Position Card Component for Kanban
 function PositionCard({
@@ -64,10 +72,10 @@ function PositionCard({
   };
 
   // Get custom fields from custom_fields_values
-  const location = position.custom_fields_values?.location;
-  const salaryRange = position.custom_fields_values?.salary_range;
-  const contractType = position.custom_fields_values?.contract_type;
-  const numberOfOpenings = position.custom_fields_values?.number_of_openings || 0;
+  const location = position.custom_fields_values?.location as string | undefined;
+  const salaryRange = position.custom_fields_values?.salary_range as { currency?: string; min_amount?: number; max_amount?: number } | undefined;
+  const contractType = position.custom_fields_values?.contract_type as string | undefined;
+  const numberOfOpenings = (position.custom_fields_values?.number_of_openings as number) || 0;
 
   return (
     <Card
@@ -335,6 +343,13 @@ function PositionsListPageContent() {
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  // Publishing flow state
+  const [statusFilter, setStatusFilter] = useState<JobPositionStatus | 'all'>('all');
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -532,10 +547,102 @@ function PositionsListPageContent() {
 
   const handleViewPublic = (position: Position) => {
     if (!position.public_slug || !companySlug) return;
-    
+
     const url = `/companies/${companySlug}/positions/${position.public_slug}`;
     window.open(url, '_blank');
   };
+
+  // Publishing flow action handlers
+  const handleStatusAction = async (
+    positionId: string,
+    action: 'requestApproval' | 'approve' | 'publish' | 'hold' | 'resume' | 'archive' | 'revertToDraft' | 'clone'
+  ) => {
+    setActionLoading(positionId);
+    try {
+      switch (action) {
+        case 'requestApproval':
+          await PositionService.requestApproval(positionId);
+          break;
+        case 'approve':
+          await PositionService.approve(positionId);
+          break;
+        case 'publish':
+          await PositionService.publish(positionId);
+          break;
+        case 'hold':
+          await PositionService.hold(positionId);
+          break;
+        case 'resume':
+          await PositionService.resume(positionId);
+          break;
+        case 'archive':
+          await PositionService.archive(positionId);
+          break;
+        case 'revertToDraft':
+          await PositionService.revertToDraft(positionId);
+          break;
+        case 'clone':
+          await PositionService.clone(positionId);
+          break;
+      }
+      await loadPositions();
+    } catch (err: unknown) {
+      console.error(`Error performing ${action}:`, err);
+      const errorMessage = err instanceof Error ? err.message : `Failed to ${action}`;
+      setError(errorMessage);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleClosePosition = async (reason: ClosedReason, note?: string) => {
+    if (!selectedPosition) return;
+    setActionLoading(selectedPosition.id);
+    try {
+      await PositionService.close(selectedPosition.id, reason, note);
+      await loadPositions();
+      setShowCloseModal(false);
+      setSelectedPosition(null);
+    } catch (err: unknown) {
+      console.error('Error closing position:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to close position';
+      setError(errorMessage);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRejectPosition = async (reason: string) => {
+    if (!selectedPosition) return;
+    setActionLoading(selectedPosition.id);
+    try {
+      await PositionService.reject(selectedPosition.id, reason);
+      await loadPositions();
+      setShowRejectModal(false);
+      setSelectedPosition(null);
+    } catch (err: unknown) {
+      console.error('Error rejecting position:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to reject position';
+      setError(errorMessage);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const openCloseModal = (position: Position) => {
+    setSelectedPosition(position);
+    setShowCloseModal(true);
+  };
+
+  const openRejectModal = (position: Position) => {
+    setSelectedPosition(position);
+    setShowRejectModal(true);
+  };
+
+  // Filter positions by status
+  const filteredPositions = statusFilter === 'all'
+    ? positions
+    : positions.filter(p => p.status === statusFilter);
 
   const handleMoveToStage = async (positionId: string, stageId: string) => {
     try {
@@ -847,7 +954,7 @@ function PositionsListPageContent() {
           </div>
         </div>
 
-        {/* Workflow Selector and View Toggle */}
+        {/* Workflow Selector, Status Filter, and View Toggle */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             {workflows.length > 0 && (
@@ -878,7 +985,26 @@ function PositionsListPageContent() {
                 </Select>
               )
             )}
+
+            {/* Status Filter */}
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as JobPositionStatus | 'all')}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                {Object.values(JobPositionStatus).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {getJobPositionStatusLabel(status)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
           <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'kanban' | 'list')}>
             <TabsList>
               <TabsTrigger value="kanban">
@@ -902,26 +1028,32 @@ function PositionsListPageContent() {
       )}
 
       {/* Positions Display */}
-      {positions.length === 0 ? (
+      {filteredPositions.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No positions yet</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {statusFilter === 'all' ? 'No positions yet' : `No ${getJobPositionStatusLabel(statusFilter)} positions`}
+          </h3>
           <p className="text-gray-600 mb-6">
-            Create your first job position to start attracting candidates
+            {statusFilter === 'all'
+              ? 'Create your first job position to start attracting candidates'
+              : 'Try adjusting your filters to see more positions'}
           </p>
-          <Button
-            onClick={() => {
-              const workflowId = selectedWorkflowId || workflows[0]?.id;
-              if (workflowId) {
-                navigate(`/company/positions/create?workflow_id=${workflowId}`);
-              } else {
-                navigate('/company/positions/create');
-              }
-            }}
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Create Position
-          </Button>
+          {statusFilter === 'all' && (
+            <Button
+              onClick={() => {
+                const workflowId = selectedWorkflowId || workflows[0]?.id;
+                if (workflowId) {
+                  navigate(`/company/positions/create?workflow_id=${workflowId}`);
+                } else {
+                  navigate('/company/positions/create');
+                }
+              }}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create Position
+            </Button>
+          )}
         </div>
       ) : viewMode === 'list' ? (
         // List View - Table format
@@ -934,7 +1066,7 @@ function PositionsListPageContent() {
                     Title
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stage
+                    Status
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Visibility
@@ -957,10 +1089,12 @@ function PositionsListPageContent() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {positions.map((position) => {
-                  const location = position.custom_fields_values?.location;
-                  const salaryRange = position.custom_fields_values?.salary_range;
-                  const contractType = position.custom_fields_values?.contract_type;
+                {filteredPositions.map((position) => {
+                  const location = position.custom_fields_values?.location as string | undefined;
+                  const salaryRange = position.custom_fields_values?.salary_range as { currency?: string; min_amount?: number; max_amount?: number } | undefined;
+                  const contractType = position.custom_fields_values?.contract_type as string | undefined;
+                  const availableTransitions = getAvailableTransitions(position.status);
+                  const isActionLoading = actionLoading === position.id;
 
                   return (
                     <tr key={position.id} className="hover:bg-gray-50 transition-colors">
@@ -968,11 +1102,7 @@ function PositionsListPageContent() {
                         <div className="text-sm font-medium text-gray-900">{position.title}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {position.stage && (
-                          <Badge variant="secondary" className={getStatusColorFromStage(position.stage)}>
-                            {getStatusLabelFromStage(position.stage)}
-                          </Badge>
-                        )}
+                        <StatusBadge status={position.status} size="sm" />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Badge variant="outline" className={getVisibilityColor(position.visibility)}>
@@ -1060,6 +1190,87 @@ function PositionsListPageContent() {
                                 </TooltipContent>
                               </Tooltip>
                             )}
+
+                            {/* Quick Actions Dropdown */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={isActionLoading}
+                                >
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {/* Status Actions */}
+                                {position.status === JobPositionStatus.DRAFT && availableTransitions.includes(JobPositionStatus.PENDING_APPROVAL) && (
+                                  <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'requestApproval')}>
+                                    <Send className="w-4 h-4 mr-2" />
+                                    Request Approval
+                                  </DropdownMenuItem>
+                                )}
+                                {position.status === JobPositionStatus.DRAFT && availableTransitions.includes(JobPositionStatus.PUBLISHED) && (
+                                  <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'publish')}>
+                                    <Rocket className="w-4 h-4 mr-2" />
+                                    Publish
+                                  </DropdownMenuItem>
+                                )}
+                                {position.status === JobPositionStatus.PENDING_APPROVAL && availableTransitions.includes(JobPositionStatus.APPROVED) && (
+                                  <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'approve')}>
+                                    <Rocket className="w-4 h-4 mr-2" />
+                                    Approve
+                                  </DropdownMenuItem>
+                                )}
+                                {position.status === JobPositionStatus.PENDING_APPROVAL && availableTransitions.includes(JobPositionStatus.REJECTED) && (
+                                  <DropdownMenuItem onClick={() => openRejectModal(position)}>
+                                    <X className="w-4 h-4 mr-2" />
+                                    Reject
+                                  </DropdownMenuItem>
+                                )}
+                                {position.status === JobPositionStatus.APPROVED && availableTransitions.includes(JobPositionStatus.PUBLISHED) && (
+                                  <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'publish')}>
+                                    <Rocket className="w-4 h-4 mr-2" />
+                                    Publish
+                                  </DropdownMenuItem>
+                                )}
+                                {position.status === JobPositionStatus.PUBLISHED && availableTransitions.includes(JobPositionStatus.ON_HOLD) && (
+                                  <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'hold')}>
+                                    <Pause className="w-4 h-4 mr-2" />
+                                    Put on Hold
+                                  </DropdownMenuItem>
+                                )}
+                                {position.status === JobPositionStatus.ON_HOLD && availableTransitions.includes(JobPositionStatus.PUBLISHED) && (
+                                  <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'resume')}>
+                                    <Play className="w-4 h-4 mr-2" />
+                                    Resume
+                                  </DropdownMenuItem>
+                                )}
+                                {availableTransitions.includes(JobPositionStatus.CLOSED) && (
+                                  <DropdownMenuItem onClick={() => openCloseModal(position)}>
+                                    <X className="w-4 h-4 mr-2" />
+                                    Close Position
+                                  </DropdownMenuItem>
+                                )}
+                                {position.status === JobPositionStatus.CLOSED && availableTransitions.includes(JobPositionStatus.ARCHIVED) && (
+                                  <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'archive')}>
+                                    <Archive className="w-4 h-4 mr-2" />
+                                    Archive
+                                  </DropdownMenuItem>
+                                )}
+                                {availableTransitions.includes(JobPositionStatus.DRAFT) && position.status !== JobPositionStatus.DRAFT && (
+                                  <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'revertToDraft')}>
+                                    <RotateCcw className="w-4 h-4 mr-2" />
+                                    Revert to Draft
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleStatusAction(position.id, 'clone')}>
+                                  <Copy className="w-4 h-4 mr-2" />
+                                  Clone Position
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </TooltipProvider>
                       </td>
@@ -1190,6 +1401,30 @@ function PositionsListPageContent() {
           </div>
         </div>
       </div>
+
+      {/* Close Position Modal */}
+      <ClosePositionModal
+        isOpen={showCloseModal}
+        positionTitle={selectedPosition?.title || ''}
+        onClose={() => {
+          setShowCloseModal(false);
+          setSelectedPosition(null);
+        }}
+        onConfirm={handleClosePosition}
+        isLoading={!!actionLoading}
+      />
+
+      {/* Reject Position Modal */}
+      <RejectPositionModal
+        isOpen={showRejectModal}
+        positionTitle={selectedPosition?.title || ''}
+        onClose={() => {
+          setShowRejectModal(false);
+          setSelectedPosition(null);
+        }}
+        onConfirm={handleRejectPosition}
+        isLoading={!!actionLoading}
+      />
     </div>
   );
 }

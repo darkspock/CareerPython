@@ -10,19 +10,26 @@ import {
   Briefcase,
   MapPin,
   DollarSign,
-  Clock,
   Search,
   Filter,
   Building2,
-  AlertCircle
+  AlertCircle,
+  Users,
 } from 'lucide-react';
 import { publicPositionService, type PublicPositionFilters } from '../../services/publicPositionService';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import { companyPageService } from '../../services/companyPageService';
 import type { Position } from '../../types/position';
-import { getLocation, getIsRemote, getEmploymentType, getSalaryRange, getExperienceLevel, getDepartment } from '../../types/position';
+import { getLocation, getIsRemote, getSalaryRange, getExperienceLevel, getDepartment } from '../../types/position';
 import type { CompanyPage } from '../../types/companyPage';
 import '../../components/common/WysiwygEditor.css';
+import {
+  EmploymentTypeBadge,
+  LocationTypeBadge,
+  ExperienceLevelBadge,
+  SalaryRange,
+  SkillsChips,
+} from '../../components/jobPosition/publishing';
 
 export default function CompanyPublicPositionsPage() {
   const navigate = useNavigate();
@@ -310,54 +317,98 @@ export default function CompanyPublicPositionsPage() {
               >
                 <div className="p-6">
                   {/* Position Title */}
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
                     {position.title}
                   </h3>
 
+                  {/* Badges Row */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {position.employment_type && (
+                      <EmploymentTypeBadge type={position.employment_type} size="sm" />
+                    )}
+                    {position.work_location_type && (
+                      <LocationTypeBadge type={position.work_location_type} size="sm" />
+                    )}
+                    {position.experience_level && (
+                      <ExperienceLevelBadge level={position.experience_level} size="sm" />
+                    )}
+                  </div>
+
                   {/* Position Details */}
                   <div className="space-y-2 mb-4">
-                    {getLocation(position) && (
+                    {/* Location from custom fields fallback */}
+                    {!position.work_location_type && getLocation(position) && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <MapPin className="w-4 h-4" />
                         {getLocation(position)}
                         {getIsRemote(position) && <span className="text-blue-600">(Remote)</span>}
                       </div>
                     )}
-                    {getEmploymentType(position) && (
+
+                    {/* Office locations if on-site or hybrid */}
+                    {position.office_locations && position.office_locations.length > 0 && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        {getEmploymentType(position)}
+                        <MapPin className="w-4 h-4" />
+                        {position.office_locations.join(', ')}
                       </div>
                     )}
-                    {getSalaryRange(position) && (
+
+                    {/* Salary - use new component if available */}
+                    {position.show_salary && (position.salary_min || position.salary_max) ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <DollarSign className="w-4 h-4" />
+                        <SalaryRange
+                          min={position.salary_min}
+                          max={position.salary_max}
+                          currency={position.salary_currency}
+                          period={position.salary_period}
+                          size="sm"
+                        />
+                      </div>
+                    ) : getSalaryRange(position) && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <DollarSign className="w-4 h-4" />
                         {String(getSalaryRange(position))}
+                      </div>
+                    )}
+
+                    {/* Number of openings */}
+                    {position.number_of_openings && position.number_of_openings > 1 && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Users className="w-4 h-4" />
+                        {position.number_of_openings} positions available
                       </div>
                     )}
                   </div>
 
                   {/* Description Preview */}
                   {position.description && (
-                    <div 
+                    <div
                       className="text-sm text-gray-600 line-clamp-3 mb-4 prose prose-sm max-w-none"
                       dangerouslySetInnerHTML={{ __html: position.description }}
                     />
                   )}
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2">
-                    {getExperienceLevel(position) && (
-                      <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                        {getExperienceLevel(position)}
-                      </span>
-                    )}
-                    {getDepartment(position) && (
-                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
-                        {getDepartment(position)}
-                      </span>
-                    )}
-                  </div>
+                  {/* Skills */}
+                  {position.skills && position.skills.length > 0 ? (
+                    <div className="mb-4">
+                      <SkillsChips skills={position.skills} maxDisplay={3} size="sm" />
+                    </div>
+                  ) : (
+                    /* Fallback Tags */
+                    <div className="flex flex-wrap gap-2">
+                      {!position.experience_level && getExperienceLevel(position) && (
+                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                          {getExperienceLevel(position)}
+                        </span>
+                      )}
+                      {getDepartment(position) && (
+                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                          {getDepartment(position)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Footer */}

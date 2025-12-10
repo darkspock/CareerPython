@@ -1,4 +1,5 @@
 // Position API service - Updated for workflow-based system
+// Includes Publishing Flow methods (PRD v2.1)
 import { api } from '../lib/api';
 import { API_BASE_URL } from '../config/api';
 import type {
@@ -9,8 +10,11 @@ import type {
   UpdatePositionRequest,
   PositionListResponse,
   PositionActionResponse,
-  JobPositionWorkflow
+  JobPositionWorkflow,
+  StatusTransitionResponse,
+  PositionStatusStats
 } from '../types/position';
+import { ClosedReason } from '../types/position';
 
 export class PositionService {
   private static readonly BASE_PATH = '/api/company/positions';
@@ -387,6 +391,244 @@ export class PositionService {
       return await response.blob();
     } catch (error) {
       console.error('Error exporting positions:', error);
+      throw error;
+    }
+  }
+
+  // ====================================
+  // PUBLISHING FLOW METHODS
+  // ====================================
+
+  /**
+   * Request approval for a position
+   * Transition: DRAFT → PENDING_APPROVAL
+   */
+  static async requestApproval(positionId: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/request-approval`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error requesting approval for position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Approve a position
+   * Transition: PENDING_APPROVAL → APPROVED
+   */
+  static async approve(positionId: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/approve`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error approving position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reject a position
+   * Transition: PENDING_APPROVAL → REJECTED
+   */
+  static async reject(positionId: string, reason: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/reject`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason })
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error rejecting position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Publish a position
+   * Transition: APPROVED → PUBLISHED or DRAFT → PUBLISHED (quick mode)
+   */
+  static async publish(positionId: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/publish`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error publishing position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Put a position on hold
+   * Transition: PUBLISHED → ON_HOLD
+   */
+  static async hold(positionId: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/hold`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error holding position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resume a position from on-hold
+   * Transition: ON_HOLD → PUBLISHED
+   */
+  static async resume(positionId: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/resume`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error resuming position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Close a position
+   * Transition: PUBLISHED/ON_HOLD → CLOSED
+   */
+  static async close(positionId: string, closedReason: ClosedReason, note?: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/close`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ closed_reason: closedReason, note })
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error closing position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Archive a position
+   * Transition: CLOSED → ARCHIVED
+   */
+  static async archive(positionId: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/archive`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error archiving position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Revert a position to draft
+   * Transition: REJECTED/APPROVED/CLOSED → DRAFT
+   */
+  static async revertToDraft(positionId: string): Promise<StatusTransitionResponse> {
+    try {
+      const response = await api.authenticatedRequest<StatusTransitionResponse>(
+        `${this.BASE_PATH}/${positionId}/revert-to-draft`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error reverting position ${positionId} to draft:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Clone a position
+   * Creates a new position in DRAFT with copied data
+   */
+  static async clone(positionId: string, newTitle?: string): Promise<Position> {
+    try {
+      const response = await api.authenticatedRequest<Position>(
+        `${this.BASE_PATH}/${positionId}/clone`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_title: newTitle })
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error(`Error cloning position ${positionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get position stats by status
+   */
+  static async getStatusStats(companyId?: string): Promise<PositionStatusStats> {
+    try {
+      const queryParams = companyId ? `?company_id=${companyId}` : '';
+      const response = await api.authenticatedRequest<PositionStatusStats>(
+        `${this.BASE_PATH}/status-stats${queryParams}`
+      );
+      return response;
+    } catch (error) {
+      console.error('Error fetching position status stats:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get positions pending approval for current user
+   */
+  static async getPendingApprovals(): Promise<Position[]> {
+    try {
+      const response = await api.authenticatedRequest<Position[]>(
+        `${this.BASE_PATH}/pending-approvals`
+      );
+      return response;
+    } catch (error) {
+      console.error('Error fetching pending approvals:', error);
       throw error;
     }
   }

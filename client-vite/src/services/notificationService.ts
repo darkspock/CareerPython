@@ -40,7 +40,7 @@ export const notificationService = {
       unread_only: unreadOnly.toString(),
     });
     return ApiClient.authenticatedRequest<NotificationListResponse>(
-      `/company/notifications/?${params}`
+      `/api/company/notifications/?${params}`
     );
   },
 
@@ -49,7 +49,7 @@ export const notificationService = {
    */
   async getUnreadCount(): Promise<UnreadCountResponse> {
     return ApiClient.authenticatedRequest<UnreadCountResponse>(
-      '/company/notifications/unread-count'
+      '/api/company/notifications/unread-count'
     );
   },
 
@@ -58,7 +58,7 @@ export const notificationService = {
    */
   async markAsRead(notificationId: string): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `/company/notifications/${notificationId}/read`,
+      `/api/company/notifications/${notificationId}/read`,
       { method: 'POST' }
     );
   },
@@ -68,7 +68,7 @@ export const notificationService = {
    */
   async markAllAsRead(): Promise<void> {
     await ApiClient.authenticatedRequest(
-      '/company/notifications/read-all',
+      '/api/company/notifications/read-all',
       { method: 'POST' }
     );
   },
@@ -78,7 +78,7 @@ export const notificationService = {
    */
   async deleteNotification(notificationId: string): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `/company/notifications/${notificationId}`,
+      `/api/company/notifications/${notificationId}`,
       { method: 'DELETE' }
     );
   },
