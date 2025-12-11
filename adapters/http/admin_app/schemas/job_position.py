@@ -20,7 +20,7 @@ class JobPositionCreate(BaseModel):
                                                            description="Custom field values")
     title: str = Field(..., description="Position title")
     description: Optional[str] = Field(None, description="Position description")
-    job_category: Optional[str] = Field("other", description="Job category")
+    job_category: Optional[str] = Field("Other", description="Job category")
     open_at: Optional[datetime] = Field(None, description="When position opens")
     application_deadline: Optional[date] = Field(None, description="Application deadline")
     visibility: str = Field("hidden", description="Visibility level: hidden, internal, or public")
@@ -173,7 +173,7 @@ class JobPositionResponse(BaseModel):
     custom_fields_config: List[CustomFieldDefinitionSchema] = Field(default_factory=list)
     company_name: Optional[str] = None
     description: Optional[str] = None
-    job_category: str = "other"
+    job_category: str = "Other"
     open_at: Optional[datetime] = None
     application_deadline: Optional[date] = None
     visibility: str

@@ -12,8 +12,8 @@ export default function CreatePositionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentWorkflow, setCurrentWorkflow] = useState<JobPositionWorkflow | null>(null);
-  // Store the hiring pipeline (CA) workflow ID
-  const [hiringPipelineId, setHiringPipelineId] = useState<string | null>(null);
+  // Store the phase workflows mapping (phase_id -> workflow_id)
+  const [phaseWorkflows, setPhaseWorkflows] = useState<Record<string, string> | null>(null);
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -35,18 +35,25 @@ export default function CreatePositionPage() {
         return;
       }
 
-      // Get both workflow IDs from search params
+      // Get workflow IDs from search params
       const publicationWorkflowId = searchParams.get('publication_workflow_id');
-      const candidateApplicationWorkflowId = searchParams.get('hiring_pipeline_id');
+      const phaseWorkflowsParam = searchParams.get('phase_workflows');
 
       // If workflows were not selected (direct access to create page), redirect to workflow selection
-      if (!publicationWorkflowId || !candidateApplicationWorkflowId) {
+      if (!publicationWorkflowId || !phaseWorkflowsParam) {
         navigate('/company/positions/select-workflows');
         return;
       }
 
-      // Store the hiring pipeline ID
-      setHiringPipelineId(candidateApplicationWorkflowId);
+      // Parse and store the phase workflows mapping
+      try {
+        const parsedPhaseWorkflows = JSON.parse(phaseWorkflowsParam);
+        setPhaseWorkflows(parsedPhaseWorkflows);
+      } catch {
+        console.error('Failed to parse phase_workflows');
+        navigate('/company/positions/select-workflows');
+        return;
+      }
 
       // Helper to load workflow with stages including stage_type
       const loadWorkflowWithStages = async (wfId: string): Promise<JobPositionWorkflow> => {
@@ -104,8 +111,8 @@ export default function CreatePositionPage() {
       throw new Error('Workflow not loaded');
     }
 
-    if (!hiringPipelineId) {
-      throw new Error('Hiring pipeline not selected');
+    if (!phaseWorkflows || Object.keys(phaseWorkflows).length === 0) {
+      throw new Error('Phase workflows not selected');
     }
 
     // In create mode, title is always required from the form
@@ -115,8 +122,8 @@ export default function CreatePositionPage() {
       company_id: companyId,
       title: createData.title || 'Untitled Position',
       job_position_workflow_id: currentWorkflow.id,
-      // Include the hiring pipeline (CA) workflow ID for candidate tracking
-      candidate_application_workflow_id: hiringPipelineId,
+      // Include the phase workflows mapping for candidate tracking per phase
+      phase_workflows: phaseWorkflows,
       // Copy custom fields config from workflow
       custom_fields_config: currentWorkflow.custom_fields_config
         ? parseWorkflowCustomFields(currentWorkflow.custom_fields_config)

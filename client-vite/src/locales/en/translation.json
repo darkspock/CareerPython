@@ -1026,21 +1026,26 @@
     }
   },
   "position": {
-    "workflowSelection": {
-      "title": "Select Workflows",
-      "description": "Choose the workflows that will be used to manage this job position. These cannot be changed after the position is created.",
+    "create": {
+      "title": "New Job Position",
+      "description": "Create a new job position by entering the title and selecting the workflows to use.",
+      "positionTitle": "Position Title",
+      "positionTitleDescription": "Enter the name of the job position",
+      "positionTitlePlaceholder": "e.g. Senior Software Engineer",
       "publicationWorkflow": "Publication Workflow",
       "publicationWorkflowDescription": "Defines the approval process before the position is published",
       "hiringPipeline": "Hiring Pipeline",
-      "hiringPipelineDescription": "Defines the stages candidates will go through during recruitment",
+      "hiringPipelineDescription": "Select a workflow for each recruitment phase",
       "stages": "stages",
-      "continue": "Continue",
+      "createButton": "Create Position",
+      "creating": "Creating...",
       "note": "Important",
-      "cannotChangeAfterCreation": "These workflows cannot be changed after the position is created.",
-      "missingWorkflows": "Missing Workflows",
-      "missingWorkflowsDescription": "You need to configure workflows before creating a job position:",
+      "cannotChangeAfterCreation": "The selected workflows cannot be changed after creating the position.",
+      "missingWorkflows": "Missing Configuration",
+      "missingWorkflowsDescription": "You need to configure the following before creating a job position:",
       "noPublicationWorkflows": "No publication workflows available",
-      "noHiringPipelines": "No hiring pipelines available",
+      "noPhases": "No recruitment phases configured",
+      "noWorkflowsForPhase": "No workflows configured for this phase",
       "createOne": "Create one"
     }
   },

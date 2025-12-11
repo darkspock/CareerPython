@@ -1295,21 +1295,26 @@
     "empty": "No tienes notificaciones"
   },
   "position": {
-    "workflowSelection": {
-      "title": "Seleccionar Flujos de Trabajo",
-      "description": "Antes de crear una posición, selecciona los flujos de trabajo que se utilizarán para el proceso de publicación y reclutamiento.",
+    "create": {
+      "title": "Nueva Oferta de Trabajo",
+      "description": "Crea una nueva oferta de trabajo introduciendo el título y seleccionando los flujos a utilizar.",
+      "positionTitle": "Título del Puesto",
+      "positionTitleDescription": "Introduce el nombre del puesto de trabajo",
+      "positionTitlePlaceholder": "ej. Ingeniero de Software Senior",
       "publicationWorkflow": "Flujo de Publicación",
-      "publicationWorkflowDescription": "Define el proceso de aprobación y publicación de la posición",
+      "publicationWorkflowDescription": "Define el proceso de aprobación antes de publicar la posición",
       "hiringPipeline": "Proceso de Selección",
-      "hiringPipelineDescription": "Define las etapas por las que pasarán los candidatos",
+      "hiringPipelineDescription": "Selecciona un flujo de trabajo para cada fase de reclutamiento",
       "stages": "etapas",
-      "continue": "Continuar",
-      "note": "Nota",
+      "createButton": "Crear Posición",
+      "creating": "Creando...",
+      "note": "Importante",
       "cannotChangeAfterCreation": "Los flujos de trabajo seleccionados no se pueden cambiar después de crear la posición.",
-      "missingWorkflows": "Flujos de Trabajo Requeridos",
-      "missingWorkflowsDescription": "Antes de crear una posición, necesitas configurar los siguientes flujos de trabajo:",
-      "noPublicationWorkflows": "No hay flujos de publicación publicados",
-      "noHiringPipelines": "No hay procesos de selección publicados",
+      "missingWorkflows": "Configuración Pendiente",
+      "missingWorkflowsDescription": "Necesitas configurar lo siguiente antes de crear una posición:",
+      "noPublicationWorkflows": "No hay flujos de publicación disponibles",
+      "noPhases": "No hay fases de reclutamiento configuradas",
+      "noWorkflowsForPhase": "No hay flujos configurados para esta fase",
       "createOne": "Crear uno"
     }
   }
