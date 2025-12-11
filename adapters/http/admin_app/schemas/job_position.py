@@ -69,6 +69,17 @@ class JobPositionCreate(BaseModel):
         use_enum_values = True
 
 
+class KillerQuestionSchema(BaseModel):
+    """Schema for a killer question"""
+    id: str = Field(..., description="Unique question identifier")
+    name: str = Field(..., description="Question text")
+    description: Optional[str] = Field(None, description="Additional description or context")
+    data_type: str = Field("short_string", description="Data type: short_string, large_string, int, date, scoring")
+    scoring_values: Optional[List[Dict[str, Any]]] = Field(None, description="Scoring options for scoring type questions")
+    is_killer: Optional[bool] = Field(False, description="Whether this is a killer question (auto-reject if wrong answer)")
+    sort_order: Optional[int] = Field(0, description="Display order")
+
+
 class CustomFieldDefinitionSchema(BaseModel):
     """Schema for custom field definition"""
     field_key: str = Field(..., description="Unique field identifier")
@@ -115,6 +126,7 @@ class JobPositionUpdate(BaseModel):
     budget_max: Optional[float] = Field(None, description="Maximum budget for this position")
     hiring_manager_id: Optional[str] = Field(None, description="Hiring manager user ID")
     recruiter_id: Optional[str] = Field(None, description="Recruiter user ID")
+    killer_questions: Optional[List[KillerQuestionSchema]] = Field(None, description="Killer questions for this position")
 
     @field_validator('visibility', mode='before')
     @classmethod
@@ -186,6 +198,7 @@ class JobPositionResponse(BaseModel):
     closed_reason: Optional[str] = None
     closed_at: Optional[datetime] = None
     published_at: Optional[datetime] = None
+    killer_questions: List[KillerQuestionSchema] = Field(default_factory=list)
 
     class Config:
         use_enum_values = True
@@ -251,7 +264,19 @@ class JobPositionResponse(BaseModel):
             recruiter_id=dto.recruiter_id,
             closed_reason=dto.closed_reason,
             closed_at=dto.closed_at,
-            published_at=dto.published_at
+            published_at=dto.published_at,
+            killer_questions=[
+                KillerQuestionSchema(
+                    id=q.get("id", ""),
+                    name=q.get("name", ""),
+                    description=q.get("description"),
+                    data_type=q.get("data_type", "short_string"),
+                    scoring_values=q.get("scoring_values"),
+                    is_killer=q.get("is_killer", False),
+                    sort_order=q.get("sort_order", 0),
+                )
+                for q in (dto.killer_questions or [])
+            ]
         )
 
 

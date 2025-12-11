@@ -67,6 +67,8 @@ class UpdateJobPositionCommand(Command):
     recruiter_id: Optional[str] = None
     # Custom fields config (position-specific field definitions)
     custom_fields_config: Optional[List[CustomFieldDefinition]] = None
+    # Killer questions (simple inline questions stored as JSON)
+    killer_questions: Optional[List[Dict[str, Any]]] = None
 
 
 class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
@@ -138,6 +140,8 @@ class UpdateJobPositionCommandHandler(CommandHandler[UpdateJobPositionCommand]):
             budget_max=command.budget_max,
             # Custom fields config
             custom_fields_config=command.custom_fields_config,
+            # Killer questions
+            killer_questions=command.killer_questions,
         )
 
         self.job_position_repository.save(job_position)

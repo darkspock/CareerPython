@@ -27,7 +27,8 @@ import {
 } from '@/components/ui/tooltip';
 import { WysiwygEditor } from '@/components/common';
 import { StatusBadge, LockedFieldIndicator } from '../publishing';
-import { FieldConfigEditor } from '@/components/workflow/FieldConfigEditor';
+import { SimpleFieldConfigEditor } from './SimpleFieldConfigEditor';
+import { KillerQuestionsTab } from './KillerQuestionsTab';
 import type { FieldType } from '@/types/workflow';
 
 import type {
@@ -107,6 +108,10 @@ export function PositionFormTabs({
     // Custom fields
     custom_fields_values: {},
     custom_fields_config: [],
+    // Screening
+    screening_template_id: undefined,
+    // Killer questions
+    killer_questions: [],
     // Dates
     application_deadline: undefined,
     open_at: undefined,
@@ -155,6 +160,7 @@ export function PositionFormTabs({
         recruiter_id: position.recruiter_id || undefined,
         custom_fields_values: position.custom_fields_values || {},
         custom_fields_config: position.custom_fields_config || [],
+        killer_questions: position.killer_questions || [],
         application_deadline: position.application_deadline || undefined,
         open_at: position.open_at || undefined,
         department_id: position.department_id || undefined,
@@ -496,11 +502,12 @@ export function PositionFormTabs({
 
       <form onSubmit={handleSubmit}>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="details">Job Details</TabsTrigger>
             <TabsTrigger value="compensation">Compensation</TabsTrigger>
             <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
+            <TabsTrigger value="killer">Killer Questions</TabsTrigger>
             <TabsTrigger value="custom">Custom Fields</TabsTrigger>
             <TabsTrigger value="team">Team</TabsTrigger>
           </TabsList>
@@ -1196,7 +1203,18 @@ export function PositionFormTabs({
             </Card>
           </TabsContent>
 
-          {/* Tab 5: Custom Fields */}
+          {/* Tab 5: Killer Questions */}
+          <TabsContent value="killer">
+            <KillerQuestionsTab
+              screeningTemplateId={formData.screening_template_id}
+              onTemplateChange={(templateId) => updateField('screening_template_id', templateId || undefined)}
+              questions={formData.killer_questions || []}
+              onQuestionsChange={(questions) => updateField('killer_questions', questions)}
+              disabled={isLocked('killer_questions')}
+            />
+          </TabsContent>
+
+          {/* Tab 6: Custom Fields */}
           <TabsContent value="custom">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -1253,7 +1271,7 @@ export function PositionFormTabs({
                       </div>
 
                       {/* Field Configuration Editor - for options, validation, etc. */}
-                      <FieldConfigEditor
+                      <SimpleFieldConfigEditor
                         fieldType={fieldFormData.field_type}
                         config={fieldFormData.field_config}
                         onChange={(newConfig) => setFieldFormData(prev => ({ ...prev, field_config: newConfig }))}
@@ -1316,13 +1334,6 @@ export function PositionFormTabs({
                               if (!options || !Array.isArray(options) || options.length === 0) return null;
                               const optionLabels = (options as any[]).map((opt: any) => {
                                 if (typeof opt === 'string') return opt;
-                                if (opt && typeof opt === 'object') {
-                                  // i18n format: {id, sort, labels: [{language, label}]}
-                                  if (opt.labels && Array.isArray(opt.labels) && opt.labels.length > 0) {
-                                    return String(opt.labels[0].label || opt.id || '');
-                                  }
-                                  return String(opt.id || opt.label || '');
-                                }
                                 return String(opt);
                               }).filter(Boolean);
                               if (optionLabels.length === 0) return null;
@@ -1390,7 +1401,7 @@ export function PositionFormTabs({
                 {/* Field Values for active fields */}
                 {formData.custom_fields_config && formData.custom_fields_config.filter(f => f.is_active).length > 0 && (
                   <div className="mt-6 pt-6 border-t">
-                    <h4 className="text-lg font-semibold mb-4">Field Values</h4>
+                    <h4 className="text-lg font-semibold mb-4">Preview</h4>
                     <div className="space-y-4">
                       {formData.custom_fields_config
                         .filter((field) => field.is_active)
@@ -1493,23 +1504,10 @@ export function PositionFormTabs({
   );
 }
 
-// Helper to extract option value and label from options (can be string or i18n object)
+// Helper to extract option value and label from options (simple strings)
 function getOptionValueAndLabel(option: any): { value: string; label: string } {
-  if (typeof option === 'string') {
-    return { value: option, label: option };
-  }
-  if (option && typeof option === 'object') {
-    // i18n format: {id, sort, labels: [{language, label}]}
-    const id = option.id || '';
-    let label = id;
-    if (option.labels && Array.isArray(option.labels) && option.labels.length > 0) {
-      label = option.labels[0].label || id;
-    } else if (option.label) {
-      label = option.label;
-    }
-    return { value: String(id), label: String(label) };
-  }
-  return { value: String(option), label: String(option) };
+  const str = typeof option === 'string' ? option : String(option);
+  return { value: str, label: str };
 }
 
 // Helper component for rendering custom field inputs

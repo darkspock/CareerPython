@@ -361,6 +361,8 @@ class JobPositionController:
                 recruiter_id=position_data.recruiter_id,
                 # Custom fields config
                 custom_fields_config=custom_fields_config,
+                # Killer questions
+                killer_questions=[q.model_dump() for q in position_data.killer_questions] if position_data.killer_questions else None,
             )
 
             self.command_bus.dispatch(command)

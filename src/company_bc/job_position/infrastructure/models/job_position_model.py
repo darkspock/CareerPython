@@ -87,6 +87,10 @@ class JobPositionModel(Base):
     # Screening reference
     screening_template_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
+    # Killer questions (simple inline questions stored as JSON)
+    # Format: List[{name: str, description?: str, data_type: str, scoring_values?: List[{label, scoring}], is_killer?: bool}]
+    killer_questions: Mapped[Optional[List[Dict]]] = mapped_column(JSON, nullable=True)
+
     # Visibility and publishing
     visibility: Mapped[str] = mapped_column(
         String(20),

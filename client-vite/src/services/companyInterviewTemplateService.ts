@@ -2,6 +2,37 @@
 import { ApiClient } from '../lib/api';
 import { InterviewTemplateType } from '../types/interview';
 
+export type InterviewTemplateQuestion = {
+  id: string;
+  interview_template_section_id: string;
+  name: string;
+  description: string;
+  code: string;
+  sort_order: number;
+  data_type: string;
+  scope: string;
+  status: string;
+  allow_ai_followup?: boolean;
+  legal_notice?: string;
+  scoring_values?: Array<{ label: string; scoring: number }>;
+};
+
+export type InterviewTemplateSection = {
+  id: string;
+  interview_template_id: string;
+  name: string;
+  intro?: string;
+  prompt?: string;
+  goal?: string;
+  section?: string;
+  sort_order: number;
+  status: string;
+  allow_ai_questions?: boolean;
+  allow_ai_override_questions?: boolean;
+  legal_notice?: string;
+  questions?: InterviewTemplateQuestion[];
+};
+
 export type InterviewTemplate = {
   id: string;
   name: string;
@@ -14,6 +45,7 @@ export type InterviewTemplate = {
   section?: string;
   tags?: string[];
   company_id?: string;
+  sections?: InterviewTemplateSection[];
 };
 
 export type TemplateFilters = {
@@ -129,6 +161,190 @@ export const companyInterviewTemplateService = {
       method: 'POST',
       body: JSON.stringify(body),
     });
+  },
+
+  /**
+   * Get questions for a section
+   */
+  async getQuestionsBySection(sectionId: string): Promise<InterviewTemplateQuestion[]> {
+    return ApiClient.authenticatedRequest<InterviewTemplateQuestion[]>(
+      `/api/company/interview-templates/sections/${sectionId}/questions`
+    );
+  },
+
+  /**
+   * List screening templates (SCREENING type only)
+   */
+  async listScreeningTemplates(): Promise<InterviewTemplate[]> {
+    return this.listTemplates({ type: 'SCREENING', status: 'ENABLED' });
+  },
+
+  /**
+   * Get template with full details including sections and questions
+   */
+  async getTemplateWithQuestions(templateId: string): Promise<InterviewTemplate> {
+    const template = await this.getTemplate(templateId);
+
+    // If template has sections, load questions for each section
+    if (template.sections && template.sections.length > 0) {
+      const sectionsWithQuestions = await Promise.all(
+        template.sections.map(async (section) => {
+          try {
+            const questions = await this.getQuestionsBySection(section.id);
+            return { ...section, questions };
+          } catch (error) {
+            console.warn(`Failed to load questions for section ${section.id}:`, error);
+            return { ...section, questions: [] };
+          }
+        })
+      );
+      return { ...template, sections: sectionsWithQuestions };
+    }
+
+    return template;
+  },
+
+  /**
+   * Create a section for a template
+   */
+  async createSection(data: {
+    interview_template_id: string;
+    name: string;
+    intro?: string;
+    prompt?: string;
+    goal?: string;
+    section?: string;
+    sort_order: number;
+    allow_ai_questions?: boolean;
+    allow_ai_override_questions?: boolean;
+    legal_notice?: string;
+  }): Promise<InterviewTemplateSection> {
+    return ApiClient.authenticatedRequest<InterviewTemplateSection>(
+      '/api/company/interview-templates/sections',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Create a question in a section
+   */
+  async createQuestion(data: {
+    interview_template_section_id: string;
+    name: string;
+    description?: string;
+    code: string;
+    sort_order: number;
+    data_type: string;
+    scope?: string;
+    allow_ai_followup?: boolean;
+    legal_notice?: string;
+    scoring_values?: Array<{ label: string; scoring: number }>;
+  }): Promise<InterviewTemplateQuestion> {
+    return ApiClient.authenticatedRequest<InterviewTemplateQuestion>(
+      '/api/company/interview-templates/questions',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Update a question
+   */
+  async updateQuestion(questionId: string, data: Partial<{
+    name: string;
+    description: string;
+    code: string;
+    sort_order: number;
+    data_type: string;
+    scope: string;
+    allow_ai_followup: boolean;
+    legal_notice: string;
+    scoring_values: Array<{ label: string; scoring: number }>;
+  }>): Promise<InterviewTemplateQuestion> {
+    return ApiClient.authenticatedRequest<InterviewTemplateQuestion>(
+      `/api/company/interview-templates/questions/${questionId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  /**
+   * Delete a question
+   */
+  async deleteQuestion(questionId: string): Promise<void> {
+    await ApiClient.authenticatedRequest(
+      `/api/company/interview-templates/questions/${questionId}`,
+      {
+        method: 'DELETE',
+      }
+    );
+  },
+
+  /**
+   * Create a complete template with sections and questions in one flow
+   * This handles the multi-step API calls internally
+   */
+  async createTemplateWithQuestions(data: {
+    name: string;
+    intro?: string;
+    type: string;
+    status?: string;
+    sections: Array<{
+      name: string;
+      intro?: string;
+      sort_order: number;
+      questions: Array<{
+        name: string;
+        description?: string;
+        code: string;
+        sort_order: number;
+        data_type: string;
+        scope?: string;
+        scoring_values?: Array<{ label: string; scoring: number }> | null;
+      }>;
+    }>;
+  }): Promise<InterviewTemplate> {
+    // Step 1: Create the template
+    const template = await this.createTemplate({
+      name: data.name,
+      intro: data.intro,
+      type: data.type as InterviewTemplateType,
+      status: (data.status || 'ENABLED') as 'ENABLED' | 'DRAFT' | 'DISABLED',
+    });
+
+    // Step 2: Create sections with questions
+    for (const sectionData of data.sections) {
+      const section = await this.createSection({
+        interview_template_id: template.id,
+        name: sectionData.name,
+        intro: sectionData.intro,
+        sort_order: sectionData.sort_order,
+      });
+
+      // Step 3: Create questions for each section
+      for (const questionData of sectionData.questions) {
+        await this.createQuestion({
+          interview_template_section_id: section.id,
+          name: questionData.name,
+          description: questionData.description || '',
+          code: questionData.code,
+          sort_order: questionData.sort_order,
+          data_type: questionData.data_type,
+          scope: questionData.scope || 'global',
+          scoring_values: questionData.scoring_values || undefined,
+        });
+      }
+    }
+
+    // Return the full template with questions
+    return this.getTemplateWithQuestions(template.id);
   },
 };
 

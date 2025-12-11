@@ -1,6 +1,21 @@
 // Position/Job Opening types - Updated for workflow-based system
 // Includes Publishing Flow types (PRD v2.1)
 
+// ==================== KILLER QUESTIONS ====================
+
+/**
+ * Killer Question - inline screening question stored in JobPosition
+ */
+export interface KillerQuestion {
+  id: string;
+  name: string;
+  description?: string;
+  data_type: 'short_string' | 'large_string' | 'int' | 'date' | 'scoring';
+  scoring_values?: Array<{ label: string; scoring: number }>;
+  is_killer?: boolean;
+  sort_order: number;
+}
+
 // ==================== PUBLISHING FLOW ENUMS ====================
 
 /**
@@ -388,6 +403,9 @@ export interface Position {
   candidate_pipeline_id?: string | null;
   screening_template_id?: string | null;
 
+  // Killer Questions (inline, stored as JSON)
+  killer_questions?: KillerQuestion[];
+
   // Expanded data (when workflow/stage is loaded)
   stage?: JobPositionWorkflowStage;
   workflow?: JobPositionWorkflow;
@@ -440,6 +458,9 @@ export interface CreatePositionRequest {
   // Pipeline & Screening
   candidate_pipeline_id?: string | null;
   screening_template_id?: string | null;
+
+  // Killer Questions
+  killer_questions?: KillerQuestion[];
 }
 
 export interface UpdatePositionRequest {
@@ -487,6 +508,9 @@ export interface UpdatePositionRequest {
   // Pipeline & Screening
   candidate_pipeline_id?: string | null;
   screening_template_id?: string | null;
+
+  // Killer Questions
+  killer_questions?: KillerQuestion[];
 }
 
 export interface PositionFilters {

@@ -315,6 +315,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             # Pipeline and screening
             candidate_pipeline_id=model.candidate_pipeline_id,
             screening_template_id=model.screening_template_id,
+            killer_questions=model.killer_questions or [],
             # Visibility and publishing
             visibility=visibility,
             public_slug=model.public_slug,
@@ -387,6 +388,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             # Pipeline and screening
             candidate_pipeline_id=job_position.candidate_pipeline_id,
             screening_template_id=job_position.screening_template_id,
+            killer_questions=job_position.killer_questions or [],
             # Visibility and publishing
             visibility=visibility_value,
             public_slug=job_position.public_slug,
@@ -465,6 +467,7 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         # Pipeline and screening
         model.candidate_pipeline_id = job_position.candidate_pipeline_id
         model.screening_template_id = job_position.screening_template_id
+        model.killer_questions = job_position.killer_questions or []
 
         # Visibility and publishing
         model.visibility = visibility_value

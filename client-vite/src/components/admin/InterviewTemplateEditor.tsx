@@ -191,20 +191,13 @@ const InterviewTemplateEditor: React.FC = () => {
       setSaving(true);
       setError(null);
 
-      // Validate scoring_mode is required for SCREENING type
-      if (formData.type === 'SCREENING' && !formData.scoring_mode) {
-        setError(t('company.interviewTemplateEditor.errors.scoringModeRequired') || 'El modo de scoring es obligatorio para plantillas de tipo Screening');
-        setSaving(false);
-        return;
-      }
-
       // Save template data (template + sections will be handled by backend)
       // Convert "all" to null for job_category
-      // Only include scoring_mode if type is SCREENING
+      // Auto-set scoring_mode to ABSOLUTE for SCREENING templates
       const templateDataWithSections = {
         ...formData,
         job_category: formData.job_category === 'all' || formData.job_category === null ? null : formData.job_category,
-        scoring_mode: formData.type === 'SCREENING' ? formData.scoring_mode : null,
+        scoring_mode: formData.type === 'SCREENING' ? 'ABSOLUTE' : null,
         sections: sections
       };
 
@@ -566,11 +559,11 @@ const InterviewTemplateEditor: React.FC = () => {
                       value={formData.type}
                       onValueChange={(value) => {
                         const newType = value as InterviewTemplateType;
-                        // Reset scoring_mode if type is not SCREENING
-                        setFormData({ 
-                          ...formData, 
+                        // Auto-set scoring_mode to ABSOLUTE for SCREENING, null otherwise
+                        setFormData({
+                          ...formData,
                           type: newType,
-                          scoring_mode: newType === 'SCREENING' ? formData.scoring_mode : null
+                          scoring_mode: newType === 'SCREENING' ? 'ABSOLUTE' : null
                         });
                       }}
                     >
@@ -584,39 +577,7 @@ const InterviewTemplateEditor: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  {formData.type === 'SCREENING' && (
-                    <div>
-                      <Label htmlFor="scoringMode" className="mb-2">
-                        {t('company.interviewTemplateEditor.fields.scoringMode') || 'Modo de Scoring'} *
-                      </Label>
-                      <Select
-                        value={formData.scoring_mode || ''}
-                        onValueChange={(value) => setFormData({ ...formData, scoring_mode: value as 'DISTANCE' | 'ABSOLUTE' })}
-                        required
-                      >
-                        <SelectTrigger className={!formData.scoring_mode ? 'border-red-500' : ''}>
-                          <SelectValue placeholder={t('company.interviewTemplateEditor.placeholders.scoringMode') || 'Selecciona un modo de scoring'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="DISTANCE">{t('company.interviewTemplateEditor.scoringModes.DISTANCE') || 'Distancia'}</SelectItem>
-                          <SelectItem value="ABSOLUTE">{t('company.interviewTemplateEditor.scoringModes.ABSOLUTE') || 'Absoluto'}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {!formData.scoring_mode && (
-                        <p className="mt-1 text-xs text-red-500">
-                          {t('company.interviewTemplateEditor.errors.scoringModeRequired') || 'El modo de scoring es obligatorio para plantillas de tipo Screening'}
-                        </p>
-                      )}
-                      {formData.scoring_mode && (
-                        <p className="mt-1 text-xs text-gray-500">
-                          {formData.scoring_mode === 'DISTANCE' 
-                            ? (t('company.interviewTemplateEditor.scoringModes.DISTANCE_DESCRIPTION') || 'Es mejor cuanto más próximo a los requisitos es')
-                            : (t('company.interviewTemplateEditor.scoringModes.ABSOLUTE_DESCRIPTION') || 'Es mejor cuanto más alto es')
-                          }
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  {/* Scoring mode is always ABSOLUTE for SCREENING templates - no user selection needed */}
                   <div>
                     <Label htmlFor="jobCategory" className="mb-2">{t('company.interviewTemplateEditor.fields.jobCategory')}</Label>
                     <Select
@@ -1457,12 +1418,12 @@ interface QuestionFormModalProps {
   onCancel: () => void;
 }
 
-const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, sectionId, sectionType, templateType, scoringMode, onSave, onCancel }) => {
+const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, sectionId, sectionType, templateType, onSave, onCancel }) => {
   const { t } = useTranslation();
   // For GENERAL and SOFT_SKILL sections, scope is always 'global' and should not be shown
   const isScopeFixed = sectionType === 'GENERAL' || sectionType === 'SOFT_SKILL';
   const defaultScope = isScopeFixed ? 'global' : (question?.scope || 'global');
-  
+
   const [formData, setFormData] = useState({
     name: question?.name || '',
     description: question?.description || '',
@@ -1476,22 +1437,12 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
     scoring: question?.scoring || null
   });
 
-  // Predefined distance options for DISTANCE mode
-  const distanceOptions = [
-    { label: t('company.interviewTemplateEditor.questionForm.distanceOptions.cerca'), scoring: 10 },
-    { label: t('company.interviewTemplateEditor.questionForm.distanceOptions.medio'), scoring: 6 },
-    { label: t('company.interviewTemplateEditor.questionForm.distanceOptions.lejos'), scoring: 3 },
-    { label: t('company.interviewTemplateEditor.questionForm.distanceOptions.muyLejos'), scoring: 1 }
-  ];
-
   const scopeOptions = [
     { value: 'global', label: t('company.interviewTemplateEditor.questionForm.scopeOptions.global') },
     { value: 'item', label: t('company.interviewTemplateEditor.questionForm.scopeOptions.item') }
   ];
 
   const isScreeningTemplate = templateType === 'SCREENING';
-  const isDistanceMode = scoringMode === 'DISTANCE';
-  const isAbsoluteMode = scoringMode === 'ABSOLUTE';
   
   const dataTypeOptions = [
     { value: 'short_string', label: t('company.interviewTemplateEditor.questionForm.dataTypeOptions.shortString') },
@@ -1509,17 +1460,17 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
     setFormData(prev => ({ ...prev, scope: newScope }));
   }, [question, sectionType, isScopeFixed]);
 
-  // Initialize or reset scoring fields when data_type or scoringMode changes
+  // Initialize or reset scoring fields when data_type changes
   useEffect(() => {
     if (formData.data_type === 'scoring') {
-      // For both DISTANCE and ABSOLUTE modes, ensure values are in object format
+      // Ensure values are in object format for ABSOLUTE mode
       if (formData.scoring_values.length === 0) {
         setFormData(prev => ({ ...prev, scoring_values: [] }));
       } else {
         // Convert string values to object format if needed
         const convertedValues = formData.scoring_values.map((v: any) => {
           if (typeof v === 'string') {
-            return { label: v, scoring: isDistanceMode ? 10 : 1 };
+            return { label: v, scoring: 2 }; // Default score for ABSOLUTE mode
           }
           return v;
         });
@@ -1534,7 +1485,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
         return prev;
       });
     }
-  }, [formData.data_type, isDistanceMode]);
+  }, [formData.data_type]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1622,43 +1573,39 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
         {isScoringType && (
           <div>
             <Label htmlFor="scoringValues" className="mb-2">{t('company.interviewTemplateEditor.questionForm.fields.scoringValues')}</Label>
+            <p className="text-xs text-muted-foreground mb-3">
+              Add options and assign a score (0-10) using the star rating. Higher scores indicate better answers.
+            </p>
             <div className="space-y-3">
               {formData.scoring_values.map((value: {label: string, scoring: number} | string, index: number) => {
                 // Handle both old format (string) and new format (object)
                 const label = typeof value === 'string' ? value : (value?.label || '');
-                const scoring = typeof value === 'string' ? null : (value?.scoring || null);
-                
-                // Find the distance option that matches the scoring value (for DISTANCE mode)
-                const selectedDistance = isDistanceMode && scoring !== null
-                  ? distanceOptions.find(opt => opt.scoring === scoring)
-                  : null;
-                
-                // Convert scoring to star rating (0-5 stars, each worth 2 points) for ABSOLUTE mode
-                const getStarRatingFromScoring = (score: number | null): number => {
-                  if (score === null) return 0;
+                const scoring = typeof value === 'string' ? 2 : (value?.scoring ?? 2);
+
+                // Convert scoring to star rating (0-5 stars, each worth 2 points)
+                const getStarRatingFromScoring = (score: number): number => {
                   return Math.round(score / 2);
                 };
-                
-                // Convert star rating (0-5) to score (0-10) for ABSOLUTE mode
+
+                // Convert star rating (0-5) to score (0-10)
                 const getScoringFromStarRating = (stars: number): number => {
                   return stars * 2;
                 };
-                
-                const currentStarRating = isAbsoluteMode ? getStarRatingFromScoring(scoring) : 0;
-                
+
+                const currentStarRating = getStarRatingFromScoring(scoring);
+
                 const handleStarClick = (starIndex: number, valueIndex: number) => {
-                  if (!isAbsoluteMode) return;
                   const clickedRating = starIndex + 1;
                   const newRating = clickedRating === currentStarRating ? 0 : clickedRating;
                   const newScore = getScoringFromStarRating(newRating);
-                  
+
                   const newValues = [...formData.scoring_values];
                   const currentValue = newValues[valueIndex];
                   const currentLabel = typeof currentValue === 'string' ? currentValue : (currentValue?.label || '');
                   newValues[valueIndex] = { label: currentLabel, scoring: newScore };
                   setFormData({ ...formData, scoring_values: newValues });
                 };
-                
+
                 return (
                   <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
                     <div className="flex-1">
@@ -1667,67 +1614,38 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                         value={label}
                         onChange={(e) => {
                           const newValues = [...formData.scoring_values];
-                          const currentScoring = typeof value === 'string' ? (isDistanceMode ? 10 : (isAbsoluteMode ? 2 : 1)) : (value?.scoring || (isDistanceMode ? 10 : (isAbsoluteMode ? 2 : 1)));
+                          const currentScoring = typeof value === 'string' ? 2 : (value?.scoring ?? 2);
                           newValues[index] = { label: e.target.value, scoring: currentScoring };
                           setFormData({ ...formData, scoring_values: newValues });
                         }}
                         placeholder={t('company.interviewTemplateEditor.questionForm.placeholders.scoringLabel')}
                       />
                     </div>
-                    {isDistanceMode ? (
-                      <div className="w-48">
-                        <Select
-                          value={selectedDistance?.label || ''}
-                          onValueChange={(selectedLabel) => {
-                            const selectedOption = distanceOptions.find(opt => opt.label === selectedLabel);
-                            if (selectedOption) {
-                              const newValues = [...formData.scoring_values];
-                              newValues[index] = { label: label, scoring: selectedOption.scoring };
-                              setFormData({ ...formData, scoring_values: newValues });
-                            }
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('company.interviewTemplateEditor.questionForm.placeholders.scoringLabel')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {distanceOptions.map((option) => (
-                              <SelectItem key={option.label} value={option.label}>
-                                {option.label} ({t('company.interviewTemplateEditor.questionForm.labels.score')}: {option.scoring})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ) : isAbsoluteMode ? (
-                      <div className="flex items-center gap-1">
-                        {[0, 1, 2, 3, 4].map((starIndex) => {
-                          const isFilled = starIndex < currentStarRating;
-                          return (
-                            <button
-                              key={starIndex}
-                              type="button"
-                              onClick={() => handleStarClick(starIndex, index)}
-                              className={`transition-colors ${
-                                isFilled
-                                  ? 'text-yellow-400 hover:text-yellow-500'
-                                  : 'text-gray-300 hover:text-gray-400'
-                              }`}
-                              aria-label={`Rate ${starIndex + 1} out of 5 stars`}
-                            >
-                              <Star
-                                className="w-5 h-5"
-                                fill={isFilled ? 'currentColor' : 'none'}
-                                strokeWidth={isFilled ? 0 : 1.5}
-                              />
-                            </button>
-                          );
-                        })}
-                        {scoring !== null && (
-                          <span className="text-xs text-gray-500 ml-2">({scoring}/10)</span>
-                        )}
-                      </div>
-                    ) : null}
+                    <div className="flex items-center gap-1">
+                      {[0, 1, 2, 3, 4].map((starIndex) => {
+                        const isFilled = starIndex < currentStarRating;
+                        return (
+                          <button
+                            key={starIndex}
+                            type="button"
+                            onClick={() => handleStarClick(starIndex, index)}
+                            className={`transition-colors ${
+                              isFilled
+                                ? 'text-yellow-400 hover:text-yellow-500'
+                                : 'text-gray-300 hover:text-gray-400'
+                            }`}
+                            aria-label={`Rate ${starIndex + 1} out of 5 stars`}
+                          >
+                            <Star
+                              className="w-5 h-5"
+                              fill={isFilled ? 'currentColor' : 'none'}
+                              strokeWidth={isFilled ? 0 : 1.5}
+                            />
+                          </button>
+                        );
+                      })}
+                      <span className="text-xs text-gray-500 ml-2 w-10">({scoring}/10)</span>
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -1746,8 +1664,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  const defaultScoring = isDistanceMode ? 10 : (isAbsoluteMode ? 2 : 1);
-                  setFormData({ ...formData, scoring_values: [...formData.scoring_values, { label: '', scoring: defaultScoring }] });
+                  setFormData({ ...formData, scoring_values: [...formData.scoring_values, { label: '', scoring: 2 }] });
                 }}
                 className="w-full"
               >
@@ -1755,13 +1672,6 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ question, section
                 {t('company.interviewTemplateEditor.questionForm.labels.addValue')}
               </Button>
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              {isDistanceMode 
-                ? t('company.interviewTemplateEditor.questionForm.labels.scoringValuesDescription.distance')
-                : isAbsoluteMode
-                ? t('company.interviewTemplateEditor.questionForm.labels.scoringValuesDescription.absolute')
-                : t('company.interviewTemplateEditor.questionForm.labels.scoringValuesDescription.default')}
-            </p>
           </div>
         )}
 

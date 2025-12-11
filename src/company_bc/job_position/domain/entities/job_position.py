@@ -89,8 +89,12 @@ class JobPosition:
     # Pipeline references
     candidate_pipeline_id: Optional[str]
 
-    # Screening reference
+    # Screening reference (for interview template)
     screening_template_id: Optional[str]
+
+    # Killer questions (simple inline questions stored as JSON)
+    # Format: List[{name: str, description?: str, data_type: str, scoring_values?: List[{label, scoring}], is_killer?: bool}]
+    killer_questions: List[Dict[str, Any]]
 
     # Visibility and publishing
     visibility: JobPositionVisibilityEnum
@@ -301,6 +305,7 @@ class JobPosition:
             candidate_pipeline_id: Optional[str] = None,
             screening_template_id: Optional[str] = None,
             custom_fields_config: Optional[List[CustomFieldDefinition]] = None,
+            killer_questions: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
         """Update job position details with all attributes"""
         # Validate required fields
@@ -363,6 +368,8 @@ class JobPosition:
             self.screening_template_id = screening_template_id
         if custom_fields_config is not None:
             self.custom_fields_config = custom_fields_config
+        if killer_questions is not None:
+            self.killer_questions = killer_questions
 
         self.title = title.strip()
         self.description = description
@@ -412,6 +419,7 @@ class JobPosition:
             # Pipeline and screening
             candidate_pipeline_id: Optional[str] = None,
             screening_template_id: Optional[str] = None,
+            killer_questions: Optional[List[Dict[str, Any]]] = None,
             # Visibility and publishing
             visibility: JobPositionVisibilityEnum = JobPositionVisibilityEnum.HIDDEN,
             public_slug: Optional[str] = None,
@@ -473,6 +481,7 @@ class JobPosition:
             # Pipeline and screening
             candidate_pipeline_id=candidate_pipeline_id,
             screening_template_id=screening_template_id,
+            killer_questions=killer_questions or [],
             # Visibility and publishing
             visibility=visibility,
             public_slug=public_slug,
@@ -534,6 +543,7 @@ class JobPosition:
             # Pipeline and screening
             candidate_pipeline_id: Optional[str],
             screening_template_id: Optional[str],
+            killer_questions: Optional[List[Dict[str, Any]]],
             # Visibility and publishing
             visibility: JobPositionVisibilityEnum,
             public_slug: Optional[str],
@@ -593,6 +603,7 @@ class JobPosition:
             # Pipeline and screening
             candidate_pipeline_id=candidate_pipeline_id,
             screening_template_id=screening_template_id,
+            killer_questions=killer_questions or [],
             # Visibility and publishing
             visibility=visibility,
             public_slug=public_slug,
@@ -854,6 +865,7 @@ class JobPosition:
             # Pipeline and screening
             candidate_pipeline_id=self.candidate_pipeline_id,
             screening_template_id=self.screening_template_id,
+            killer_questions=self.killer_questions.copy() if self.killer_questions else [],
             # Visibility - reset
             visibility=JobPositionVisibilityEnum.HIDDEN,
             public_slug=None,  # Need new slug

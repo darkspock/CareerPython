@@ -71,6 +71,7 @@ class JobPositionDto:
     # Pipeline and screening
     candidate_pipeline_id: Optional[str]
     screening_template_id: Optional[str]
+    killer_questions: List[Dict[str, Any]]  # Simple inline killer questions
 
     # Visibility and publishing
     visibility: str
@@ -143,6 +144,7 @@ class JobPositionDto:
             # Pipeline and screening
             candidate_pipeline_id=entity.candidate_pipeline_id,
             screening_template_id=entity.screening_template_id,
+            killer_questions=entity.killer_questions or [],
             # Visibility and publishing
             visibility=entity.visibility.value,
             public_slug=entity.public_slug,
