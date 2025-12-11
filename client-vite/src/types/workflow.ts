@@ -44,6 +44,16 @@ export interface CandidateApplicationWorkflow {
 // Alias for backward compatibility (deprecated, use CandidateApplicationWorkflow)
 export type CompanyWorkflow = CandidateApplicationWorkflow;
 
+// Field properties per custom field for a stage
+export interface FieldPropertiesConfig {
+  [fieldId: string]: {
+    is_required: boolean;
+    is_read_only: boolean;
+    visible_hr: boolean;
+    visible_candidate: boolean;
+  };
+}
+
 export interface WorkflowStage {
   id: string;
   workflow_id: string;
@@ -66,6 +76,7 @@ export interface WorkflowStage {
   validation_rules?: Record<string, any> | null; // JsonLogic validation rules
   recommended_rules?: Record<string, any> | null; // JsonLogic recommendation rules
   interview_configurations?: InterviewConfiguration[] | null; // List of interview configurations
+  field_properties_config?: FieldPropertiesConfig | null; // Field properties per custom field
   created_at: string;
   updated_at: string;
 
@@ -134,6 +145,7 @@ export interface UpdateStageRequest {
   validation_rules?: Record<string, any>; // JsonLogic validation rules
   recommended_rules?: Record<string, any>; // JsonLogic recommendation rules
   interview_configurations?: InterviewConfiguration[]; // List of interview configurations
+  field_properties_config?: FieldPropertiesConfig | null; // Field properties per custom field
 }
 
 export interface ReorderStagesRequest {

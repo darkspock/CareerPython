@@ -29,5 +29,6 @@ class WorkflowStageDto:
     recommended_rules: Optional[Dict[str, Any]]  # JsonLogic recommendation rules
     interview_configurations: Optional[
         List[Dict[str, str]]]  # List of interview configurations: [{"template_id": str, "mode": str}]
+    field_properties_config: Optional[Dict[str, Any]]  # Field properties per custom field
     created_at: datetime
     updated_at: datetime

@@ -61,5 +61,9 @@ class WorkflowStageModel(Base):
         (mapped_column(JSON, nullable=True)  # List of interview configurations: [{"template_id": str, "mode": str}]
          )
 
+    # Field properties configuration per custom field
+    # Structure: {field_id: {is_required: bool, is_read_only: bool, visible_hr: bool, visible_candidate: bool}}
+    field_properties_config: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

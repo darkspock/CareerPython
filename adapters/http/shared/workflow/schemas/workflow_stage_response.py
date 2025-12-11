@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel
 
@@ -29,6 +29,7 @@ class WorkflowStageResponse(BaseModel):
     recommended_rules: Optional[dict] = None  # JsonLogic recommendation rules
     interview_configurations: Optional[
         List[dict]] = None  # List of interview configurations: [{"template_id": str, "mode": str}]
+    field_properties_config: Optional[Dict[str, Any]] = None  # Field properties per custom field
     created_at: datetime
     updated_at: datetime
 

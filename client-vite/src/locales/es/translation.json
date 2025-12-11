@@ -1317,5 +1317,29 @@
       "noWorkflowsForPhase": "No hay flujos configurados para esta fase",
       "createOne": "Crear uno"
     }
+  },
+  "customization": {
+    "fieldMatrix": {
+      "title": "Propiedades de Campos por Contexto",
+      "description": "Configura las propiedades de los campos para cada contexto (etapa).",
+      "field": "Campo",
+      "loading": "Cargando matriz de propiedades...",
+      "noFields": "No hay campos personalizados aún. Añade algunos campos primero para configurar sus propiedades por contexto.",
+      "noContexts": "No hay contextos definidos. Añade contextos para configurar las propiedades de los campos.",
+      "saving": "Guardando...",
+      "legendTitle": "Descripción de Propiedades:",
+      "properties": {
+        "is_required": "Requerido",
+        "is_read_only": "Solo Lectura",
+        "visible_hr": "Visible HR",
+        "visible_candidate": "Visible Candidato"
+      },
+      "propertyDescriptions": {
+        "is_required": "El campo debe ser completado",
+        "is_read_only": "El campo no puede ser editado",
+        "visible_hr": "HR puede ver este campo",
+        "visible_candidate": "Los candidatos pueden ver este campo"
+      }
+    }
   }
 }

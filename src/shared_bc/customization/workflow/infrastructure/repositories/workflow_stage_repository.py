@@ -138,6 +138,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
             validation_rules=cast(dict, model.validation_rules) if model.validation_rules else None,
             recommended_rules=cast(dict, model.recommended_rules) if model.recommended_rules else None,
             interview_configurations=interview_configurations if interview_configurations is not None else None,
+            field_properties_config=cast(dict, model.field_properties_config) if model.field_properties_config else None,
             created_at=model.created_at,
             updated_at=model.updated_at
         )
@@ -173,6 +174,7 @@ class WorkflowStageRepository(WorkflowStageRepositoryInterface):
                 [config.to_dict() for config in entity.interview_configurations]
                 if entity.interview_configurations is not None else None
             ),
+            field_properties_config=entity.field_properties_config,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

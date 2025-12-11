@@ -190,7 +190,8 @@ class WorkflowStageController:
             style=style,
             validation_rules=request.validation_rules,
             recommended_rules=request.recommended_rules,
-            interview_configurations=interview_configurations
+            interview_configurations=interview_configurations,
+            field_properties_config=request.field_properties_config
         )
 
         self._command_bus.dispatch(command)

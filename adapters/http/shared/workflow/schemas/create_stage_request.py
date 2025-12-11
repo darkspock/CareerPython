@@ -1,6 +1,6 @@
 """Create Stage Request Schema."""
 from decimal import Decimal
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel, Field
 
@@ -35,6 +35,10 @@ class CreateStageRequest(BaseModel):
             "List of interview configurations: "
             "[{\"template_id\": str, \"mode\": \"AUTOMATIC\" | \"MANUAL\"}]"
         )
+    )
+    field_properties_config: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Field properties per custom field: {field_id: {is_required, is_read_only, visible_hr, visible_candidate}}"
     )
 
     class Config:

@@ -35,6 +35,7 @@ class WorkflowStageMapper:
             recommended_rules=entity.recommended_rules,
             interview_configurations=[config.to_dict() for config in
                                       entity.interview_configurations] if entity.interview_configurations else None,
+            field_properties_config=entity.field_properties_config,
             created_at=entity.created_at,
             updated_at=entity.updated_at
         )

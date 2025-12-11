@@ -37,6 +37,7 @@ class UpdateStageCommand(Command):
     validation_rules: Optional[Dict[str, Any]] = None  # JsonLogic validation rules
     recommended_rules: Optional[Dict[str, Any]] = None  # JsonLogic recommendation rules
     interview_configurations: Optional[List[InterviewConfiguration]] = None  # Interview configurations for this stage
+    field_properties_config: Optional[Dict[str, Any]] = None  # Field properties per custom field
 
 
 class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
@@ -103,7 +104,8 @@ class UpdateStageCommandHandler(CommandHandler[UpdateStageCommand]):
             kanban_display=command.kanban_display,
             validation_rules=command.validation_rules,
             recommended_rules=command.recommended_rules,
-            interview_configurations=command.interview_configurations
+            interview_configurations=command.interview_configurations,
+            field_properties_config=command.field_properties_config
         )
 
         self.repository.save(stage)

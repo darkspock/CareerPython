@@ -1052,5 +1052,29 @@
   "notifications": {
     "title": "Notifications",
     "empty": "You have no notifications"
+  },
+  "customization": {
+    "fieldMatrix": {
+      "title": "Field Properties by Context",
+      "description": "Configure field properties for each context (stage).",
+      "field": "Field",
+      "loading": "Loading field properties matrix...",
+      "noFields": "No custom fields yet. Add some fields first to configure their properties per context.",
+      "noContexts": "No contexts defined. Add contexts to configure field properties.",
+      "saving": "Saving...",
+      "legendTitle": "Property Descriptions:",
+      "properties": {
+        "is_required": "Required",
+        "is_read_only": "Read Only",
+        "visible_hr": "Visible HR",
+        "visible_candidate": "Visible Candidate"
+      },
+      "propertyDescriptions": {
+        "is_required": "Field must be filled",
+        "is_read_only": "Field cannot be edited",
+        "visible_hr": "HR can see this field",
+        "visible_candidate": "Candidates can see this field"
+      }
+    }
   }
 }

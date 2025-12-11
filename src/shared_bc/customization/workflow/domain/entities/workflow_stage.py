@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 # TYPE_CHECKING to avoid circular imports
 from typing import TYPE_CHECKING
 
@@ -57,6 +57,10 @@ class WorkflowStage:
     interview_configurations: Optional[
         List[InterviewConfiguration]]  # List of interview configurations (template_id + mode) for this stage
 
+    # Field properties configuration per custom field
+    # Structure: {field_id: {is_required: bool, is_read_only: bool, visible_hr: bool, visible_candidate: bool}}
+    field_properties_config: Optional[Dict[str, Any]]
+
     created_at: datetime
     updated_at: datetime
 
@@ -83,7 +87,8 @@ class WorkflowStage:
             style: Optional[WorkflowStageStyle] = None,
             validation_rules: Optional[dict] = None,
             recommended_rules: Optional[dict] = None,
-            interview_configurations: Optional[List[InterviewConfiguration]] = None
+            interview_configurations: Optional[List[InterviewConfiguration]] = None,
+            field_properties_config: Optional[Dict[str, Any]] = None
     ) -> "WorkflowStage":
         """Factory method to create a new workflow stage"""
         if not name:
@@ -133,6 +138,7 @@ class WorkflowStage:
             validation_rules=validation_rules,
             recommended_rules=recommended_rules,
             interview_configurations=interview_configurations or [],
+            field_properties_config=field_properties_config,
             created_at=now,
             updated_at=now
         )
@@ -155,7 +161,8 @@ class WorkflowStage:
             kanban_display: Optional[KanbanDisplayEnum] = None,
             validation_rules: Optional[dict] = None,
             recommended_rules: Optional[dict] = None,
-            interview_configurations: Optional[List[InterviewConfiguration]] = None
+            interview_configurations: Optional[List[InterviewConfiguration]] = None,
+            field_properties_config: Optional[Dict[str, Any]] = None
     ) -> None:
         """Update stage information"""
         if not name:
@@ -189,6 +196,7 @@ class WorkflowStage:
         self.validation_rules = validation_rules if validation_rules is not None else self.validation_rules
         self.recommended_rules = recommended_rules if recommended_rules is not None else self.recommended_rules
         self.interview_configurations = interview_configurations if interview_configurations is not None else self.interview_configurations
+        self.field_properties_config = field_properties_config if field_properties_config is not None else self.field_properties_config
         self.updated_at = datetime.utcnow()
 
     def reorder(self, new_order: int) -> None:

@@ -30,6 +30,7 @@ class WorkflowStageResponseMapper:
             validation_rules=dto.validation_rules,
             recommended_rules=dto.recommended_rules,
             interview_configurations=dto.interview_configurations,
+            field_properties_config=dto.field_properties_config,
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
