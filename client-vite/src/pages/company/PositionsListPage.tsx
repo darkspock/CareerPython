@@ -448,6 +448,7 @@ function PositionsListPageContent() {
               background_color: stage.style?.background_color || '#f3f4f6',
               text_color: stage.style?.color || '#374151', // StageStyle uses 'color' not 'text_color'
               role: null,
+              stage_type: stage.stage_type,
               status_mapping: mapStageTypeToStatus(stage.stage_type),
               kanban_display: mapKanbanDisplay(typeof stage.kanban_display === 'string' ? stage.kanban_display : (stage.kanban_display || 'column')),
               field_visibility: {},
@@ -769,6 +770,7 @@ function PositionsListPageContent() {
           background_color: stage.style?.background_color || '#f3f4f6',
           text_color: stage.style?.color || '#374151',
           role: null,
+          stage_type: stage.stage_type,
           status_mapping: mapStageTypeToStatus(stage.stage_type),
           kanban_display: stage.kanban_display || 'column',
           field_visibility: {},
@@ -833,6 +835,7 @@ function PositionsListPageContent() {
                     background_color: stage.style?.background_color || '#f3f4f6',
                     text_color: stage.style?.color || '#374151',
                     role: null,
+                    stage_type: stage.stage_type,
                     status_mapping: mapStageTypeToStatus(stage.stage_type),
                     kanban_display: stage.kanban_display || 'column',
                     field_visibility: {},
@@ -939,14 +942,7 @@ function PositionsListPageContent() {
               </Button>
             )}
             <Button
-              onClick={() => {
-                const workflowId = selectedWorkflowId || workflows[0]?.id;
-                if (workflowId) {
-                  navigate(`/company/positions/create?workflow_id=${workflowId}`);
-                } else {
-                  navigate('/company/positions/create');
-                }
-              }}
+              onClick={() => navigate('/company/positions/select-workflows')}
             >
               <Plus className="w-5 h-5 mr-2" />
               Create Position
@@ -1041,14 +1037,7 @@ function PositionsListPageContent() {
           </p>
           {statusFilter === 'all' && (
             <Button
-              onClick={() => {
-                const workflowId = selectedWorkflowId || workflows[0]?.id;
-                if (workflowId) {
-                  navigate(`/company/positions/create?workflow_id=${workflowId}`);
-                } else {
-                  navigate('/company/positions/create');
-                }
-              }}
+              onClick={() => navigate('/company/positions/select-workflows')}
             >
               <Plus className="w-5 h-5 mr-2" />
               Create Position

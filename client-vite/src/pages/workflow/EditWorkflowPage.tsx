@@ -172,7 +172,7 @@ export default function EditWorkflowPage() {
       {
         name: '',
         description: '',
-        stage_type: 'standard',
+        stage_type: 'progress',
         order: newOrder,
         is_active: true,
         isNew: true,
@@ -340,7 +340,7 @@ export default function EditWorkflowPage() {
     // Validate workflow stage rules
     const initialStages = stages.filter(s => s.stage_type === 'initial');
     const successStages = stages.filter(s => s.stage_type === 'success');
-    const standardStages = stages.filter(s => s.stage_type === 'standard'); // 'standard' maps to 'progress' in backend
+    const progressStages = stages.filter(s => s.stage_type === 'progress');
     
     // Rule 1: Only one INITIAL stage allowed
     if (initialStages.length > 1) {
@@ -360,8 +360,8 @@ export default function EditWorkflowPage() {
       return;
     }
     
-    // Rule 4: If there are PROGRESS (standard) stages, there must be an INITIAL stage
-    if (standardStages.length > 0 && initialStages.length === 0) {
+    // Rule 4: If there are PROGRESS stages, there must be an INITIAL stage
+    if (progressStages.length > 0 && initialStages.length === 0) {
       toast.error('If a workflow has PROGRESS stages, it must have an INITIAL stage');
       return;
     }
@@ -449,7 +449,7 @@ export default function EditWorkflowPage() {
       }
 
       toast.success('Workflow updated successfully');
-      navigate('/company/settings/workflows');
+      navigate('/company/settings/hiring-pipelines');
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to update workflow';
       toast.error(errorMessage);
@@ -480,11 +480,11 @@ export default function EditWorkflowPage() {
       {/* Header */}
       <div className="mb-6">
         <button
-          onClick={() => navigate('/company/settings/workflows')}
+          onClick={() => navigate('/company/settings/hiring-pipelines')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Workflows
+          Back to Hiring Pipelines
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Edit Workflow</h1>
         <p className="text-gray-600 mt-1">Update workflow details and stages</p>
@@ -826,7 +826,7 @@ export default function EditWorkflowPage() {
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={() => navigate('/company/settings/workflows')}
+            onClick={() => navigate('/company/settings/hiring-pipelines')}
             className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Cancel

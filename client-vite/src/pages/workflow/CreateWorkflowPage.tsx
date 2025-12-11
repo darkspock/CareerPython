@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { phaseService } from '../../services/phaseService.ts';
@@ -21,8 +21,19 @@ interface StageFormData {
   next_phase_id?: string;
 }
 
-export default function CreateWorkflowPage() {
+interface CreateWorkflowPageProps {
+  workflowType?: 'CA' | 'PO' | 'CO';
+  backRoute?: string;
+}
+
+export default function CreateWorkflowPage({
+  workflowType = 'CA',
+  backRoute = '/company/settings/hiring-pipelines'
+}: CreateWorkflowPageProps) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultPhaseId = searchParams.get('phaseId') || '';
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [roles, setRoles] = useState<CompanyRole[]>([]);
@@ -32,12 +43,12 @@ export default function CreateWorkflowPage() {
 
   const [workflowName, setWorkflowName] = useState('');
   const [workflowDescription, setWorkflowDescription] = useState('');
-  const [phaseId, setPhaseId] = useState<string>('');
+  const [phaseId, setPhaseId] = useState<string>(defaultPhaseId);
   const [isDefault, setIsDefault] = useState(false);
   const [stages, setStages] = useState<StageFormData[]>([
     { name: 'Applied', description: 'Candidate has applied', stage_type: 'initial', order: 1 },
-    { name: 'Screening', description: 'Initial screening', stage_type: 'standard', order: 2 },
-    { name: 'Interview', description: 'Interview stage', stage_type: 'standard', order: 3 },
+    { name: 'Screening', description: 'Initial screening', stage_type: 'progress', order: 2 },
+    { name: 'Interview', description: 'Interview stage', stage_type: 'progress', order: 3 },
     { name: 'Hired', description: 'Candidate hired', stage_type: 'success', order: 4 },
   ]);
 
@@ -68,7 +79,11 @@ export default function CreateWorkflowPage() {
         ]);
 
         setRoles(rolesResponse as CompanyRole[]);
-        setPhases(phasesData.sort((a, b) => a.sort_order - b.sort_order));
+        // Filter phases by workflow type
+        const filteredPhases = phasesData
+          .filter(phase => phase.workflow_type === workflowType)
+          .sort((a, b) => a.sort_order - b.sort_order);
+        setPhases(filteredPhases);
       } catch (err) {
         console.error('Failed to load data:', err);
       } finally {
@@ -78,13 +93,13 @@ export default function CreateWorkflowPage() {
     };
 
     loadData();
-  }, []);
+  }, [workflowType]);
 
   const handleAddStage = () => {
     const newOrder = stages.length + 1;
     setStages([
       ...stages,
-      { name: '', description: '', stage_type: 'standard', order: newOrder },
+      { name: '', description: '', stage_type: 'progress', order: newOrder },
     ]);
   };
 
@@ -148,6 +163,11 @@ export default function CreateWorkflowPage() {
       return;
     }
 
+    if (!phaseId) {
+      setError('Please select a phase');
+      return;
+    }
+
     if (stages.length === 0) {
       setError('At least one stage is required');
       return;
@@ -164,7 +184,7 @@ export default function CreateWorkflowPage() {
     // Validate workflow stage rules
     const initialStages = stages.filter(s => s.stage_type === 'initial');
     const successStages = stages.filter(s => s.stage_type === 'success');
-    const standardStages = stages.filter(s => s.stage_type === 'standard'); // 'standard' maps to 'progress' in backend
+    const progressStages = stages.filter(s => s.stage_type === 'progress');
     
     // Rule 1: Only one INITIAL stage allowed
     if (initialStages.length > 1) {
@@ -184,8 +204,8 @@ export default function CreateWorkflowPage() {
       return;
     }
     
-    // Rule 4: If there are PROGRESS (standard) stages, there must be an INITIAL stage
-    if (standardStages.length > 0 && initialStages.length === 0) {
+    // Rule 4: If there are PROGRESS stages, there must be an INITIAL stage
+    if (progressStages.length > 0 && initialStages.length === 0) {
       setError('If a workflow has PROGRESS stages, it must have an INITIAL stage');
       return;
     }
@@ -196,6 +216,7 @@ export default function CreateWorkflowPage() {
       // Create workflow
       const workflow = await companyWorkflowService.createWorkflow({
         company_id: companyId,
+        workflow_type: workflowType,
         name: workflowName,
         description: workflowDescription,
         phase_id: phaseId || undefined,
@@ -220,7 +241,7 @@ export default function CreateWorkflowPage() {
         });
       }
 
-      navigate('/company/settings/workflows');
+      navigate(backRoute);
     } catch (err: any) {
       setError(err.message || 'Failed to create workflow');
       console.error('Error creating workflow:', err);
@@ -234,14 +255,20 @@ export default function CreateWorkflowPage() {
       {/* Header */}
       <div className="mb-6">
         <button
-          onClick={() => navigate('/company/settings')}
+          onClick={() => navigate(backRoute)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Workflows
+          Back
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">Create Workflow</h1>
-        <p className="text-gray-600 mt-1">Define a recruitment workflow with stages</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {workflowType === 'CA' ? 'Create Hiring Pipeline' : 'Create Publication Workflow'}
+        </h1>
+        <p className="text-gray-600 mt-1">
+          {workflowType === 'CA'
+            ? 'Define a hiring pipeline with stages'
+            : 'Define a publication workflow with stages'}
+        </p>
       </div>
 
       {/* Error Message */}
@@ -287,7 +314,7 @@ export default function CreateWorkflowPage() {
             {/* Phase Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phase (Optional)
+                Phase <span className="text-red-500">*</span>
               </label>
               {loadingPhases ? (
                 <div className="text-sm text-gray-500">Loading phases...</div>
@@ -299,9 +326,10 @@ export default function CreateWorkflowPage() {
                 <select
                   value={phaseId}
                   onChange={(e) => setPhaseId(e.target.value)}
+                  required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">No Phase (Standalone Workflow)</option>
+                  <option value="">Select a phase</option>
                   {phases.map((phase) => (
                     <option key={phase.id} value={phase.id}>
                       {phase.name}
@@ -310,7 +338,7 @@ export default function CreateWorkflowPage() {
                 </select>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                Assign this workflow to a recruitment phase (optional)
+                Assign this workflow to a recruitment phase
               </p>
             </div>
 

@@ -20,10 +20,13 @@ class JobPositionDto:
     title: str
     company_id: CompanyId
 
-    # Workflow system
+    # Workflow system - Publication (PO)
     job_position_workflow_id: Optional[str]
     phase_workflows: Optional[Dict[str, str]]
     stage_id: Optional[str]
+
+    # Workflow system - Candidate Application (CA)
+    candidate_application_workflow_id: Optional[str]
 
     # Content fields
     description: Optional[str]
@@ -100,10 +103,12 @@ class JobPositionDto:
             id=entity.id,
             title=entity.title,
             company_id=entity.company_id,
-            # Workflow system
+            # Workflow system - Publication (PO)
             job_position_workflow_id=entity.job_position_workflow_id.value if entity.job_position_workflow_id else None,
             phase_workflows=entity.phase_workflows,
             stage_id=entity.stage_id.value if entity.stage_id else None,
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id=entity.candidate_application_workflow_id,
             # Content fields
             description=entity.description,
             job_category=entity.job_category,

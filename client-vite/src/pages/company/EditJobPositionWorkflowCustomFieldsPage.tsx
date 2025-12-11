@@ -130,7 +130,7 @@ export default function EditJobPositionWorkflowCustomFieldsPage() {
         custom_fields_config: customFieldsConfig,
       });
 
-      navigate('/company/settings/job-position-workflows');
+      navigate('/company/settings/publication-workflows');
     } catch (err: any) {
       setError(err.message || 'Failed to update custom fields configuration');
       console.error('Error updating custom fields:', err);
@@ -153,7 +153,7 @@ export default function EditJobPositionWorkflowCustomFieldsPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/settings/job-position-workflows')}
+          onClick={() => navigate('/company/settings/publication-workflows')}
           className="mb-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -544,7 +544,7 @@ export default function EditJobPositionWorkflowCustomFieldsPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/company/settings/job-position-workflows')}
+            onClick={() => navigate('/company/settings/publication-workflows')}
           >
             Cancel
           </Button>

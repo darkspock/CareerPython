@@ -369,20 +369,17 @@ class CompanyContainer(containers.DeclarativeContainer):
     # CompanyRole Command Handlers
     create_role_command_handler = providers.Factory(
         CreateRoleCommandHandler,
-        repository=company_role_repository,
-        event_bus=shared.event_bus
+        repository=company_role_repository
     )
-    
+
     update_role_command_handler = providers.Factory(
         UpdateRoleCommandHandler,
-        repository=company_role_repository,
-        event_bus=shared.event_bus
+        repository=company_role_repository
     )
-    
+
     delete_role_command_handler = providers.Factory(
         DeleteRoleCommandHandler,
-        repository=company_role_repository,
-        event_bus=shared.event_bus
+        repository=company_role_repository
     )
     
     # CompanyCandidate Query Handlers

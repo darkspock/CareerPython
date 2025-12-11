@@ -97,7 +97,7 @@ export default function WorkflowAdvancedConfigPage() {
   };
 
   const handleBack = () => {
-    navigate('/company/settings/workflows');
+    navigate('/company/settings/hiring-pipelines');
   };
 
   if (loading) {

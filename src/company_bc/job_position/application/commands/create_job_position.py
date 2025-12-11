@@ -24,9 +24,13 @@ from src.interview_bc.interview_template.domain.value_objects import InterviewTe
 class CreateJobPositionCommand(Command):
     id: JobPositionId
     company_id: CompanyId
-    job_position_workflow_id: Optional[JobPositionWorkflowId] = None  # Workflow system
-    stage_id: Optional[StageId] = None  # Initial stage
+    # Workflow system - Publication (PO)
+    job_position_workflow_id: Optional[JobPositionWorkflowId] = None  # Publication workflow
+    stage_id: Optional[StageId] = None  # Initial stage in publication workflow
     phase_workflows: Optional[Dict[str, str]] = None
+    # Workflow system - Candidate Application (CA)
+    candidate_application_workflow_id: Optional[str] = None  # Hiring pipeline workflow for candidates
+    # Custom fields
     custom_fields_config: Optional[List[CustomFieldDefinition]] = None  # Custom field definitions (from workflow)
     custom_fields_values: Optional[Dict[str, Any]] = None  # Custom field values
     source_workflow_id: Optional[str] = None  # Workflow ID from which custom fields were copied
@@ -75,9 +79,13 @@ class CreateJobPositionCommandHandler(CommandHandler[CreateJobPositionCommand]):
         job_position = JobPosition.create(
             id=command.id,
             company_id=command.company_id,
+            # Workflow system - Publication (PO)
             job_position_workflow_id=command.job_position_workflow_id,
             stage_id=command.stage_id,
             phase_workflows=command.phase_workflows,
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id=command.candidate_application_workflow_id,
+            # Custom fields
             custom_fields_config=command.custom_fields_config,
             custom_fields_values=command.custom_fields_values or {},
             source_workflow_id=command.source_workflow_id,

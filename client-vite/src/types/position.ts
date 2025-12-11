@@ -273,6 +273,7 @@ export interface JobPositionWorkflowStage {
   background_color: string;
   text_color: string;
   role?: string | null; // CompanyRoleId
+  stage_type: string; // 'initial' | 'progress' | 'success' | 'fail' | 'hold' | 'archived'
   status_mapping: string; // JobPositionStatusEnum value ('draft' | 'active' | 'paused' | 'closed' | 'archived')
   kanban_display: string; // KanbanDisplayEnum value
   field_visibility: Record<string, boolean>;
@@ -334,9 +335,12 @@ export const DESIRED_ROLE_OPTIONS = [
 export interface Position {
   id: string;
   company_id: string;
-  job_position_workflow_id?: string | null;  // Workflow system
-  stage_id?: string | null;  // Current stage in workflow
+  // Workflow system - Publication (PO)
+  job_position_workflow_id?: string | null;  // Publication workflow
+  stage_id?: string | null;  // Current stage in publication workflow
   phase_workflows?: Record<string, string> | null;  // Phase 12.8: phase_id -> workflow_id mapping
+  // Workflow system - Candidate Application (CA)
+  candidate_application_workflow_id?: string | null;  // Hiring pipeline workflow for candidates
   custom_fields_values: Record<string, unknown>;  // All removed fields are stored here
   company_name?: string; // Populated when fetching with company info
 
@@ -413,9 +417,12 @@ export interface Position {
 
 export interface CreatePositionRequest {
   company_id: string;
-  job_position_workflow_id?: string | null;  // Workflow system
-  stage_id?: string | null;  // Initial stage ID
+  // Workflow system - Publication (PO)
+  job_position_workflow_id?: string | null;  // Publication workflow
+  stage_id?: string | null;  // Initial stage ID in publication workflow
   phase_workflows?: Record<string, string> | null;  // Phase workflows mapping
+  // Workflow system - Candidate Application (CA)
+  candidate_application_workflow_id?: string | null;  // Hiring pipeline workflow for candidates
   custom_fields_values?: Record<string, unknown>;  // Legacy custom field values
   custom_fields_config?: CustomFieldDefinition[] | null;  // Custom field definitions
   source_workflow_id?: string | null;  // Workflow from which fields were copied

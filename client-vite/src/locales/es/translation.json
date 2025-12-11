@@ -684,9 +684,13 @@
         "title": "Gestión de Fases",
         "description": "Organiza el reclutamiento en fases de alto nivel"
       },
-      "workflowSettings": {
-        "title": "Flujos de reclutamiento",
-        "description": "Gestiona los flujos de trabajo y etapas de reclutamiento"
+      "hiringPipelines": {
+        "title": "Procesos de Selección",
+        "description": "Gestiona los pipelines y etapas de reclutamiento"
+      },
+      "publicationWorkflows": {
+        "title": "Flujos de Publicación",
+        "description": "Gestiona los flujos de aprobación de posiciones"
       },
       "companyRoles": {
         "title": "Roles de la Empresa",
@@ -694,9 +698,9 @@
       },
       "quickAccess": {
         "title": "Acceso Rápido",
-        "createWorkflow": {
-          "title": "Crear Nuevo Flujo de Trabajo",
-          "description": "Configura un nuevo flujo de trabajo de reclutamiento"
+        "createPipeline": {
+          "title": "Crear Nuevo Pipeline",
+          "description": "Configura un nuevo proceso de selección"
         },
         "addRole": {
           "title": "Añadir Rol de Empresa",
@@ -1289,5 +1293,24 @@
   "notifications": {
     "title": "Notificaciones",
     "empty": "No tienes notificaciones"
+  },
+  "position": {
+    "workflowSelection": {
+      "title": "Seleccionar Flujos de Trabajo",
+      "description": "Antes de crear una posición, selecciona los flujos de trabajo que se utilizarán para el proceso de publicación y reclutamiento.",
+      "publicationWorkflow": "Flujo de Publicación",
+      "publicationWorkflowDescription": "Define el proceso de aprobación y publicación de la posición",
+      "hiringPipeline": "Proceso de Selección",
+      "hiringPipelineDescription": "Define las etapas por las que pasarán los candidatos",
+      "stages": "etapas",
+      "continue": "Continuar",
+      "note": "Nota",
+      "cannotChangeAfterCreation": "Los flujos de trabajo seleccionados no se pueden cambiar después de crear la posición.",
+      "missingWorkflows": "Flujos de Trabajo Requeridos",
+      "missingWorkflowsDescription": "Antes de crear una posición, necesitas configurar los siguientes flujos de trabajo:",
+      "noPublicationWorkflows": "No hay flujos de publicación publicados",
+      "noHiringPipelines": "No hay procesos de selección publicados",
+      "createOne": "Crear uno"
+    }
   }
 }

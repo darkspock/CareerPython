@@ -10,9 +10,12 @@ from src.company_bc.job_position.application.queries.job_position_dto import Job
 class JobPositionCreate(BaseModel):
     """Schema for creating a job position"""
     company_id: str = Field(..., description="Company ID")
-    job_position_workflow_id: Optional[str] = Field(None, description="Workflow ID")
-    stage_id: Optional[str] = Field(None, description="Initial stage ID")
+    # Workflow system - Publication (PO)
+    job_position_workflow_id: Optional[str] = Field(None, description="Publication workflow ID")
+    stage_id: Optional[str] = Field(None, description="Initial stage ID in publication workflow")
     phase_workflows: Optional[Dict[str, str]] = Field(None, description="Phase workflows mapping")
+    # Workflow system - Candidate Application (CA)
+    candidate_application_workflow_id: Optional[str] = Field(None, description="Hiring pipeline workflow ID for candidates")
     custom_fields_values: Optional[Dict[str, Any]] = Field(default_factory=dict,
                                                            description="Custom field values")
     title: str = Field(..., description="Position title")
@@ -160,9 +163,12 @@ class JobPositionResponse(BaseModel):
     id: str
     title: str
     company_id: str
+    # Workflow system - Publication (PO)
     job_position_workflow_id: Optional[str] = None
     stage_id: Optional[str] = None
     phase_workflows: Optional[Dict[str, str]] = None
+    # Workflow system - Candidate Application (CA)
+    candidate_application_workflow_id: Optional[str] = None
     custom_fields_values: Dict[str, Any] = Field(default_factory=dict)
     custom_fields_config: List[CustomFieldDefinitionSchema] = Field(default_factory=list)
     company_name: Optional[str] = None
@@ -228,9 +234,12 @@ class JobPositionResponse(BaseModel):
             id=dto.id.value,
             title=dto.title,
             company_id=dto.company_id.value,
+            # Workflow system - Publication (PO)
             job_position_workflow_id=dto.job_position_workflow_id,
             stage_id=dto.stage_id,
             phase_workflows=dto.phase_workflows,
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id=dto.candidate_application_workflow_id,
             custom_fields_values=dto.custom_fields_values,
             custom_fields_config=custom_fields_config,
             company_name=company_name,

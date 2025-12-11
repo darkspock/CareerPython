@@ -37,11 +37,14 @@ class JobPosition:
     title: str
     company_id: CompanyId
 
-    # Workflow system
-    job_position_workflow_id: Optional[JobPositionWorkflowId]
+    # Workflow system - Publication (PO)
+    job_position_workflow_id: Optional[JobPositionWorkflowId]  # Publication workflow (PO)
     phase_workflows: Optional[Dict[str, str]]  # phase_id -> workflow_id mapping
-    stage_id: Optional[StageId]  # Current stage in workflow
+    stage_id: Optional[StageId]  # Current stage in publication workflow
     stage_assignments: Dict[str, list]  # stage_id -> [company_user_id, ...]
+
+    # Workflow system - Candidate Application (CA)
+    candidate_application_workflow_id: Optional[str]  # Hiring pipeline workflow (CA) for candidates
 
     # Content fields
     description: Optional[str]
@@ -383,10 +386,12 @@ class JobPosition:
             id: JobPositionId,
             title: str,
             company_id: CompanyId,
-            # Workflow system
+            # Workflow system - Publication (PO)
             job_position_workflow_id: Optional[JobPositionWorkflowId] = None,
             stage_id: Optional[StageId] = None,
             phase_workflows: Optional[Dict[str, str]] = None,
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id: Optional[str] = None,
             # Content fields
             description: Optional[str] = None,
             job_category: JobCategoryEnum = JobCategoryEnum.OTHER,
@@ -436,11 +441,13 @@ class JobPosition:
             id=id,
             title=title.strip(),
             company_id=company_id,
-            # Workflow system
+            # Workflow system - Publication (PO)
             job_position_workflow_id=job_position_workflow_id,
             phase_workflows=phase_workflows or {},
             stage_id=stage_id,
             stage_assignments={},
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id=candidate_application_workflow_id,
             # Content fields
             description=description,
             job_category=job_category,
@@ -498,11 +505,13 @@ class JobPosition:
             id: JobPositionId,
             title: str,
             company_id: CompanyId,
-            # Workflow system
+            # Workflow system - Publication (PO)
             job_position_workflow_id: Optional[JobPositionWorkflowId],
             phase_workflows: Optional[Dict[str, str]],
             stage_id: Optional[StageId],
             stage_assignments: Optional[Dict[str, list]],
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id: Optional[str],
             # Content fields
             description: Optional[str],
             job_category: JobCategoryEnum,
@@ -558,11 +567,13 @@ class JobPosition:
             id=id,
             title=title,
             company_id=company_id,
-            # Workflow system
+            # Workflow system - Publication (PO)
             job_position_workflow_id=job_position_workflow_id,
             phase_workflows=phase_workflows or {},
             stage_id=stage_id,
             stage_assignments=stage_assignments or {},
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id=candidate_application_workflow_id,
             # Content fields
             description=description,
             job_category=job_category,

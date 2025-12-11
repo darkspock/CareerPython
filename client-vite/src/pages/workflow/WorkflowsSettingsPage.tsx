@@ -123,18 +123,16 @@ export default function WorkflowsSettingsPage({
   };
 
   const handleCreateWorkflow = () => {
-    if (createRoute) {
-      navigate(createRoute);
-    } else {
-      navigate('/company/workflows/create');
-    }
+    const baseRoute = createRoute || '/company/settings/hiring-pipelines/create';
+    const url = selectedPhaseId ? `${baseRoute}?phaseId=${selectedPhaseId}` : baseRoute;
+    navigate(url);
   };
 
   const handleEditWorkflow = (workflowId: string) => {
     if (editRoute) {
       navigate(editRoute(workflowId));
     } else {
-      navigate(`/company/workflows/${workflowId}/edit`);
+      navigate(`/company/hiring-pipelines/${workflowId}/edit`);
     }
   };
 
@@ -142,7 +140,7 @@ export default function WorkflowsSettingsPage({
     if (advancedConfigRoute) {
       navigate(advancedConfigRoute(workflowId));
     } else {
-      navigate(`/company/workflows/${workflowId}/advanced-config`);
+      navigate(`/company/hiring-pipelines/${workflowId}/advanced-config`);
     }
   };
 

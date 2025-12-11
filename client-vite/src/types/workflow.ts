@@ -4,8 +4,8 @@ import type { StageStyle } from './stageStyle';
 // Phase 12: Updated workflow status (INACTIVE → DRAFT)
 export type WorkflowStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 
-// Phase 12: Updated stage types (INTERMEDIATE → STANDARD, FINAL → SUCCESS, added FAIL, ARCHIVED)
-export type StageType = 'initial' | 'standard' | 'success' | 'fail' | 'archived';
+// Stage types matching backend WorkflowStageTypeEnum
+export type StageType = 'initial' | 'progress' | 'success' | 'fail' | 'hold' | 'archived';
 
 // Kanban display configuration
 export const KanbanDisplay = {
@@ -75,6 +75,7 @@ export interface WorkflowStage {
 
 export interface CreateWorkflowRequest {
   company_id: string;
+  workflow_type: 'CA' | 'PO' | 'CO';
   name: string;
   description?: string;
   phase_id?: string | null; // Phase 12: Phase association
@@ -152,9 +153,11 @@ export const getWorkflowStatusColor = (status: WorkflowStatus): string => {
 export const getStageTypeColor = (type: StageType): string => {
   switch (type) {
     case 'initial': return 'bg-blue-100 text-blue-800';
-    case 'standard': return 'bg-yellow-100 text-yellow-800'; // Phase 12: STANDARD
-    case 'success': return 'bg-green-100 text-green-800'; // Phase 12: SUCCESS
-    case 'fail': return 'bg-red-100 text-red-800'; // Phase 12: FAIL
+    case 'progress': return 'bg-yellow-100 text-yellow-800';
+    case 'success': return 'bg-green-100 text-green-800';
+    case 'fail': return 'bg-red-100 text-red-800';
+    case 'hold': return 'bg-orange-100 text-orange-800';
+    case 'archived': return 'bg-gray-100 text-gray-800';
     default: return 'bg-gray-100 text-gray-800';
   }
 };

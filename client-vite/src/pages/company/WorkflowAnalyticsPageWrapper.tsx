@@ -119,10 +119,10 @@ export default function WorkflowAnalyticsPageWrapper() {
             Create a workflow first to view analytics.
           </p>
           <button
-            onClick={() => navigate('/company/settings/workflows')}
+            onClick={() => navigate('/company/settings/hiring-pipelines')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Go to Workflows Settings
+            Go to Hiring Pipelines
           </button>
         </div>
       </div>

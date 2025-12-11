@@ -191,9 +191,12 @@ class JobPositionController:
             command = CreateJobPositionCommand(
                 id=id,
                 company_id=CompanyId.from_string(position_data.company_id),
+                # Workflow system - Publication (PO)
                 job_position_workflow_id=job_position_workflow_id,
                 stage_id=stage_id,
                 phase_workflows=position_data.phase_workflows,
+                # Workflow system - Candidate Application (CA)
+                candidate_application_workflow_id=position_data.candidate_application_workflow_id,
                 custom_fields_values=position_data.custom_fields_values or {},
                 title=position_data.title,
                 description=position_data.description,

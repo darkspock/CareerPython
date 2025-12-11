@@ -14,7 +14,6 @@ import {
   getDepartment,
   getRequirements,
   getBenefits,
-  getSkills
 } from '../../types/position';
 import { DynamicCustomFields } from '../../components/jobPosition/DynamicCustomFields';
 import { PositionCommentsSection } from '../../components/jobPosition/PositionCommentsSection';
@@ -378,120 +377,25 @@ export default function PositionDetailPage() {
 
         {/* Tab Content */}
         <TabsContent value="info">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Description */}
-            {position.description && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Description</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div
-                    className="text-gray-700 prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: position.description || '' }}
-                  />
-                </CardContent>
-              </Card>
-            )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Position Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Job Details Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Job Category */}
+                {position.job_category && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Category</p>
+                    <p className="font-medium capitalize">{position.job_category.toLowerCase().replace('_', ' ')}</p>
+                  </div>
+                )}
 
-            {/* Custom Fields */}
-            {workflow && position.custom_fields_values && Object.keys(position.custom_fields_values).length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Custom Fields</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DynamicCustomFields
-                    workflow={workflow}
-                    currentStage={position.stage || null}
-                    customFieldsValues={position.custom_fields_values || {}}
-                    onChange={() => {}} // Read-only in detail view
-                    readOnly={true}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Requirements */}
-            {(() => {
-              const requirements = getRequirements(position);
-              return requirements && requirements.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Requirements</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {requirements.map((req: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="text-blue-600 mt-1">•</span>
-                          <span className="text-gray-700">{req}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              );
-            })()}
-
-            {/* Skills */}
-            {(() => {
-              const skills = getSkills(position);
-              return skills && skills.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Required Skills</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {skills.map((skill: string, idx: number) => (
-                        <Badge key={idx} variant="secondary">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })()}
-
-            {/* Benefits */}
-            {(() => {
-              const benefits = getBenefits(position);
-              return benefits && benefits.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Benefits</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {benefits.map((benefit: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="text-green-600 mt-1">✓</span>
-                          <span className="text-gray-700">{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              );
-            })()}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Job Details Card (Publishing Flow) */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Job Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
                 {/* Employment Type */}
                 {position.employment_type && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Employment Type</p>
+                    <p className="text-sm text-muted-foreground mb-1">Employment Type</p>
                     <EmploymentTypeBadge type={position.employment_type} size="sm" />
                   </div>
                 )}
@@ -499,7 +403,7 @@ export default function PositionDetailPage() {
                 {/* Experience Level */}
                 {position.experience_level && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Experience Level</p>
+                    <p className="text-sm text-muted-foreground mb-1">Experience Level</p>
                     <ExperienceLevelBadge level={position.experience_level} size="sm" />
                   </div>
                 )}
@@ -507,25 +411,23 @@ export default function PositionDetailPage() {
                 {/* Work Location */}
                 {position.work_location_type && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Work Location</p>
+                    <p className="text-sm text-muted-foreground mb-1">Work Location</p>
                     <LocationTypeBadge type={position.work_location_type} size="sm" />
                     {position.office_locations && position.office_locations.length > 0 && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {position.office_locations.join(', ')}
-                      </p>
-                    )}
-                    {position.remote_restrictions && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {position.remote_restrictions}
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* Salary Range */}
-                {(position.salary_min || position.salary_max) && position.show_salary && (
+                {/* Salary Range - always show for company users */}
+                {(position.salary_min || position.salary_max) && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Salary Range</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Salary Range
+                      {!position.show_salary && <span className="text-xs ml-1">(hidden from public)</span>}
+                    </p>
                     <SalaryRange
                       min={position.salary_min}
                       max={position.salary_max}
@@ -535,12 +437,45 @@ export default function PositionDetailPage() {
                   </div>
                 )}
 
+                {/* Budget Max */}
+                {position.budget_max && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Budget Max</p>
+                    <p className="font-medium">
+                      {position.salary_currency || 'USD'} {position.budget_max.toLocaleString()}
+                    </p>
+                  </div>
+                )}
+
+                {/* Approved Budget */}
+                {position.approved_budget_max && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Approved Budget</p>
+                    <p className="font-medium text-green-600">
+                      {position.salary_currency || 'USD'} {position.approved_budget_max.toLocaleString()}
+                    </p>
+                    {position.approved_at && (
+                      <p className="text-xs text-muted-foreground">
+                        Approved {new Date(position.approved_at).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Department */}
+                {position.department_id && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Department</p>
+                    <p className="font-medium">{position.department_id}</p>
+                  </div>
+                )}
+
                 {/* Number of Openings */}
                 {position.number_of_openings && position.number_of_openings > 1 && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Number of Openings</p>
+                    <p className="text-sm text-muted-foreground mb-1">Openings</p>
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-400" />
+                      <Users className="w-4 h-4 text-muted-foreground" />
                       <span className="font-medium">{position.number_of_openings}</span>
                     </div>
                   </div>
@@ -549,151 +484,225 @@ export default function PositionDetailPage() {
                 {/* Requisition ID */}
                 {position.requisition_id && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Requisition ID</p>
-                    <p className="font-mono text-sm text-gray-900">{position.requisition_id}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Skills & Languages Card */}
-            {((position.skills?.length ?? 0) > 0 || (position.languages?.length ?? 0) > 0) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Skills & Languages</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {position.skills && position.skills.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Skills</p>
-                      <SkillsChips skills={position.skills} />
-                    </div>
-                  )}
-                  {position.languages && position.languages.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Languages</p>
-                      <LanguagesList languages={position.languages} />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Workflow & Stage Info */}
-            {workflow && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Workflow Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <p className="text-sm text-gray-600">Workflow</p>
-                    <p className="font-medium text-gray-900">{workflow.name}</p>
-                  </div>
-                  {position.stage_id && position.stage && (
-                    <div>
-                      <p className="text-sm text-gray-600">Current Stage</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span
-                          className="text-lg"
-                          dangerouslySetInnerHTML={{ __html: position.stage.icon }}
-                        />
-                        <p className="font-medium text-gray-900">{position.stage.name}</p>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">Status: {position.stage.status_mapping}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Basic Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
-                {position.job_category && (
-                  <div>
-                    <p className="text-sm text-gray-600">Job Category</p>
-                    <p className="font-medium text-gray-900 capitalize">{position.job_category.toLowerCase().replace('_', ' ')}</p>
+                    <p className="text-sm text-muted-foreground mb-1">Requisition ID</p>
+                    <p className="font-mono text-sm">{position.requisition_id}</p>
                   </div>
                 )}
 
+                {/* Visibility */}
                 {position.visibility && (
                   <div>
-                    <p className="text-sm text-gray-600">Visibility</p>
+                    <p className="text-sm text-muted-foreground mb-1">Visibility</p>
                     <Badge className={getVisibilityColor(position.visibility)}>
                       {getVisibilityLabel(position.visibility)}
                     </Badge>
                   </div>
                 )}
 
-                {position.open_at && (
-                  <div>
-                    <p className="text-sm text-gray-600">Open At</p>
-                    <p className="font-medium text-gray-900">
-                      {new Date(position.open_at).toLocaleDateString()} {new Date(position.open_at).toLocaleTimeString()}
-                    </p>
-                  </div>
-                )}
-
+                {/* Application Deadline */}
                 {position.application_deadline && (
                   <div>
-                    <p className="text-sm text-gray-600">Application Deadline</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-muted-foreground mb-1">Application Deadline</p>
+                    <p className="font-medium">
                       {new Date(position.application_deadline).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-                {position.public_slug && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-600">Public Slug</p>
-                    <p className="font-medium text-gray-900 font-mono text-sm">{position.public_slug}</p>
-                  </div>
-                )}
-
-                {position.created_at && (
+                {/* Open At */}
+                {position.open_at && (
                   <div>
-                    <p className="text-sm text-gray-600">Created</p>
-                    <p className="font-medium text-gray-900">
-                      {new Date(position.created_at).toLocaleDateString()} {new Date(position.created_at).toLocaleTimeString()}
+                    <p className="text-sm text-muted-foreground mb-1">Open At</p>
+                    <p className="font-medium">
+                      {new Date(position.open_at).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-                {position.updated_at && (
+                {/* Killer Questions Indicator */}
+                {((position.killer_questions && position.killer_questions.length > 0) || position.screening_template_id) && (
                   <div>
-                    <p className="text-sm text-gray-600">Last Updated</p>
-                    <p className="font-medium text-gray-900">
-                      {new Date(position.updated_at).toLocaleDateString()} {new Date(position.updated_at).toLocaleTimeString()}
-                    </p>
+                    <p className="text-sm text-muted-foreground mb-1">Screening</p>
+                    <div className="flex flex-col gap-1">
+                      {position.killer_questions && position.killer_questions.length > 0 && (
+                        <Badge variant="secondary" className="w-fit">
+                          {position.killer_questions.length} Killer Question{position.killer_questions.length > 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                      {position.screening_template_id && (
+                        <Badge variant="outline" className="w-fit">
+                          Screening Template
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
-          </div>
+              </div>
+
+              {/* Description */}
+              {position.description && (
+                <>
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Description</p>
+                    <div
+                      className="prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: position.description }}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Skills */}
+              {position.skills && position.skills.length > 0 && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Skills</p>
+                  <SkillsChips skills={position.skills} />
+                </div>
+              )}
+
+              {/* Languages */}
+              {position.languages && position.languages.length > 0 && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Languages</p>
+                  <LanguagesList languages={position.languages} />
+                </div>
+              )}
+
+              {/* Requirements */}
+              {(() => {
+                const requirements = getRequirements(position);
+                return requirements && requirements.length > 0 && (
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Requirements</p>
+                    <ul className="space-y-1">
+                      {requirements.map((req: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>{req}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })()}
+
+              {/* Benefits */}
+              {(() => {
+                const benefits = getBenefits(position);
+                return benefits && benefits.length > 0 && (
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Benefits</p>
+                    <ul className="space-y-1">
+                      {benefits.map((benefit: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm">
+                          <span className="text-green-600 mt-0.5">✓</span>
+                          <span>{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })()}
+
+              {/* Custom Fields */}
+              {workflow && position.custom_fields_values && Object.keys(position.custom_fields_values).length > 0 && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Custom Fields</p>
+                  <DynamicCustomFields
+                    workflow={workflow}
+                    currentStage={position.stage || null}
+                    customFieldsValues={position.custom_fields_values || {}}
+                    onChange={() => {}}
+                    readOnly={true}
+                  />
+                </div>
+              )}
+
+              {/* Team */}
+              {(position.hiring_manager_id || position.recruiter_id) && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Team</p>
+                  <div className="flex gap-6">
+                    {position.hiring_manager_id && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Hiring Manager</p>
+                        <p className="font-medium">{position.hiring_manager_id}</p>
+                      </div>
+                    )}
+                    {position.recruiter_id && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Recruiter</p>
+                        <p className="font-medium">{position.recruiter_id}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Workflow Info */}
+              {workflow && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Workflow</p>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Workflow className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">{workflow.name}</span>
+                    </div>
+                    {position.stage_id && position.stage && (
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-lg"
+                          dangerouslySetInnerHTML={{ __html: position.stage.icon }}
+                        />
+                        <span>{position.stage.name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Timestamps */}
+              <div className="border-t pt-4 text-xs text-muted-foreground">
+                <div className="flex gap-6">
+                  {position.created_at && (
+                    <span>Created: {new Date(position.created_at).toLocaleDateString()}</span>
+                  )}
+                  {position.updated_at && (
+                    <span>Updated: {new Date(position.updated_at).toLocaleDateString()}</span>
+                  )}
+                  {position.public_slug && (
+                    <span>Slug: <code className="font-mono">{position.public_slug}</code></span>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Comments Tab */}
         <TabsContent value="comments">
-          {position.stage_id && (
-            <div>
-              <PositionCommentsSection
-                positionId={id!}
-                workflowId={position.job_position_workflow_id || undefined}
-                currentStageId={position.stage_id || undefined}
-                onCommentsChange={async () => {
-                  await loadPendingCommentsCount();
-                  setCommentsRefreshKey(prev => prev + 1);
-                }}
-                refreshKey={commentsRefreshKey}
-                defaultExpanded={true}
-              />
-            </div>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Comments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {position.stage_id ? (
+                <PositionCommentsSection
+                  positionId={id!}
+                  workflowId={position.job_position_workflow_id || undefined}
+                  currentStageId={position.stage_id || undefined}
+                  onCommentsChange={async () => {
+                    await loadPendingCommentsCount();
+                    setCommentsRefreshKey(prev => prev + 1);
+                  }}
+                  refreshKey={commentsRefreshKey}
+                  defaultExpanded={true}
+                />
+              ) : (
+                <p className="text-muted-foreground">Comments are available when the position has a stage assigned.</p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* History Tab */}

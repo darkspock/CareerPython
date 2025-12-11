@@ -447,9 +447,13 @@
         "title": "Phase Management",
         "description": "Organize recruitment into high-level phases"
       },
-      "workflowSettings": {
-        "title": "Workflow Settings",
-        "description": "Manage recruitment workflows and stages"
+      "hiringPipelines": {
+        "title": "Hiring Pipelines",
+        "description": "Manage recruitment pipelines and stages"
+      },
+      "publicationWorkflows": {
+        "title": "Publication Workflows",
+        "description": "Manage job position approval workflows"
       },
       "companyRoles": {
         "title": "Company Roles",
@@ -457,9 +461,9 @@
       },
       "quickAccess": {
         "title": "Quick Access",
-        "createWorkflow": {
-          "title": "Create New Workflow",
-          "description": "Set up a new recruitment workflow"
+        "createPipeline": {
+          "title": "Create New Pipeline",
+          "description": "Set up a new hiring pipeline"
         },
         "addRole": {
           "title": "Add Company Role",
@@ -1002,6 +1006,42 @@
       "lockedDraft": "This field cannot be edited after leaving draft status",
       "lockedApproved": "This field was locked when the position was approved",
       "lockedPublished": "This field cannot be changed while the position is published"
+    },
+    "workflowSelection": {
+      "title": "Select Workflows",
+      "description": "Choose the workflows that will be used to manage this job position. These cannot be changed after the position is created.",
+      "publicationWorkflow": "Publication Workflow",
+      "publicationWorkflowDescription": "Defines the approval process before the position is published",
+      "hiringPipeline": "Hiring Pipeline",
+      "hiringPipelineDescription": "Defines the stages candidates will go through during recruitment",
+      "stages": "stages",
+      "continue": "Continue",
+      "note": "Important",
+      "cannotChangeAfterCreation": "These workflows cannot be changed after the position is created.",
+      "missingWorkflows": "Missing Workflows",
+      "missingWorkflowsDescription": "You need to configure workflows before creating a job position:",
+      "noPublicationWorkflows": "No publication workflows available",
+      "noHiringPipelines": "No hiring pipelines available",
+      "createOne": "Create one"
+    }
+  },
+  "position": {
+    "workflowSelection": {
+      "title": "Select Workflows",
+      "description": "Choose the workflows that will be used to manage this job position. These cannot be changed after the position is created.",
+      "publicationWorkflow": "Publication Workflow",
+      "publicationWorkflowDescription": "Defines the approval process before the position is published",
+      "hiringPipeline": "Hiring Pipeline",
+      "hiringPipelineDescription": "Defines the stages candidates will go through during recruitment",
+      "stages": "stages",
+      "continue": "Continue",
+      "note": "Important",
+      "cannotChangeAfterCreation": "These workflows cannot be changed after the position is created.",
+      "missingWorkflows": "Missing Workflows",
+      "missingWorkflowsDescription": "You need to configure workflows before creating a job position:",
+      "noPublicationWorkflows": "No publication workflows available",
+      "noHiringPipelines": "No hiring pipelines available",
+      "createOne": "Create one"
     }
   },
   "notifications": {

@@ -270,11 +270,13 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             id=JobPositionId.from_string(model.id),
             title=model.title,
             company_id=CompanyId.from_string(model.company_id),
-            # Workflow system
+            # Workflow system - Publication (PO)
             job_position_workflow_id=job_position_workflow_id,
             phase_workflows=model.phase_workflows or {},
             stage_id=stage_id,
             stage_assignments=model.stage_assignments or {},
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id=model.candidate_application_workflow_id,
             # Content fields
             description=model.description,
             job_category=model.job_category,
@@ -343,11 +345,13 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             id=job_position.id.value,
             company_id=job_position.company_id.value,
             title=job_position.title,
-            # Workflow system
+            # Workflow system - Publication (PO)
             job_position_workflow_id=str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None,
             phase_workflows=job_position.phase_workflows or {},
             stage_id=str(job_position.stage_id) if job_position.stage_id else None,
             stage_assignments=job_position.stage_assignments or {},
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id=job_position.candidate_application_workflow_id,
             # Content fields
             description=job_position.description,
             job_category=job_position.job_category,
@@ -415,11 +419,13 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         # Core fields
         model.title = job_position.title
 
-        # Workflow system
+        # Workflow system - Publication (PO)
         model.job_position_workflow_id = str(job_position.job_position_workflow_id) if job_position.job_position_workflow_id else None
         model.phase_workflows = job_position.phase_workflows or {}
         model.stage_id = str(job_position.stage_id) if job_position.stage_id else None
         model.stage_assignments = job_position.stage_assignments or {}
+        # Workflow system - Candidate Application (CA)
+        model.candidate_application_workflow_id = job_position.candidate_application_workflow_id
 
         # Content fields
         model.description = job_position.description

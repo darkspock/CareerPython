@@ -89,11 +89,18 @@ export default function CompanySettingsPage() {
       color: 'purple',
     },
     {
-      title: t('company.settings.workflowSettings.title'),
-      description: t('company.settings.workflowSettings.description'),
+      title: t('company.settings.hiringPipelines.title'),
+      description: t('company.settings.hiringPipelines.description'),
       icon: Workflow,
-      path: '/company/settings/workflows',
+      path: '/company/settings/hiring-pipelines',
       color: 'blue',
+    },
+    {
+      title: t('company.settings.publicationWorkflows.title'),
+      description: t('company.settings.publicationWorkflows.description'),
+      icon: Briefcase,
+      path: '/company/settings/publication-workflows',
+      color: 'indigo',
     },
     {
       title: t('company.settings.companyRoles.title'),
@@ -108,13 +115,6 @@ export default function CompanySettingsPage() {
       icon: UserCog,
       path: '/company/users',
       color: 'orange',
-    },
-    {
-      title: 'Flujos de publicación de ofertas',
-      description: 'Gestiona workflows para posiciones de trabajo',
-      icon: Briefcase,
-      path: '/company/settings/job-position-workflows',
-      color: 'indigo',
     },
     {
       title: 'Interview Templates',
@@ -213,15 +213,15 @@ export default function CompanySettingsPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('company.settings.quickAccess.title')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
-              to="/company/settings/workflows/create"
+              to="/company/settings/hiring-pipelines/create"
               className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
             >
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
                 +
               </div>
               <div>
-                <div className="font-medium text-gray-900">{t('company.settings.quickAccess.createWorkflow.title')}</div>
-                <div className="text-sm text-muted-foreground">{t('company.settings.quickAccess.createWorkflow.description')}</div>
+                <div className="font-medium text-gray-900">{t('company.settings.quickAccess.createPipeline.title')}</div>
+                <div className="text-sm text-muted-foreground">{t('company.settings.quickAccess.createPipeline.description')}</div>
               </div>
             </Link>
             <Link

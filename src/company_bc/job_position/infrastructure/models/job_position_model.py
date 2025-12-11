@@ -32,11 +32,14 @@ class JobPositionModel(Base):
     company_id: Mapped[str] = mapped_column(String, index=True)
     title: Mapped[str] = mapped_column(String, index=True)
 
-    # Workflow system
+    # Workflow system - Publication (PO)
     job_position_workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)
     phase_workflows: Mapped[Optional[Dict[str, str]]] = mapped_column(JSON, nullable=True)
     stage_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)
     stage_assignments: Mapped[Optional[Dict[str, list]]] = mapped_column(JSON, nullable=True)
+
+    # Workflow system - Candidate Application (CA)
+    candidate_application_workflow_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)
 
     # Content fields
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

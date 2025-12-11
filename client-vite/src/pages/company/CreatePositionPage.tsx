@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PositionService } from '../../services/positionService';
-import type { CreatePositionRequest, UpdatePositionRequest, JobPositionWorkflow } from '../../types/position';
+import { companyWorkflowService } from '../../services/companyWorkflowService';
+import type { CreatePositionRequest, UpdatePositionRequest, JobPositionWorkflow, JobPositionWorkflowStage } from '../../types/position';
 import { PositionFormTabs } from '../../components/jobPosition/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -11,6 +12,8 @@ export default function CreatePositionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentWorkflow, setCurrentWorkflow] = useState<JobPositionWorkflow | null>(null);
+  // Store the hiring pipeline (CA) workflow ID
+  const [hiringPipelineId, setHiringPipelineId] = useState<string | null>(null);
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -32,26 +35,53 @@ export default function CreatePositionPage() {
         return;
       }
 
-      const workflowId = searchParams.get('workflow_id');
+      // Get both workflow IDs from search params
+      const publicationWorkflowId = searchParams.get('publication_workflow_id');
+      const candidateApplicationWorkflowId = searchParams.get('hiring_pipeline_id');
+
+      // If workflows were not selected (direct access to create page), redirect to workflow selection
+      if (!publicationWorkflowId || !candidateApplicationWorkflowId) {
+        navigate('/company/positions/select-workflows');
+        return;
+      }
+
+      // Store the hiring pipeline ID
+      setHiringPipelineId(candidateApplicationWorkflowId);
+
+      // Helper to load workflow with stages including stage_type
+      const loadWorkflowWithStages = async (wfId: string): Promise<JobPositionWorkflow> => {
+        const fullWorkflow = await PositionService.getWorkflow(wfId);
+        const stagesData = await companyWorkflowService.listStagesByWorkflow(wfId);
+
+        const mappedStages: JobPositionWorkflowStage[] = stagesData.map((stage) => ({
+          id: stage.id,
+          name: stage.name,
+          icon: stage.style?.icon || '📋',
+          background_color: stage.style?.background_color || '#f3f4f6',
+          text_color: stage.style?.color || '#374151',
+          role: null,
+          stage_type: stage.stage_type,
+          status_mapping: stage.stage_type === 'success' ? 'closed' :
+                         stage.stage_type === 'fail' ? 'closed' :
+                         stage.stage_type === 'initial' ? 'draft' : 'active',
+          kanban_display: stage.kanban_display || 'column',
+          field_visibility: {},
+          field_validation: {},
+          field_candidate_visibility: {},
+        }));
+
+        return {
+          ...fullWorkflow,
+          stages: mappedStages,
+        };
+      };
 
       try {
         setLoading(true);
 
-        if (workflowId) {
-          // Load specific workflow
-          const fullWorkflow = await PositionService.getWorkflow(workflowId);
-          setCurrentWorkflow(fullWorkflow);
-        } else {
-          // Load default workflow
-          const workflows = await PositionService.getWorkflows(companyId);
-          if (workflows.length > 0) {
-            const defaultWorkflow = workflows[0];
-            const fullWorkflow = await PositionService.getWorkflow(defaultWorkflow.id);
-            setCurrentWorkflow(fullWorkflow);
-          } else {
-            setError('No workflows available. Please create a workflow first.');
-          }
-        }
+        // Load the publication workflow (PO)
+        const fullWorkflow = await loadWorkflowWithStages(publicationWorkflowId);
+        setCurrentWorkflow(fullWorkflow);
       } catch (err: unknown) {
         console.error('Error loading workflow:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to load workflow';
@@ -62,7 +92,7 @@ export default function CreatePositionPage() {
     };
 
     loadWorkflow();
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   const handleSave = async (data: CreatePositionRequest | UpdatePositionRequest) => {
     const companyId = getCompanyId();
@@ -74,6 +104,10 @@ export default function CreatePositionPage() {
       throw new Error('Workflow not loaded');
     }
 
+    if (!hiringPipelineId) {
+      throw new Error('Hiring pipeline not selected');
+    }
+
     // In create mode, title is always required from the form
     const createData = data as CreatePositionRequest;
     const requestData: CreatePositionRequest = {
@@ -81,6 +115,8 @@ export default function CreatePositionPage() {
       company_id: companyId,
       title: createData.title || 'Untitled Position',
       job_position_workflow_id: currentWorkflow.id,
+      // Include the hiring pipeline (CA) workflow ID for candidate tracking
+      candidate_application_workflow_id: hiringPipelineId,
       // Copy custom fields config from workflow
       custom_fields_config: currentWorkflow.custom_fields_config
         ? parseWorkflowCustomFields(currentWorkflow.custom_fields_config)
@@ -105,6 +141,16 @@ export default function CreatePositionPage() {
       <div className="p-6">
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!currentWorkflow) {
+    return (
+      <div className="p-6">
+        <Alert variant="destructive">
+          <AlertDescription>No workflow available. Please select a workflow first.</AlertDescription>
         </Alert>
       </div>
     );

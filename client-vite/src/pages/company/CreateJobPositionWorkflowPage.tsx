@@ -189,7 +189,7 @@ export default function CreateJobPositionWorkflowPage() {
         custom_fields_config: {},
       });
 
-      navigate('/company/settings/job-position-workflows');
+      navigate('/company/settings/publication-workflows');
     } catch (err: any) {
       setError(err.message || 'Failed to create workflow');
       console.error('Error creating workflow:', err);
@@ -204,7 +204,7 @@ export default function CreateJobPositionWorkflowPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/settings/job-position-workflows')}
+          onClick={() => navigate('/company/settings/publication-workflows')}
           className="mb-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -440,7 +440,7 @@ export default function CreateJobPositionWorkflowPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/company/settings/job-position-workflows')}
+            onClick={() => navigate('/company/settings/publication-workflows')}
           >
             Cancel
           </Button>
