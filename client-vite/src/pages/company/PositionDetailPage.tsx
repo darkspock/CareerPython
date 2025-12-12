@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PositionService } from '../../services/positionService';
-import type { Position, JobPositionWorkflow } from '../../types/position';
+import type { Position, JobPositionWorkflow, CustomFieldDefinition } from '../../types/position';
 import {
   getStatusColorFromStage,
   getStatusLabelFromStage,
@@ -15,13 +15,13 @@ import {
   getRequirements,
   getBenefits,
 } from '../../types/position';
-import { DynamicCustomFields } from '../../components/jobPosition/DynamicCustomFields';
 import { PositionCommentsSection } from '../../components/jobPosition/PositionCommentsSection';
 import { JobPositionActivityTimeline } from '../../components/jobPosition/JobPositionActivityTimeline';
 import JobPositionActivityService from '../../services/JobPositionActivityService';
 import JobPositionCommentService from '../../services/JobPositionCommentService';
 import type { JobPositionActivity } from '../../types/jobPositionActivity';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
+import { EntityCustomizationService } from '../../services/entityCustomizationService';
 import type { WorkflowStage } from '../../types/workflow';
 import { KanbanDisplay } from '../../types/workflow';
 import {
@@ -33,6 +33,80 @@ import {
   SkillsChips,
   LanguagesList
 } from '../../components/jobPosition/publishing';
+
+// Helper to map workflow field types to position field types
+const mapFieldType = (fieldType: string): CustomFieldDefinition['field_type'] => {
+  const typeMap: Record<string, CustomFieldDefinition['field_type']> = {
+    'TEXT': 'TEXT',
+    'TEXTAREA': 'TEXT',
+    'NUMBER': 'NUMBER',
+    'CURRENCY': 'NUMBER',
+    'DATE': 'DATE',
+    'DROPDOWN': 'SELECT',
+    'MULTI_SELECT': 'MULTISELECT',
+    'RADIO': 'SELECT',
+    'CHECKBOX': 'BOOLEAN',
+    'FILE': 'TEXT',
+    'URL': 'URL',
+    'EMAIL': 'TEXT',
+    'PHONE': 'TEXT',
+  };
+  return typeMap[fieldType] || 'TEXT';
+};
+
+// Load custom fields from workflow that are visible to candidates in ANY stage
+const loadCandidateVisibleFields = async (
+  workflowId: string,
+  stages: WorkflowStage[]
+): Promise<CustomFieldDefinition[]> => {
+  try {
+    const customFields = await EntityCustomizationService.listFieldsByEntity('Workflow', workflowId);
+
+    if (!customFields || customFields.length === 0) {
+      return [];
+    }
+
+    const candidateVisibleFields: CustomFieldDefinition[] = [];
+
+    for (const field of customFields) {
+      let isVisibleToCandidate = false;
+      let isRequired = false;
+
+      for (const stage of stages) {
+        const fieldPropsById = stage.field_properties_config?.[field.id];
+        const fieldPropsByKey = stage.field_properties_config?.[field.field_key];
+        const fieldProps = fieldPropsById || fieldPropsByKey;
+
+        if (fieldProps?.visible_candidate) {
+          isVisibleToCandidate = true;
+          if (fieldProps.is_required) {
+            isRequired = true;
+          }
+        }
+      }
+
+      if (isVisibleToCandidate) {
+        candidateVisibleFields.push({
+          field_key: field.field_key,
+          label: field.field_name,
+          field_type: mapFieldType(field.field_type),
+          options: field.field_config?.options || null,
+          is_required: isRequired,
+          candidate_visible: true,
+          validation_rules: null,
+          sort_order: field.order_index,
+          is_active: true,
+        });
+      }
+    }
+
+    candidateVisibleFields.sort((a, b) => a.sort_order - b.sort_order);
+    return candidateVisibleFields;
+  } catch (err) {
+    console.error('Error loading candidate visible fields:', err);
+    return [];
+  }
+};
 
 export default function PositionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +123,12 @@ export default function PositionDetailPage() {
   // Stage transition state
   const [availableStages, setAvailableStages] = useState<WorkflowStage[]>([]);
   const [changingStage, setChangingStage] = useState(false);
+
+  // Custom fields from recruitment workflows
+  const [candidateVisibleFields, setCandidateVisibleFields] = useState<CustomFieldDefinition[]>([]);
+
+  // Custom fields from publication workflow
+  const [publicationWorkflowFields, setPublicationWorkflowFields] = useState<CustomFieldDefinition[]>([]);
 
   // Move to Stage dropdown state
   const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
@@ -84,8 +164,58 @@ export default function PositionDetailPage() {
 
           // Load workflow stages
           await loadWorkflowStages(data.job_position_workflow_id);
+
+          // Load custom fields from publication workflow
+          try {
+            const pubCustomFields = await EntityCustomizationService.listFieldsByEntity('Workflow', data.job_position_workflow_id);
+            if (pubCustomFields && pubCustomFields.length > 0) {
+              const mappedFields: CustomFieldDefinition[] = pubCustomFields.map(field => ({
+                field_key: field.field_key,
+                label: field.field_name,
+                field_type: mapFieldType(field.field_type),
+                options: field.field_config?.options || null,
+                is_required: false,
+                candidate_visible: false,
+                validation_rules: null,
+                sort_order: field.order_index,
+                is_active: true,
+              }));
+              setPublicationWorkflowFields(mappedFields);
+            }
+          } catch (err) {
+            console.error('Error loading publication workflow fields:', err);
+          }
         } catch (err) {
           console.error('Error loading workflow:', err);
+        }
+      }
+
+      // Load custom fields from recruitment workflows (phase_workflows)
+      if (data.phase_workflows && Object.keys(data.phase_workflows).length > 0) {
+        try {
+          const recruitmentWorkflowIds = [...new Set(Object.values(data.phase_workflows))];
+          const allFields: CustomFieldDefinition[] = [];
+          const seenFieldKeys = new Set<string>();
+
+          for (const workflowId of recruitmentWorkflowIds) {
+            try {
+              const recruitmentStages = await companyWorkflowService.listStagesByWorkflow(workflowId);
+              const fields = await loadCandidateVisibleFields(workflowId, recruitmentStages);
+
+              for (const field of fields) {
+                if (!seenFieldKeys.has(field.field_key)) {
+                  seenFieldKeys.add(field.field_key);
+                  allFields.push(field);
+                }
+              }
+            } catch (err) {
+              console.error(`Error loading fields from workflow ${workflowId}:`, err);
+            }
+          }
+
+          setCandidateVisibleFields(allFields);
+        } catch (err) {
+          console.error('Error loading candidate visible fields:', err);
         }
       }
 
@@ -604,17 +734,32 @@ export default function PositionDetailPage() {
                 );
               })()}
 
-              {/* Custom Fields */}
-              {workflow && position.custom_fields_values && Object.keys(position.custom_fields_values).length > 0 && (
+              {/* Candidate Visible Fields from Recruitment Workflows */}
+              {candidateVisibleFields.length > 0 && (
                 <div className="border-t pt-4">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Custom Fields</p>
-                  <DynamicCustomFields
-                    workflow={workflow}
-                    currentStage={position.stage || null}
-                    customFieldsValues={position.custom_fields_values || {}}
-                    onChange={() => {}}
-                    readOnly={true}
-                  />
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Additional Information (Candidate Visible)</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {candidateVisibleFields.map((field) => {
+                      const value = position.custom_fields_values?.[field.field_key];
+                      return (
+                        <div key={field.field_key}>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            {field.label}
+                            {field.is_required && <span className="text-red-500 ml-1">*</span>}
+                          </p>
+                          <p className="font-medium">
+                            {value !== undefined && value !== null && value !== ''
+                              ? (field.field_type === 'BOOLEAN'
+                                  ? (value ? 'Yes' : 'No')
+                                  : field.field_type === 'MULTISELECT' && Array.isArray(value)
+                                    ? value.join(', ')
+                                    : String(value))
+                              : <span className="text-muted-foreground italic">Not set</span>}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -677,6 +822,36 @@ export default function PositionDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Job Position Approval Additional Info - Custom Fields from Publication Workflow */}
+          {publicationWorkflowFields.length > 0 && (
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="text-base">Job Position Approval Additional Info</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {publicationWorkflowFields.map((field) => {
+                    const value = position.custom_fields_values?.[field.field_key];
+                    return (
+                      <div key={field.field_key}>
+                        <p className="text-xs text-muted-foreground mb-1">{field.label}</p>
+                        <p className="font-medium">
+                          {value !== undefined && value !== null && value !== ''
+                            ? (field.field_type === 'BOOLEAN'
+                                ? (value ? 'Yes' : 'No')
+                                : field.field_type === 'MULTISELECT' && Array.isArray(value)
+                                  ? value.join(', ')
+                                  : String(value))
+                            : <span className="text-muted-foreground italic">Not set</span>}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Comments Tab */}
