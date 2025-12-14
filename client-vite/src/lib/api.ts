@@ -193,9 +193,40 @@ export const api = {
   createAccountFromLanding: (formData: FormData) =>
     ApiClient.postFormData('/landing/create-account', formData),
 
-  // Onboarding
-  processOnboardingLanding: (formData: FormData) =>
-    ApiClient.postFormData('/candidate/onboarding/landing', formData),
+  // Registration Flow with email verification
+  initiateRegistration: (formData: FormData) =>
+    ApiClient.postFormData<{
+      success: boolean;
+      message: string;
+      registration_id: string;
+    }>('/candidate/registration', formData),
+
+  verifyRegistration: (token: string) =>
+    ApiClient.get<{
+      success: boolean;
+      message: string;
+      user_id: string | null;
+      candidate_id: string | null;
+      is_new_user: boolean;
+      has_job_application: boolean;
+      access_token: string | null;
+      redirect_url: string;
+    }>(`/candidate/registration/verify/${token}`),
+
+  getRegistrationStatus: (registrationId: string) =>
+    ApiClient.get<{
+      registration_id: string;
+      status: string;
+      processing_status: string;
+      is_verified: boolean;
+      is_expired: boolean;
+      has_pdf: boolean;
+      preview_data: {
+        name?: string;
+        email?: string;
+        phone?: string;
+      } | null;
+    }>(`/candidate/registration/${registrationId}/status`),
 
   // Files
   uploadPDF: (file: File) => {

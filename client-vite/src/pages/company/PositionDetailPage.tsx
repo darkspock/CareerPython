@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Workflow, Eye, EyeOff, FileText, MessageSquare, History, Move, ChevronDown, Users } from 'lucide-react';
+import { ArrowLeft, Edit, Workflow, Eye, EyeOff, FileText, MessageSquare, History, Users, Check, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,8 +9,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PositionService } from '../../services/positionService';
 import type { Position, JobPositionWorkflow, CustomFieldDefinition } from '../../types/position';
 import {
-  getStatusColorFromStage,
-  getStatusLabelFromStage,
   getDepartment,
   getRequirements,
   getBenefits,
@@ -23,9 +21,7 @@ import type { JobPositionActivity } from '../../types/jobPositionActivity';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import { EntityCustomizationService } from '../../services/entityCustomizationService';
 import type { WorkflowStage } from '../../types/workflow';
-import { KanbanDisplay } from '../../types/workflow';
 import {
-  StatusBadge,
   EmploymentTypeBadge,
   LocationTypeBadge,
   ExperienceLevelBadge,
@@ -264,17 +260,17 @@ export default function PositionDetailPage() {
     }
   };
 
-  const handleMoveToStage = async (stageId: string) => {
+  // Handler for publication workflow stage changes (uses updatePosition instead of moveToStage)
+  const handlePublicationStageChange = async (stageId: string) => {
     if (!id || !position) return;
 
     try {
       setChangingStage(true);
-      await PositionService.moveToStage(id, stageId);
+      await PositionService.updatePosition(id, { stage_id: stageId });
       // Reload position to get updated stage
       await loadPosition();
-      setShowMoveToStageDropdown(false);
     } catch (err: any) {
-      alert(`Failed to move position: ${err.message}`);
+      alert(`Failed to change publication stage: ${err.message}`);
     } finally {
       setChangingStage(false);
     }
@@ -377,19 +373,18 @@ export default function PositionDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Publishing Flow Status */}
-            <StatusBadge status={position.status} size="md" />
-
-            {/* Stage Badge (if using workflow) */}
-            {position.stage && (
-              <Badge className={getStatusColorFromStage(position.stage)}>
-                {getStatusLabelFromStage(position.stage)}
+            {/* Visibility Badge - Link to public offer */}
+            <a
+              href={`/positions/${position.public_slug || id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="View public job offer"
+            >
+              <Badge className={`${getVisibilityColor(position.visibility)} cursor-pointer hover:opacity-80`}>
+                {position.visibility === 'public' ? <Eye className="w-3 h-3 inline mr-1" /> : <EyeOff className="w-3 h-3 inline mr-1" />}
+                {getVisibilityLabel(position.visibility)}
               </Badge>
-            )}
-            <Badge className={getVisibilityColor(position.visibility)}>
-              {position.visibility === 'public' ? <Eye className="w-3 h-3 inline mr-1" /> : <EyeOff className="w-3 h-3 inline mr-1" />}
-              {getVisibilityLabel(position.visibility)}
-            </Badge>
+            </a>
             <Button
               onClick={() => navigate(`/company/positions/${id}/edit`)}
               title="Edit this position"
@@ -397,43 +392,20 @@ export default function PositionDetailPage() {
               <Edit className="w-4 h-4 mr-2" />
               Edit
             </Button>
-            {/* Move to Stage Dropdown */}
+            {/* Actions Dropdown (fail/hold/archived stages) */}
             {(() => {
-              // Show dropdown if position has stages available
+              // Show dropdown if position has special action stages available
               if (!position || availableStages.length === 0) {
                 return null;
               }
 
-              // Get current stage
-              const currentStage = position.stage_id
-                ? availableStages.find(s => s.id === position.stage_id)
-                : null;
-
-              // Get next stage (next in order)
-              const nextStageOption = currentStage
-                ? availableStages
-                    .filter(s => s.order > currentStage.order && s.is_active)
-                    .sort((a, b) => a.order - b.order)[0]
-                : null;
-
-              // Get stages that are ROW or HIDDEN/NONE (not visible in columns)
-              // Handle both enum and string values for kanban_display
-              const hiddenOrRowStages = availableStages.filter((s: WorkflowStage) => {
+              // Get stages with stage_type: fail, hold, or archived
+              const actionStages = availableStages.filter((s: WorkflowStage) => {
                 if (!s.is_active || s.id === position.stage_id) return false;
-                const display = s.kanban_display as string;
-                return display === KanbanDisplay.ROW ||
-                       display === 'row' ||
-                       display === KanbanDisplay.NONE ||
-                       display === 'none';
+                return s.stage_type === 'fail' || s.stage_type === 'hold' || s.stage_type === 'archived';
               });
 
-              // Combine next stage and hidden/row stages, removing duplicates
-              const stagesToShow = [
-                ...(nextStageOption ? [nextStageOption] : []),
-                ...hiddenOrRowStages.filter(s => !nextStageOption || s.id !== nextStageOption.id)
-              ].sort((a, b) => a.order - b.order);
-
-              if (stagesToShow.length === 0) {
+              if (actionStages.length === 0) {
                 return null;
               }
 
@@ -442,21 +414,23 @@ export default function PositionDetailPage() {
                   <Button
                     onClick={() => setShowMoveToStageDropdown(!showMoveToStageDropdown)}
                     disabled={changingStage}
-                    variant="secondary"
-                    title="Move to Stage"
+                    variant="ghost"
+                    size="icon"
+                    title="More actions"
                   >
-                    <Move className="w-4 h-4 mr-2" />
-                    Move to Stage
-                    <ChevronDown className="w-4 h-4 ml-2" />
+                    <MoreVertical className="w-5 h-5" />
                   </Button>
 
                   {showMoveToStageDropdown && (
-                    <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[200px]">
+                    <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[180px]">
                       <div className="py-1">
-                        {stagesToShow.map((stage) => (
+                        {actionStages.map((stage) => (
                           <button
                             key={stage.id}
-                            onClick={() => handleMoveToStage(stage.id)}
+                            onClick={() => {
+                              handlePublicationStageChange(stage.id);
+                              setShowMoveToStageDropdown(false);
+                            }}
                             disabled={changingStage}
                             className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
                           >
@@ -464,12 +438,7 @@ export default function PositionDetailPage() {
                               className="text-sm"
                               dangerouslySetInnerHTML={{ __html: stage.style?.icon || '' }}
                             />
-                            <span className="text-gray-700">
-                              {stage.name}
-                              {nextStageOption && stage.id === nextStageOption.id && (
-                                <span className="ml-2 text-blue-600 text-xs">(Next Stage)</span>
-                              )}
-                            </span>
+                            <span className="text-gray-700">{stage.name}</span>
                           </button>
                         ))}
                       </div>
@@ -507,6 +476,99 @@ export default function PositionDetailPage() {
 
         {/* Tab Content */}
         <TabsContent value="info">
+          {/* Publication Workflow Timeline */}
+          {workflow && availableStages.length > 0 && (
+            <Card className="mb-4">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Workflow className="w-4 h-4" />
+                  Publication Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="relative">
+                  {/* Timeline */}
+                  <div className="flex items-center justify-between">
+                    {availableStages
+                      .filter(s => s.is_active && s.stage_type !== 'fail' && s.stage_type !== 'hold' && s.stage_type !== 'archived')
+                      .sort((a, b) => a.order - b.order)
+                      .map((stage, index, arr) => {
+                        const isCurrentStage = position.stage_id === stage.id;
+                        const currentStageIndex = arr.findIndex(s => s.id === position.stage_id);
+                        const isCompleted = currentStageIndex > -1 && index < currentStageIndex;
+                        const isLast = index === arr.length - 1;
+
+                        // Allow clicking on next or previous step only
+                        const isNextStep = currentStageIndex > -1 && index === currentStageIndex + 1;
+                        const isPrevStep = currentStageIndex > -1 && index === currentStageIndex - 1;
+                        const isClickable = (isNextStep || isPrevStep) && !changingStage;
+
+                        return (
+                          <div key={stage.id} className="flex items-center flex-1">
+                            {/* Step */}
+                            <div
+                              className={`flex flex-col items-center ${isClickable ? 'cursor-pointer group' : ''}`}
+                              onClick={isClickable ? () => handlePublicationStageChange(stage.id) : undefined}
+                              title={isClickable ? `Move to ${stage.name}` : undefined}
+                            >
+                              {/* Circle */}
+                              <div
+                                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                                  isCompleted
+                                    ? 'bg-green-500 border-green-500 text-white'
+                                    : isCurrentStage
+                                      ? 'bg-blue-500 border-blue-500 text-white'
+                                      : 'bg-white border-gray-300 text-gray-400'
+                                } ${isClickable ? 'group-hover:scale-110 group-hover:shadow-md' : ''}`}
+                              >
+                                {isCompleted ? (
+                                  <Check className="w-5 h-5" />
+                                ) : stage.style?.icon ? (
+                                  <span
+                                    className="text-lg"
+                                    dangerouslySetInnerHTML={{ __html: stage.style.icon }}
+                                  />
+                                ) : (
+                                  <span className="text-sm font-medium">{index + 1}</span>
+                                )}
+                              </div>
+                              {/* Label */}
+                              <div className="mt-2 text-center">
+                                <p
+                                  className={`text-xs font-medium ${
+                                    isCurrentStage
+                                      ? 'text-blue-600'
+                                      : isCompleted
+                                        ? 'text-green-600'
+                                        : 'text-gray-500'
+                                  } ${isClickable ? 'group-hover:text-blue-600' : ''}`}
+                                >
+                                  {stage.name}
+                                </p>
+                                {isCurrentStage && (
+                                  <Badge variant="secondary" className="mt-1 text-[10px] px-1.5 py-0">
+                                    Current
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            {/* Connector Line */}
+                            {!isLast && (
+                              <div
+                                className={`flex-1 h-0.5 mx-2 ${
+                                  isCompleted ? 'bg-green-500' : 'bg-gray-200'
+                                }`}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Position Information</CardTitle>

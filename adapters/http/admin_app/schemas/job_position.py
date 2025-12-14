@@ -301,6 +301,8 @@ class JobPositionPublicResponse(BaseModel):
     public_slug: Optional[str] = None
     # Only visible custom fields (filtered by workflow/stage configuration)
     visible_fields: Dict[str, Any] = Field(default_factory=dict)
+    # Killer questions for application screening
+    killer_questions: List[Dict[str, Any]] = Field(default_factory=list)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

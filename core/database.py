@@ -88,6 +88,11 @@ class SQLAlchemyDatabase(DatabaseInterface):
         return SessionLocal()
 
     @property
+    def session(self) -> Session:  # type: ignore
+        """Property to get session - used by DI container"""
+        return self.get_session()
+
+    @property
     def engine(self):
         """Expose engine for middleware access"""
         return engine

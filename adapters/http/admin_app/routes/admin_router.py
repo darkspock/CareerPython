@@ -55,6 +55,7 @@ from src.auth_bc.user.application.queries.get_current_user_from_token_query impo
 from src.company_bc.company.application.dtos import CompanyUserDto
 from src.company_bc.company.domain import CompanyId
 from src.company_bc.job_position.application.queries.job_position_dto import JobPositionDto
+from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 
 logger = logging.getLogger(__name__)
@@ -1102,3 +1103,42 @@ def get_current_admin_user_info(
 def health_check() -> dict[str, str]:
     """Basic health check for admin panel"""
     return {"status": "ok", "message": "Admin panel - Interview Templates, Companies, and Candidates"}
+
+
+# ====================================
+# MAINTENANCE ENDPOINTS
+# ====================================
+
+@router.post("/maintenance/cleanup-expired-registrations")
+@inject
+def cleanup_expired_registrations(
+        command_bus: Annotated[CommandBus, Depends(Provide[Container.command_bus])],
+        current_admin: Annotated[CurrentAdminUser, Depends(get_current_admin_user)],
+        max_age_days: int = Query(7, ge=1, le=90, description="Max age in days for expired registrations"),
+        dry_run: bool = Query(False, description="If true, only log what would be deleted"),
+) -> dict:
+    """
+    Clean up expired user registrations.
+
+    This endpoint deletes user registrations that:
+    - Are in PENDING status with expired tokens
+    - Are older than max_age_days
+
+    Can be called manually or scheduled via external cron.
+    """
+    from src.auth_bc.user_registration.application.commands.cleanup_expired_registrations_command import (
+        CleanupExpiredRegistrationsCommand
+    )
+
+    command = CleanupExpiredRegistrationsCommand(
+        max_age_days=max_age_days,
+        dry_run=dry_run
+    )
+
+    command_bus.dispatch(command)
+
+    return {
+        "status": "success",
+        "message": f"Cleanup completed (dry_run={dry_run}, max_age_days={max_age_days})",
+        "executed_by": current_admin.email
+    }

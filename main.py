@@ -18,6 +18,7 @@ from src.framework.application.query_bus import QueryBus
 # Initialize Dramatiq broker for web service
 from adapters.http.admin_app.routes.admin_router import router as admin_router
 from adapters.http.candidate_app.routers.landing_router import router as landing_router
+from adapters.http.candidate_app.routers.registration_router import router as registration_router
 from adapters.http.candidate_app.routers.candidate_router import candidate_router
 from adapters.http.candidate_app.routers.resume_router import router as resume_router
 from adapters.http.candidate_app.routers.interview_router import router as candidate_interview_router
@@ -86,6 +87,7 @@ app.add_middleware(
 # to prevent the generic /{candidate_id} route from catching /resume paths
 app.include_router(admin_router)
 app.include_router(landing_router)
+app.include_router(registration_router)  # New registration flow with email verification
 app.include_router(public_position_router)  # Phase 10: Public job board (no auth required)
 app.include_router(resume_router)  # Register resume router first
 app.include_router(file_router)  # File operations (PDF analysis)
@@ -166,6 +168,7 @@ Container._query_bus_instance = QueryBus(container=container)
 container.wire(modules=[
     "adapters.http.admin_app.routes.admin_router",
     "adapters.http.candidate_app.routers.landing_router",
+    "adapters.http.candidate_app.routers.registration_router",
     "adapters.http.candidate_app.routers.candidate_router",
     "adapters.http.candidate_app.routers.resume_router",
     "adapters.http.candidate_app.routers.file_router",

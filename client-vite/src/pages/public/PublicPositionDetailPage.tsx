@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import {
   ArrowLeft,
   MapPin,
@@ -16,12 +17,17 @@ import {
   Send,
   AlertCircle,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  Upload,
+  Mail
 } from 'lucide-react';
 import { publicPositionService } from '../../services/publicPositionService';
 import { publicQuestionService, type PublicApplicationQuestion } from '../../services/publicQuestionService';
+import { api } from '../../lib/api';
 import type { Position } from '../../types/position';
 import { getLocation, getIsRemote, getEmploymentType, getSalaryRange, getExperienceLevel, getDepartment, getRequirements } from '../../types/position';
+import { Checkbox } from '../../components/ui/checkbox';
+import { Label } from '../../components/ui/label';
 import '../../components/common/WysiwygEditor.css';
 
 export default function PublicPositionDetailPage() {
@@ -32,7 +38,13 @@ export default function PublicPositionDetailPage() {
   const [questions, setQuestions] = useState<PublicApplicationQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [applicationSuccess, _setApplicationSuccess] = useState(false);
+
+  // Application form state
+  const [email, setEmail] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [gdprConsent, setGdprConsent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   useEffect(() => {
     if (slugOrId) {
@@ -72,10 +84,55 @@ export default function PublicPositionDetailPage() {
     }
   };
 
-  const handleApply = () => {
-    // Phase 10: Redirect to landing page with job position ID for full onboarding flow
-    if (position?.id) {
-      navigate(`/?jobPositionId=${position.id}`);
+  const isFormValid = email.trim() !== '' && gdprConsent;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isFormValid || !position?.id) return;
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('gdpr_consent', 'true');
+      formData.append('job_position_id', position.id);
+
+      if (position.company_id) {
+        formData.append('company_id', position.company_id);
+      }
+
+      if (selectedFile) {
+        formData.append('resume_file', selectedFile);
+      }
+
+      const data = await api.initiateRegistration(formData);
+
+      if (data.success) {
+        setRegistrationSuccess(true);
+        toast.success('¡Revisa tu correo para verificar tu email!', {
+          position: "top-center",
+          autoClose: 7000,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+
+      let errorMessage = 'Error de conexión. Por favor intenta de nuevo.';
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      if (errorMessage.includes('ya está registrado') || errorMessage.includes('already exists')) {
+        const shouldLogin = confirm(`${errorMessage}\n\n¿Quieres ir a la página de login?`);
+        if (shouldLogin) {
+          navigate('/candidate/auth/login');
+          return;
+        }
+      } else {
+        toast.error(errorMessage);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -217,38 +274,113 @@ export default function PublicPositionDetailPage() {
           {/* Right Column - Application */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
-              {/* Success Message */}
-              {applicationSuccess && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                  <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-green-900 mb-2 text-center">
-                    Application Submitted!
-                  </h3>
-                  <p className="text-green-800 text-sm text-center mb-4">
-                    Your application has been successfully submitted. We'll review it and get back to you soon.
-                  </p>
-                  <button
-                    onClick={() => navigate('/positions')}
-                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  >
-                    Browse More Positions
-                  </button>
-                </div>
-              )}
-
               {/* Application Section */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Apply for this Position</h3>
-                <p className="text-gray-600 text-sm mb-6">
-                  Ready to take the next step in your career? Start your application process and we'll guide you through creating your profile.
-                </p>
-                <button
-                  onClick={handleApply}
-                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center gap-2"
-                >
-                  <Send className="w-5 h-5" />
-                  Start Application
-                </button>
+                {registrationSuccess ? (
+                  /* Success message after registration */
+                  <div className="text-center py-4">
+                    <div className="h-14 w-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Mail className="h-7 w-7 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">¡Revisa tu correo!</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Te hemos enviado un enlace de verificación a <strong>{email}</strong>
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Haz clic en el enlace del correo para completar tu candidatura.
+                      Si no lo encuentras, revisa tu carpeta de spam.
+                    </p>
+                  </div>
+                ) : (
+                  /* Registration form */
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Aplicar a esta oferta</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Completa tu información para enviar tu candidatura
+                    </p>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Email *
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="tu@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Currículum (PDF)
+                        </label>
+                        <label className={`w-full flex items-center justify-center gap-2 rounded-lg h-20 px-3 text-sm font-medium transition-all cursor-pointer border-2 border-dashed ${selectedFile
+                          ? "bg-green-50 text-green-700 border-green-300"
+                          : "bg-gray-50 border-gray-300 text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+                          }`}>
+                          {selectedFile ? (
+                            <div className="text-center">
+                              <CheckCircle className="w-5 h-5 mx-auto mb-1" />
+                              <span className="truncate block max-w-[180px] text-xs">{selectedFile.name}</span>
+                            </div>
+                          ) : (
+                            <div className="text-center">
+                              <Upload className="w-5 h-5 mx-auto mb-1" />
+                              <span className="text-xs">Arrastra o haz clic para subir</span>
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setSelectedFile(file);
+                              }
+                            }}
+                          />
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">Opcional - Formato PDF</p>
+                      </div>
+
+                      {/* GDPR Consent Checkbox */}
+                      <div className="flex items-start space-x-2 p-3 bg-gray-50 rounded-lg">
+                        <Checkbox
+                          id="gdpr-consent"
+                          checked={gdprConsent}
+                          onCheckedChange={(checked) => setGdprConsent(checked === true)}
+                          className="mt-0.5"
+                        />
+                        <Label htmlFor="gdpr-consent" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
+                          Acepto el tratamiento de mis datos personales según la{' '}
+                          <a href="#" className="text-blue-600 hover:underline">política de privacidad</a>
+                          {' '}y autorizo el uso de mi información para este proceso de selección. *
+                        </Label>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={!isFormValid || isSubmitting}
+                        className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${isFormValid && !isSubmitting
+                          ? "bg-blue-600 hover:bg-blue-700 text-white"
+                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          }`}
+                      >
+                        <Send className="w-4 h-4" />
+                        {isSubmitting ? "Enviando..." : "Enviar candidatura"}
+                      </button>
+
+                      <p className="text-xs text-gray-500 text-center">
+                        Te enviaremos un correo para verificar tu email
+                      </p>
+                    </form>
+                  </>
+                )}
               </div>
 
               {/* Questions Preview */}
@@ -274,11 +406,13 @@ export default function PublicPositionDetailPage() {
               )}
 
               {/* Info Box */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  <strong>What's next?</strong> You'll be guided through a simple onboarding process where you can upload your resume and complete your profile.
-                </p>
-              </div>
+              {!registrationSuccess && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>¿Qué sigue?</strong> Te enviaremos un email de verificación. Al confirmarlo, podrás completar tu perfil y responder las preguntas de la aplicación.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

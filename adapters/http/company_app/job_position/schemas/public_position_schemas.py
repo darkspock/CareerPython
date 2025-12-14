@@ -21,6 +21,8 @@ class PublicPositionResponse(BaseModel):
     public_slug: Optional[str] = None
     # Only visible custom fields (filtered by workflow/stage configuration)
     visible_fields: Dict[str, Any] = {}
+    # Killer questions for application screening
+    killer_questions: List[Dict[str, Any]] = []
     created_at: datetime
     company_id: str
 
@@ -39,6 +41,7 @@ class PublicPositionResponse(BaseModel):
             application_deadline=public_response.application_deadline,
             public_slug=public_response.public_slug,
             visible_fields=public_response.visible_fields,
+            killer_questions=public_response.killer_questions,
             created_at=public_response.created_at if public_response.created_at else datetime.now(),
             company_id=public_response.company_id
         )

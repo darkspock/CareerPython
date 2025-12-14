@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { Upload, CheckCircle, FileText, Bot, Target } from "lucide-react";
+import { Upload, CheckCircle, FileText, Bot, Target, Mail } from "lucide-react";
 import { toast } from "react-toastify";
 import { api } from "../lib/api";
 import { useOnboarding } from "../hooks/useOnboarding";
@@ -15,145 +15,26 @@ const generateRandomEmail = () => {
   return `${randomName}${randomNumber}@${randomDomain}`;
 };
 
-export default function LandingPage() {
-  const [_name, _setName] = useState("");
-  const [email, setEmail] = useState(generateRandomEmail()); // Pre-populate with random email for testing
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const [_searchParams] = useSearchParams();
-  const { updateCandidateData, jobPositionId, clearCandidateData } = useOnboarding();
-
-  // Clear localStorage when landing page loads to start fresh onboarding flow
-  useEffect(() => {
-    console.log("🧹 Landing page loaded - clearing previous session data");
-    console.log("🔍 Previous localStorage contents:");
-
-    // Log existing data before clearing (for debugging)
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      const value = localStorage.getItem(key || '');
-      console.log(`  ${key || 'unknown'}: ${value ? value.substring(0, 50) + (value.length > 50 ? '...' : '') : 'null'}`);
-    }
-
-    // Clear all authentication and onboarding data
-    const keysToRemove = ['access_token', 'candidate_id', 'refresh_token', 'user_id'];
-    keysToRemove.forEach(key => {
-      if (localStorage.getItem(key)) {
-        console.log(`  🗑️ Removing ${key}`);
-        localStorage.removeItem(key);
-      }
-    });
-
-    // Clear onboarding state (no longer uses localStorage)
-    console.log("  🗑️ Resetting onboarding state");
-    clearCandidateData();
-
-    console.log("✅ Session data cleared - ready for new onboarding");
-  }, [clearCandidateData]);
-
-  const isFormValid = email.trim() !== ""; // Only email is required now
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
-
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('email', email);
-
-      // Add jobPositionId if present
-      if (jobPositionId) {
-        formData.append('job_position_id', jobPositionId);
-      }
-
-      // Add resume file if selected
-      if (selectedFile) {
-        formData.append('resume_file', selectedFile);
-      }
-
-      // Call the new onboarding landing endpoint
-      const data = await api.processOnboardingLanding(formData) as {
-        success: boolean;
-        message: string;
-        user_created: boolean;
-        candidate_created: boolean;
-        application_created: boolean;
-        access_token?: string;
-        token_type?: string;
-        analysis_job_id?: string;
-      };
-
-      if (data.success) {
-        // Store email in onboarding state for next step
-        updateCandidateData({ email });
-
-        // Store JWT token if provided
-        if (data.access_token) {
-          localStorage.setItem("access_token", data.access_token);
-          console.log('✅ Stored JWT token for authenticated onboarding flow');
-        }
-
-        // Show success toast notification
-        toast.success(
-          '¡Cuenta creada! Hemos enviado un correo electrónico a tu bandeja de entrada con un enlace para establecer tu contraseña.',
-          {
-            position: "top-center",
-            autoClose: 7000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          }
-        );
-
-        // Always navigate to complete-profile page with analysis_job_id if available
-        console.log('✅ Onboarding successful, navigating to complete-profile');
-
-        // Build URL with query parameters
-        const params = new URLSearchParams();
-        if (jobPositionId) params.append('jobPositionId', jobPositionId);
-        if (data.analysis_job_id) {
-          params.append('analysisJobId', data.analysis_job_id);
-          console.log('📄 PDF analysis job will be tracked:', data.analysis_job_id);
-        }
-
-        const nextUrl = `/candidate/onboarding/complete-profile${params.toString() ? `?${params.toString()}` : ''}`;
-
-        navigate(nextUrl, {
-          state: {
-            successMessage: data.message,
-            showSuccessMessage: true,
-            analysisJobId: data.analysis_job_id,
-            hasResumeFile: !!selectedFile
-          }
-        });
-      }
-    } catch (error: any) {
-      console.error('Error:', error);
-      
-      let errorMessage = 'Error de conexión. Por favor intenta de nuevo.';
-      
-      if (error?.message) {
-        errorMessage = error.message;
-      }
-      
-      // Si el error es de email duplicado, ofrecer ir al login
-      if (errorMessage.includes('ya está registrado') || errorMessage.includes('already exists')) {
-        const shouldLogin = confirm(`${errorMessage}\n\n¿Quieres ir a la página de login?`);
-        if (shouldLogin) {
-          navigate('/candidate/auth/login');
-          return;
-        }
-      } else {
-        alert(errorMessage);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+// CV Landing Component
+function CVLanding({
+  email,
+  setEmail,
+  selectedFile,
+  setSelectedFile,
+  isLoading,
+  isFormValid,
+  handleSubmit,
+  registrationSuccess,
+}: {
+  email: string;
+  setEmail: (email: string) => void;
+  selectedFile: File | null;
+  setSelectedFile: (file: File | null) => void;
+  isLoading: boolean;
+  isFormValid: boolean;
+  handleSubmit: (e: React.FormEvent) => void;
+  registrationSuccess: boolean;
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
@@ -194,81 +75,90 @@ export default function LandingPage() {
               Obtén un currículum optimizado para destacar entre la multitud y conseguir el trabajo de tus sueños.
             </p>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
-              <div className="space-y-4">
-                {jobPositionId && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-                    <p className="text-blue-800 text-sm font-medium">
-                      🎯 Aplicando a una posición específica
-                    </p>
-                  </div>
-                )}
-
-                <div className="relative">
-                  <input
-                    type="email"
-                    placeholder="tu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setEmail(generateRandomEmail())}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
-                    title="Generar email aleatorio para pruebas"
-                  >
-                    🎲
-                  </button>
+            {/* Form or Success Message */}
+            {registrationSuccess ? (
+              <div className="max-w-md mx-auto text-center py-8 px-6 bg-white rounded-2xl shadow-lg">
+                <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Mail className="h-8 w-8 text-green-600" />
                 </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">¡Revisa tu correo!</h2>
+                <p className="text-gray-600 mb-4">
+                  Te hemos enviado un enlace de verificación a <strong>{email}</strong>
+                </p>
+                <p className="text-sm text-gray-500">
+                  Haz clic en el enlace del correo para completar tu registro.
+                  Si no lo encuentras, revisa tu carpeta de spam.
+                </p>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
+                <div className="space-y-4">
+                  <div className="relative">
+                    <input
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEmail(generateRandomEmail())}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+                      title="Generar email aleatorio para pruebas"
+                    >
+                      🎲
+                    </button>
+                  </div>
+                </div>
 
-              {/* File Upload */}
-              <div>
-                <label className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 px-4 text-sm font-medium transition-all cursor-pointer ${selectedFile
-                  ? "bg-green-100 text-green-700 border-2 border-green-300"
-                  : "bg-white border-2 border-gray-300 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
-                  }`}>
-                  {selectedFile ? (
-                    <>
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="truncate">PDF Seleccionado: {selectedFile.name}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      <span className="truncate">Subir CV (PDF) - Opcional</span>
-                    </>
-                  )}
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setSelectedFile(file);
-                      }
-                    }}
-                  />
-                </label>
-              </div>
+                {/* File Upload */}
+                <div>
+                  <label className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 px-4 text-sm font-medium transition-all cursor-pointer ${selectedFile
+                    ? "bg-green-100 text-green-700 border-2 border-green-300"
+                    : "bg-white border-2 border-gray-300 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
+                    }`}>
+                    {selectedFile ? (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="truncate">PDF Seleccionado: {selectedFile.name}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        <span className="truncate">Subir CV (PDF) - Opcional</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setSelectedFile(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
 
-              <button
-                type="submit"
-                disabled={!isFormValid || isLoading}
-                className={`w-full h-12 rounded-xl text-base font-bold transition-all transform ${isFormValid && !isLoading
-                  ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white hover:scale-105 shadow-lg"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-              >
-                {isLoading ? "Creando cuenta..." : "Comenzar Gratis"}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={!isFormValid || isLoading}
+                  className={`w-full h-12 rounded-xl text-base font-bold transition-all transform ${isFormValid && !isLoading
+                    ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white hover:scale-105 shadow-lg"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                >
+                  {isLoading ? "Creando cuenta..." : "Comenzar Gratis"}
+                </button>
+              </form>
+            )}
           </div>
         </section>
+
         {/* How it works Section */}
         <section id="como-funciona" className="px-6 lg:px-20 py-16 lg:py-24 bg-white">
           <div className="max-w-5xl mx-auto">
@@ -394,5 +284,103 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function LandingPage() {
+  const [email, setEmail] = useState(generateRandomEmail());
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const navigate = useNavigate();
+  const [_searchParams] = useSearchParams();
+  const { updateCandidateData, jobPositionId, clearCandidateData } = useOnboarding();
+
+  // Redirect to position detail page if jobPositionId is present
+  useEffect(() => {
+    if (jobPositionId) {
+      navigate(`/positions/${jobPositionId}`, { replace: true });
+    }
+  }, [jobPositionId, navigate]);
+
+  // Clear localStorage when landing page loads to start fresh onboarding flow
+  useEffect(() => {
+    console.log("🧹 Landing page loaded - clearing previous session data");
+
+    // Clear all authentication and onboarding data
+    const keysToRemove = ['access_token', 'candidate_id', 'refresh_token', 'user_id'];
+    keysToRemove.forEach(key => {
+      if (localStorage.getItem(key)) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // Clear onboarding state
+    clearCandidateData();
+  }, [clearCandidateData]);
+
+  // Just email is enough for CV landing
+  const isFormValid = email.trim() !== "";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isFormValid) return;
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('gdpr_consent', 'true');
+
+      if (selectedFile) {
+        formData.append('resume_file', selectedFile);
+      }
+
+      const data = await api.initiateRegistration(formData);
+
+      if (data.success) {
+        updateCandidateData({ email });
+        setRegistrationSuccess(true);
+
+        toast.success('¡Revisa tu correo para verificar tu email!', {
+          position: "top-center",
+          autoClose: 7000,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+
+      let errorMessage = 'Error de conexión. Por favor intenta de nuevo.';
+
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      if (errorMessage.includes('ya está registrado') || errorMessage.includes('already exists')) {
+        const shouldLogin = confirm(`${errorMessage}\n\n¿Quieres ir a la página de login?`);
+        if (shouldLogin) {
+          navigate('/candidate/auth/login');
+          return;
+        }
+      } else {
+        toast.error(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Render CV landing
+  return (
+    <CVLanding
+      email={email}
+      setEmail={setEmail}
+      selectedFile={selectedFile}
+      setSelectedFile={setSelectedFile}
+      isLoading={isLoading}
+      isFormValid={isFormValid}
+      handleSubmit={handleSubmit}
+      registrationSuccess={registrationSuccess}
+    />
   );
 }

@@ -10,9 +10,6 @@ from core.containers.workflow_container import WorkflowContainer
 from src.framework.application.command_bus import CommandBus
 from src.framework.application.query_bus import QueryBus
 
-# Import the old container temporarily for backward compatibility
-from core.container import Container as OldContainer
-
 
 class Container(containers.DeclarativeContainer):
     """Container principal que compone todos los bounded contexts"""
@@ -22,11 +19,7 @@ class Container(containers.DeclarativeContainer):
     
     # Shared Container (servicios core)
     shared = providers.Container(SharedContainer)
-    
-    # Temporary: Use old container for backward compatibility during migration
-    # This will be gradually replaced with modular containers
-    _old_container = providers.Container(OldContainer)
-    
+
     # Command Bus y Query Bus - Create first (needed by bounded contexts)
     # These will be configured in main.py with the actual container reference
     # Using Singleton so the same instance is shared across the application
@@ -144,6 +137,7 @@ class Container(containers.DeclarativeContainer):
     user_asset_repository = auth.user_asset_repository
     user_controller = auth.user_controller
     invitation_controller = auth.invitation_controller
+    registration_controller = auth.registration_controller
     
     # Interview
     interview_repository = interview.interview_repository
@@ -199,7 +193,6 @@ class Container(containers.DeclarativeContainer):
     candidate_repository = candidate.candidate_repository
     candidate_controller = candidate.candidate_controller
     application_controller = candidate.application_controller
-    onboarding_controller = candidate.onboarding_controller
     resume_controller = candidate.resume_controller
     admin_candidate_controller = candidate.admin_candidate_controller
     application_answer_controller = candidate.application_answer_controller
@@ -235,8 +228,15 @@ class Container(containers.DeclarativeContainer):
     create_access_token_query_handler = auth.create_access_token_query_handler
     create_user_automatically_command_handler = auth.create_user_automatically_command_handler
     create_user_command_handler = auth.create_user_command_handler
-    create_user_from_landing_command_handler = auth.create_user_from_landing_command_handler
     get_current_user_from_token_query_handler = auth.get_current_user_from_token_query_handler
+
+    # User Registration Handlers
+    initiate_registration_command_handler = auth.initiate_registration_command_handler
+    process_registration_pdf_command_handler = auth.process_registration_pdf_command_handler
+    send_verification_email_command_handler = auth.send_verification_email_command_handler
+    verify_registration_command_handler = auth.verify_registration_command_handler
+    cleanup_expired_registrations_command_handler = auth.cleanup_expired_registrations_command_handler
+    user_registration_repository = auth.user_registration_repository
     get_user_by_email_query_handler = auth.get_user_by_email_query_handler
     get_user_language_query_handler = auth.get_user_language_query_handler
     request_password_reset_command_handler = auth.request_password_reset_command_handler
@@ -486,9 +486,3 @@ class Container(containers.DeclarativeContainer):
     create_application_question_command_handler = workflow.create_application_question_command_handler
     update_application_question_command_handler = workflow.update_application_question_command_handler
     delete_application_question_command_handler = workflow.delete_application_question_command_handler
-    
-    # Exponer todos los providers del container antiguo para compatibilidad
-    # Esto permite una migración gradual sin romper el código existente
-    def __getattr__(self, name):
-        """Delegate to old container for providers not yet migrated"""
-        return getattr(self._old_container, name)

@@ -21,6 +21,7 @@ from src.shared_bc.customization.entity_customization.infrastructure.models.enti
 from src.shared_bc.customization.field_validation.infrastructure.models.validation_rule_model import ValidationRuleModel
 from src.auth_bc.user.infrastructure.models.user_model import UserModel
 from src.auth_bc.user.infrastructure.models.user_asset_model import UserAssetModel
+from src.auth_bc.user_registration.infrastructure.models.user_registration_model import UserRegistrationModel
 from src.candidate_bc.candidate.infrastructure.models.candidate_model import CandidateModel
 from src.candidate_bc.candidate.infrastructure.models.candidate_education import CandidateEducationModel
 from src.candidate_bc.candidate.infrastructure.models.candidate_experience import CandidateExperienceModel
@@ -54,6 +55,7 @@ __all__ = [
     "ValidationRuleModel",
     "UserModel",
     "UserAssetModel",
+    "UserRegistrationModel",
     "CandidateModel",
     "CandidateEducationModel",
     "CandidateExperienceModel",

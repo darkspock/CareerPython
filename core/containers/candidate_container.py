@@ -2,7 +2,6 @@
 from dependency_injector import containers, providers
 from adapters.http.candidate_app.controllers.candidate import CandidateController
 from adapters.http.candidate_app.controllers.application_controller import ApplicationController
-from adapters.http.candidate_app.controllers.onboarding_controller import OnboardingController
 from adapters.http.candidate_app.controllers.resume_controller import ResumeController
 from adapters.http.candidate_app.controllers.file_attachment_controller import FileAttachmentController
 from adapters.http.admin_app.controllers.admin_candidate_controller import AdminCandidateController
@@ -394,13 +393,7 @@ class CandidateContainer(containers.DeclarativeContainer):
         command_bus=shared.command_bus,
         query_bus=shared.query_bus
     )
-    
-    onboarding_controller = providers.Factory(
-        OnboardingController,
-        command_bus=shared.command_bus,
-        query_bus=shared.query_bus
-    )
-    
+
     resume_controller = providers.Factory(
         ResumeController,
         command_bus=shared.command_bus,

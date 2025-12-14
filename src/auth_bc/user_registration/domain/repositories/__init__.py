@@ -1,0 +1,3 @@
+from .user_registration_repository_interface import UserRegistrationRepositoryInterface
+
+__all__ = ["UserRegistrationRepositoryInterface"]

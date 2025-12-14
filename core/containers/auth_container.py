@@ -2,20 +2,35 @@
 from dependency_injector import containers, providers
 from adapters.http.auth.controllers.user import UserController
 from adapters.http.auth.invitations.controllers.invitation_controller import InvitationController
+from adapters.http.candidate_app.controllers.registration_controller import RegistrationController
 
 # Auth Infrastructure
 from src.auth_bc.user.infrastructure.repositories.user_repository import SQLAlchemyUserRepository
 from src.auth_bc.staff.infrastructure.repositories.staff_repository import SQLAlchemyStaffRepository
 from src.auth_bc.user.infrastructure.repositories.user_asset_repository import SQLAlchemyUserAssetRepository
+from src.auth_bc.user_registration.infrastructure.repositories import UserRegistrationRepository
 
 # Auth Application Layer - Commands
 from src.auth_bc.user.application.commands.create_user_command import CreateUserCommandHandler
 from src.auth_bc.user.application.commands.create_user_automatically_command import CreateUserAutomaticallyCommandHandler
-from src.auth_bc.user.application import CreateUserFromLandingCommandHandler
 from src.auth_bc.user.application.commands.request_password_reset_command import RequestPasswordResetCommandHandler
 from src.auth_bc.user.application import ResetPasswordWithTokenCommandHandler
 from src.auth_bc.user.application import UpdateUserPasswordCommandHandler
 from src.auth_bc.user.application import UpdateUserLanguageCommandHandler
+
+# User Registration Commands
+from src.auth_bc.user_registration.application.commands import (
+    InitiateRegistrationCommandHandler,
+    ProcessRegistrationPdfCommandHandler,
+    SendVerificationEmailCommandHandler,
+    VerifyRegistrationCommandHandler,
+)
+from src.auth_bc.user_registration.application.commands.cleanup_expired_registrations_command import (
+    CleanupExpiredRegistrationsCommandHandler
+)
+
+# PDF Processing Service
+from src.auth_bc.user.infrastructure.services.pdf_processing_service import PDFProcessingService
 
 # Auth Application Layer - Queries
 from src.auth_bc.user.application import AuthenticateUserQueryHandler
@@ -48,7 +63,12 @@ class AuthContainer(containers.DeclarativeContainer):
         SQLAlchemyUserAssetRepository,
         database=shared.database
     )
-    
+
+    user_registration_repository = providers.Factory(
+        UserRegistrationRepository,
+        session=shared.database.provided.session
+    )
+
     # Query Handlers
     authenticate_user_query_handler = providers.Factory(
         AuthenticateUserQueryHandler,
@@ -95,12 +115,7 @@ class AuthContainer(containers.DeclarativeContainer):
         CreateUserAutomaticallyCommandHandler,
         user_repository=user_repository
     )
-    
-    create_user_from_landing_command_handler = providers.Factory(
-        CreateUserFromLandingCommandHandler,
-        user_repository=user_repository
-    )
-    
+
     request_password_reset_command_handler = providers.Factory(
         RequestPasswordResetCommandHandler,
         user_repository=user_repository,
@@ -133,5 +148,50 @@ class AuthContainer(containers.DeclarativeContainer):
         InvitationController,
         command_bus=shared.command_bus,
         query_bus=shared.query_bus
+    )
+
+    # PDF Processing Service
+    pdf_processing_service = providers.Factory(PDFProcessingService)
+
+    # User Registration Handlers
+    initiate_registration_command_handler = providers.Factory(
+        InitiateRegistrationCommandHandler,
+        user_registration_repository=user_registration_repository,
+        user_repository=user_repository,
+        command_bus=shared.command_bus
+    )
+
+    process_registration_pdf_command_handler = providers.Factory(
+        ProcessRegistrationPdfCommandHandler,
+        user_registration_repository=user_registration_repository,
+        pdf_processing_service=pdf_processing_service,
+        ai_service=shared.ai_service
+    )
+
+    send_verification_email_command_handler = providers.Factory(
+        SendVerificationEmailCommandHandler,
+        user_registration_repository=user_registration_repository,
+        command_bus=shared.command_bus
+    )
+
+    verify_registration_command_handler = providers.Factory(
+        VerifyRegistrationCommandHandler,
+        user_registration_repository=user_registration_repository,
+        user_repository=user_repository,
+        user_asset_repository=user_asset_repository,
+        command_bus=shared.command_bus
+    )
+
+    cleanup_expired_registrations_command_handler = providers.Factory(
+        CleanupExpiredRegistrationsCommandHandler,
+        repository=user_registration_repository
+    )
+
+    # Registration Controller
+    registration_controller = providers.Factory(
+        RegistrationController,
+        command_bus=shared.command_bus,
+        query_bus=shared.query_bus,
+        user_registration_repository=user_registration_repository
     )
 

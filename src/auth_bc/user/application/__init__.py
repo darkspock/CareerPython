@@ -1,7 +1,6 @@
 """User application module - exports queries and commands"""
 
 # Commands
-from .commands.create_user_from_landing import CreateUserFromLandingCommand, CreateUserFromLandingCommandHandler
 from .commands.reset_password_with_token_command import ResetPasswordWithTokenCommand, \
     ResetPasswordWithTokenCommandHandler
 from .commands.update_user_language_command import UpdateUserLanguageCommand, UpdateUserLanguageCommandHandler
@@ -20,8 +19,6 @@ __all__ = [
     "GetUserByEmailQuery",
     "GetUserByEmailQueryHandler",
     # Commands
-    "CreateUserFromLandingCommand",
-    "CreateUserFromLandingCommandHandler",
     "ResetPasswordWithTokenCommand",
     "ResetPasswordWithTokenCommandHandler",
     "UpdateUserPasswordCommand",

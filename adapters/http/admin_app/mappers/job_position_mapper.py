@@ -61,6 +61,7 @@ class JobPositionMapper:
             application_deadline=dto.application_deadline,
             public_slug=dto.public_slug,
             visible_fields=visible_fields,
+            killer_questions=dto.killer_questions or [],
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )
