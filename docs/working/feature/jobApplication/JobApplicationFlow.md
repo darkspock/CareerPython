@@ -67,13 +67,12 @@ All steps are optional (except Submit). Users can save progress and continue lat
 Pre-filled data from PDF is editable.
 
 1. General Data
-2. User Experience
+2. Experience
 3. Education
 4. Projects
 5. Skills
-6. Specific Application Questions
-7. Killer Questions
-8. Submit
+6. Questions (includes all position-specific questions)
+7. Submit
 
 ## Thank You Page
 1. Display thank you message

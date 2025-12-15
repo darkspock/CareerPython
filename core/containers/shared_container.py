@@ -10,6 +10,7 @@ from src.framework.infrastructure.storage.storage_factory import StorageFactory
 from src.framework.infrastructure.repositories.async_job_repository import AsyncJobRepository
 from src.framework.infrastructure.jobs.async_job_service import AsyncJobService
 from src.auth_bc.user.infrastructure.services.pdf_processing_service import PDFProcessingService
+from src.notification_bc.notification.application.handlers.send_email_command_handler import SendEmailCommandHandler
 
 
 class SharedContainer(containers.DeclarativeContainer):
@@ -43,7 +44,13 @@ class SharedContainer(containers.DeclarativeContainer):
         _get_email_service,
         email_service_type=config.email_service
     )
-    
+
+    # Email Command Handler
+    send_email_command_handler = providers.Factory(
+        SendEmailCommandHandler,
+        email_service=email_service
+    )
+
     # AI Service Factory
     @staticmethod
     def _get_ai_service(ai_agent: str = None):

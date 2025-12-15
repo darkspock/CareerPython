@@ -44,8 +44,8 @@ class SendVerificationEmailCommandHandler(CommandHandler[SendVerificationEmailCo
                 return
 
             # 3. Build verification URL
-            base_url = getattr(settings, 'CANDIDATE_APP_URL', 'http://localhost:3000')
-            verification_url = f"{base_url}/verify/{registration.verification_token}"
+            base_url = settings.FRONTEND_URL
+            verification_url = f"{base_url}/candidate/registration/verify/{registration.verification_token}"
 
             # 4. Send email
             email_command = SendEmailCommand(

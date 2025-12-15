@@ -179,7 +179,8 @@ class AuthContainer(containers.DeclarativeContainer):
         user_registration_repository=user_registration_repository,
         user_repository=user_repository,
         user_asset_repository=user_asset_repository,
-        command_bus=shared.command_bus
+        command_bus=shared.command_bus,
+        query_bus=shared.query_bus
     )
 
     cleanup_expired_registrations_command_handler = providers.Factory(

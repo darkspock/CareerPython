@@ -101,7 +101,7 @@ def get_my_experiences(
         current_user: UserResponse = Depends(get_current_user),
 ) -> List[CandidateExperienceResponse]:
     """Get authenticated user's experiences"""
-    return controller.get_my_experiences(current_user.id)
+    return controller.get_my_experiences(current_user.id, current_user.email)
 
 
 @candidate_router.post("/experience", response_model=CandidateExperienceResponse)
@@ -160,7 +160,7 @@ def get_my_educations(
         current_user: UserResponse = Depends(get_current_user),
 ) -> List[CandidateEducationResponse]:
     """Get authenticated user's educations"""
-    return controller.get_my_educations(current_user.id)
+    return controller.get_my_educations(current_user.id, current_user.email)
 
 
 @candidate_router.post("/education", response_model=CandidateEducationResponse)
@@ -219,7 +219,7 @@ def get_my_projects(
         current_user: UserResponse = Depends(get_current_user),
 ) -> List[CandidateProjectResponse]:
     """Get authenticated user's projects"""
-    return controller.get_my_projects(current_user.id)
+    return controller.get_my_projects(current_user.id, current_user.email)
 
 
 @candidate_router.post("/projects", response_model=CandidateProjectResponse)

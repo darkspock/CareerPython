@@ -14,10 +14,13 @@ from src.auth_bc.user.domain.value_objects.user_asset_id import UserAssetId
 from src.auth_bc.user_registration.domain.entities.user_registration import UserRegistration
 from src.auth_bc.user_registration.domain.repositories import UserRegistrationRepositoryInterface
 from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommand
+from src.candidate_bc.candidate.application.queries.get_candidate_by_email import GetCandidateByEmailQuery
+from src.candidate_bc.candidate.application.queries.get_candidate_by_user_id import GetCandidateByUserIdQuery
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.application.commands.create_candidate_application import \
     CreateCandidateApplicationCommand
 from src.framework.application.command_bus import Command, CommandHandler, CommandBus
+from src.framework.application.query_bus import QueryBus
 from src.framework.domain.entities.base import generate_id
 from src.notification_bc.notification.application.commands.send_email_command import SendEmailCommand
 from src.notification_bc.notification.domain.enums.notification_type import NotificationTypeEnum
@@ -43,12 +46,14 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
             user_registration_repository: UserRegistrationRepositoryInterface,
             user_repository: UserRepositoryInterface,
             user_asset_repository: UserAssetRepositoryInterface,
-            command_bus: CommandBus
+            command_bus: CommandBus,
+            query_bus: QueryBus
     ):
         self.user_registration_repository = user_registration_repository
         self.user_repository = user_repository
         self.user_asset_repository = user_asset_repository
         self.command_bus = command_bus
+        self.query_bus = query_bus
         self.logger = logging.getLogger(__name__)
 
     def execute(self, command: VerifyRegistrationCommand) -> None:
@@ -62,9 +67,28 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
             if not registration:
                 raise ValueError("Invalid verification token")
 
-            # 2. Check if already verified
+            # 2. Check if already verified - return success with existing data
             if registration.is_verified():
-                raise ValueError("Registration already verified")
+                self.logger.info(f"Registration {registration.id} already verified, returning existing data")
+                # Set output fields from registration data
+                if registration.existing_user_id:
+                    command.user_id = registration.existing_user_id
+                    # Get candidate for this user
+                    candidate = self._get_or_create_candidate_for_user(
+                        UserId(registration.existing_user_id), registration
+                    )
+                    command.candidate_id = str(candidate)
+                    command.is_new_user = False
+                else:
+                    # For new users who verified, we need to find their user/candidate
+                    user = self.user_repository.get_by_email(registration.email)
+                    if user:
+                        command.user_id = str(user.id)
+                        candidate = self._get_or_create_candidate_for_user(user.id, registration)
+                        command.candidate_id = str(candidate)
+                    command.is_new_user = False
+                command.has_job_application = registration.job_position_id is not None
+                return  # Exit successfully
 
             # 3. Check if expired
             if registration.is_expired():
@@ -156,8 +180,25 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
 
     def _get_or_create_candidate_for_user(self, user_id: UserId, registration: UserRegistration) -> CandidateId:
         """Get existing candidate or create new one for existing user"""
-        # TODO: Query candidate by user_id when that query exists
-        # For now, create a new candidate
+        from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
+
+        # First, check if candidate already exists for this user by user_id
+        query = GetCandidateByUserIdQuery(user_id=user_id)
+        existing_candidate: Optional[CandidateDto] = self.query_bus.query(query)
+
+        if existing_candidate:
+            self.logger.info(f"Found existing candidate {existing_candidate.id} for user {user_id}")
+            return existing_candidate.id
+
+        # Fallback: check by email (candidate might exist but not linked to user)
+        email_query = GetCandidateByEmailQuery(email=registration.email)
+        existing_by_email: Optional[CandidateDto] = self.query_bus.query(email_query)
+
+        if existing_by_email:
+            self.logger.info(f"Found existing candidate {existing_by_email.id} by email {registration.email}")
+            return existing_by_email.id
+
+        # No existing candidate, create a new one
         candidate_id = CandidateId(generate_id())
 
         personal_info = self._get_personal_info(registration)

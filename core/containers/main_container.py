@@ -55,6 +55,7 @@ class Container(containers.DeclarativeContainer):
     SharedDependencies.ai_service = shared.ai_service
     SharedDependencies.storage_service = shared.storage_service
     SharedDependencies.async_job_service = shared.async_job_service
+    SharedDependencies.send_email_command_handler = shared.send_email_command_handler
     SharedDependencies.command_bus = command_bus
     SharedDependencies.query_bus = query_bus
     
@@ -237,6 +238,9 @@ class Container(containers.DeclarativeContainer):
     verify_registration_command_handler = auth.verify_registration_command_handler
     cleanup_expired_registrations_command_handler = auth.cleanup_expired_registrations_command_handler
     user_registration_repository = auth.user_registration_repository
+
+    # Notification Handlers
+    send_email_command_handler = shared.send_email_command_handler
     get_user_by_email_query_handler = auth.get_user_by_email_query_handler
     get_user_language_query_handler = auth.get_user_language_query_handler
     request_password_reset_command_handler = auth.request_password_reset_command_handler

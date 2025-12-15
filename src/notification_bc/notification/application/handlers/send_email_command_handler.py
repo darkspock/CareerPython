@@ -112,6 +112,45 @@ class SendEmailCommandHandler(CommandHandler[SendEmailCommand]):
                 expired_tier
             )
 
+        elif notification_type == NotificationTypeEnum.EMAIL_VERIFICATION:
+            verification_url = command.template_data.get("verification_url", "")
+            expiration_hours = command.template_data.get("expiration_hours", 24)
+
+            subject = "Verify Your Email - CareerPython"
+            body_html = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h1 style="color: #2563eb;">Verify Your Email</h1>
+                    <p>Thank you for registering! Please click the button below to verify your email address:</p>
+                    <p style="text-align: center; margin: 30px 0;">
+                        <a href="{verification_url}"
+                           style="background-color: #2563eb; color: white; padding: 12px 30px;
+                                  text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Verify Email
+                        </a>
+                    </p>
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; color: #2563eb;">{verification_url}</p>
+                    <p style="color: #666; font-size: 14px;">
+                        This link will expire in {expiration_hours} hours.
+                    </p>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="color: #999; font-size: 12px;">
+                        If you didn't request this verification, please ignore this email.
+                    </p>
+                </div>
+            </body>
+            </html>
+            """
+
+            return await self.email_service.send_template_email(
+                command.recipient_email,
+                subject,
+                body_html,
+                template_data=command.template_data
+            )
+
         else:
             self.logger.warning(f"Unknown notification type: {notification_type}")
             return False

@@ -119,7 +119,7 @@ const ProfileExperienceForm: React.FC<ProfileExperienceFormProps> = ({
     }
 
     try {
-      await api.authenticatedRequest(`/candidate/experiences/${experienceId}`, {
+      await api.authenticatedRequest(`/candidate/experience/${experienceId}`, {
         method: 'DELETE',
       });
       setSuccess(t('experience.experienceDeleted'));

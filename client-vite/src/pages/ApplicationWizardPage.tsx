@@ -8,7 +8,6 @@ import {
   FolderKanban,
   Sparkles,
   FileQuestion,
-  AlertTriangle,
   Send,
   Check,
   ChevronLeft,
@@ -61,12 +60,6 @@ const WIZARD_STEPS = [
     title: "Preguntas",
     description: "Preguntas de la oferta",
     icon: FileQuestion,
-  },
-  {
-    id: "killer",
-    title: "Preguntas Clave",
-    description: "Preguntas importantes",
-    icon: AlertTriangle,
   },
   {
     id: "submit",
@@ -175,7 +168,7 @@ function QuestionsStep() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileQuestion className="w-5 h-5" />
-          Preguntas de la Aplicación
+          Preguntas de la Oferta
         </CardTitle>
         <CardDescription>
           Responde las preguntas específicas de esta oferta
@@ -183,29 +176,7 @@ function QuestionsStep() {
       </CardHeader>
       <CardContent>
         <p className="text-gray-500 text-center py-8">
-          No hay preguntas adicionales para esta oferta.
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Killer questions step component (placeholder)
-function KillerQuestionsStep() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5" />
-          Preguntas Clave
-        </CardTitle>
-        <CardDescription>
-          Estas preguntas son importantes para el proceso de selección
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-500 text-center py-8">
-          No hay preguntas clave configuradas para esta oferta.
+          No hay preguntas configuradas para esta oferta.
         </p>
       </CardContent>
     </Card>
@@ -327,8 +298,6 @@ export default function ApplicationWizardPage() {
         return <SkillsStep />;
       case "questions":
         return <QuestionsStep />;
-      case "killer":
-        return <KillerQuestionsStep />;
       case "submit":
         return <SubmitStep onSubmit={handleSubmit} isSubmitting={isSubmitting} />;
       default:

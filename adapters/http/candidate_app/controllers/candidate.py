@@ -285,12 +285,66 @@ class CandidateController:
     # Business logic moved from router
     # ====================================
 
-    def get_my_profile(self, user_id: str) -> CandidateResponse:
-        """Get candidate profile for authenticated user, with proper error handling"""
+    def get_my_profile(self, user_id: str, email: Optional[str] = None) -> CandidateResponse:
+        """Get candidate profile for authenticated user.
+
+        If email is provided and no candidate exists, auto-creates one.
+        """
         try:
             return self.get_candidate_by_user_id(user_id)
         except CandidateNotFoundError:
+            if email:
+                # Auto-create candidate profile
+                return self._create_candidate_for_user(user_id, email)
             raise HTTPException(status_code=404, detail="Candidate profile not found")
+
+    def _create_candidate_for_user(self, user_id: str, email: str) -> CandidateResponse:
+        """Create a minimal candidate profile for the user, or return existing one by email"""
+        from src.candidate_bc.candidate.application.queries.get_candidate_by_email import GetCandidateByEmailQuery
+
+        # First check if a candidate with this email already exists
+        existing_by_email: Optional[CandidateDto] = self.query_bus.query(GetCandidateByEmailQuery(email=email))
+        if existing_by_email:
+            log.info(f"Found existing candidate {existing_by_email.id} by email {email}")
+            return CandidateResponse.model_validate(existing_by_email)
+
+        log.info(f"Creating candidate profile for user {user_id} with email {email}")
+        candidate_id = CandidateId.generate()
+        command = CreateCandidateCommand(
+            id=candidate_id,
+            user_id=UserId.from_string(user_id),
+            date_of_birth=datetime.strptime("1990-01-01", "%Y-%m-%d").date(),
+            name=email.split("@")[0],  # Use email prefix as initial name
+            phone="",
+            email=email,
+            city="",
+            country="",
+        )
+        self.command_bus.dispatch(command)
+        log.info(f"Created candidate profile {candidate_id} for user {user_id}")
+        return self.get_candidate_by_user_id(user_id)
+
+    def get_or_create_my_profile(self, user_id: str, email: str) -> CandidateResponse:
+        """Get candidate profile for authenticated user, creating one if it doesn't exist"""
+        try:
+            return self.get_candidate_by_user_id(user_id)
+        except CandidateNotFoundError:
+            log.info(f"Creating candidate profile for user {user_id} with email {email}")
+            # Create a minimal candidate profile
+            candidate_id = CandidateId.generate()
+            command = CreateCandidateCommand(
+                id=candidate_id,
+                user_id=UserId.from_string(user_id),
+                date_of_birth=datetime.strptime("1990-01-01", "%Y-%m-%d").date(),
+                name=email.split("@")[0],  # Use email prefix as initial name
+                phone="",
+                email=email,
+                city="",
+                country="",
+            )
+            self.command_bus.dispatch(command)
+            log.info(f"Created candidate profile {candidate_id} for user {user_id}")
+            return self.get_candidate_by_user_id(user_id)
 
     def get_candidate_with_ownership_check(self, candidate_id: str, user_id: str) -> CandidateResponse:
         """Get candidate by ID but verify ownership by current user"""
@@ -303,9 +357,9 @@ class CandidateController:
 
         return candidate
 
-    def get_my_experiences(self, user_id: str) -> List[CandidateExperienceResponse]:
+    def get_my_experiences(self, user_id: str, email: Optional[str] = None) -> List[CandidateExperienceResponse]:
         """Get experiences for authenticated user"""
-        candidate = self.get_my_profile(user_id)
+        candidate = self.get_my_profile(user_id, email)
         log.info(f"🔍 Getting experiences for user_id: {user_id}, candidate_id: {candidate.id}")
 
         experiences = self.get_experiences_by_candidate_id(candidate.id)
@@ -313,14 +367,14 @@ class CandidateController:
 
         return experiences
 
-    def get_my_educations(self, user_id: str) -> List[CandidateEducationResponse]:
+    def get_my_educations(self, user_id: str, email: Optional[str] = None) -> List[CandidateEducationResponse]:
         """Get educations for authenticated user"""
-        candidate = self.get_my_profile(user_id)
+        candidate = self.get_my_profile(user_id, email)
         return self.get_educations_by_candidate_id(candidate.id)
 
-    def get_my_projects(self, user_id: str) -> List[CandidateProjectResponse]:
+    def get_my_projects(self, user_id: str, email: Optional[str] = None) -> List[CandidateProjectResponse]:
         """Get projects for authenticated user"""
-        candidate = self.get_my_profile(user_id)
+        candidate = self.get_my_profile(user_id, email)
         return self.get_projects_by_candidate_id(candidate.id)
 
     def create_my_experience(self, user_id: str,
