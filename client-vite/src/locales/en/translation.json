@@ -1076,5 +1076,171 @@
         "visible_candidate": "Candidates can see this field"
       }
     }
+  },
+  "candidateProfile": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Your professional profile summary",
+      "loading": "Loading information...",
+      "loadingStats": "Loading statistics..."
+    },
+    "stats": {
+      "resumesCreated": "Resumes Created",
+      "resumes": "resumes",
+      "applications": "Applications",
+      "interviews": "Interviews",
+      "profileComplete": "Profile Complete",
+      "comingSoon": "Coming Soon"
+    },
+    "completionBanner": {
+      "title": "Complete your profile for better opportunities!",
+      "description": "Your profile is {{percent}}% complete. Add more information to stand out to recruiters.",
+      "button": "Complete Profile"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "generateResume": {
+        "title": "Generate New Resume",
+        "description": "Create a personalized resume based on your updated profile",
+        "button": "Create Resume",
+        "badge": "New!"
+      },
+      "manageResumes": {
+        "title": "Manage Resumes",
+        "description": "View, edit and download your existing resumes",
+        "button": "View Resumes"
+      },
+      "updateExperience": {
+        "title": "Update Experience",
+        "description": "Add or edit your work experience and projects",
+        "button": "Edit Experience"
+      },
+      "completeProfile": {
+        "title": "Complete Profile",
+        "description": "Improve your profile with additional information",
+        "button": "Edit Profile"
+      }
+    },
+    "gettingStarted": {
+      "title": "Getting Started",
+      "step1": {
+        "title": "Complete your profile",
+        "description": "Add your experience, education and skills"
+      },
+      "step2": {
+        "title": "Create your first resume",
+        "description": "Generate a professional resume automatically"
+      },
+      "step3": {
+        "title": "Explore opportunities",
+        "description": "Apply to relevant job offers"
+      }
+    },
+    "basicInfoForm": {
+      "fullName": "Full Name",
+      "dateOfBirth": "Date of Birth",
+      "city": "City",
+      "country": "Country",
+      "phone": "Phone",
+      "email": "Email",
+      "emailReadOnly": "Email cannot be changed",
+      "jobCategory": "Professional Category",
+      "selectCategory": "Select a category",
+      "expectedSalary": "Expected Salary (€)",
+      "currentSalary": "Current Salary (€)",
+      "salaryPlaceholder": "e.g. 45000",
+      "workModality": "Preferred Work Modality",
+      "remote": "Remote",
+      "onSite": "On-site",
+      "hybrid": "Hybrid",
+      "relocation": "Available for relocation",
+      "skills": "Skills",
+      "skillsPlaceholder": "e.g. JavaScript, Python, React, Node.js, SQL (comma separated)",
+      "skillsHint": "Separate skills with commas",
+      "currentRoles": "Current Roles",
+      "expectedRoles": "Desired Roles",
+      "selectCurrentRole": "Select your current role",
+      "selectExpectedRole": "Select roles you're interested in",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "successMessage": "Profile updated successfully",
+      "errorMessage": "Error updating profile"
+    },
+    "jobCategories": {
+      "TECHNOLOGY": "Technology",
+      "OPERATIONS": "Operations",
+      "SALES": "Sales",
+      "MARKETING": "Marketing",
+      "ADMINISTRATION": "Administration",
+      "HR": "Human Resources",
+      "FINANCE": "Finance",
+      "CUSTOMER_SERVICE": "Customer Service",
+      "OTHER": "Other"
+    }
+  },
+  "applicationWizard": {
+    "title": "Complete Your Application",
+    "stepOf": "Step {{current}} of {{total}}",
+    "skipToEnd": "Skip to end",
+    "previous": "Previous",
+    "next": "Next",
+    "backToReview": "Back to review",
+    "loading": "Loading...",
+    "verifyEmailFirst": "Please verify your email first",
+    "steps": {
+      "general": {
+        "title": "General Info",
+        "description": "Basic personal information"
+      },
+      "experience": {
+        "title": "Experience",
+        "description": "Your work history"
+      },
+      "education": {
+        "title": "Education",
+        "description": "Your academic background"
+      },
+      "projects": {
+        "title": "Projects",
+        "description": "Featured projects"
+      },
+      "skills": {
+        "title": "Skills",
+        "description": "Your competencies"
+      },
+      "questions": {
+        "title": "Questions",
+        "description": "Position questions"
+      },
+      "submit": {
+        "title": "Submit",
+        "description": "Review and submit"
+      }
+    },
+    "questionsStep": {
+      "title": "Position Questions",
+      "description": "Answer the specific questions for this position",
+      "noQuestions": "No questions configured for this position."
+    },
+    "submitStep": {
+      "title": "Review and Submit",
+      "description": "Review your information before submitting your application",
+      "summaryTitle": "Application Summary",
+      "summaryItems": {
+        "personalData": "Personal data completed",
+        "experience": "Work experience added",
+        "education": "Academic background included",
+        "projects": "Featured projects (optional)"
+      },
+      "note": "Note:",
+      "noteText": "All steps are optional. You can submit your application now and complete your profile later.",
+      "submitButton": "Submit Application",
+      "submitting": "Submitting application..."
+    },
+    "messages": {
+      "submitSuccess": "Application submitted successfully!",
+      "submitError": "Error submitting application"
+    }
   }
 }

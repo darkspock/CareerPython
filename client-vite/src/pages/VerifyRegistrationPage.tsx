@@ -14,6 +14,7 @@ interface VerificationResult {
   candidate_id: string | null;
   is_new_user: boolean;
   has_job_application: boolean;
+  job_position_id: string | null;
   access_token: string | null;
   redirect_url: string;
 }
@@ -48,6 +49,11 @@ export default function VerifyRegistrationPage() {
           // Store candidate_id for later use
           if (data.candidate_id) {
             localStorage.setItem("candidate_id", data.candidate_id);
+          }
+
+          // Store job_position_id for wizard to check questions
+          if (data.job_position_id) {
+            localStorage.setItem("job_position_id", data.job_position_id);
           }
 
           // Auto-redirect after 3 seconds

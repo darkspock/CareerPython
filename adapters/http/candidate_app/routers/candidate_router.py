@@ -64,7 +64,7 @@ def get_my_candidate_profile(
         current_user: UserResponse = Depends(get_current_user),
 ) -> CandidateResponse:
     """Get authenticated user's candidate profile"""
-    return controller.get_my_profile(current_user.id)
+    return controller.get_my_profile(current_user.id, current_user.email)
 
 
 @candidate_router.get("/", response_model=CandidateListResponse)
@@ -87,7 +87,7 @@ def update_my_candidate_profile(
         current_user: UserResponse = Depends(get_current_user),
 ) -> CandidateResponse:
     """Update authenticated user's candidate profile"""
-    return controller.update_my_profile(current_user.id, candidate)
+    return controller.update_my_profile(current_user.id, candidate, current_user.email)
 
 
 # ====================================
@@ -112,7 +112,7 @@ def create_my_experience(
         current_user: UserResponse = Depends(get_current_user),
 ) -> CandidateExperienceResponse:
     """Create new experience for authenticated user"""
-    return controller.create_my_experience(current_user.id, experience)
+    return controller.create_my_experience(current_user.id, experience, current_user.email)
 
 
 @candidate_router.get("/experience/{experience_id}", response_model=CandidateExperienceResponse)
@@ -171,7 +171,7 @@ def create_my_education(
         current_user: UserResponse = Depends(get_current_user),
 ) -> CandidateEducationResponse:
     """Create new education for authenticated user"""
-    return controller.create_my_education(current_user.id, education)
+    return controller.create_my_education(current_user.id, education, current_user.email)
 
 
 @candidate_router.get("/education/{education_id}", response_model=CandidateEducationResponse)
@@ -230,7 +230,7 @@ def create_my_project(
         current_user: UserResponse = Depends(get_current_user),
 ) -> CandidateProjectResponse:
     """Create new project for authenticated user"""
-    return controller.create_my_project(current_user.id, project)
+    return controller.create_my_project(current_user.id, project, current_user.email)
 
 
 @candidate_router.get("/projects/{project_id}", response_model=CandidateProjectResponse)

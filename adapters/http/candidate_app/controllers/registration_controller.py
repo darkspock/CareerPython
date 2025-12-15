@@ -125,6 +125,7 @@ class RegistrationController:
                 "candidate_id": command.candidate_id,
                 "is_new_user": command.is_new_user,
                 "has_job_application": command.has_job_application,
+                "job_position_id": command.job_position_id,
                 "access_token": access_token,
                 "redirect_url": redirect_url
             }

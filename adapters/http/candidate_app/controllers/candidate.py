@@ -378,9 +378,10 @@ class CandidateController:
         return self.get_projects_by_candidate_id(candidate.id)
 
     def create_my_experience(self, user_id: str,
-                             experience: CandidateExperienceCreateRequest) -> CandidateExperienceResponse:
+                             experience: CandidateExperienceCreateRequest,
+                             email: Optional[str] = None) -> CandidateExperienceResponse:
         """Create experience for authenticated user"""
-        candidate = self.get_my_profile(user_id)
+        candidate = self.get_my_profile(user_id, email)
         return self.create_experience(candidate.id, experience)
 
     def get_my_experience_by_id(self, user_id: str, experience_id: str) -> CandidateExperienceResponse:
@@ -415,9 +416,10 @@ class CandidateController:
         self.delete_experience(experience_id)
 
     def create_my_education(self, user_id: str,
-                            education: CandidateEducationCreateRequest) -> CandidateEducationResponse:
+                            education: CandidateEducationCreateRequest,
+                            email: Optional[str] = None) -> CandidateEducationResponse:
         """Create education for authenticated user"""
-        candidate = self.get_my_profile(user_id)
+        candidate = self.get_my_profile(user_id, email)
         return self.create_education(candidate.id, education)
 
     def get_my_education_by_id(self, user_id: str, education_id: str) -> CandidateEducationResponse:
@@ -451,9 +453,10 @@ class CandidateController:
 
         self.delete_education(education_id)
 
-    def create_my_project(self, user_id: str, project: CandidateProjectCreateRequest) -> CandidateProjectResponse:
+    def create_my_project(self, user_id: str, project: CandidateProjectCreateRequest,
+                          email: Optional[str] = None) -> CandidateProjectResponse:
         """Create project for authenticated user"""
-        candidate = self.get_my_profile(user_id)
+        candidate = self.get_my_profile(user_id, email)
         return self.create_project(candidate.id, project)
 
     def get_my_project_by_id(self, user_id: str, project_id: str) -> CandidateProjectResponse:
@@ -487,10 +490,11 @@ class CandidateController:
 
         self.delete_project(project_id)
 
-    def update_my_profile(self, user_id: str, candidate_update: CandidateUpdate) -> CandidateResponse:
+    def update_my_profile(self, user_id: str, candidate_update: CandidateUpdate,
+                          email: Optional[str] = None) -> CandidateResponse:
         """Update profile for authenticated user"""
 
-        candidate_profile = self.get_my_profile(user_id)
+        candidate_profile = self.get_my_profile(user_id, email)
 
         self.update_candidate(candidate_profile.id, candidate_update)
 

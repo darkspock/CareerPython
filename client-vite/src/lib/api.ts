@@ -209,6 +209,7 @@ export const api = {
       candidate_id: string | null;
       is_new_user: boolean;
       has_job_application: boolean;
+      job_position_id: string | null;
       access_token: string | null;
       redirect_url: string;
     }>(`/candidate/registration/verify/${token}`),

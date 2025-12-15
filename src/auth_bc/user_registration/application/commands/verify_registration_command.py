@@ -36,6 +36,7 @@ class VerifyRegistrationCommand(Command):
     candidate_id: Optional[str] = None
     is_new_user: bool = False
     has_job_application: bool = False
+    job_position_id: Optional[str] = None
 
 
 class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]):
@@ -88,6 +89,7 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
                         command.candidate_id = str(candidate)
                     command.is_new_user = False
                 command.has_job_application = registration.job_position_id is not None
+                command.job_position_id = registration.job_position_id
                 return  # Exit successfully
 
             # 3. Check if expired
@@ -134,6 +136,7 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
             command.user_id = str(user_id)
             command.candidate_id = str(candidate_id)
             command.is_new_user = is_new_user
+            command.job_position_id = registration.job_position_id
             command.has_job_application = has_job_application
 
             self.logger.info(f"Registration verified for {registration.email}")

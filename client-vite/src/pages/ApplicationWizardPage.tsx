@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import {
   User,
@@ -22,52 +23,29 @@ import ProfileBasicInfoForm from "../components/candidate-profile/forms/ProfileB
 import ProfileExperienceForm from "../components/candidate-profile/forms/ProfileExperienceForm";
 import ProfileEducationForm from "../components/candidate-profile/forms/ProfileEducationForm";
 import ProfileProjectsForm from "../components/candidate-profile/forms/ProfileProjectsForm";
+import ProfileSkillsForm from "../components/candidate-profile/forms/ProfileSkillsForm";
 
-// Wizard steps configuration
-const WIZARD_STEPS = [
-  {
-    id: "general",
-    title: "Datos Generales",
-    description: "Información personal básica",
-    icon: User,
-  },
-  {
-    id: "experience",
-    title: "Experiencia",
-    description: "Tu historial laboral",
-    icon: Briefcase,
-  },
-  {
-    id: "education",
-    title: "Formación",
-    description: "Tu formación académica",
-    icon: GraduationCap,
-  },
-  {
-    id: "projects",
-    title: "Proyectos",
-    description: "Proyectos destacados",
-    icon: FolderKanban,
-  },
-  {
-    id: "skills",
-    title: "Habilidades",
-    description: "Tus competencias",
-    icon: Sparkles,
-  },
-  {
-    id: "questions",
-    title: "Preguntas",
-    description: "Preguntas de la oferta",
-    icon: FileQuestion,
-  },
-  {
-    id: "submit",
-    title: "Enviar",
-    description: "Revisar y enviar",
-    icon: Send,
-  },
-];
+// Step IDs for the wizard
+const STEP_IDS = ["general", "experience", "education", "projects", "skills", "questions", "submit"] as const;
+type StepId = typeof STEP_IDS[number];
+
+// Icons for each step
+const STEP_ICONS: Record<StepId, React.ComponentType<{ className?: string }>> = {
+  general: User,
+  experience: Briefcase,
+  education: GraduationCap,
+  projects: FolderKanban,
+  skills: Sparkles,
+  questions: FileQuestion,
+  submit: Send,
+};
+
+interface WizardStep {
+  id: StepId;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
 
 // Step indicator component
 function StepIndicator({
@@ -75,7 +53,7 @@ function StepIndicator({
   currentStep,
   onStepClick,
 }: {
-  steps: typeof WIZARD_STEPS;
+  steps: WizardStep[];
   currentStep: number;
   onStepClick: (index: number) => void;
 }) {
@@ -138,45 +116,23 @@ function StepIndicator({
   );
 }
 
-// Skills step component (placeholder for now)
-function SkillsStep() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5" />
-          Habilidades
-        </CardTitle>
-        <CardDescription>
-          Añade tus habilidades técnicas y soft skills
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-500 text-center py-8">
-          Las habilidades se pueden editar desde tu perfil completo.
-          Este paso es opcional.
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
 
 // Application questions step component (placeholder)
-function QuestionsStep() {
+function QuestionsStep({ t }: { t: (key: string) => string }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileQuestion className="w-5 h-5" />
-          Preguntas de la Oferta
+          {t("applicationWizard.questionsStep.title")}
         </CardTitle>
         <CardDescription>
-          Responde las preguntas específicas de esta oferta
+          {t("applicationWizard.questionsStep.description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-gray-500 text-center py-8">
-          No hay preguntas configuradas para esta oferta.
+          {t("applicationWizard.questionsStep.noQuestions")}
         </p>
       </CardContent>
     </Card>
@@ -184,33 +140,32 @@ function QuestionsStep() {
 }
 
 // Submit step component
-function SubmitStep({ onSubmit, isSubmitting }: { onSubmit: () => void; isSubmitting: boolean }) {
+function SubmitStep({ onSubmit, isSubmitting, t }: { onSubmit: () => void; isSubmitting: boolean; t: (key: string) => string }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Send className="w-5 h-5" />
-          Revisar y Enviar
+          {t("applicationWizard.submitStep.title")}
         </CardTitle>
         <CardDescription>
-          Revisa tu información antes de enviar la candidatura
+          {t("applicationWizard.submitStep.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-medium text-blue-900 mb-2">Resumen de tu candidatura</h3>
+          <h3 className="font-medium text-blue-900 mb-2">{t("applicationWizard.submitStep.summaryTitle")}</h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>- Datos personales completados</li>
-            <li>- Experiencia laboral añadida</li>
-            <li>- Formación académica incluida</li>
-            <li>- Proyectos destacados (opcional)</li>
+            <li>- {t("applicationWizard.submitStep.summaryItems.personalData")}</li>
+            <li>- {t("applicationWizard.submitStep.summaryItems.experience")}</li>
+            <li>- {t("applicationWizard.submitStep.summaryItems.education")}</li>
+            <li>- {t("applicationWizard.submitStep.summaryItems.projects")}</li>
           </ul>
         </div>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-sm text-yellow-800">
-            <strong>Nota:</strong> Todos los pasos son opcionales. Puedes enviar tu
-            candidatura ahora y completar tu perfil más tarde.
+            <strong>{t("applicationWizard.submitStep.note")}</strong> {t("applicationWizard.submitStep.noteText")}
           </p>
         </div>
 
@@ -220,7 +175,7 @@ function SubmitStep({ onSubmit, isSubmitting }: { onSubmit: () => void; isSubmit
           className="w-full"
           size="lg"
         >
-          {isSubmitting ? "Enviando candidatura..." : "Enviar Candidatura"}
+          {isSubmitting ? t("applicationWizard.submitStep.submitting") : t("applicationWizard.submitStep.submitButton")}
         </Button>
       </CardContent>
     </Card>
@@ -229,22 +184,55 @@ function SubmitStep({ onSubmit, isSubmitting }: { onSubmit: () => void; isSubmit
 
 export default function ApplicationWizardPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasQuestions, setHasQuestions] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Job position ID can be retrieved from URL if needed using useSearchParams()
+  // Build wizard steps with translations
+  const wizardSteps: WizardStep[] = STEP_IDS
+    .filter(id => id !== "questions" || hasQuestions)
+    .map(id => ({
+      id,
+      title: t(`applicationWizard.steps.${id}.title`),
+      description: t(`applicationWizard.steps.${id}.description`),
+      icon: STEP_ICONS[id],
+    }));
 
-  // Check authentication
+  // Check authentication and load job position questions
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      toast.error("Por favor, verifica tu email primero");
+      toast.error(t("applicationWizard.verifyEmailFirst"));
       navigate("/");
+      return;
     }
-  }, [navigate]);
+
+    // Check if there are questions for this job position
+    const checkQuestions = async () => {
+      try {
+        const jobPositionId = localStorage.getItem("job_position_id");
+        if (jobPositionId) {
+          // Fetch questions for the job position
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/public/positions/${jobPositionId}/questions`);
+          if (response.ok) {
+            const questions = await response.json();
+            setHasQuestions(Array.isArray(questions) && questions.length > 0);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking questions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkQuestions();
+  }, [navigate, t]);
 
   const handleNext = () => {
-    if (currentStep < WIZARD_STEPS.length - 1) {
+    if (currentStep < wizardSteps.length - 1) {
       setCurrentStep(currentStep + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -267,11 +255,11 @@ export default function ApplicationWizardPage() {
     try {
       // The application was already created during verification
       // Here we just navigate to the thank you page
-      toast.success("¡Candidatura enviada correctamente!");
+      toast.success(t("applicationWizard.messages.submitSuccess"));
       navigate("/candidate/application/thank-you");
     } catch (error) {
       console.error("Error submitting application:", error);
-      toast.error("Error al enviar la candidatura");
+      toast.error(t("applicationWizard.messages.submitError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -279,13 +267,22 @@ export default function ApplicationWizardPage() {
 
   const handleSkipAll = () => {
     // Skip directly to submit step
-    setCurrentStep(WIZARD_STEPS.length - 1);
+    setCurrentStep(wizardSteps.length - 1);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Show loading while checking questions
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">{t("applicationWizard.loading")}</p>
+      </div>
+    );
+  }
+
   // Render current step content
   const renderStepContent = () => {
-    switch (WIZARD_STEPS[currentStep].id) {
+    switch (wizardSteps[currentStep].id) {
       case "general":
         return <ProfileBasicInfoForm />;
       case "experience":
@@ -295,11 +292,11 @@ export default function ApplicationWizardPage() {
       case "projects":
         return <ProfileProjectsForm />;
       case "skills":
-        return <SkillsStep />;
+        return <ProfileSkillsForm />;
       case "questions":
-        return <QuestionsStep />;
+        return <QuestionsStep t={t} />;
       case "submit":
-        return <SubmitStep onSubmit={handleSubmit} isSubmitting={isSubmitting} />;
+        return <SubmitStep onSubmit={handleSubmit} isSubmitting={isSubmitting} t={t} />;
       default:
         return null;
     }
@@ -313,21 +310,21 @@ export default function ApplicationWizardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-xl font-bold text-gray-900">
-                Completa tu Candidatura
+                {t("applicationWizard.title")}
               </h1>
               <p className="text-sm text-gray-500">
-                Paso {currentStep + 1} de {WIZARD_STEPS.length}:{" "}
-                {WIZARD_STEPS[currentStep].title}
+                {t("applicationWizard.stepOf", { current: currentStep + 1, total: wizardSteps.length })}:{" "}
+                {wizardSteps[currentStep].title}
               </p>
             </div>
             <Button variant="ghost" onClick={handleSkipAll}>
-              Saltar al final
+              {t("applicationWizard.skipToEnd")}
             </Button>
           </div>
 
           {/* Step indicator */}
           <StepIndicator
-            steps={WIZARD_STEPS}
+            steps={wizardSteps}
             currentStep={currentStep}
             onStepClick={handleStepClick}
           />
@@ -339,7 +336,7 @@ export default function ApplicationWizardPage() {
         {renderStepContent()}
 
         {/* Navigation buttons */}
-        {WIZARD_STEPS[currentStep].id !== "submit" && (
+        {wizardSteps[currentStep].id !== "submit" && (
           <div className="flex justify-between mt-6">
             <Button
               variant="outline"
@@ -347,22 +344,22 @@ export default function ApplicationWizardPage() {
               disabled={currentStep === 0}
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
-              Anterior
+              {t("applicationWizard.previous")}
             </Button>
 
             <Button onClick={handleNext}>
-              Siguiente
+              {t("applicationWizard.next")}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         )}
 
         {/* Back button on submit step */}
-        {WIZARD_STEPS[currentStep].id === "submit" && (
+        {wizardSteps[currentStep].id === "submit" && (
           <div className="mt-6">
             <Button variant="outline" onClick={handlePrevious}>
               <ChevronLeft className="w-4 h-4 mr-1" />
-              Volver a revisar
+              {t("applicationWizard.backToReview")}
             </Button>
           </div>
         )}

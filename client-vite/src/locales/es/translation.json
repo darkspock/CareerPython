@@ -1341,5 +1341,171 @@
         "visible_candidate": "Los candidatos pueden ver este campo"
       }
     }
+  },
+  "candidateProfile": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Resumen de tu perfil profesional",
+      "loading": "Cargando información...",
+      "loadingStats": "Cargando estadísticas..."
+    },
+    "stats": {
+      "resumesCreated": "CVs Creados",
+      "resumes": "currículos",
+      "applications": "Candidaturas",
+      "interviews": "Entrevistas",
+      "profileComplete": "Perfil Completado",
+      "comingSoon": "Próximamente"
+    },
+    "completionBanner": {
+      "title": "¡Completa tu perfil para mejores oportunidades!",
+      "description": "Tu perfil está {{percent}}% completo. Añade más información para destacar ante los reclutadores.",
+      "button": "Completar Perfil"
+    },
+    "quickActions": {
+      "title": "Acciones Rápidas",
+      "generateResume": {
+        "title": "Generar Nuevo CV",
+        "description": "Crea un currículum personalizado basado en tu perfil actualizado",
+        "button": "Crear CV",
+        "badge": "¡Nuevo!"
+      },
+      "manageResumes": {
+        "title": "Gestionar CVs",
+        "description": "Ve, edita y descarga tus currículos existentes",
+        "button": "Ver CVs"
+      },
+      "updateExperience": {
+        "title": "Actualizar Experiencia",
+        "description": "Añade o edita tu experiencia laboral y proyectos",
+        "button": "Editar Experiencia"
+      },
+      "completeProfile": {
+        "title": "Completar Perfil",
+        "description": "Mejora tu perfil con información adicional",
+        "button": "Editar Perfil"
+      }
+    },
+    "gettingStarted": {
+      "title": "Primeros Pasos",
+      "step1": {
+        "title": "Completa tu perfil",
+        "description": "Añade tu experiencia, educación y habilidades"
+      },
+      "step2": {
+        "title": "Crea tu primer CV",
+        "description": "Genera un currículum profesional automáticamente"
+      },
+      "step3": {
+        "title": "Explora oportunidades",
+        "description": "Postúlate a ofertas de trabajo relevantes"
+      }
+    },
+    "basicInfoForm": {
+      "fullName": "Nombre Completo",
+      "dateOfBirth": "Fecha de Nacimiento",
+      "city": "Ciudad",
+      "country": "País",
+      "phone": "Teléfono",
+      "email": "Email",
+      "emailReadOnly": "El email no se puede cambiar",
+      "jobCategory": "Categoría Profesional",
+      "selectCategory": "Selecciona una categoría",
+      "expectedSalary": "Salario Esperado (€)",
+      "currentSalary": "Salario Actual (€)",
+      "salaryPlaceholder": "ej. 45000",
+      "workModality": "Modalidad de Trabajo Preferida",
+      "remote": "Remoto",
+      "onSite": "Presencial",
+      "hybrid": "Híbrido",
+      "relocation": "Disponible para reubicación",
+      "skills": "Habilidades",
+      "skillsPlaceholder": "ej. JavaScript, Python, React, Node.js, SQL (separadas por comas)",
+      "skillsHint": "Separa las habilidades con comas",
+      "currentRoles": "Roles Actuales",
+      "expectedRoles": "Roles Deseados",
+      "selectCurrentRole": "Selecciona tu rol actual",
+      "selectExpectedRole": "Selecciona roles que te interesan",
+      "cancel": "Cancelar",
+      "save": "Guardar Cambios",
+      "saving": "Guardando...",
+      "successMessage": "Perfil actualizado correctamente",
+      "errorMessage": "Error al actualizar el perfil"
+    },
+    "jobCategories": {
+      "TECHNOLOGY": "Tecnología",
+      "OPERATIONS": "Operaciones",
+      "SALES": "Ventas",
+      "MARKETING": "Marketing",
+      "ADMINISTRATION": "Administración",
+      "HR": "Recursos Humanos",
+      "FINANCE": "Finanzas",
+      "CUSTOMER_SERVICE": "Atención al Cliente",
+      "OTHER": "Otros"
+    }
+  },
+  "applicationWizard": {
+    "title": "Completa tu Candidatura",
+    "stepOf": "Paso {{current}} de {{total}}",
+    "skipToEnd": "Saltar al final",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "backToReview": "Volver a revisar",
+    "loading": "Cargando...",
+    "verifyEmailFirst": "Por favor, verifica tu email primero",
+    "steps": {
+      "general": {
+        "title": "Datos Generales",
+        "description": "Información personal básica"
+      },
+      "experience": {
+        "title": "Experiencia",
+        "description": "Tu historial laboral"
+      },
+      "education": {
+        "title": "Formación",
+        "description": "Tu formación académica"
+      },
+      "projects": {
+        "title": "Proyectos",
+        "description": "Proyectos destacados"
+      },
+      "skills": {
+        "title": "Habilidades",
+        "description": "Tus competencias"
+      },
+      "questions": {
+        "title": "Preguntas",
+        "description": "Preguntas de la oferta"
+      },
+      "submit": {
+        "title": "Enviar",
+        "description": "Revisar y enviar"
+      }
+    },
+    "questionsStep": {
+      "title": "Preguntas de la Oferta",
+      "description": "Responde las preguntas específicas de esta oferta",
+      "noQuestions": "No hay preguntas configuradas para esta oferta."
+    },
+    "submitStep": {
+      "title": "Revisar y Enviar",
+      "description": "Revisa tu información antes de enviar la candidatura",
+      "summaryTitle": "Resumen de tu candidatura",
+      "summaryItems": {
+        "personalData": "Datos personales completados",
+        "experience": "Experiencia laboral añadida",
+        "education": "Formación académica incluida",
+        "projects": "Proyectos destacados (opcional)"
+      },
+      "note": "Nota:",
+      "noteText": "Todos los pasos son opcionales. Puedes enviar tu candidatura ahora y completar tu perfil más tarde.",
+      "submitButton": "Enviar Candidatura",
+      "submitting": "Enviando candidatura..."
+    },
+    "messages": {
+      "submitSuccess": "¡Candidatura enviada correctamente!",
+      "submitError": "Error al enviar la candidatura"
+    }
   }
 }
