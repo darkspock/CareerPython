@@ -310,7 +310,7 @@ export const api = {
 
   // Applications
   getMyApplications: (params?: { status?: string; limit?: number }) => {
-    let endpoint = '/candidate/applications';
+    let endpoint = '/candidate/application';
     if (params) {
       const queryParams = new URLSearchParams();
       if (params.status) queryParams.append('status', params.status);

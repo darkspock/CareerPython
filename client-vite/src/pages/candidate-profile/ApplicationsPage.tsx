@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Briefcase, Building2, Calendar, Clock, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { CandidateProfileLayout } from '../../components/candidate-profile';
 import { api } from '../../lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Card, CardContent } from '../../components/ui/card';
 
 interface Application {
   id: string;

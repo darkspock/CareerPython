@@ -41,6 +41,7 @@ import {
 } from './pages/candidate-profile';
 import ResumesPage from './pages/candidate-profile/ResumesPage';
 import CreateResumePage from './pages/candidate-profile/CreateResumePage';
+import ApplicationsPage from './pages/candidate-profile/ApplicationsPage';
 import ResumePreviewPageRoute from './pages/ResumePreviewPage';
 import ResumeEditorPage from './pages/ResumeEditorPage';
 import WysiwygTestPageRoute from './pages/WysiwygTestPage';
@@ -193,6 +194,7 @@ function App() {
                         <Route path="/candidate/profile/resumes/create" element={<CreateResumePage />} />
                         <Route path="/candidate/profile/resumes/:id/preview" element={<ResumePreviewPageRoute />} />
                         <Route path="/candidate/profile/resumes/:id/edit" element={<ResumeEditorPage />} />
+                        <Route path="/candidate/profile/applications" element={<ApplicationsPage />} />
                         {/* Test routes for WYSIWYG editor */}
                         <Route path="/test/wysiwyg" element={<WysiwygTestPageRoute />} />
                         <Route path="/test/simple-wysiwyg" element={<SimpleWysiwygTest />} />

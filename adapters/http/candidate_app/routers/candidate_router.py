@@ -281,7 +281,7 @@ def get_my_applications(
         limit: Optional[int] = None,
 ) -> List[CandidateJobApplicationSummary]:
     """Get applications for authenticated user"""
-    candidate = candidate_controller.get_my_profile(current_user.id)
+    candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
 
     filters = JobApplicationListFilters(
         status=ApplicationStatusEnum(status) if status else None,
@@ -301,7 +301,7 @@ def create_application(
         cover_letter: Optional[str] = None,
 ) -> dict:
     """Create new application for authenticated user"""
-    candidate = candidate_controller.get_my_profile(current_user.id)
+    candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
 
     application_id = controller.create_application(
         candidate_id=candidate.id,

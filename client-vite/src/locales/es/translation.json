@@ -1365,6 +1365,7 @@
       "resumes": "CVs",
       "resumesDesc": "Tus currículums",
       "applications": "Candidaturas",
+      "applicationsDesc": "Tus solicitudes de empleo",
       "interviews": "Entrevistas",
       "settings": "Ajustes",
       "comingSoon": "Próximamente"
