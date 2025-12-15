@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FileText, Send, Calendar, User, Plus, Edit } from 'lucide-react';
 import { CandidateProfileLayout } from '../components/candidate-profile';
 import StatCard from '../components/candidate-profile/StatCard';
@@ -16,6 +17,7 @@ interface DashboardStats {
 
 const CandidateProfilePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats>({
     resumesCount: 0,
     applicationsCount: 0,
@@ -100,13 +102,13 @@ const CandidateProfilePage: React.FC = () => {
   if (loading) {
     return (
       <CandidateProfileLayout
-        title="Dashboard"
-        subtitle="Cargando información..."
+        title={t("candidateProfile.dashboard.title")}
+        subtitle={t("candidateProfile.dashboard.loading")}
         currentSection="dashboard"
       >
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando estadísticas...</p>
+          <p className="text-gray-600">{t("candidateProfile.dashboard.loadingStats")}</p>
         </div>
       </CandidateProfileLayout>
     );
@@ -114,36 +116,36 @@ const CandidateProfilePage: React.FC = () => {
 
   return (
     <CandidateProfileLayout
-      title="Dashboard"
-      subtitle="Resumen de tu perfil profesional"
+      title={t("candidateProfile.dashboard.title")}
+      subtitle={t("candidateProfile.dashboard.subtitle")}
       currentSection="dashboard"
     >
       <div className="p-6 space-y-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
-            title="CVs Creados"
+            title={t("candidateProfile.stats.resumesCreated")}
             value={stats.resumesCount}
             icon={FileText}
             color="blue"
-            subtitle="currículos"
+            subtitle={t("candidateProfile.stats.resumes")}
           />
           <StatCard
-            title="Candidaturas"
+            title={t("candidateProfile.stats.applications")}
             value={stats.applicationsCount}
             icon={Send}
             color="green"
-            subtitle="Próximamente"
+            subtitle={t("candidateProfile.stats.comingSoon")}
           />
           <StatCard
-            title="Entrevistas"
+            title={t("candidateProfile.stats.interviews")}
             value={stats.interviewsCount}
             icon={Calendar}
             color="orange"
-            subtitle="Próximamente"
+            subtitle={t("candidateProfile.stats.comingSoon")}
           />
           <StatCard
-            title="Perfil Completado"
+            title={t("candidateProfile.stats.profileComplete")}
             value={`${stats.profileCompleteness}%`}
             icon={User}
             color="purple"
@@ -156,10 +158,10 @@ const CandidateProfilePage: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                  ¡Completa tu perfil para mejores oportunidades!
+                  {t("candidateProfile.completionBanner.title")}
                 </h3>
                 <p className="text-blue-700 mb-4">
-                  Tu perfil está {stats.profileCompleteness}% completo. Añade más información para destacar ante los reclutadores.
+                  {t("candidateProfile.completionBanner.description", { percent: stats.profileCompleteness })}
                 </p>
                 <div className="w-full bg-blue-200 rounded-full h-2 mb-4">
                   <div
@@ -173,7 +175,7 @@ const CandidateProfilePage: React.FC = () => {
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
               >
                 <Edit className="w-4 h-4" />
-                Completar Perfil
+                {t("candidateProfile.completionBanner.button")}
               </button>
             </div>
           </div>
@@ -181,39 +183,39 @@ const CandidateProfilePage: React.FC = () => {
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Acciones Rápidas</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t("candidateProfile.quickActions.title")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <QuickActionCard
-              title="Generar Nuevo CV"
-              description="Crea un currículum personalizado basado en tu perfil actualizado"
+              title={t("candidateProfile.quickActions.generateResume.title")}
+              description={t("candidateProfile.quickActions.generateResume.description")}
               icon={Plus}
               action={handleCreateResume}
-              buttonText="Crear CV"
+              buttonText={t("candidateProfile.quickActions.generateResume.button")}
               color="blue"
-              badge={stats.resumesCount === 0 ? "¡Nuevo!" : undefined}
+              badge={stats.resumesCount === 0 ? t("candidateProfile.quickActions.generateResume.badge") : undefined}
             />
             <QuickActionCard
-              title="Gestionar CVs"
-              description="Ve, edita y descarga tus currículos existentes"
+              title={t("candidateProfile.quickActions.manageResumes.title")}
+              description={t("candidateProfile.quickActions.manageResumes.description")}
               icon={FileText}
               action={handleViewResumes}
-              buttonText="Ver CVs"
+              buttonText={t("candidateProfile.quickActions.manageResumes.button")}
               color="green"
             />
             <QuickActionCard
-              title="Actualizar Experiencia"
-              description="Añade o edita tu experiencia laboral y proyectos"
+              title={t("candidateProfile.quickActions.updateExperience.title")}
+              description={t("candidateProfile.quickActions.updateExperience.description")}
               icon={User}
               action={handleViewExperience}
-              buttonText="Editar Experiencia"
+              buttonText={t("candidateProfile.quickActions.updateExperience.button")}
               color="purple"
             />
             <QuickActionCard
-              title="Completar Perfil"
-              description="Mejora tu perfil con información adicional"
+              title={t("candidateProfile.quickActions.completeProfile.title")}
+              description={t("candidateProfile.quickActions.completeProfile.description")}
               icon={Edit}
               action={handleEditProfile}
-              buttonText="Editar Perfil"
+              buttonText={t("candidateProfile.quickActions.completeProfile.button")}
               color="orange"
             />
           </div>
@@ -227,15 +229,15 @@ const CandidateProfilePage: React.FC = () => {
         {/* Getting Started Guide (for new users) */}
         {stats.resumesCount === 0 && stats.profileCompleteness < 50 && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">🚀 Primeros Pasos</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">🚀 {t("candidateProfile.gettingStarted.title")}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                   1
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Completa tu perfil</h3>
-                  <p className="text-sm text-gray-600">Añade tu experiencia, educación y habilidades</p>
+                  <h3 className="font-medium text-gray-900">{t("candidateProfile.gettingStarted.step1.title")}</h3>
+                  <p className="text-sm text-gray-600">{t("candidateProfile.gettingStarted.step1.description")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -243,8 +245,8 @@ const CandidateProfilePage: React.FC = () => {
                   2
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Crea tu primer CV</h3>
-                  <p className="text-sm text-gray-600">Genera un currículum profesional automáticamente</p>
+                  <h3 className="font-medium text-gray-900">{t("candidateProfile.gettingStarted.step2.title")}</h3>
+                  <p className="text-sm text-gray-600">{t("candidateProfile.gettingStarted.step2.description")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -252,8 +254,8 @@ const CandidateProfilePage: React.FC = () => {
                   3
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Explora oportunidades</h3>
-                  <p className="text-sm text-gray-600">Postúlate a ofertas de trabajo relevantes</p>
+                  <h3 className="font-medium text-gray-900">{t("candidateProfile.gettingStarted.step3.title")}</h3>
+                  <p className="text-sm text-gray-600">{t("candidateProfile.gettingStarted.step3.description")}</p>
                 </div>
               </div>
             </div>

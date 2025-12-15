@@ -65,15 +65,14 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ currentSection }) => {
       path: '/candidate/profile/resumes',
       descriptionKey: 'candidateProfile.nav.resumesDesc'
     },
-    // Phase B items (grayed out for MVP)
     {
       id: 'applications',
       labelKey: 'candidateProfile.nav.applications',
       icon: Send,
       path: '/candidate/profile/applications',
-      descriptionKey: 'candidateProfile.nav.comingSoon',
-      disabled: true
+      descriptionKey: 'candidateProfile.nav.applicationsDesc'
     },
+    // Phase B items (grayed out for MVP)
     {
       id: 'interviews',
       labelKey: 'candidateProfile.nav.interviews',

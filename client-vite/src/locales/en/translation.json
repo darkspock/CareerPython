@@ -1078,6 +1078,32 @@
     }
   },
   "candidateProfile": {
+    "header": {
+      "title": "CareerPython",
+      "subtitle": "Candidate Portal"
+    },
+    "footer": {
+      "brandName": "CareerPython",
+      "version": "v1.0.0"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "dashboardDesc": "Your profile summary",
+      "profile": "Profile",
+      "profileDesc": "Personal information",
+      "experience": "Experience",
+      "experienceDesc": "Work history",
+      "education": "Education",
+      "educationDesc": "Studies and certifications",
+      "projects": "Projects",
+      "projectsDesc": "Featured work",
+      "resumes": "Resumes",
+      "resumesDesc": "Your CVs",
+      "applications": "Applications",
+      "interviews": "Interviews",
+      "settings": "Settings",
+      "comingSoon": "Coming soon"
+    },
     "dashboard": {
       "title": "Dashboard",
       "subtitle": "Your professional profile summary",
@@ -1177,6 +1203,48 @@
       "FINANCE": "Finance",
       "CUSTOMER_SERVICE": "Customer Service",
       "OTHER": "Other"
+    },
+    "skillsForm": {
+      "title": "Skills",
+      "description": "Add your technical skills and professional competencies",
+      "loading": "Loading skills...",
+      "placeholder": "Type a skill and press Enter",
+      "add": "Add",
+      "noSkills": "You haven't added any skills yet",
+      "suggestions": "Popular suggestions:",
+      "save": "Save skills",
+      "saving": "Saving...",
+      "successMessage": "Skills saved successfully",
+      "errorLoading": "Error loading skills",
+      "errorSaving": "Error saving skills"
+    },
+    "applications": {
+      "title": "My Applications",
+      "subtitle": "Manage and track your job applications",
+      "loading": "Loading applications...",
+      "errorLoading": "Error loading applications",
+      "filterByStatus": "Filter by status",
+      "allStatuses": "All statuses",
+      "noApplications": {
+        "title": "No applications yet",
+        "description": "When you apply to job positions, they will appear here"
+      },
+      "stats": {
+        "total": "Total applications",
+        "inReview": "In review",
+        "accepted": "Accepted",
+        "interviewed": "Interviewed"
+      },
+      "statuses": {
+        "applied": "Applied",
+        "reviewing": "In Review",
+        "interviewed": "Interviewed",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "withdrawn": "Withdrawn"
+      },
+      "appliedOn": "Applied on",
+      "updatedOn": "Updated on"
     }
   },
   "applicationWizard": {

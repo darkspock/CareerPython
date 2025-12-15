@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../../lib/api';
 import LanguageSelector, { type Language, convertLanguagesFromBackend, convertLanguagesToBackend } from '../../common/LanguageSelector';
 import RoleSelector, { type Role, convertRolesFromBackend, convertRolesToBackend } from '../../common/RoleSelector';
 
-const JobCategory = {
-  TECHNOLOGY: "Technology",
-  OPERATIONS: "Operations",
-  SALES: "Sales",
-  MARKETING: "Marketing",
-  ADMINISTRATION: "Administration",
-  HR: "Human Resources",
-  FINANCE: "Finance",
-  CUSTOMER_SERVICE: "Customer Service",
-  OTHER: "Other",
-};
+// Job category keys for backend mapping
+const JOB_CATEGORY_KEYS = [
+  "TECHNOLOGY",
+  "OPERATIONS",
+  "SALES",
+  "MARKETING",
+  "ADMINISTRATION",
+  "HR",
+  "FINANCE",
+  "CUSTOMER_SERVICE",
+  "OTHER",
+] as const;
 
-// Mapeo para convertir las keys a los valores que espera el backend
+// Mapping for backend values
 const JobCategoryMapping: { [key: string]: string } = {
   TECHNOLOGY: "Technology",
   OPERATIONS: "Operations",
@@ -28,17 +30,10 @@ const JobCategoryMapping: { [key: string]: string } = {
   OTHER: "Other",
 };
 
-
 const WorkModalityEnum = {
   REMOTE: 'remote',
   ON_SITE: 'on_site',
   HYBRID: 'hybrid',
-} as const;
-
-const WorkModalityLabels = {
-  [WorkModalityEnum.REMOTE]: 'Remoto',
-  [WorkModalityEnum.ON_SITE]: 'Presencial',
-  [WorkModalityEnum.HYBRID]: 'Híbrido',
 } as const;
 
 
@@ -93,6 +88,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
   showActions = true,
   className = ""
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     dateOfBirth: "1990-01-01",
@@ -184,7 +180,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
       console.log('🚀 DEBUGGING - Converted languages:', profileData.languages);
       const response = await api.updateMyProfile(profileData);
       console.log('✅ DEBUGGING - API Response:', response);
-      setSuccess("Perfil actualizado correctamente");
+      setSuccess(t("candidateProfile.basicInfoForm.successMessage"));
 
       if (onSave) {
         await onSave(profileData);
@@ -192,7 +188,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
     } catch (error) {
       console.error('Error updating profile:', error);
 
-      let errorMessage = "Error al actualizar el perfil";
+      let errorMessage = t("candidateProfile.basicInfoForm.errorMessage");
       if (error instanceof Error) {
         if (error.message.includes("API Error:")) {
           errorMessage = error.message.replace(/^API Error: \d+ [^:]*: ?/, "");
@@ -254,7 +250,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Nombre Completo
+              {t("candidateProfile.basicInfoForm.fullName")}
             </label>
             <input
               name="name"
@@ -269,7 +265,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
 
           <div>
             <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
-              Fecha de Nacimiento
+              {t("candidateProfile.basicInfoForm.dateOfBirth")}
             </label>
             <input
               name="dateOfBirth"
@@ -284,7 +280,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
 
           <div>
             <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-              Ciudad
+              {t("candidateProfile.basicInfoForm.city")}
             </label>
             <input
               name="city"
@@ -299,7 +295,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
 
           <div>
             <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
-              País
+              {t("candidateProfile.basicInfoForm.country")}
             </label>
             <input
               name="country"
@@ -314,7 +310,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
 
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-              Teléfono
+              {t("candidateProfile.basicInfoForm.phone")}
             </label>
             <input
               name="phone"
@@ -329,7 +325,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
 
           <div>
             <label htmlFor="jobCategory" className="block text-sm font-medium text-gray-700 mb-2">
-              Categoría Profesional
+              {t("candidateProfile.basicInfoForm.jobCategory")}
             </label>
             <select
               name="jobCategory"
@@ -339,9 +335,9 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
               onChange={handleChange}
               className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">Selecciona una categoría</option>
-              {Object.entries(JobCategory).map(([key, value]) => (
-                <option key={key} value={key}>{value}</option>
+              <option value="">{t("candidateProfile.basicInfoForm.selectCategory")}</option>
+              {JOB_CATEGORY_KEYS.map((key) => (
+                <option key={key} value={key}>{t(`candidateProfile.jobCategories.${key}`)}</option>
               ))}
             </select>
           </div>
@@ -350,7 +346,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
         {/* Email ocupa toda la fila */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            Email
+            {t("candidateProfile.basicInfoForm.email")}
           </label>
           <input
             name="email"
@@ -361,13 +357,13 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
             readOnly
             className="w-full px-3 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
           />
-          <p className="text-xs text-gray-500 mt-1">El email no se puede cambiar</p>
+          <p className="text-xs text-gray-500 mt-1">{t("candidateProfile.basicInfoForm.emailReadOnly")}</p>
         </div>
 
         {/* Campos adicionales - Grid de dos columnas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="expectedAnnualSalary" className="block text-sm font-medium text-gray-700 mb-2">Salario Esperado (€)</label>
+            <label htmlFor="expectedAnnualSalary" className="block text-sm font-medium text-gray-700 mb-2">{t("candidateProfile.basicInfoForm.expectedSalary")}</label>
             <input
               name="expectedAnnualSalary"
               id="expectedAnnualSalary"
@@ -375,12 +371,12 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
               value={formData.expectedAnnualSalary}
               onChange={handleChange}
               className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="ej. 45000"
+              placeholder={t("candidateProfile.basicInfoForm.salaryPlaceholder")}
             />
           </div>
 
           <div>
-            <label htmlFor="currentAnnualSalary" className="block text-sm font-medium text-gray-700 mb-2">Salario Actual (€)</label>
+            <label htmlFor="currentAnnualSalary" className="block text-sm font-medium text-gray-700 mb-2">{t("candidateProfile.basicInfoForm.currentSalary")}</label>
             <input
               name="currentAnnualSalary"
               id="currentAnnualSalary"
@@ -388,16 +384,16 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
               value={formData.currentAnnualSalary}
               onChange={handleChange}
               className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="ej. 40000"
+              placeholder={t("candidateProfile.basicInfoForm.salaryPlaceholder")}
             />
           </div>
         </div>
 
         {/* Modalidad de trabajo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Modalidad de Trabajo Preferida</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t("candidateProfile.basicInfoForm.workModality")}</label>
           <div className="space-y-2">
-            {Object.entries(WorkModalityLabels).map(([key, label]) => (
+            {Object.values(WorkModalityEnum).map((key) => (
               <label key={key} className="flex items-center">
                 <input
                   type="checkbox"
@@ -411,7 +407,11 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
                   }}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="ml-2 text-sm text-gray-900">{label}</span>
+                <span className="ml-2 text-sm text-gray-900">
+                  {key === 'remote' ? t("candidateProfile.basicInfoForm.remote") :
+                   key === 'on_site' ? t("candidateProfile.basicInfoForm.onSite") :
+                   t("candidateProfile.basicInfoForm.hybrid")}
+                </span>
               </label>
             ))}
           </div>
@@ -426,7 +426,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
               onChange={(e) => setFormData(prev => ({ ...prev, relocation: e.target.checked }))}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <span className="ml-2 text-sm text-gray-900">Disponible para reubicación</span>
+            <span className="ml-2 text-sm text-gray-900">{t("candidateProfile.basicInfoForm.relocation")}</span>
           </label>
         </div>
 
@@ -438,7 +438,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
 
         {/* Habilidades */}
         <div>
-          <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-2">Habilidades</label>
+          <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-2">{t("candidateProfile.basicInfoForm.skills")}</label>
           <textarea
             name="skills"
             id="skills"
@@ -449,9 +449,9 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
               setFormData(prev => ({ ...prev, skills: skillsArray }));
             }}
             className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="ej. JavaScript, Python, React, Node.js, SQL (separadas por comas)"
+            placeholder={t("candidateProfile.basicInfoForm.skillsPlaceholder")}
           />
-          <p className="text-xs text-gray-500 mt-1">Separa las habilidades con comas</p>
+          <p className="text-xs text-gray-500 mt-1">{t("candidateProfile.basicInfoForm.skillsHint")}</p>
         </div>
 
         {/* Roles - Grid de dos columnas */}
@@ -460,16 +460,16 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
           <RoleSelector
             roles={formData.currentRoles}
             onChange={(roles) => setFormData(prev => ({ ...prev, currentRoles: roles }))}
-            title="Roles Actuales"
-            placeholder="Selecciona tu rol actual"
+            title={t("candidateProfile.basicInfoForm.currentRoles")}
+            placeholder={t("candidateProfile.basicInfoForm.selectCurrentRole")}
           />
 
           {/* Roles Deseados */}
           <RoleSelector
             roles={formData.expectedRoles}
             onChange={(roles) => setFormData(prev => ({ ...prev, expectedRoles: roles }))}
-            title="Roles Deseados"
-            placeholder="Selecciona roles que te interesan"
+            title={t("candidateProfile.basicInfoForm.expectedRoles")}
+            placeholder={t("candidateProfile.basicInfoForm.selectExpectedRole")}
           />
         </div>
 
@@ -482,7 +482,7 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
                 onClick={onCancel}
                 className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
               >
-                Cancelar
+                {t("candidateProfile.basicInfoForm.cancel")}
               </button>
             )}
             <button
@@ -493,10 +493,10 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
               {isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Guardando...
+                  {t("candidateProfile.basicInfoForm.saving")}
                 </>
               ) : (
-                'Guardar Cambios'
+                t("candidateProfile.basicInfoForm.save")
               )}
             </button>
           </div>

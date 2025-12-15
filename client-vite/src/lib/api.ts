@@ -308,6 +308,30 @@ export const api = {
   getMyProfileSummary: () =>
     ApiClient.authenticatedRequest('/candidate/profile/summary'),
 
+  // Applications
+  getMyApplications: (params?: { status?: string; limit?: number }) => {
+    let endpoint = '/candidate/applications';
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.status) queryParams.append('status', params.status);
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      const queryString = queryParams.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+    return ApiClient.authenticatedRequest<{
+      id: string;
+      job_title: string;
+      company_name: string;
+      status: string;
+      created_at: string;
+      updated_at: string | null;
+      applied_at: string | null;
+      has_customized_content: boolean;
+    }[]>(endpoint);
+  },
+
   updateMyProfile: (candidateData: any) =>
     ApiClient.authenticatedRequest('/candidate/profile', {
       method: 'PUT',

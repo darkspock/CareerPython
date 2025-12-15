@@ -16,6 +16,7 @@ from src.candidate_bc.candidate.infrastructure.repositories.file_attachment_repo
 from src.company_bc.candidate_application.infrastructure.repositories.candidate_application_repository import SQLAlchemyCandidateApplicationRepository
 from src.company_bc.candidate_application.infrastructure.repositories.application_question_answer_repository import ApplicationQuestionAnswerRepository
 from src.company_bc.candidate_application_stage.infrastructure.repositories.candidate_application_stage_repository import CandidateApplicationStageRepository
+from src.company_bc.job_position.infrastructure.repositories.job_position_repository import JobPositionRepository
 
 # Candidate Application Layer - Commands
 from src.candidate_bc.candidate.application.commands.create_candidate import CreateCandidateCommandHandler
@@ -123,6 +124,11 @@ class CandidateContainer(containers.DeclarativeContainer):
     application_question_answer_repository = providers.Factory(
         ApplicationQuestionAnswerRepository,
         session=shared.database.provided.session
+    )
+
+    job_position_repository = providers.Factory(
+        JobPositionRepository,
+        database=shared.database
     )
 
     resume_repository = providers.Factory(
@@ -391,7 +397,8 @@ class CandidateContainer(containers.DeclarativeContainer):
     application_controller = providers.Factory(
         ApplicationController,
         command_bus=shared.command_bus,
-        query_bus=shared.query_bus
+        query_bus=shared.query_bus,
+        job_position_repository=job_position_repository
     )
 
     resume_controller = providers.Factory(

@@ -1343,6 +1343,32 @@
     }
   },
   "candidateProfile": {
+    "header": {
+      "title": "CareerPython",
+      "subtitle": "Portal del Candidato"
+    },
+    "footer": {
+      "brandName": "CareerPython",
+      "version": "v1.0.0"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "dashboardDesc": "Resumen de tu perfil",
+      "profile": "Perfil",
+      "profileDesc": "Datos personales",
+      "experience": "Experiencia",
+      "experienceDesc": "Historial laboral",
+      "education": "Formación",
+      "educationDesc": "Estudios y certificaciones",
+      "projects": "Proyectos",
+      "projectsDesc": "Trabajos destacados",
+      "resumes": "CVs",
+      "resumesDesc": "Tus currículums",
+      "applications": "Candidaturas",
+      "interviews": "Entrevistas",
+      "settings": "Ajustes",
+      "comingSoon": "Próximamente"
+    },
     "dashboard": {
       "title": "Dashboard",
       "subtitle": "Resumen de tu perfil profesional",
@@ -1442,6 +1468,48 @@
       "FINANCE": "Finanzas",
       "CUSTOMER_SERVICE": "Atención al Cliente",
       "OTHER": "Otros"
+    },
+    "skillsForm": {
+      "title": "Habilidades",
+      "description": "Añade tus habilidades técnicas y competencias profesionales",
+      "loading": "Cargando habilidades...",
+      "placeholder": "Escribe una habilidad y presiona Enter",
+      "add": "Añadir",
+      "noSkills": "No has añadido ninguna habilidad todavía",
+      "suggestions": "Sugerencias populares:",
+      "save": "Guardar habilidades",
+      "saving": "Guardando...",
+      "successMessage": "Habilidades guardadas correctamente",
+      "errorLoading": "Error al cargar las habilidades",
+      "errorSaving": "Error al guardar las habilidades"
+    },
+    "applications": {
+      "title": "Mis Candidaturas",
+      "subtitle": "Gestiona y haz seguimiento de tus solicitudes de empleo",
+      "loading": "Cargando candidaturas...",
+      "errorLoading": "Error al cargar las candidaturas",
+      "filterByStatus": "Filtrar por estado",
+      "allStatuses": "Todos los estados",
+      "noApplications": {
+        "title": "Aún no tienes candidaturas",
+        "description": "Cuando apliques a ofertas de trabajo, aparecerán aquí"
+      },
+      "stats": {
+        "total": "Total de candidaturas",
+        "inReview": "En revisión",
+        "accepted": "Aceptadas",
+        "interviewed": "Entrevistadas"
+      },
+      "statuses": {
+        "applied": "Aplicado",
+        "reviewing": "En revisión",
+        "interviewed": "Entrevistado",
+        "accepted": "Aceptado",
+        "rejected": "Rechazado",
+        "withdrawn": "Retirado"
+      },
+      "appliedOn": "Aplicado el",
+      "updatedOn": "Actualizado el"
     }
   },
   "applicationWizard": {

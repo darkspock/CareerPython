@@ -33,10 +33,12 @@ class ApplicationController:
     def __init__(
             self,
             command_bus: CommandBus,
-            query_bus: QueryBus
+            query_bus: QueryBus,
+            job_position_repository=None
     ):
         self._command_bus = command_bus
         self._query_bus = query_bus
+        self._job_position_repository = job_position_repository
 
     def get_applications_by_candidate(
             self,
@@ -111,15 +113,31 @@ class ApplicationController:
 
     def _dto_to_summary(self, dto: CandidateApplicationDto) -> CandidateJobApplicationSummary:
         """Convert DTO to summary response"""
+        job_title = "Position"
+        company_name = "Company"
+
+        # Try to fetch real job position data
+        if self._job_position_repository and dto.job_position_id:
+            try:
+                from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+                job_position = self._job_position_repository.get_by_id(
+                    JobPositionId.from_string(dto.job_position_id)
+                )
+                if job_position:
+                    job_title = job_position.title
+                    company_name = job_position.company_name or "Company"
+            except Exception as e:
+                logger.warning(f"Could not fetch job position {dto.job_position_id}: {e}")
+
         return CandidateJobApplicationSummary(
             id=dto.id,
-            job_title="Position",  # TODO: Fetch from job_position via job_position_id
-            company_name="Company",  # TODO: Fetch from company via job_position
+            job_title=job_title,
+            company_name=company_name,
             status=dto.application_status,
-            created_at=dto.applied_at,  # Use applied_at as created_at
+            created_at=dto.applied_at,
             updated_at=dto.updated_at,
             applied_at=dto.applied_at,
-            has_customized_content=bool(dto.notes and len(dto.notes) > 0)  # Use notes as indicator
+            has_customized_content=bool(dto.notes and len(dto.notes) > 0)
         )
 
     def can_user_process_application(

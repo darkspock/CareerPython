@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../../lib/api';
 import { X, Plus } from 'lucide-react';
 import { Button } from '../../ui/button';
@@ -10,6 +11,7 @@ interface ProfileSkillsFormProps {
 }
 
 const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
+  const { t } = useTranslation();
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
   const [loading, setLoading] = useState(true);
@@ -28,7 +30,7 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
       setSkills(profile.skills || []);
     } catch (err) {
       console.error('Error loading profile:', err);
-      setError('Error al cargar las habilidades');
+      setError(t("candidateProfile.skillsForm.errorLoading"));
     } finally {
       setLoading(false);
     }
@@ -66,12 +68,12 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
         skills,
       });
 
-      setSuccess('Habilidades guardadas correctamente');
+      setSuccess(t("candidateProfile.skillsForm.successMessage"));
       setTimeout(() => setSuccess(''), 3000);
       onSuccess?.();
     } catch (err) {
       console.error('Error saving skills:', err);
-      setError('Error al guardar las habilidades');
+      setError(t("candidateProfile.skillsForm.errorSaving"));
     } finally {
       setSaving(false);
     }
@@ -81,7 +83,7 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
     return (
       <Card>
         <CardContent className="py-8">
-          <p className="text-center text-gray-500">Cargando habilidades...</p>
+          <p className="text-center text-gray-500">{t("candidateProfile.skillsForm.loading")}</p>
         </CardContent>
       </Card>
     );
@@ -90,9 +92,9 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Habilidades</CardTitle>
+        <CardTitle>{t("candidateProfile.skillsForm.title")}</CardTitle>
         <CardDescription>
-          Añade tus habilidades técnicas y competencias profesionales
+          {t("candidateProfile.skillsForm.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -115,7 +117,7 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
             value={newSkill}
             onChange={(e) => setNewSkill(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Escribe una habilidad y presiona Enter"
+            placeholder={t("candidateProfile.skillsForm.placeholder")}
             className="flex-1"
           />
           <Button
@@ -125,7 +127,7 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
             variant="outline"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Añadir
+            {t("candidateProfile.skillsForm.add")}
           </Button>
         </div>
 
@@ -150,15 +152,15 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
 
         {skills.length === 0 && (
           <p className="text-gray-500 text-center py-4">
-            No has añadido ninguna habilidad todavía
+            {t("candidateProfile.skillsForm.noSkills")}
           </p>
         )}
 
         {/* Suggestions */}
         <div className="border-t pt-4">
-          <p className="text-sm text-gray-600 mb-2">Sugerencias populares:</p>
+          <p className="text-sm text-gray-600 mb-2">{t("candidateProfile.skillsForm.suggestions")}</p>
           <div className="flex flex-wrap gap-2">
-            {['JavaScript', 'Python', 'React', 'SQL', 'Excel', 'Comunicación', 'Liderazgo', 'Trabajo en equipo']
+            {['JavaScript', 'Python', 'React', 'SQL', 'Excel', 'Communication', 'Leadership', 'Teamwork']
               .filter(s => !skills.includes(s))
               .slice(0, 6)
               .map((suggestion) => (
@@ -180,7 +182,7 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? 'Guardando...' : 'Guardar habilidades'}
+            {saving ? t("candidateProfile.skillsForm.saving") : t("candidateProfile.skillsForm.save")}
           </Button>
         </div>
       </CardContent>
