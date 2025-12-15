@@ -170,7 +170,17 @@
     "noTitleSet": "No title set",
     "noNameSet": "No name set",
     "noEmailSet": "No email set",
-    "noPhoneSet": "No phone set"
+    "noPhoneSet": "No phone set",
+    "sections": {
+      "experience": "Professional Experience",
+      "education": "Education",
+      "skills": "Skills",
+      "projects": "Projects",
+      "addExperienceHere": "Add your professional experience here...",
+      "addEducationHere": "Add your education here...",
+      "addSkillsHere": "Add your skills here...",
+      "addProjectsHere": "Add your projects here..."
+    }
   },
   "templates": {
     "professional": "Professional",

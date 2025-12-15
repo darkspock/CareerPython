@@ -170,7 +170,17 @@
     "noTitleSet": "Sin título establecido",
     "noNameSet": "Sin nombre establecido",
     "noEmailSet": "Sin email establecido",
-    "noPhoneSet": "Sin teléfono establecido"
+    "noPhoneSet": "Sin teléfono establecido",
+    "sections": {
+      "experience": "Experiencia Profesional",
+      "education": "Educación",
+      "skills": "Habilidades",
+      "projects": "Proyectos",
+      "addExperienceHere": "Añade tu experiencia profesional aquí...",
+      "addEducationHere": "Añade tu formación académica aquí...",
+      "addSkillsHere": "Añade tus habilidades aquí...",
+      "addProjectsHere": "Añade tus proyectos aquí..."
+    }
   },
   "templates": {
     "professional": "Profesional",

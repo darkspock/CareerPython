@@ -128,9 +128,7 @@ async def get_resumes(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
-        if not candidate:
-            raise HTTPException(status_code=404, detail="Candidate profile not found")
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
 
         return controller.get_resumes(
             candidate_id=candidate.id,
@@ -160,9 +158,7 @@ async def get_resume_stats(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
-        if not candidate:
-            raise HTTPException(status_code=404, detail="Candidate profile not found")
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
 
         return controller.get_resume_statistics(candidate.id)
     except HTTPException:
@@ -191,7 +187,7 @@ async def get_resume_by_id(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
         if not candidate or resume.candidate_id != candidate.id:
             raise HTTPException(status_code=404, detail="Resume not found or unauthorized")
 
@@ -231,9 +227,7 @@ async def create_resume(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
-        if not candidate:
-            raise HTTPException(status_code=404, detail="Candidate profile not found")
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
 
         # Pass candidate_id from authentication context
         return controller.create_general_resume(candidate.id, request)
@@ -261,9 +255,7 @@ async def create_general_resume(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
-        if not candidate:
-            raise HTTPException(status_code=404, detail="Candidate profile not found")
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
 
         # Pass candidate_id from authentication context
         log.info(f"Creating general resume for candidate {candidate.id}, user {current_user.id}")
@@ -296,7 +288,7 @@ async def update_resume_content(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
         if not candidate or resume.candidate_id != candidate.id:
             raise HTTPException(status_code=404, detail="Resume not found or unauthorized")
 
@@ -329,7 +321,7 @@ async def update_resume_name(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
         if not candidate or resume.candidate_id != candidate.id:
             raise HTTPException(status_code=404, detail="Resume not found or unauthorized")
 
@@ -361,7 +353,7 @@ async def delete_resume(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
         if not candidate or resume.candidate_id != candidate.id:
             raise HTTPException(status_code=404, detail="Resume not found or unauthorized")
 
@@ -394,7 +386,7 @@ async def duplicate_resume(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
         if not candidate or original_resume.candidate_id != candidate.id:
             raise HTTPException(status_code=404, detail="Resume not found or unauthorized")
 
@@ -430,9 +422,7 @@ async def bulk_delete_resumes(
         from core.containers import Container as ContainerRef
 
         candidate_controller = ContainerRef.candidate_controller()
-        candidate = candidate_controller.get_candidate_by_user_id(current_user.id)
-        if not candidate:
-            raise HTTPException(status_code=404, detail="Candidate profile not found")
+        candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
 
         deleted_count = 0
         failed_deletes = []
