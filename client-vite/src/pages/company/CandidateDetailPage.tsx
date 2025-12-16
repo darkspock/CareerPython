@@ -13,6 +13,9 @@ import {
   AlertCircle,
   Mail,
   Phone,
+  User,
+  Clock,
+  Eye,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +42,8 @@ export default function CandidateDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'info' | 'answers' | 'comments' | 'reviews' | 'documents' | 'interviews' | 'history'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'profile' | 'answers' | 'comments' | 'reviews' | 'documents' | 'interviews' | 'history'>('info');
+  const [showLiveProfile, setShowLiveProfile] = useState(false);
   const [changingStage, setChangingStage] = useState(false);
   const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
   const [reviewsRefreshKey, setReviewsRefreshKey] = useState(0);
@@ -236,6 +240,10 @@ export default function CandidateDetailPage() {
                   <TabsTrigger value="info">
                     {t('company.candidates.tabs.information')}
                   </TabsTrigger>
+                  <TabsTrigger value="profile">
+                    <User className="w-4 h-4 mr-1" />
+                    {t('company.candidates.tabs.profile', { defaultValue: 'Profile' })}
+                  </TabsTrigger>
                   <TabsTrigger value="answers">
                     {t('company.candidates.tabs.answers', { defaultValue: 'Answers' })}
                   </TabsTrigger>
@@ -299,6 +307,112 @@ export default function CandidateDetailPage() {
                             </Badge>
                           ))}
                         </div>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* Profile Tab - Shows profile snapshot from application time */}
+                <TabsContent value="profile">
+                  <div className="space-y-6">
+                    {/* Toggle between snapshot and live profile */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-gray-500" />
+                        <span className="text-sm text-gray-600">
+                          {showLiveProfile
+                            ? t('company.candidates.profile.viewingLive', { defaultValue: 'Viewing current profile' })
+                            : t('company.candidates.profile.viewingSnapshot', { defaultValue: 'Viewing profile at application time' })}
+                        </span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowLiveProfile(!showLiveProfile)}
+                        className="flex items-center gap-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        {showLiveProfile
+                          ? t('company.candidates.profile.showSnapshot', { defaultValue: 'Show application snapshot' })
+                          : t('company.candidates.profile.showLive', { defaultValue: 'Show current profile' })}
+                      </Button>
+                    </div>
+
+                    {/* Profile content */}
+                    {showLiveProfile ? (
+                      // Live profile - show structured data
+                      <div className="prose max-w-none">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                          <p className="text-sm text-blue-800">
+                            {t('company.candidates.profile.liveDataNotice', {
+                              defaultValue: 'This shows the candidate\'s current profile data, which may have been updated since they applied.'
+                            })}
+                          </p>
+                        </div>
+                        {/* Tags as skills indicator */}
+                        {candidate.tags && candidate.tags.length > 0 && (
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                              {t('company.candidates.profile.tags', { defaultValue: 'Tags' })}
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {candidate.tags.map((tag: string, idx: number) => (
+                                <Badge key={idx} variant="secondary">{tag}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {/* Additional live data can be added here */}
+                      </div>
+                    ) : (
+                      // Snapshot profile - show markdown
+                      <div className="prose max-w-none">
+                        {(candidate as any).profile_snapshot_markdown ? (
+                          <>
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                              <p className="text-sm text-amber-800">
+                                {t('company.candidates.profile.snapshotNotice', {
+                                  defaultValue: 'This is a snapshot of the candidate\'s profile at the time they applied. It may differ from their current profile.'
+                                })}
+                              </p>
+                            </div>
+                            <div
+                              className="bg-white border rounded-lg p-6"
+                              dangerouslySetInnerHTML={{
+                                __html: ((candidate as any).profile_snapshot_markdown as string)
+                                  .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
+                                  .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
+                                  .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mb-4">$1</h1>')
+                                  .replace(/^\*\*(.*)\*\*$/gim, '<strong>$1</strong>')
+                                  .replace(/^\*(.*)\*$/gim, '<em>$1</em>')
+                                  .replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>')
+                                  .replace(/\n/g, '<br/>')
+                              }}
+                            />
+                          </>
+                        ) : (
+                          <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-500 mb-2">
+                              {t('company.candidates.profile.noSnapshot', { defaultValue: 'No profile snapshot available' })}
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              {t('company.candidates.profile.noSnapshotHint', {
+                                defaultValue: 'Profile snapshots are created when candidates apply through the new application flow.'
+                              })}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* CV Download */}
+                    {(candidate as any).cv_file_id && (
+                      <div className="border-t pt-4">
+                        <Button variant="outline" className="flex items-center gap-2">
+                          <Download className="w-4 h-4" />
+                          {t('company.candidates.profile.downloadCV', { defaultValue: 'Download CV' })}
+                        </Button>
                       </div>
                     )}
                   </div>

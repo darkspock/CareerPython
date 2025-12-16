@@ -18,5 +18,6 @@ class EntityCustomizationResponseMapper:
             validation=dto.validation,
             metadata=dto.metadata,
             created_at=dto.created_at,
-            updated_at=dto.updated_at
+            updated_at=dto.updated_at,
+            exists=True
         )

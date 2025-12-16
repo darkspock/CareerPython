@@ -65,16 +65,16 @@ def get_entity_customization(
         controller: EntityCustomizationController = Depends(Provide[Container.entity_customization_controller])
 ) -> EntityCustomizationResponse:
     """Get an entity customization by entity type and entity ID
-    
+
     Valid entity_type values: JobPosition, CandidateApplication, Candidate, Workflow
+
+    If no customization exists, returns an empty customization with exists=false
     """
     try:
         result = controller.get_entity_customization(entity_type, entity_id)
         if not result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Entity customization not found"
-            )
+            # Return empty customization instead of 404
+            return EntityCustomizationResponse.empty(entity_type, entity_id)
         return result
     except ValueError as e:
         raise HTTPException(

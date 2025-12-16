@@ -117,8 +117,48 @@ function StepIndicator({
 }
 
 
-// Application questions step component (placeholder)
-function QuestionsStep({ t }: { t: (key: string) => string }) {
+// Question type definition
+interface ApplicationQuestion {
+  id: string;
+  field_key: string;
+  label: string;
+  field_type: string;
+  description?: string;
+  options?: Array<{ label: string; value: string }>;
+  is_required: boolean;
+  sort_order: number;
+}
+
+// Application questions step component
+function QuestionsStep({
+  t,
+  questions,
+  answers,
+  onAnswerChange,
+}: {
+  t: (key: string, options?: Record<string, unknown>) => string;
+  questions: ApplicationQuestion[];
+  answers: Record<string, unknown>;
+  onAnswerChange: (questionId: string, value: unknown) => void;
+}) {
+  if (questions.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileQuestion className="w-5 h-5" />
+            {t("applicationWizard.questionsStep.title")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500 text-center py-8">
+            {t("applicationWizard.questionsStep.noQuestions")}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -130,10 +170,90 @@ function QuestionsStep({ t }: { t: (key: string) => string }) {
           {t("applicationWizard.questionsStep.description")}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <p className="text-gray-500 text-center py-8">
-          {t("applicationWizard.questionsStep.noQuestions")}
-        </p>
+      <CardContent className="space-y-6">
+        {questions.map((question) => (
+          <div key={question.id} className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              {question.label}
+              {question.is_required && <span className="text-red-500 ml-1">*</span>}
+            </label>
+            {question.description && (
+              <p className="text-sm text-gray-500">{question.description}</p>
+            )}
+
+            {/* Render different input types */}
+            {question.field_type === 'text' && (
+              <input
+                type="text"
+                value={(answers[question.id] as string) || ''}
+                onChange={(e) => onAnswerChange(question.id, e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required={question.is_required}
+              />
+            )}
+
+            {question.field_type === 'textarea' && (
+              <textarea
+                value={(answers[question.id] as string) || ''}
+                onChange={(e) => onAnswerChange(question.id, e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required={question.is_required}
+              />
+            )}
+
+            {question.field_type === 'select' && question.options && (
+              <select
+                value={(answers[question.id] as string) || ''}
+                onChange={(e) => onAnswerChange(question.id, e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required={question.is_required}
+              >
+                <option value="">{t("applicationWizard.questionsStep.selectOption", { defaultValue: "Select an option" })}</option>
+                {question.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {question.field_type === 'boolean' && (
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={question.id}
+                    checked={answers[question.id] === true}
+                    onChange={() => onAnswerChange(question.id, true)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  {t("applicationWizard.questionsStep.yes", { defaultValue: "Yes" })}
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={question.id}
+                    checked={answers[question.id] === false}
+                    onChange={() => onAnswerChange(question.id, false)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  {t("applicationWizard.questionsStep.no", { defaultValue: "No" })}
+                </label>
+              </div>
+            )}
+
+            {question.field_type === 'number' && (
+              <input
+                type="number"
+                value={(answers[question.id] as number) || ''}
+                onChange={(e) => onAnswerChange(question.id, e.target.value ? Number(e.target.value) : null)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required={question.is_required}
+              />
+            )}
+          </div>
+        ))}
       </CardContent>
     </Card>
   );
@@ -189,6 +309,8 @@ export default function ApplicationWizardPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasQuestions, setHasQuestions] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState<ApplicationQuestion[]>([]);
+  const [questionAnswers, setQuestionAnswers] = useState<Record<string, unknown>>({});
 
   // Build wizard steps with translations
   const wizardSteps: WizardStep[] = STEP_IDS
@@ -210,26 +332,36 @@ export default function ApplicationWizardPage() {
     }
 
     // Check if there are questions for this job position
-    const checkQuestions = async () => {
+    const loadQuestions = async () => {
       try {
         const jobPositionId = localStorage.getItem("job_position_id");
         if (jobPositionId) {
           // Fetch questions for the job position
           const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/public/positions/${jobPositionId}/questions`);
           if (response.ok) {
-            const questions = await response.json();
-            setHasQuestions(Array.isArray(questions) && questions.length > 0);
+            const data = await response.json();
+            const fetchedQuestions = data.questions || [];
+            setQuestions(fetchedQuestions);
+            setHasQuestions(fetchedQuestions.length > 0);
           }
         }
       } catch (error) {
-        console.error("Error checking questions:", error);
+        console.error("Error loading questions:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkQuestions();
+    loadQuestions();
   }, [navigate, t]);
+
+  // Handle answer change
+  const handleAnswerChange = (questionId: string, value: unknown) => {
+    setQuestionAnswers((prev) => ({
+      ...prev,
+      [questionId]: value,
+    }));
+  };
 
   const handleNext = () => {
     if (currentStep < wizardSteps.length - 1) {
@@ -253,8 +385,35 @@ export default function ApplicationWizardPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // The application was already created during verification
-      // Here we just navigate to the thank you page
+      const applicationId = localStorage.getItem("application_id");
+      const token = localStorage.getItem("access_token");
+
+      // Save question answers if we have any
+      if (applicationId && Object.keys(questionAnswers).length > 0) {
+        const answersPayload = {
+          answers: Object.entries(questionAnswers).map(([questionId, value]) => ({
+            question_id: questionId,
+            answer_value: value,
+          })),
+        };
+
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/applications/${applicationId}/answers`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(answersPayload),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to save answers');
+        }
+      }
+
       toast.success(t("applicationWizard.messages.submitSuccess"));
       navigate("/candidate/application/thank-you");
     } catch (error) {
@@ -294,7 +453,14 @@ export default function ApplicationWizardPage() {
       case "skills":
         return <ProfileSkillsForm />;
       case "questions":
-        return <QuestionsStep t={t} />;
+        return (
+          <QuestionsStep
+            t={t}
+            questions={questions}
+            answers={questionAnswers}
+            onAnswerChange={handleAnswerChange}
+          />
+        );
       case "submit":
         return <SubmitStep onSubmit={handleSubmit} isSubmitting={isSubmitting} t={t} />;
       default:

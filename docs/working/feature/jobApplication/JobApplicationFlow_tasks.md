@@ -357,7 +357,7 @@ Thank you page + confirmation email
 
 ---
 
-### Phase 8: Profile Snapshot & CV Builder ✅ BACKEND COMPLETE
+### Phase 8: Profile Snapshot & CV Builder ✅ COMPLETED
 
 #### Task 8.1: Add Application Mode to JobPosition ✅
 - [x] Add `application_mode` field to JobPosition entity
@@ -434,40 +434,55 @@ Thank you page + confirmation email
 **Files modified:**
 - `core/containers/candidate_container.py` (registered new handlers)
 
-#### Task 8.7: CV Builder Flow (Frontend)
-- [ ] Update LandingPage with "Help me creating a CV" button
-- [ ] Create CVBuilderWizardPage (or reuse ApplicationWizardPage)
-- [ ] Add pending applications badge in candidate dashboard
-- [ ] Flow: Wizard → Generate CV → Return to pending → Submit
+#### Task 8.7: CV Builder Flow (Frontend) ✅
+- [x] Update LandingPage with "Help me creating a CV" button
+- [x] Create CVBuilderPage with step-by-step wizard
+- [x] Add CV builder route in App.tsx
+- [x] Flow: Intro → Profile forms → Generate CV
 
-#### Task 8.8: Company View Updates
-- [ ] Update company candidate detail view to show:
-  - Profile snapshot (markdown rendered)
+**Files created/modified:**
+- `client-vite/src/pages/LandingPage.tsx` - Added CV builder link
+- `client-vite/src/pages/CVBuilderPage.tsx` (NEW) - CV builder wizard
+- `client-vite/src/App.tsx` - Added route
+
+#### Task 8.8: Company View Updates ✅
+- [x] Update company candidate detail view to show:
+  - Profile snapshot (markdown rendered) in new "Profile" tab
   - CV download button
-  - Live contact info indicator
-- [ ] Add "View original application" vs "View current profile" toggle
+  - Live profile indicator
+- [x] Add "Show application snapshot" vs "Show current profile" toggle
+
+**Files modified:**
+- `client-vite/src/pages/company/CandidateDetailPage.tsx` - Added Profile tab with snapshot view
 
 ---
 
-### Phase 9: Application Questions Integration 🔲 PENDING
+### Phase 9: Application Questions Integration ✅ COMPLETED
 
-#### Task 9.1: Dynamic Questions in Wizard
-- [ ] Fetch position questions in wizard
-- [ ] Show questions step only if position has questions
-- [ ] Save answers with application
+#### Task 9.1: Dynamic Questions in Wizard ✅
+- [x] Fetch position questions in wizard (from `/api/public/positions/{id}/questions`)
+- [x] Show questions step only if position has questions
+- [x] Render different question types (text, textarea, select, boolean, number)
+- [x] Save answers with application on submit
 
-#### Task 9.2: Killer Question Evaluation
-- [ ] Add evaluation logic in submit
-- [ ] Auto-reject if killer question answered wrong
-- [ ] Store evaluation result
+**Files modified:**
+- `client-vite/src/pages/ApplicationWizardPage.tsx` - Full questions step implementation
+
+#### Task 9.2: Killer Question Evaluation ✅
+- [x] Add `_evaluate_killer_questions()` method to evaluation handler
+- [x] Auto-reject if killer question answered with disqualifying value
+- [x] Killer questions check runs before regular rule evaluation
+
+**Files modified:**
+- `src/company_bc/candidate_application/application/commands/question_answer/evaluate_application_answers_command.py`
 
 ---
 
 ## Implementation Order (Updated)
 
 1. **Phase 1-7** - ✅ COMPLETED
-2. **Phase 8** - Profile snapshot & CV builder (NEW)
-3. **Phase 9** - Application questions integration (NEW)
+2. **Phase 8** - ✅ COMPLETED - Profile snapshot & CV builder
+3. **Phase 9** - ✅ COMPLETED - Application questions integration
 
 ---
 

@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import {
@@ -19,7 +19,8 @@ import {
   CheckCircle,
   HelpCircle,
   Upload,
-  Mail
+  Mail,
+  Sparkles
 } from 'lucide-react';
 import { publicPositionService } from '../../services/publicPositionService';
 import { publicQuestionService, type PublicApplicationQuestion } from '../../services/publicQuestionService';
@@ -43,6 +44,7 @@ export default function PublicPositionDetailPage() {
   const [email, setEmail] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [gdprConsent, setGdprConsent] = useState(false);
+  const [wantsCVHelp, setWantsCVHelp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
@@ -103,6 +105,10 @@ export default function PublicPositionDetailPage() {
 
       if (selectedFile) {
         formData.append('resume_file', selectedFile);
+      }
+
+      if (wantsCVHelp) {
+        formData.append('wants_cv_help', 'true');
       }
 
       const data = await api.initiateRegistration(formData);
@@ -346,6 +352,20 @@ export default function PublicPositionDetailPage() {
                           />
                         </label>
                         <p className="text-xs text-gray-500 mt-1">Opcional - Formato PDF</p>
+
+                        {/* CV Builder checkbox */}
+                        <div className="flex items-start space-x-2 mt-3 p-2.5 bg-purple-50 rounded-lg border border-purple-100">
+                          <Checkbox
+                            id="cv-help"
+                            checked={wantsCVHelp}
+                            onCheckedChange={(checked) => setWantsCVHelp(checked === true)}
+                            className="mt-0.5"
+                          />
+                          <Label htmlFor="cv-help" className="text-xs text-purple-700 leading-relaxed cursor-pointer flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" />
+                            <strong>Ayúdame a crear un CV profesional</strong>
+                          </Label>
+                        </div>
                       </div>
 
                       {/* GDPR Consent Checkbox */}

@@ -410,6 +410,10 @@ export interface Position {
   // Killer Questions (inline, stored as JSON)
   killer_questions?: KillerQuestion[];
 
+  // Application Configuration
+  application_mode?: 'short' | 'full' | 'cv_builder';
+  required_sections?: string[];
+
   // Expanded data (when workflow/stage is loaded)
   stage?: JobPositionWorkflowStage;
   workflow?: JobPositionWorkflow;
@@ -468,6 +472,10 @@ export interface CreatePositionRequest {
 
   // Killer Questions
   killer_questions?: KillerQuestion[];
+
+  // Application Configuration
+  application_mode?: 'short' | 'full' | 'cv_builder';
+  required_sections?: string[];
 }
 
 export interface UpdatePositionRequest {
@@ -518,6 +526,10 @@ export interface UpdatePositionRequest {
 
   // Killer Questions
   killer_questions?: KillerQuestion[];
+
+  // Application Configuration
+  application_mode?: 'short' | 'full' | 'cv_builder';
+  required_sections?: string[];
 }
 
 export interface PositionFilters {

@@ -106,6 +106,7 @@ import InterviewAnswerPage from './pages/public/InterviewAnswerPage';
 import VerifyRegistrationPage from './pages/VerifyRegistrationPage';
 import ApplicationWizardPage from './pages/ApplicationWizardPage';
 import ApplicationThankYouPage from './pages/ApplicationThankYouPage';
+import CVBuilderPage from './pages/CVBuilderPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import UsersManagement from './components/admin/UsersManagement';
 import CandidatesManagement from './components/admin/CandidatesManagement';
@@ -171,6 +172,7 @@ function App() {
                         <Route path="/candidate/registration/verify/:token" element={<VerifyRegistrationPage />} />
                         <Route path="/candidate/application/wizard" element={<ApplicationWizardPage />} />
                         <Route path="/candidate/application/thank-you" element={<ApplicationThankYouPage />} />
+                        <Route path="/candidate/cv-builder" element={<CVBuilderPage />} />
                         <Route path="/candidate/onboarding" element={<Navigate to="/candidate/onboarding/complete-profile" replace />} />
                         <Route path="/candidate/onboarding/complete-profile" element={<CompleteProfilePage />} />
                         <Route path="/candidate/onboarding/pdf-processing" element={<PDFProcessingPage />} />

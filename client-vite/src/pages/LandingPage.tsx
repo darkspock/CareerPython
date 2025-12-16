@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { Upload, CheckCircle, FileText, Bot, Target, Mail } from "lucide-react";
+import { Upload, CheckCircle, FileText, Bot, Target, Mail, Sparkles } from "lucide-react";
 import { toast } from "react-toastify";
 import { api } from "../lib/api";
 import { useOnboarding } from "../hooks/useOnboarding";
@@ -154,6 +154,22 @@ function CVLanding({
                 >
                   {isLoading ? "Creando cuenta..." : "Comenzar Gratis"}
                 </button>
+
+                {/* CV Builder option divider */}
+                <div className="flex items-center gap-3 my-4">
+                  <div className="flex-1 h-px bg-gray-300"></div>
+                  <span className="text-sm text-gray-500">o</span>
+                  <div className="flex-1 h-px bg-gray-300"></div>
+                </div>
+
+                {/* CV Builder link */}
+                <Link
+                  to="/candidate/cv-builder"
+                  className="w-full flex items-center justify-center gap-2 h-12 rounded-xl text-base font-medium border-2 border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100 hover:border-purple-400 transition-all"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  No tengo CV - Ayúdame a crearlo
+                </Link>
               </form>
             )}
           </div>

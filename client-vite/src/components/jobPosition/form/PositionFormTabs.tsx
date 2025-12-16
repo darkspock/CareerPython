@@ -101,6 +101,9 @@ export function PositionFormTabs({
         // Dates
         application_deadline: undefined,
         open_at: undefined,
+        // Application configuration
+        application_mode: 'short',
+        required_sections: [],
     });
 
     // Skills input state
@@ -155,6 +158,8 @@ export function PositionFormTabs({
                 job_position_workflow_id: position.job_position_workflow_id || undefined,
                 stage_id: position.stage_id || undefined,
                 phase_workflows: position.phase_workflows || {},
+                application_mode: (position as any).application_mode || 'short',
+                required_sections: (position as any).required_sections || [],
             });
         }
     }, [position]);
@@ -441,6 +446,112 @@ export function PositionFormTabs({
                                                 </div>
                                             ))}
                                         </div>
+                                    </div>
+
+                                    {/* Application Mode */}
+                                    <div className="md:col-span-2 space-y-4 pt-4 border-t">
+                                        <div>
+                                            <Label className="text-base font-semibold">
+                                                Application Form Configuration
+                                                {renderLockIcon('application_mode')}
+                                            </Label>
+                                            <p className="text-sm text-muted-foreground mt-1">
+                                                Choose what information candidates need to provide when applying
+                                            </p>
+                                        </div>
+
+                                        <div className="grid gap-3">
+                                            {/* SHORT mode */}
+                                            <div
+                                                className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                                                    (formData as any).application_mode === 'short'
+                                                        ? 'border-blue-500 bg-blue-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
+                                                }`}
+                                                onClick={() => !isLocked('application_mode') && updateField('application_mode' as any, 'short')}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="application_mode"
+                                                    value="short"
+                                                    checked={(formData as any).application_mode === 'short'}
+                                                    onChange={() => updateField('application_mode' as any, 'short')}
+                                                    disabled={isLocked('application_mode')}
+                                                    className="mt-1 w-4 h-4 text-blue-600"
+                                                />
+                                                <div>
+                                                    <Label className="font-medium cursor-pointer">Quick Apply (CV Only)</Label>
+                                                    <p className="text-sm text-gray-500">
+                                                        Candidates only need to provide their email and upload a CV/resume.
+                                                        Fastest application experience.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* FULL mode */}
+                                            <div
+                                                className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                                                    (formData as any).application_mode === 'full'
+                                                        ? 'border-blue-500 bg-blue-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
+                                                }`}
+                                                onClick={() => !isLocked('application_mode') && updateField('application_mode' as any, 'full')}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="application_mode"
+                                                    value="full"
+                                                    checked={(formData as any).application_mode === 'full'}
+                                                    onChange={() => updateField('application_mode' as any, 'full')}
+                                                    disabled={isLocked('application_mode')}
+                                                    className="mt-1 w-4 h-4 text-blue-600"
+                                                />
+                                                <div className="flex-1">
+                                                    <Label className="font-medium cursor-pointer">Complete Profile</Label>
+                                                    <p className="text-sm text-gray-500 mb-3">
+                                                        Candidates must complete their profile with structured data.
+                                                        Better for screening and comparison.
+                                                    </p>
+
+                                                    {/* Required sections checkboxes */}
+                                                    {(formData as any).application_mode === 'full' && (
+                                                        <div className="pl-1 space-y-2">
+                                                            <p className="text-xs font-medium text-gray-700">Required sections:</p>
+                                                            {[
+                                                                { id: 'experience', label: 'Work Experience' },
+                                                                { id: 'education', label: 'Education' },
+                                                                { id: 'skills', label: 'Skills' },
+                                                                { id: 'projects', label: 'Projects' },
+                                                            ].map((section) => (
+                                                                <div key={section.id} className="flex items-center gap-2">
+                                                                    <Checkbox
+                                                                        id={`section-${section.id}`}
+                                                                        checked={((formData as any).required_sections || []).includes(section.id)}
+                                                                        onCheckedChange={(checked) => {
+                                                                            const current = (formData as any).required_sections || [];
+                                                                            if (checked) {
+                                                                                updateField('required_sections' as any, [...current, section.id]);
+                                                                            } else {
+                                                                                updateField('required_sections' as any, current.filter((s: string) => s !== section.id));
+                                                                            }
+                                                                        }}
+                                                                        disabled={isLocked('application_mode')}
+                                                                    />
+                                                                    <Label htmlFor={`section-${section.id}`} className="text-sm font-normal cursor-pointer">
+                                                                        {section.label}
+                                                                    </Label>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <p className="text-xs text-muted-foreground mt-2">
+                                            Note: Candidates can always use the CV Builder option from the landing page if they don't have a CV.
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>

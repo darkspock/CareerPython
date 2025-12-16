@@ -144,9 +144,21 @@ class EvaluateApplicationAnswersCommandHandler(CommandHandler[EvaluateApplicatio
             position_data
         )
 
+        # Evaluate killer questions from job position
+        killer_rejection_reason = None
+        if job_position.killer_questions:
+            killer_rejection_reason = self._evaluate_killer_questions(
+                job_position.killer_questions,
+                prepared_answers
+            )
+
         # Trigger auto-actions if enabled
         if command.trigger_auto_actions:
-            if result.should_auto_reject:
+            # Killer question rejection takes priority
+            if killer_rejection_reason:
+                application.reject(notes=killer_rejection_reason)
+                self.application_repository.save(application)
+            elif result.should_auto_reject:
                 application.reject(notes=result.auto_reject_reason or "Auto-rejected by screening rules")
                 self.application_repository.save(application)
             elif result.should_auto_approve:
@@ -185,6 +197,72 @@ class EvaluateApplicationAnswersCommandHandler(CommandHandler[EvaluateApplicatio
             return None
 
         return {"rules": all_rules}
+
+    def _evaluate_killer_questions(
+        self,
+        killer_questions: List[Dict[str, Any]],
+        answers: Dict[str, Any]
+    ) -> Optional[str]:
+        """
+        Evaluate answers against killer questions.
+
+        Returns the rejection reason if a killer question was answered incorrectly,
+        or None if all answers are acceptable.
+
+        Killer questions have the format:
+        {
+            "name": str,
+            "description": str,
+            "data_type": str,  # "boolean", "single_choice", etc.
+            "is_killer": bool,
+            "scoring_values": [
+                {"label": str, "value": any, "scoring": int, "is_disqualifying": bool}
+            ],
+            "correct_answer": any  # For simple boolean killer questions
+        }
+        """
+        for kq in killer_questions:
+            if not kq.get("is_killer", False):
+                continue
+
+            question_name = kq.get("name", "")
+            # Try to find the answer by question name (normalized as field key)
+            field_key = question_name.lower().replace(" ", "_")
+
+            # Check various possible keys
+            answer = answers.get(field_key) or answers.get(question_name)
+            if answer is None:
+                continue
+
+            # Check if answer is disqualifying
+            data_type = kq.get("data_type", "")
+
+            if data_type == "boolean":
+                # For boolean killer questions, check correct_answer
+                correct_answer = kq.get("correct_answer")
+                if correct_answer is not None and answer != correct_answer:
+                    return f"Disqualified: Answer to '{question_name}' does not meet requirements"
+
+            # Check scoring_values for disqualifying answers
+            scoring_values = kq.get("scoring_values", [])
+            for sv in scoring_values:
+                sv_value = sv.get("value")
+                is_disqualifying = sv.get("is_disqualifying", False)
+
+                # Match the answer
+                if sv_value is not None and str(answer).lower() == str(sv_value).lower():
+                    if is_disqualifying:
+                        return f"Disqualified: Answer to '{question_name}' is disqualifying"
+                    break
+
+                # Also check by label for text-based answers
+                sv_label = sv.get("label", "")
+                if sv_label and str(answer).lower() == sv_label.lower():
+                    if is_disqualifying:
+                        return f"Disqualified: Answer to '{question_name}' is disqualifying"
+                    break
+
+        return None
 
     def _get_position_data(self, job_position: Any) -> Dict[str, Any]:
         """Extract position data for rule comparisons."""
