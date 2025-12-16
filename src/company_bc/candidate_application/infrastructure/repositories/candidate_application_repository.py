@@ -39,7 +39,11 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
             stage_deadline=model.stage_deadline,
             task_status=TaskStatus(model.task_status) if model.task_status else TaskStatus.PENDING,
             # Phase 12: Phase tracking field
-            current_phase_id=model.current_phase_id
+            current_phase_id=model.current_phase_id,
+            # Phase 8: Profile snapshot fields
+            profile_snapshot_markdown=model.profile_snapshot_markdown,
+            profile_snapshot_json=model.profile_snapshot_json or {},
+            cv_file_id=model.cv_file_id
         )
 
     def _to_model(self, entity: CandidateApplication) -> CandidateApplicationModel:
@@ -59,7 +63,11 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
             stage_deadline=entity.stage_deadline,
             task_status=entity.task_status,  # SQLAlchemy will handle enum conversion
             # Phase 12: Phase tracking field
-            current_phase_id=entity.current_phase_id
+            current_phase_id=entity.current_phase_id,
+            # Phase 8: Profile snapshot fields
+            profile_snapshot_markdown=entity.profile_snapshot_markdown,
+            profile_snapshot_json=entity.profile_snapshot_json,
+            cv_file_id=entity.cv_file_id
         )
 
     def save(self, candidate_application: CandidateApplication) -> None:
@@ -86,6 +94,10 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
                 existing_model.task_status = candidate_application.task_status  # SQLAlchemy handles enum
                 # Phase 12: Update phase tracking field
                 existing_model.current_phase_id = candidate_application.current_phase_id
+                # Phase 8: Update profile snapshot fields
+                existing_model.profile_snapshot_markdown = candidate_application.profile_snapshot_markdown
+                existing_model.profile_snapshot_json = candidate_application.profile_snapshot_json
+                existing_model.cv_file_id = candidate_application.cv_file_id
             else:
                 # Create new
                 model = self._to_model(candidate_application)

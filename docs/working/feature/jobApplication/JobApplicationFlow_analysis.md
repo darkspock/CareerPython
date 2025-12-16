@@ -2,238 +2,197 @@
 
 ## Document Summary
 
-This document describes the user flow for job applications in CareerPython. It covers the application form, user registration process (for both new and existing users), the multi-step application wizard, and the thank you page.
+This document describes the user flow for job applications in CareerPython. It covers configurable application forms (short vs full), CV assistance, user registration process, application wizard, and how data is passed to companies.
+
+---
+
+## Key Design Decisions
+
+### 1. Configurable Application Depth
+The company decides per job position whether the candidate must fill normalized data or just submit CV:
+
+| Mode | Required | Optional |
+|------|----------|----------|
+| **Short** | Email + CV + GDPR | - |
+| **Full** | Email + CV + GDPR | Experience, Education, Projects, Skills |
+
+**Implementation**: `job_position.requires_normalized_data` boolean field
+
+### 2. CV Assistance Option
+Candidates without a CV can use "Help me creating a CV":
+- System guides them through structured data entry
+- Generates a PDF CV from the data
+- Application stays "pending" until CV is generated and submitted
+
+### 3. Data Snapshot for Companies
+When application is submitted:
+- **Markdown summary**: All candidate info rendered as markdown, stored in `candidate_application.profile_snapshot_markdown`
+- **Contact info**: Live data (always current email/phone)
+- **Profile data**: Historical snapshot (what they had when they applied)
+- **CV attached**: Generated or original PDF
 
 ---
 
 ## Strengths
 
-### 1. Simple Initial Form
-- Minimal friction for first contact (email + PDF only)
-- Good UX decision to defer data collection until after email verification
+### 1. Flexible Application Process
+- Companies control complexity per position
+- Reduces friction for simple roles
+- Full data when needed for complex roles
 
-### 2. Asynchronous PDF Processing
-- Smart approach: process PDF while user waits for email
-- Uses AI extraction to pre-populate candidate data
-- Reduces manual data entry for candidates
+### 2. CV Assistance
+- Helps candidates without professional CV
+- Captures structured data as byproduct
+- Platform adds value beyond just application
 
-### 3. Handles Both User Types
-- Clear distinction between new and existing users
-- Existing users don't lose their current data until they confirm
+### 3. Clear Data Separation
+- Live contact data = company can always reach candidate
+- Historical profile = fair evaluation based on what was submitted
+- Markdown snapshot = recruiter sees everything in one view
 
-### 4. Complete Application Wizard
-- Covers all relevant candidate information
-- Logical progression from general to specific
+### 4. Existing Infrastructure
+All phases (1-7) already implemented:
+- user_registration table ✅
+- Registration commands ✅
+- Email verification ✅
+- API endpoints ✅
+- Application wizard ✅
+- Frontend pages ✅
+- Cleanup jobs ✅
 
 ---
 
-## Areas Requiring Clarification
+## New Requirements Identified
 
-### 1. Application Section (Line 3-8)
-- **Typo**: "Conpany" should be "Company"
-- **Missing**: GDPR/privacy consent checkbox requirement
+### 1. Job Position Configuration
+Need to add field to control application type:
 
-### 2. New User Flow (Lines 10-16)
-- **Line 11**: What is `user_registration` table? Need entity definition
-- **Line 12**: What's the email subject/content? Link expiration time?
-- **Line 13**:
-  - "separata table" appears to be a typo for "separate table"
-  - What happens if PDF processing fails?
-  - What's the timeout for AI extraction?
-- **Line 14-15**: What fields are required for user account creation?
+```python
+class JobPosition:
+    # ... existing fields ...
+    application_mode: ApplicationModeEnum  # SHORT, FULL, CV_BUILDER
+    required_sections: List[str]  # ['experience', 'education', 'skills']
+```
 
-### 3. Existing User Flow (Lines 18-24)
-- **Line 19**: "user_registration" linked to existing user - need to clarify relationship
-- **Line 22**: "If candidate profile is outdated" - what defines "outdated"?
+### 2. CV Builder Flow
+New flow for "Help me creating a CV":
 
-**Resolved**: For conflicts between existing data and PDF extracted data → if profile already has info, we won't override it (keep existing data).
+```
+Click "Help me creating a CV"
+    ↓
+Wizard: General Data → Experience → Education → Projects → Skills
+    ↓
+Generate PDF CV (ResumeGenerationService)
+    ↓
+Return to pending application
+    ↓
+Submit application with generated CV
+```
 
-### 4. Application Wizard (Lines 26-33)
-**Resolved**:
-- All steps are optional (except Submit)
-- Users can save progress and continue later
-- Pre-filled data from PDF is editable
+### 3. Profile Snapshot Storage
+New fields in `candidate_application`:
 
-**Killer Questions** (already implemented in `JobPosition` entity):
+```python
+class CandidateApplication:
+    # ... existing fields ...
+    profile_snapshot_markdown: str  # Full profile as markdown
+    profile_snapshot_json: dict     # Structured data at time of application
+    cv_file_id: str                 # Reference to attached CV
+```
 
-Stored in `job_positions.killer_questions` as JSON array. Each question has:
+### 4. Pending Application Badge
+UI component showing pending applications that need CV completion.
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | string | Yes | Question text |
-| `description` | string | No | Additional context |
-| `data_type` | string | Yes | Type of answer expected |
-| `scoring_values` | array | No | List of `{label, scoring}` for scoring options |
-| `is_killer` | boolean | No | If true, wrong answer can disqualify candidate |
+---
 
-Source: `src/company_bc/job_position/domain/entities/job_position.py:98-100`
+## Data Flow Comparison
 
-**Resolved**: No validation rules for wizard sections.
+### Current Flow
+```
+Apply → Create CandidateApplication → Company sees live candidate data
+```
 
-### 5. Thank You Page (Lines 35-40)
-- **Line 38**: "send email with link to set password" - is this separate from the verification email?
-- **Line 39**: "link to application info" - where does this link lead?
-
-**Resolved**: After password is set, user can log in with password. Nothing more.
+### New Flow
+```
+Apply → Create CandidateApplication with snapshot → Company sees:
+├── Contact info (live) - always current
+├── Profile markdown (historical) - what they submitted
+├── Profile JSON (historical) - structured for filtering
+└── CV PDF (attached) - generated or uploaded
+```
 
 ---
 
 ## Technical Considerations
 
-### Database Entities
+### 1. Markdown Generation
+Create service to render candidate profile as markdown:
 
-| Entity | Status | Purpose |
-|--------|--------|---------|
-| `candidate_applications` | **EXISTS** | Links candidate to job position with workflow stage tracking |
-| `application_question_answers` | **EXISTS** | Stores answers to specific questions |
-| `user_assets` | **EXISTS** | Stores PDFs and extracted data (requires `user_id`) |
-| `user_registration` | **NEEDED** | Temporary storage before email verification |
+```python
+class ProfileMarkdownService:
+    def render(self, candidate: Candidate) -> str:
+        """
+        Returns:
+        # Juan García
+        📧 juan@email.com | 📱 +34 612 345 678 | 📍 Madrid
 
-### The `user_assets` Problem
+        ## Experiencia Profesional
 
-The existing `user_assets` table handles PDF storage and AI extraction perfectly:
-- `asset_type`: Supports `PDF_RESUME`
-- `processing_status`: `PENDING` → `COMPLETED` / `FAILED`
-- `text_content`: Raw extracted text
-- `content`: JSON with structured data
-- Built-in extraction for: name, phone, LinkedIn
+        ### Senior Developer @ TechCorp (2020-2024)
+        - Desarrollo de APIs REST
+        - Liderazgo de equipo de 5 personas
 
-**However**, `user_assets` requires a `user_id`, but in the application flow the user doesn't exist yet (only email is provided).
-
-### Proposed Solution: `user_registration` Table
-
-This table handles user registration independently from job applications. This allows future scenarios where users register without applying to a specific position.
-
-```
-user_registration
-├── id (PK)
-├── email
-├── verification_token
-├── token_expires_at
-├── status: PENDING | VERIFIED | EXPIRED
-├── company_id (FK, nullable)
-├── job_position_id (FK, nullable)
-├── file_name, file_size, content_type
-├── text_content (extracted PDF text)
-├── extracted_data (JSON - AI processed)
-├── processing_status: PENDING | PROCESSING | COMPLETED | FAILED
-├── existing_user_id (nullable - if email matches existing user)
-├── created_at, updated_at
+        ## Educación
+        ...
+        """
 ```
 
-**Registration Scenarios:**
+### 2. Application Pending State
+Add state to track incomplete applications:
 
-| Scenario | company_id | job_position_id |
-|----------|------------|-----------------|
-| Apply to specific job position | ✓ (inferred) | ✓ |
-| Register with company (no specific job) | ✓ | null |
-| General registration (future) | null | null |
-
-**Flow:**
-```
-                    user_registration
-                    (email + PDF + token)
-                           ↓
-                  [async PDF processing]
-                           ↓
-                    email verification
-                           ↓
-                    User + Candidate
-                           ↓
-            ┌──────────────┴──────────────┐
-            ↓                             ↓
-    Has job_position_id            No job_position_id
-            ↓                             ↓
-    candidate_application              (done)
-    (link to job)
+```python
+class ApplicationStatusEnum(Enum):
+    DRAFT = "draft"           # Started but not submitted
+    PENDING_CV = "pending_cv" # Waiting for CV generation
+    SUBMITTED = "submitted"   # Complete and sent
+    # ... existing statuses ...
 ```
 
-1. User submits email + PDF → Create `user_registration`
-2. Background job extracts PDF → Updates `text_content` and `extracted_data`
-3. User clicks verification link →
-   - If new user: Create User, Candidate, copy data to `user_assets`
-   - If existing user: Link to existing, optionally update profile
-4. If `job_position_id` exists → Create `candidate_application` linking candidate to job position
-
-### API Endpoints Required
-
-1. `POST /api/applications` - Submit initial application (email + PDF)
-2. `GET /api/applications/verify/{token}` - Verify email and create/update user
-3. `GET /api/applications/{id}` - Get application details
-4. `PUT /api/applications/{id}` - Update application data (wizard steps)
-5. `POST /api/applications/{id}/submit` - Final submission
-
-### Background Jobs
-
-1. **PDF Processing Job**: Extract text from PDF
-2. **AI Extraction Job**: Parse extracted text to structured data
-3. **Email Sending Jobs**: Multiple email types (verification, confirmation, password reset)
-
-### Security Considerations
-
-- Rate limiting on application submission (prevent spam)
-- Token expiration for verification links
-- Secure PDF handling (malware scanning?)
-- GDPR compliance: consent tracking, data retention policy
+### 3. CV Generation Integration
+Reuse existing `ResumeGenerationService` for CV builder flow.
 
 ---
 
-## Missing Information
+## Questions Resolved
 
-1. **Business Rules**
-   - How long is the verification link valid?
-   - What happens if user never verifies?
-   - Can a user apply to the same position twice?
-   - What triggers "outdated profile" detection?
-
-2. **UI/UX Details**
-   - Progress indicator in wizard?
-   - Mobile responsiveness requirements?
-   - Accessibility requirements?
-
-3. **Integration Points**
-   - Which AI service for PDF extraction?
-   - Email service provider?
-   - How does this integrate with existing candidate workflow?
-
-4. **Error Handling**
-   - PDF upload fails
-   - AI extraction fails
-   - Email delivery fails
-   - User abandons mid-wizard
+| Question | Answer |
+|----------|--------|
+| Does candidate fill normalized data? | Depends on job position config |
+| What if no CV? | "Help me creating a CV" option |
+| Live or historical data for company? | Historical snapshot + live contact |
+| Format for company? | Markdown + JSON + PDF |
 
 ---
 
 ## Recommendations
 
-### Priority 1 - Clarify Before Implementation
+### Priority 1 - Schema Updates
+1. Add `application_mode` to JobPosition entity
+2. Add `profile_snapshot_markdown` and `profile_snapshot_json` to CandidateApplication
+3. Add `cv_file_id` to CandidateApplication
 
-1. Define `user_registration` entity with all fields
-2. Specify email link expiration policy
-3. Define "outdated profile" criteria
-4. Document Killer Questions feature (or link to existing docs)
-5. Add GDPR consent requirement to initial form
+### Priority 2 - New Services
+1. Create `ProfileMarkdownService` for rendering
+2. Update `CreateCandidateApplicationCommand` to generate snapshots
+3. Create `CompleteApplicationWithCVCommand` for CV builder flow
 
-### Priority 2 - Add to Specification
-
-1. Error handling for each step
-2. Validation rules for wizard steps
-3. Save/resume functionality for wizard
-4. Data conflict resolution strategy
-
-### Priority 3 - Technical Design
-
-1. Design background job architecture for PDF processing
-2. Define AI extraction output schema
-3. Plan email templates
-4. Design token generation and validation
+### Priority 3 - UI Updates
+1. Add "Help me creating a CV" button to application form
+2. Add pending applications badge to candidate dashboard
+3. Show snapshot vs live data indicator in company view
 
 ---
 
-## Suggested Next Steps
+## Next Steps
 
-1. **Fix typos** in the document
-2. **Create entity diagram** for `user_registration` and related tables
-3. **Define API contracts** with request/response schemas
-4. **Create wireframes** for each screen
-5. **Write acceptance criteria** for each user story
+See `JobApplicationFlow_tasks.md` for implementation tasks.

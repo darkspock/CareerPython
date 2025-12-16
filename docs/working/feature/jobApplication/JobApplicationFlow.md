@@ -1,11 +1,22 @@
 # Job Application Flow
 
+## Full or short application
+In the job application creating, the company may require that the user fills normalized application 
+(experience, education, etc.. ) So, should display the sections that are required for applying.
+Add something awesome in UX, require CV in pdf, require candidate to fill info with a drown down or what ever.
+
+
+
 ## Application Form
-Application form focused only on this:
+Application form focused will be different depending on the job application configuration.
+
+The system can help the candidate to build a CV.
+
 * email
-* attach pdf
+* Attach PDF or "Help me on creating a CV"
 * GDPR+privacy checkbox
 * submit
+
 
 Must display Company name, logo, and job position name.
 
@@ -67,12 +78,22 @@ All steps are optional (except Submit). Users can save progress and continue lat
 Pre-filled data from PDF is editable.
 
 1. General Data
-2. Experience
-3. Education
-4. Projects
-5. Skills
-6. Questions (includes all position-specific questions)
-7. Submit
+2. Experience,EducationProjects,Skills (displayed when user click on help me creating a cv or when activated in job position)
+3. Questions (includes all position-specific questions)
+4. Submit
+
+## Sending the info to the company
+If the user clicked on "help me with the cv". Will go to the CV generation section.
+The application will stay on pending and visible a top in a badged or whateever, so the candidate can remember is still pending.
+When the CV is generated, the candidate can click on send application (on the pending one).
+
+## Info passed to the company
+All the info is passed in a markdown (EVERYTHING), and also writen in the job application column or custom column 
+if exists.
+That way, the company see a snapshot of the user information at that time.
+In the user changes contact information, this information will be updated for the company. Live data, no historical.
+The CV is attached, the generated or the orginal one.
+
 
 ## Thank You Page
 1. Display thank you message

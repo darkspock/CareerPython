@@ -17,6 +17,7 @@ from src.company_bc.job_position.domain.enums import (
     WorkLocationTypeEnum,
     ClosedReasonEnum,
     SalaryPeriodEnum,
+    ApplicationModeEnum,
 )
 from src.company_bc.job_position.domain.repositories.job_position_repository_interface import \
     JobPositionRepositoryInterface
@@ -318,6 +319,9 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             candidate_pipeline_id=model.candidate_pipeline_id,
             screening_template_id=model.screening_template_id,
             killer_questions=model.killer_questions or [],
+            # Application configuration
+            application_mode=ApplicationModeEnum(model.application_mode) if model.application_mode else ApplicationModeEnum.SHORT,
+            required_sections=model.required_sections or [],
             # Visibility and publishing
             visibility=visibility,
             public_slug=model.public_slug,
@@ -393,6 +397,9 @@ class JobPositionRepository(JobPositionRepositoryInterface):
             candidate_pipeline_id=job_position.candidate_pipeline_id,
             screening_template_id=job_position.screening_template_id,
             killer_questions=job_position.killer_questions or [],
+            # Application configuration
+            application_mode=job_position.application_mode.value if job_position.application_mode else ApplicationModeEnum.SHORT.value,
+            required_sections=job_position.required_sections or [],
             # Visibility and publishing
             visibility=visibility_value,
             public_slug=job_position.public_slug,
@@ -474,6 +481,10 @@ class JobPositionRepository(JobPositionRepositoryInterface):
         model.candidate_pipeline_id = job_position.candidate_pipeline_id
         model.screening_template_id = job_position.screening_template_id
         model.killer_questions = job_position.killer_questions or []
+
+        # Application configuration
+        model.application_mode = job_position.application_mode.value if job_position.application_mode else ApplicationModeEnum.SHORT.value
+        model.required_sections = job_position.required_sections or []
 
         # Visibility and publishing
         model.visibility = visibility_value

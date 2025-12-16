@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from src.candidate_bc.candidate.domain.value_objects.candidate_id import CandidateId
 from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
@@ -28,6 +28,10 @@ class CandidateApplication:
     task_status: TaskStatus = TaskStatus.PENDING
     # Phase 12: Phase tracking field
     current_phase_id: Optional[str] = None
+    # Phase 8: Profile snapshot fields
+    profile_snapshot_markdown: Optional[str] = None  # Full profile as markdown for recruiter view
+    profile_snapshot_json: Dict[str, Any] = field(default_factory=dict)  # Structured data at application time
+    cv_file_id: Optional[str] = None  # Reference to attached CV (uploaded or generated)
 
     def approve(self) -> None:
         """Aprobar la aplicación"""
@@ -153,7 +157,10 @@ class CandidateApplication:
             notes: Optional[str] = None,
             initial_stage_id: Optional[str] = None,
             stage_time_limit_hours: Optional[int] = None,
-            initial_phase_id: Optional[str] = None
+            initial_phase_id: Optional[str] = None,
+            profile_snapshot_markdown: Optional[str] = None,
+            profile_snapshot_json: Optional[Dict[str, Any]] = None,
+            cv_file_id: Optional[str] = None
     ) -> 'CandidateApplication':
         """Factory method para crear una nueva aplicación
 
@@ -165,6 +172,9 @@ class CandidateApplication:
             initial_stage_id: Optional ID of initial workflow stage
             stage_time_limit_hours: Optional time limit for initial stage in hours
             initial_phase_id: Optional ID of initial phase (Phase 12)
+            profile_snapshot_markdown: Optional markdown snapshot of candidate profile
+            profile_snapshot_json: Optional JSON snapshot of candidate profile
+            cv_file_id: Optional reference to attached CV file
         """
         now = datetime.utcnow()
 
@@ -187,5 +197,9 @@ class CandidateApplication:
             stage_deadline=stage_deadline,
             task_status=TaskStatus.PENDING,
             # Phase 12: Phase field
-            current_phase_id=initial_phase_id
+            current_phase_id=initial_phase_id,
+            # Phase 8: Profile snapshot fields
+            profile_snapshot_markdown=profile_snapshot_markdown,
+            profile_snapshot_json=profile_snapshot_json or {},
+            cv_file_id=cv_file_id
         )

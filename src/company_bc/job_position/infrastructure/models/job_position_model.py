@@ -17,6 +17,7 @@ from src.company_bc.job_position.domain.enums import (
     WorkLocationTypeEnum,
     ClosedReasonEnum,
     SalaryPeriodEnum,
+    ApplicationModeEnum,
 )
 from src.framework.domain.entities.base import generate_id
 from src.framework.domain.enums.job_category import JobCategoryEnum
@@ -93,6 +94,14 @@ class JobPositionModel(Base):
     # Killer questions (simple inline questions stored as JSON)
     # Format: List[{name: str, description?: str, data_type: str, scoring_values?: List[{label, scoring}], is_killer?: bool}]
     killer_questions: Mapped[Optional[List[Dict]]] = mapped_column(JSON, nullable=True)
+
+    # Application configuration
+    application_mode: Mapped[str] = mapped_column(
+        String(20),
+        default=ApplicationModeEnum.SHORT.value,
+        nullable=False
+    )
+    required_sections: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)
 
     # Visibility and publishing
     visibility: Mapped[str] = mapped_column(

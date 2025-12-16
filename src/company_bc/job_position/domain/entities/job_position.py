@@ -13,6 +13,7 @@ from src.company_bc.job_position.domain.enums import (
     WorkLocationTypeEnum,
     ClosedReasonEnum,
     SalaryPeriodEnum,
+    ApplicationModeEnum,
 )
 from src.company_bc.job_position.domain.exceptions.job_position_exceptions import (
     JobPositionValidationError,
@@ -98,6 +99,10 @@ class JobPosition:
     # Killer questions (simple inline questions stored as JSON)
     # Format: List[{name: str, description?: str, data_type: str, scoring_values?: List[{label, scoring}], is_killer?: bool}]
     killer_questions: List[Dict[str, Any]]
+
+    # Application configuration
+    application_mode: ApplicationModeEnum  # SHORT, FULL, or CV_BUILDER
+    required_sections: List[str]  # Sections required when application_mode is FULL: ['experience', 'education', 'skills', 'projects']
 
     # Visibility and publishing
     visibility: JobPositionVisibilityEnum
@@ -425,6 +430,9 @@ class JobPosition:
             candidate_pipeline_id: Optional[str] = None,
             screening_template_id: Optional[str] = None,
             killer_questions: Optional[List[Dict[str, Any]]] = None,
+            # Application configuration
+            application_mode: ApplicationModeEnum = ApplicationModeEnum.SHORT,
+            required_sections: Optional[List[str]] = None,
             # Visibility and publishing
             visibility: JobPositionVisibilityEnum = JobPositionVisibilityEnum.HIDDEN,
             public_slug: Optional[str] = None,
@@ -489,6 +497,9 @@ class JobPosition:
             candidate_pipeline_id=candidate_pipeline_id,
             screening_template_id=screening_template_id,
             killer_questions=killer_questions or [],
+            # Application configuration
+            application_mode=application_mode,
+            required_sections=required_sections or [],
             # Visibility and publishing
             visibility=visibility,
             public_slug=public_slug,
@@ -553,6 +564,9 @@ class JobPosition:
             candidate_pipeline_id: Optional[str],
             screening_template_id: Optional[str],
             killer_questions: Optional[List[Dict[str, Any]]],
+            # Application configuration
+            application_mode: Optional[ApplicationModeEnum],
+            required_sections: Optional[List[str]],
             # Visibility and publishing
             visibility: JobPositionVisibilityEnum,
             public_slug: Optional[str],
@@ -615,6 +629,9 @@ class JobPosition:
             candidate_pipeline_id=candidate_pipeline_id,
             screening_template_id=screening_template_id,
             killer_questions=killer_questions or [],
+            # Application configuration
+            application_mode=application_mode or ApplicationModeEnum.SHORT,
+            required_sections=required_sections or [],
             # Visibility and publishing
             visibility=visibility,
             public_slug=public_slug,
@@ -877,6 +894,11 @@ class JobPosition:
             candidate_pipeline_id=self.candidate_pipeline_id,
             screening_template_id=self.screening_template_id,
             killer_questions=self.killer_questions.copy() if self.killer_questions else [],
+            # Workflow system - Candidate Application (CA)
+            candidate_application_workflow_id=self.candidate_application_workflow_id,
+            # Application configuration - copy from original
+            application_mode=self.application_mode,
+            required_sections=self.required_sections.copy() if self.required_sections else [],
             # Visibility - reset
             visibility=JobPositionVisibilityEnum.HIDDEN,
             public_slug=None,  # Need new slug

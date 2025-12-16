@@ -2,7 +2,7 @@
 Application Controller for handling job application operations
 """
 import logging
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from fastapi import HTTPException
 
@@ -34,7 +34,7 @@ class ApplicationController:
             self,
             command_bus: CommandBus,
             query_bus: QueryBus,
-            job_position_repository=None
+            job_position_repository: Optional[Any] = None
     ):
         self._command_bus = command_bus
         self._query_bus = query_bus

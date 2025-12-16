@@ -13,8 +13,10 @@ from .position_level_enum import JobPositionLevelEnum
 from .salary_period_enum import SalaryPeriodEnum
 from .view_type import ViewTypeEnum
 from .work_location_type import WorkLocationTypeEnum
+from .application_mode_enum import ApplicationModeEnum
 
 __all__ = [
+    "ApplicationModeEnum",
     "ActivityTypeEnum",
     "ClosedReasonEnum",
     "CommentReviewStatusEnum",

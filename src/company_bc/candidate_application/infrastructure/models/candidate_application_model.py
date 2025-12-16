@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, TYPE_CHECKING
 
-from sqlalchemy import String, Enum, DateTime, Text, ForeignKey, func
+from sqlalchemy import String, Enum, DateTime, Text, ForeignKey, func, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.base import Base
@@ -57,6 +57,11 @@ class CandidateApplicationModel(Base):
         nullable=True,
         index=True
     )
+
+    # Phase 8: Profile snapshot fields
+    profile_snapshot_markdown: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    profile_snapshot_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    cv_file_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # Relationships
     candidate: Mapped["CandidateModel"] = relationship("CandidateModel", back_populates="applications")

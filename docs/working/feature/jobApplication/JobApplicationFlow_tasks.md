@@ -355,9 +355,127 @@ Thank you page + confirmation email
 
 ---
 
+---
+
+### Phase 8: Profile Snapshot & CV Builder ✅ BACKEND COMPLETE
+
+#### Task 8.1: Add Application Mode to JobPosition ✅
+- [x] Add `application_mode` field to JobPosition entity
+  - Values: `SHORT` (email + CV only), `FULL` (requires sections), `CV_BUILDER` (help create CV)
+- [x] Add `required_sections` JSON field: `['experience', 'education', 'skills', 'projects']`
+- [x] Create migration: `24c5f229ed37_add_application_mode_to_job_positions.py`
+- [x] Update JobPosition DTOs and schemas
+
+**Files created/modified:**
+- `src/company_bc/job_position/domain/enums/application_mode_enum.py` (NEW)
+- `src/company_bc/job_position/domain/entities/job_position.py`
+- `src/company_bc/job_position/infrastructure/models/job_position_model.py`
+- `src/company_bc/job_position/infrastructure/repositories/job_position_repository.py`
+
+#### Task 8.2: Add Snapshot Fields to CandidateApplication ✅
+- [x] Add fields to CandidateApplication entity:
+  - `profile_snapshot_markdown: str` - Full profile as markdown
+  - `profile_snapshot_json: dict` - Structured data at application time
+  - `cv_file_id: str` - Reference to attached CV (original or generated)
+- [x] Create migration: `24b242ac4e92_add_profile_snapshot_fields_to_.py`
+- [x] Update DTOs and schemas
+
+**Files modified:**
+- `src/company_bc/candidate_application/domain/entities/candidate_application.py`
+- `src/company_bc/candidate_application/infrastructure/models/candidate_application_model.py`
+- `src/company_bc/candidate_application/infrastructure/repositories/candidate_application_repository.py`
+
+#### Task 8.3: Create ProfileMarkdownService ✅
+- [x] Create `src/candidate_bc/candidate/application/services/profile_markdown_service.py`
+- [x] Method `render(candidate, experiences, education, projects, language) -> str`:
+  - Renders candidate with all profile sections
+  - Clean markdown with section headers
+  - Support i18n (ES/EN headers)
+- [x] Method `render_json_snapshot(...)` for structured JSON snapshot
+
+**Files created:**
+- `src/candidate_bc/candidate/application/services/profile_markdown_service.py`
+- `src/candidate_bc/candidate/application/services/__init__.py`
+
+#### Task 8.4: Update CreateCandidateApplicationCommand ✅
+- [x] Modify to capture snapshot at creation time:
+  - Generate markdown using ProfileMarkdownService
+  - Store profile JSON snapshot
+  - Store cv_file_id reference
+- [x] Update handler with optional repositories for profile data
+
+**Files modified:**
+- `src/company_bc/candidate_application/application/commands/create_candidate_application.py`
+- `core/containers/candidate_container.py`
+
+#### Task 8.5: Add Draft/Pending States ✅
+- [x] Add new statuses to ApplicationStatusEnum:
+  - `DRAFT` - Started but not submitted
+  - `PENDING_CV` - Waiting for CV generation
+
+**Files modified:**
+- `src/company_bc/candidate_application/domain/enums/application_status.py`
+
+#### Task 8.6: CV Builder Flow (Backend) ✅
+- [x] Create `StartCVBuilderApplicationCommand`
+  - Input: candidate_id, job_position_id
+  - Creates application with status `PENDING_CV`
+  - Validates candidate exists
+- [x] Create `CompleteApplicationWithGeneratedCVCommand`
+  - Input: application_id, cv_file_id (optional), language
+  - Generates profile snapshot from current profile data
+  - Updates status to `APPLIED`
+  - Attaches CV file reference
+
+**Files created:**
+- `src/company_bc/candidate_application/application/commands/start_cv_builder_application_command.py`
+- `src/company_bc/candidate_application/application/commands/complete_cv_builder_application_command.py`
+
+**Files modified:**
+- `core/containers/candidate_container.py` (registered new handlers)
+
+#### Task 8.7: CV Builder Flow (Frontend)
+- [ ] Update LandingPage with "Help me creating a CV" button
+- [ ] Create CVBuilderWizardPage (or reuse ApplicationWizardPage)
+- [ ] Add pending applications badge in candidate dashboard
+- [ ] Flow: Wizard → Generate CV → Return to pending → Submit
+
+#### Task 8.8: Company View Updates
+- [ ] Update company candidate detail view to show:
+  - Profile snapshot (markdown rendered)
+  - CV download button
+  - Live contact info indicator
+- [ ] Add "View original application" vs "View current profile" toggle
+
+---
+
+### Phase 9: Application Questions Integration 🔲 PENDING
+
+#### Task 9.1: Dynamic Questions in Wizard
+- [ ] Fetch position questions in wizard
+- [ ] Show questions step only if position has questions
+- [ ] Save answers with application
+
+#### Task 9.2: Killer Question Evaluation
+- [ ] Add evaluation logic in submit
+- [ ] Auto-reject if killer question answered wrong
+- [ ] Store evaluation result
+
+---
+
+## Implementation Order (Updated)
+
+1. **Phase 1-7** - ✅ COMPLETED
+2. **Phase 8** - Profile snapshot & CV builder (NEW)
+3. **Phase 9** - Application questions integration (NEW)
+
+---
+
 ## Notes
 
 - Current OnboardingController has a working PDF analysis flow that can be reused
 - Most candidate CRUD operations already exist
 - Killer questions model exists but needs answer collection endpoint
 - The main change is introducing email verification before user creation
+- **NEW**: Profile snapshots ensure fair evaluation based on what was submitted
+- **NEW**: CV builder helps candidates without a professional CV

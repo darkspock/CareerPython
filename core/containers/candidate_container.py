@@ -58,6 +58,8 @@ from src.company_bc.candidate_application.application.commands.update_applicatio
 from src.company_bc.candidate_application.application.commands.move_candidate_to_stage_command import MoveCandidateToStageCommandHandler
 from src.company_bc.candidate_application.application.commands.claim_task_command import ClaimTaskCommandHandler
 from src.company_bc.candidate_application.application.commands.unclaim_task_command import UnclaimTaskCommandHandler
+from src.company_bc.candidate_application.application.commands.start_cv_builder_application_command import StartCVBuilderApplicationCommandHandler
+from src.company_bc.candidate_application.application.commands.complete_cv_builder_application_command import CompleteApplicationWithGeneratedCVCommandHandler
 
 # Candidate Application Queries
 from src.company_bc.candidate_application.application.queries.get_applications_by_candidate_id import GetApplicationsByCandidateIdQueryHandler
@@ -350,7 +352,11 @@ class CandidateContainer(containers.DeclarativeContainer):
     # Candidate Application Command Handlers
     create_candidate_application_command_handler = providers.Factory(
         CreateCandidateApplicationCommandHandler,
-        candidate_application_repository=candidate_application_repository
+        candidate_application_repository=candidate_application_repository,
+        candidate_repository=candidate_repository,
+        experience_repository=candidate_experience_repository,
+        education_repository=candidate_education_repository,
+        project_repository=candidate_project_repository
     )
     
     update_application_status_command_handler = providers.Factory(
@@ -375,7 +381,22 @@ class CandidateContainer(containers.DeclarativeContainer):
         UnclaimTaskCommandHandler,
         candidate_application_repository=candidate_application_repository
     )
-    
+
+    start_cv_builder_application_command_handler = providers.Factory(
+        StartCVBuilderApplicationCommandHandler,
+        candidate_application_repository=candidate_application_repository,
+        candidate_repository=candidate_repository
+    )
+
+    complete_application_with_generated_cv_command_handler = providers.Factory(
+        CompleteApplicationWithGeneratedCVCommandHandler,
+        candidate_application_repository=candidate_application_repository,
+        candidate_repository=candidate_repository,
+        experience_repository=candidate_experience_repository,
+        education_repository=candidate_education_repository,
+        project_repository=candidate_project_repository
+    )
+
     # Candidate Application Query Handlers
     get_applications_by_candidate_id_query_handler = providers.Factory(
         GetApplicationsByCandidateIdQueryHandler,
