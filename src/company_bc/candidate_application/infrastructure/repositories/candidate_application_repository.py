@@ -43,7 +43,8 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
             # Phase 8: Profile snapshot fields
             profile_snapshot_markdown=model.profile_snapshot_markdown,
             profile_snapshot_json=model.profile_snapshot_json or {},
-            cv_file_id=model.cv_file_id
+            cv_file_id=model.cv_file_id,
+            wants_cv_help=model.wants_cv_help
         )
 
     def _to_model(self, entity: CandidateApplication) -> CandidateApplicationModel:
@@ -67,7 +68,8 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
             # Phase 8: Profile snapshot fields
             profile_snapshot_markdown=entity.profile_snapshot_markdown,
             profile_snapshot_json=entity.profile_snapshot_json,
-            cv_file_id=entity.cv_file_id
+            cv_file_id=entity.cv_file_id,
+            wants_cv_help=entity.wants_cv_help
         )
 
     def save(self, candidate_application: CandidateApplication) -> None:
@@ -98,6 +100,7 @@ class SQLAlchemyCandidateApplicationRepository(CandidateApplicationRepositoryInt
                 existing_model.profile_snapshot_markdown = candidate_application.profile_snapshot_markdown
                 existing_model.profile_snapshot_json = candidate_application.profile_snapshot_json
                 existing_model.cv_file_id = candidate_application.cv_file_id
+                existing_model.wants_cv_help = candidate_application.wants_cv_help
             else:
                 # Create new
                 model = self._to_model(candidate_application)

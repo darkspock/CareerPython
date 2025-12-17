@@ -21,5 +21,6 @@ class CandidateApplicationDtoMapper:
             current_stage_id=entity.current_stage_id,
             stage_entered_at=entity.stage_entered_at,
             stage_deadline=entity.stage_deadline,
-            task_status=entity.task_status
+            task_status=entity.task_status,
+            wants_cv_help=entity.wants_cv_help
         )

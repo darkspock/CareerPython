@@ -17,6 +17,7 @@ interface VerificationResult {
   job_position_id: string | null;
   access_token: string | null;
   redirect_url: string;
+  wants_cv_help: boolean;
 }
 
 export default function VerifyRegistrationPage() {
@@ -55,6 +56,9 @@ export default function VerifyRegistrationPage() {
           if (data.job_position_id) {
             localStorage.setItem("job_position_id", data.job_position_id);
           }
+
+          // Store wants_cv_help flag for wizard
+          localStorage.setItem("wants_cv_help", data.wants_cv_help ? 'true' : 'false');
 
           // Auto-redirect after 3 seconds
           setTimeout(() => {

@@ -63,6 +63,9 @@ class CandidateApplicationModel(Base):
     profile_snapshot_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     cv_file_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
+    # CV Builder flag - indicates if candidate wants help creating their CV
+    wants_cv_help: Mapped[bool] = mapped_column(default=False, nullable=False)
+
     # Relationships
     candidate: Mapped["CandidateModel"] = relationship("CandidateModel", back_populates="applications")
     job_position: Mapped["JobPositionModel"] = relationship("JobPositionModel", back_populates="applications")

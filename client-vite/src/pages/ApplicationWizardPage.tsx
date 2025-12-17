@@ -260,7 +260,17 @@ function QuestionsStep({
 }
 
 // Submit step component
-function SubmitStep({ onSubmit, isSubmitting, t }: { onSubmit: () => void; isSubmitting: boolean; t: (key: string) => string }) {
+function SubmitStep({
+  onSubmit,
+  isSubmitting,
+  t,
+  showProfileSteps
+}: {
+  onSubmit: () => void;
+  isSubmitting: boolean;
+  t: (key: string, options?: Record<string, unknown>) => string;
+  showProfileSteps: boolean;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -275,12 +285,18 @@ function SubmitStep({ onSubmit, isSubmitting, t }: { onSubmit: () => void; isSub
       <CardContent className="space-y-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-medium text-blue-900 mb-2">{t("applicationWizard.submitStep.summaryTitle")}</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>- {t("applicationWizard.submitStep.summaryItems.personalData")}</li>
-            <li>- {t("applicationWizard.submitStep.summaryItems.experience")}</li>
-            <li>- {t("applicationWizard.submitStep.summaryItems.education")}</li>
-            <li>- {t("applicationWizard.submitStep.summaryItems.projects")}</li>
-          </ul>
+          {showProfileSteps ? (
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>- {t("applicationWizard.submitStep.summaryItems.personalData")}</li>
+              <li>- {t("applicationWizard.submitStep.summaryItems.experience")}</li>
+              <li>- {t("applicationWizard.submitStep.summaryItems.education")}</li>
+              <li>- {t("applicationWizard.submitStep.summaryItems.projects")}</li>
+            </ul>
+          ) : (
+            <p className="text-sm text-blue-800">
+              {t("applicationWizard.submitStep.summaryItems.cvOnly", { defaultValue: "Tu CV ha sido recibido y será revisado por el equipo de selección." })}
+            </p>
+          )}
         </div>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -311,10 +327,24 @@ export default function ApplicationWizardPage() {
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<ApplicationQuestion[]>([]);
   const [questionAnswers, setQuestionAnswers] = useState<Record<string, unknown>>({});
+  const [applicationMode, setApplicationMode] = useState<string>('full');
+  const [wantsCVHelp, setWantsCVHelp] = useState(false);
+
+  // Profile steps that should be skipped in SHORT mode without CV help
+  const PROFILE_STEPS: StepId[] = ["general", "experience", "education", "projects", "skills"];
+
+  // Determine if we should show profile steps
+  const showProfileSteps = applicationMode !== 'short' || wantsCVHelp;
 
   // Build wizard steps with translations
   const wizardSteps: WizardStep[] = STEP_IDS
-    .filter(id => id !== "questions" || hasQuestions)
+    .filter(id => {
+      // Filter out questions step if no questions
+      if (id === "questions" && !hasQuestions) return false;
+      // Filter out profile steps if SHORT mode and no CV help requested
+      if (PROFILE_STEPS.includes(id) && !showProfileSteps) return false;
+      return true;
+    })
     .map(id => ({
       id,
       title: t(`applicationWizard.steps.${id}.title`),
@@ -322,7 +352,7 @@ export default function ApplicationWizardPage() {
       icon: STEP_ICONS[id],
     }));
 
-  // Check authentication and load job position questions
+  // Check authentication and load job position data
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -331,28 +361,39 @@ export default function ApplicationWizardPage() {
       return;
     }
 
-    // Check if there are questions for this job position
-    const loadQuestions = async () => {
+    // Read wants_cv_help from localStorage
+    const cvHelpFlag = localStorage.getItem("wants_cv_help");
+    setWantsCVHelp(cvHelpFlag === 'true');
+
+    // Load job position data and questions
+    const loadJobPositionData = async () => {
       try {
         const jobPositionId = localStorage.getItem("job_position_id");
         if (jobPositionId) {
+          // Fetch job position details to get application_mode
+          const positionResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/public/positions/${jobPositionId}`);
+          if (positionResponse.ok) {
+            const positionData = await positionResponse.json();
+            setApplicationMode(positionData.application_mode || 'full');
+          }
+
           // Fetch questions for the job position
-          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/public/positions/${jobPositionId}/questions`);
-          if (response.ok) {
-            const data = await response.json();
-            const fetchedQuestions = data.questions || [];
+          const questionsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/public/positions/${jobPositionId}/questions`);
+          if (questionsResponse.ok) {
+            const questionsData = await questionsResponse.json();
+            const fetchedQuestions = questionsData.questions || [];
             setQuestions(fetchedQuestions);
             setHasQuestions(fetchedQuestions.length > 0);
           }
         }
       } catch (error) {
-        console.error("Error loading questions:", error);
+        console.error("Error loading job position data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadQuestions();
+    loadJobPositionData();
   }, [navigate, t]);
 
   // Handle answer change
@@ -462,7 +503,7 @@ export default function ApplicationWizardPage() {
           />
         );
       case "submit":
-        return <SubmitStep onSubmit={handleSubmit} isSubmitting={isSubmitting} t={t} />;
+        return <SubmitStep onSubmit={handleSubmit} isSubmitting={isSubmitting} t={t} showProfileSteps={showProfileSteps} />;
       default:
         return null;
     }

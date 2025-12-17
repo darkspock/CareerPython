@@ -34,6 +34,9 @@ class UserRegistration:
     text_content: Optional[str] = None
     extracted_data: Optional[Dict[str, Any]] = None
 
+    # CV Builder flag
+    wants_cv_help: bool = False
+
     def verify(self) -> None:
         """Mark registration as verified"""
         if self.status == RegistrationStatusEnum.EXPIRED:
@@ -94,7 +97,8 @@ class UserRegistration:
             file_name: Optional[str] = None,
             file_size: Optional[int] = None,
             content_type: Optional[str] = None,
-            token_expiration_hours: int = 24
+            token_expiration_hours: int = 24,
+            wants_cv_help: bool = False
     ) -> 'UserRegistration':
         """Factory method to create a new user registration"""
         if not email or "@" not in email:
@@ -119,7 +123,8 @@ class UserRegistration:
             file_size=file_size,
             content_type=content_type,
             text_content=None,
-            extracted_data=None
+            extracted_data=None,
+            wants_cv_help=wants_cv_help
         )
 
     @classmethod
@@ -140,7 +145,8 @@ class UserRegistration:
             file_size: Optional[int] = None,
             content_type: Optional[str] = None,
             text_content: Optional[str] = None,
-            extracted_data: Optional[Dict[str, Any]] = None
+            extracted_data: Optional[Dict[str, Any]] = None,
+            wants_cv_help: bool = False
     ) -> 'UserRegistration':
         """Create UserRegistration from repository data - only for repositories to use"""
         return cls(
@@ -159,5 +165,6 @@ class UserRegistration:
             file_size=file_size,
             content_type=content_type,
             text_content=text_content,
-            extracted_data=extracted_data
+            extracted_data=extracted_data,
+            wants_cv_help=wants_cv_help
         )

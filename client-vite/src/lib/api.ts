@@ -212,6 +212,7 @@ export const api = {
       job_position_id: string | null;
       access_token: string | null;
       redirect_url: string;
+      wants_cv_help: boolean;
     }>(`/candidate/registration/verify/${token}`),
 
   getRegistrationStatus: (registrationId: string) =>

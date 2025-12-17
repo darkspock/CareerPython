@@ -21,3 +21,5 @@ class CandidateApplicationDto:
     stage_entered_at: Optional[datetime] = None
     stage_deadline: Optional[datetime] = None
     task_status: TaskStatus = TaskStatus.PENDING
+    # CV Builder flag
+    wants_cv_help: bool = False

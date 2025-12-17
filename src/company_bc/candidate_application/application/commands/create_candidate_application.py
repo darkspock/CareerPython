@@ -28,6 +28,7 @@ class CreateCandidateApplicationCommand(Command):
     application_id: Optional[str] = None
     cv_file_id: Optional[str] = None  # Reference to attached CV file
     language: str = "es"  # Language for markdown rendering
+    wants_cv_help: bool = False  # Flag indicating if candidate wants help creating their CV
 
     def get_candidate_id(self) -> CandidateId:
         """Convertir string a CandidateId value object"""
@@ -124,7 +125,8 @@ class CreateCandidateApplicationCommandHandler(CommandHandler[CreateCandidateApp
             notes=command.notes,
             profile_snapshot_markdown=profile_markdown,
             profile_snapshot_json=profile_json,
-            cv_file_id=command.cv_file_id
+            cv_file_id=command.cv_file_id,
+            wants_cv_help=command.wants_cv_help
         )
 
         # Save application

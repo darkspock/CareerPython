@@ -35,7 +35,8 @@ class RegistrationController:
             company_id: Optional[str] = None,
             job_position_id: Optional[str] = None,
             resume_file: Optional[UploadFile] = None,
-            gdpr_consent: bool = False
+            gdpr_consent: bool = False,
+            wants_cv_help: bool = False
     ) -> dict:
         """Initiate registration process with email verification"""
         try:
@@ -72,7 +73,8 @@ class RegistrationController:
                 job_position_id=job_position_id,
                 pdf_file=pdf_bytes,
                 pdf_filename=pdf_filename,
-                pdf_content_type=pdf_content_type
+                pdf_content_type=pdf_content_type,
+                wants_cv_help=wants_cv_help
             )
 
             self.command_bus.dispatch(command)
@@ -127,7 +129,8 @@ class RegistrationController:
                 "has_job_application": command.has_job_application,
                 "job_position_id": command.job_position_id,
                 "access_token": access_token,
-                "redirect_url": redirect_url
+                "redirect_url": redirect_url,
+                "wants_cv_help": command.wants_cv_help
             }
 
         except ValueError as e:

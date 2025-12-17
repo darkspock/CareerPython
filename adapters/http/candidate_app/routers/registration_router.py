@@ -28,6 +28,7 @@ class VerifyRegistrationResponse(BaseModel):
     has_job_application: bool = False
     access_token: Optional[str] = None
     redirect_url: str
+    wants_cv_help: bool = False
 
 
 class RegistrationStatusResponse(BaseModel):
@@ -49,6 +50,7 @@ async def initiate_registration(
         job_position_id: Optional[str] = Form(None),
         resume_file: Optional[UploadFile] = File(None),
         gdpr_consent: bool = Form(...),
+        wants_cv_help: bool = Form(False),
         registration_controller: Annotated[
             RegistrationController,
             Depends(Provide[Container.registration_controller])
@@ -67,7 +69,8 @@ async def initiate_registration(
         company_id=company_id,
         job_position_id=job_position_id,
         resume_file=resume_file,
-        gdpr_consent=gdpr_consent
+        gdpr_consent=gdpr_consent,
+        wants_cv_help=wants_cv_help
     )
     return InitiateRegistrationResponse(**result)
 

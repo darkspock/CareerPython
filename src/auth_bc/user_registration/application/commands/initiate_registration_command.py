@@ -19,6 +19,7 @@ class InitiateRegistrationCommand(Command):
     pdf_file: Optional[bytes] = None
     pdf_filename: Optional[str] = None
     pdf_content_type: Optional[str] = None
+    wants_cv_help: bool = False
 
     # Output field - populated during execution
     registration_id: Optional[str] = None
@@ -70,7 +71,8 @@ class InitiateRegistrationCommandHandler(CommandHandler[InitiateRegistrationComm
                 file_name=command.pdf_filename,
                 file_size=file_size,
                 content_type=command.pdf_content_type or "application/pdf",
-                token_expiration_hours=24
+                token_expiration_hours=24,
+                wants_cv_help=command.wants_cv_help
             )
 
             # Link to existing user if found
@@ -113,18 +115,29 @@ class InitiateRegistrationCommandHandler(CommandHandler[InitiateRegistrationComm
             # Don't raise - email failure shouldn't break registration
 
     def _start_pdf_processing(self, registration_id: UserRegistrationId, pdf_bytes: bytes) -> None:
-        """Start async PDF processing"""
-        try:
-            from src.auth_bc.user_registration.application.commands.process_registration_pdf_command import \
-                ProcessRegistrationPdfCommand
+        """Start async PDF processing in background thread"""
+        import threading
 
-            process_command = ProcessRegistrationPdfCommand(
-                registration_id=str(registration_id),
-                pdf_bytes=pdf_bytes
-            )
-            self.command_bus.dispatch(process_command)
-            self.logger.info(f"Dispatched PDF processing for registration {registration_id}")
+        def process_in_background() -> None:
+            try:
+                from src.auth_bc.user_registration.application.commands.process_registration_pdf_command import \
+                    ProcessRegistrationPdfCommand
+
+                process_command = ProcessRegistrationPdfCommand(
+                    registration_id=str(registration_id),
+                    pdf_bytes=pdf_bytes
+                )
+                self.command_bus.dispatch(process_command)
+                self.logger.info(f"Completed PDF processing for registration {registration_id}")
+            except Exception as e:
+                self.logger.error(f"Error in background PDF processing: {str(e)}")
+
+        try:
+            # Start processing in a separate thread to not block the response
+            thread = threading.Thread(target=process_in_background, daemon=True)
+            thread.start()
+            self.logger.info(f"Started background PDF processing for registration {registration_id}")
 
         except Exception as e:
-            self.logger.error(f"Error starting PDF processing: {str(e)}")
+            self.logger.error(f"Error starting PDF processing thread: {str(e)}")
             # Don't raise - PDF processing failure shouldn't break registration

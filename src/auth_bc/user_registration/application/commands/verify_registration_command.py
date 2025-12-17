@@ -37,6 +37,7 @@ class VerifyRegistrationCommand(Command):
     is_new_user: bool = False
     has_job_application: bool = False
     job_position_id: Optional[str] = None
+    wants_cv_help: bool = False
 
 
 class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]):
@@ -121,7 +122,11 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
             # 6. Create job application if job_position_id exists
             has_job_application = False
             if registration.job_position_id:
-                self._create_job_application(candidate_id, registration.job_position_id)
+                self._create_job_application(
+                    candidate_id,
+                    registration.job_position_id,
+                    registration.wants_cv_help
+                )
                 has_job_application = True
 
             # 7. Mark registration as verified
@@ -138,6 +143,7 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
             command.is_new_user = is_new_user
             command.job_position_id = registration.job_position_id
             command.has_job_application = has_job_application
+            command.wants_cv_help = registration.wants_cv_help
 
             self.logger.info(f"Registration verified for {registration.email}")
 
@@ -147,25 +153,40 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
 
     def _create_new_user_and_candidate(self, registration: UserRegistration) -> tuple[UserId, CandidateId]:
         """Create new user and candidate from registration"""
-        user_id = UserId(generate_id())
-        candidate_id = CandidateId(generate_id())
+        from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
 
-        # Create user with random password
-        plain_password = User.generate_random_password()
-        hashed_password = PasswordService.hash_password(plain_password)
+        # First check if user already exists by email
+        existing_user = self.user_repository.get_by_email(registration.email)
+        if existing_user:
+            self.logger.info(f"Found existing user {existing_user.id} by email {registration.email}")
+            user_id = existing_user.id
+        else:
+            # Create user with random password
+            user_id = UserId(generate_id())
+            plain_password = User.generate_random_password()
+            hashed_password = PasswordService.hash_password(plain_password)
 
-        user = User(
-            id=user_id,
-            email=registration.email,
-            hashed_password=hashed_password,
-            is_active=True
-        )
-        self.user_repository.create(user)
+            user = User(
+                id=user_id,
+                email=registration.email,
+                hashed_password=hashed_password,
+                is_active=True
+            )
+            self.user_repository.create(user)
+
+        # Check if candidate already exists by email
+        email_query = GetCandidateByEmailQuery(email=registration.email)
+        existing_candidate: Optional[CandidateDto] = self.query_bus.query(email_query)
+
+        if existing_candidate:
+            self.logger.info(f"Found existing candidate {existing_candidate.id} by email {registration.email}")
+            return user_id, existing_candidate.id
 
         # Extract personal info from registration data
         personal_info = self._get_personal_info(registration)
 
-        # Create candidate
+        # Create new candidate
+        candidate_id = CandidateId(generate_id())
         candidate_command = CreateCandidateCommand(
             id=candidate_id,
             name=personal_info.get("full_name", "New Candidate"),
@@ -264,13 +285,19 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
             self.logger.error(f"Error copying PDF to user_assets: {str(e)}")
             # Don't raise - this shouldn't break verification
 
-    def _create_job_application(self, candidate_id: CandidateId, job_position_id: str) -> None:
+    def _create_job_application(
+            self,
+            candidate_id: CandidateId,
+            job_position_id: str,
+            wants_cv_help: bool = False
+    ) -> None:
         """Create job application for candidate"""
         try:
             application_command = CreateCandidateApplicationCommand(
                 candidate_id=str(candidate_id),
                 job_position_id=job_position_id,
-                notes="Application created during registration verification"
+                notes="Application created during registration verification",
+                wants_cv_help=wants_cv_help
             )
             self.command_bus.dispatch(application_command)
             self.logger.info(f"Created job application for candidate {candidate_id} and position {job_position_id}")

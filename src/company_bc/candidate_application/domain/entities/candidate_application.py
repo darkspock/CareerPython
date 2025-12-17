@@ -32,6 +32,8 @@ class CandidateApplication:
     profile_snapshot_markdown: Optional[str] = None  # Full profile as markdown for recruiter view
     profile_snapshot_json: Dict[str, Any] = field(default_factory=dict)  # Structured data at application time
     cv_file_id: Optional[str] = None  # Reference to attached CV (uploaded or generated)
+    # CV Builder flag - indicates if candidate wants help creating their CV
+    wants_cv_help: bool = False
 
     def approve(self) -> None:
         """Aprobar la aplicación"""
@@ -160,7 +162,8 @@ class CandidateApplication:
             initial_phase_id: Optional[str] = None,
             profile_snapshot_markdown: Optional[str] = None,
             profile_snapshot_json: Optional[Dict[str, Any]] = None,
-            cv_file_id: Optional[str] = None
+            cv_file_id: Optional[str] = None,
+            wants_cv_help: bool = False
     ) -> 'CandidateApplication':
         """Factory method para crear una nueva aplicación
 
@@ -175,6 +178,7 @@ class CandidateApplication:
             profile_snapshot_markdown: Optional markdown snapshot of candidate profile
             profile_snapshot_json: Optional JSON snapshot of candidate profile
             cv_file_id: Optional reference to attached CV file
+            wants_cv_help: Flag indicating if candidate wants help creating their CV
         """
         now = datetime.utcnow()
 
@@ -201,5 +205,6 @@ class CandidateApplication:
             # Phase 8: Profile snapshot fields
             profile_snapshot_markdown=profile_snapshot_markdown,
             profile_snapshot_json=profile_snapshot_json or {},
-            cv_file_id=cv_file_id
+            cv_file_id=cv_file_id,
+            wants_cv_help=wants_cv_help
         )

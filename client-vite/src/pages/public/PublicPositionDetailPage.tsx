@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import {
@@ -110,6 +110,9 @@ export default function PublicPositionDetailPage() {
       if (wantsCVHelp) {
         formData.append('wants_cv_help', 'true');
       }
+
+      // Store wants_cv_help in localStorage for the wizard
+      localStorage.setItem('wants_cv_help', wantsCVHelp ? 'true' : 'false');
 
       const data = await api.initiateRegistration(formData);
 

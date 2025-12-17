@@ -130,7 +130,8 @@ class UserRegistrationRepository(UserRegistrationRepositoryInterface):
             file_size=model.file_size,
             content_type=model.content_type,
             text_content=model.text_content,
-            extracted_data=model.extracted_data
+            extracted_data=model.extracted_data,
+            wants_cv_help=model.wants_cv_help
         )
 
     def _to_model(self, entity: UserRegistration) -> UserRegistrationModel:
@@ -151,7 +152,8 @@ class UserRegistrationRepository(UserRegistrationRepositoryInterface):
             file_size=entity.file_size,
             content_type=entity.content_type,
             text_content=entity.text_content,
-            extracted_data=entity.extracted_data
+            extracted_data=entity.extracted_data,
+            wants_cv_help=entity.wants_cv_help
         )
 
     def _update_model(self, existing: UserRegistrationModel, new: UserRegistrationModel) -> None:
@@ -170,3 +172,4 @@ class UserRegistrationRepository(UserRegistrationRepositoryInterface):
         existing.content_type = new.content_type
         existing.text_content = new.text_content
         existing.extracted_data = new.extracted_data
+        existing.wants_cv_help = new.wants_cv_help

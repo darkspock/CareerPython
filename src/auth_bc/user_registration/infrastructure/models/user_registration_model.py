@@ -46,6 +46,9 @@ class UserRegistrationModel(Base):
     text_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     extracted_data: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
+    # CV Builder flag
+    wants_cv_help: Mapped[bool] = mapped_column(default=False, nullable=False)
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
