@@ -66,9 +66,23 @@ export function isTokenExpired(token: string): boolean {
 }
 
 /**
- * Clear authentication data from localStorage
+ * All session-related localStorage keys.
+ * Add new session keys here - this is the single source of truth.
+ */
+const SESSION_KEYS = [
+  "access_token",
+  "candidate_id",
+  "job_position_id",
+  "application_id",
+  "wants_cv_help",
+  "has_pdf",
+] as const;
+
+/**
+ * Clear all authentication/session data from localStorage.
+ * This is the single source of truth for session cleanup.
+ * When adding new session-related localStorage items, add them to SESSION_KEYS above.
  */
 export function clearAuthData(): void {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("candidate_id");
+  SESSION_KEYS.forEach(key => localStorage.removeItem(key));
 }

@@ -1,8 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Loader2 } from 'lucide-react';
 import { api } from '../../../lib/api';
 import LanguageSelector, { type Language, convertLanguagesFromBackend, convertLanguagesToBackend } from '../../common/LanguageSelector';
 import RoleSelector, { type Role, convertRolesFromBackend, convertRolesToBackend } from '../../common/RoleSelector';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Job category keys for backend mapping
 const JOB_CATEGORY_KEYS = [
@@ -81,13 +95,18 @@ interface ProfileBasicInfoFormProps {
   className?: string;
 }
 
-const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
+// Expose submit method via ref for parent components (e.g., wizard)
+export interface ProfileBasicInfoFormHandle {
+  submit: () => Promise<boolean>;
+}
+
+const ProfileBasicInfoForm = forwardRef<ProfileBasicInfoFormHandle, ProfileBasicInfoFormProps>(({
   initialData,
   onSave,
   onCancel,
   showActions = true,
   className = ""
-}) => {
+}, ref) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -150,8 +169,8 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
     }
   }, [initialData]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Core submit logic - returns true on success, false on error
+  const submitForm = async (): Promise<boolean> => {
     setError("");
     setSuccess("");
     setIsLoading(true);
@@ -175,19 +194,14 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
         expected_roles: convertRolesToBackend(formData.expectedRoles),
       };
 
-      console.log('🚀 DEBUGGING - About to send to API:', profileData);
-      console.log('🚀 DEBUGGING - Form data languages:', formData.languages);
-      console.log('🚀 DEBUGGING - Converted languages:', profileData.languages);
-      const response = await api.updateMyProfile(profileData);
-      console.log('✅ DEBUGGING - API Response:', response);
+      await api.updateMyProfile(profileData);
       setSuccess(t("candidateProfile.basicInfoForm.successMessage"));
 
       if (onSave) {
         await onSave(profileData);
       }
+      return true;
     } catch (error) {
-      console.error('Error updating profile:', error);
-
       let errorMessage = t("candidateProfile.basicInfoForm.errorMessage");
       if (error instanceof Error) {
         if (error.message.includes("API Error:")) {
@@ -198,9 +212,20 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
       }
 
       setError(errorMessage);
+      return false;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Expose submit method to parent via ref
+  useImperativeHandle(ref, () => ({
+    submit: submitForm
+  }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitForm();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -216,217 +241,178 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Success Message */}
         {success && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-green-800">{success}</p>
-              </div>
-            </div>
-          </div>
+          <Alert className="bg-green-50 border-green-200">
+            <AlertDescription className="text-green-800">{success}</AlertDescription>
+          </Alert>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3 flex-1">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            </div>
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {/* Form Fields - Grid de dos columnas para desktop, una columna para móvil */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              {t("candidateProfile.basicInfoForm.fullName")}
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="name">{t("candidateProfile.basicInfoForm.fullName")}</Label>
+            <Input
               name="name"
               id="name"
               type="text"
               required
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
-          <div>
-            <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
-              {t("candidateProfile.basicInfoForm.dateOfBirth")}
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="dateOfBirth">{t("candidateProfile.basicInfoForm.dateOfBirth")}</Label>
+            <Input
               name="dateOfBirth"
               id="dateOfBirth"
               type="date"
               required
               value={formData.dateOfBirth}
               onChange={handleChange}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
-          <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-              {t("candidateProfile.basicInfoForm.city")}
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="city">{t("candidateProfile.basicInfoForm.city")}</Label>
+            <Input
               name="city"
               id="city"
               type="text"
               required
               value={formData.city}
               onChange={handleChange}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
-          <div>
-            <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
-              {t("candidateProfile.basicInfoForm.country")}
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="country">{t("candidateProfile.basicInfoForm.country")}</Label>
+            <Input
               name="country"
               id="country"
               type="text"
               required
               value={formData.country}
               onChange={handleChange}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-              {t("candidateProfile.basicInfoForm.phone")}
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="phone">{t("candidateProfile.basicInfoForm.phone")}</Label>
+            <Input
               name="phone"
               id="phone"
               type="tel"
               required
               value={formData.phone}
               onChange={handleChange}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
-          <div>
-            <label htmlFor="jobCategory" className="block text-sm font-medium text-gray-700 mb-2">
-              {t("candidateProfile.basicInfoForm.jobCategory")}
-            </label>
-            <select
-              name="jobCategory"
-              id="jobCategory"
-              required
+          <div className="space-y-2">
+            <Label htmlFor="jobCategory">{t("candidateProfile.basicInfoForm.jobCategory")}</Label>
+            <Select
               value={formData.jobCategory}
-              onChange={handleChange}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onValueChange={(value) => setFormData(prev => ({ ...prev, jobCategory: value }))}
             >
-              <option value="">{t("candidateProfile.basicInfoForm.selectCategory")}</option>
-              {JOB_CATEGORY_KEYS.map((key) => (
-                <option key={key} value={key}>{t(`candidateProfile.jobCategories.${key}`)}</option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder={t("candidateProfile.basicInfoForm.selectCategory")} />
+              </SelectTrigger>
+              <SelectContent>
+                {JOB_CATEGORY_KEYS.map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {t(`candidateProfile.jobCategories.${key}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Email ocupa toda la fila */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            {t("candidateProfile.basicInfoForm.email")}
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="email">{t("candidateProfile.basicInfoForm.email")}</Label>
+          <Input
             name="email"
             id="email"
             type="email"
             required
             value={formData.email}
             readOnly
-            className="w-full px-3 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+            className="bg-muted cursor-not-allowed"
           />
-          <p className="text-xs text-gray-500 mt-1">{t("candidateProfile.basicInfoForm.emailReadOnly")}</p>
+          <p className="text-xs text-muted-foreground">{t("candidateProfile.basicInfoForm.emailReadOnly")}</p>
         </div>
 
         {/* Campos adicionales - Grid de dos columnas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="expectedAnnualSalary" className="block text-sm font-medium text-gray-700 mb-2">{t("candidateProfile.basicInfoForm.expectedSalary")}</label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="expectedAnnualSalary">{t("candidateProfile.basicInfoForm.expectedSalary")}</Label>
+            <Input
               name="expectedAnnualSalary"
               id="expectedAnnualSalary"
               type="number"
               value={formData.expectedAnnualSalary}
               onChange={handleChange}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder={t("candidateProfile.basicInfoForm.salaryPlaceholder")}
             />
           </div>
 
-          <div>
-            <label htmlFor="currentAnnualSalary" className="block text-sm font-medium text-gray-700 mb-2">{t("candidateProfile.basicInfoForm.currentSalary")}</label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="currentAnnualSalary">{t("candidateProfile.basicInfoForm.currentSalary")}</Label>
+            <Input
               name="currentAnnualSalary"
               id="currentAnnualSalary"
               type="number"
               value={formData.currentAnnualSalary}
               onChange={handleChange}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder={t("candidateProfile.basicInfoForm.salaryPlaceholder")}
             />
           </div>
         </div>
 
         {/* Modalidad de trabajo */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">{t("candidateProfile.basicInfoForm.workModality")}</label>
-          <div className="space-y-2">
+        <div className="space-y-2">
+          <Label>{t("candidateProfile.basicInfoForm.workModality")}</Label>
+          <div className="space-y-3">
             {Object.values(WorkModalityEnum).map((key) => (
-              <label key={key} className="flex items-center">
-                <input
-                  type="checkbox"
+              <div key={key} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`modality-${key}`}
                   checked={formData.workModality.includes(key)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
+                  onCheckedChange={(checked) => {
+                    if (checked) {
                       setFormData(prev => ({ ...prev, workModality: [...prev.workModality, key] }));
                     } else {
                       setFormData(prev => ({ ...prev, workModality: prev.workModality.filter(m => m !== key) }));
                     }
                   }}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="ml-2 text-sm text-gray-900">
+                <label htmlFor={`modality-${key}`} className="text-sm text-foreground cursor-pointer">
                   {key === 'remote' ? t("candidateProfile.basicInfoForm.remote") :
                    key === 'on_site' ? t("candidateProfile.basicInfoForm.onSite") :
                    t("candidateProfile.basicInfoForm.hybrid")}
-                </span>
-              </label>
+                </label>
+              </div>
             ))}
           </div>
         </div>
 
         {/* Disponibilidad para reubicación */}
-        <div>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.relocation}
-              onChange={(e) => setFormData(prev => ({ ...prev, relocation: e.target.checked }))}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <span className="ml-2 text-sm text-gray-900">{t("candidateProfile.basicInfoForm.relocation")}</span>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="relocation"
+            checked={formData.relocation}
+            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, relocation: checked === true }))}
+          />
+          <label htmlFor="relocation" className="text-sm text-foreground cursor-pointer">
+            {t("candidateProfile.basicInfoForm.relocation")}
           </label>
         </div>
 
@@ -437,9 +423,9 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
         />
 
         {/* Habilidades */}
-        <div>
-          <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-2">{t("candidateProfile.basicInfoForm.skills")}</label>
-          <textarea
+        <div className="space-y-2">
+          <Label htmlFor="skills">{t("candidateProfile.basicInfoForm.skills")}</Label>
+          <Textarea
             name="skills"
             id="skills"
             rows={3}
@@ -448,10 +434,9 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
               const skillsArray = e.target.value.split(',').map(skill => skill.trim()).filter(skill => skill);
               setFormData(prev => ({ ...prev, skills: skillsArray }));
             }}
-            className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder={t("candidateProfile.basicInfoForm.skillsPlaceholder")}
           />
-          <p className="text-xs text-gray-500 mt-1">{t("candidateProfile.basicInfoForm.skillsHint")}</p>
+          <p className="text-xs text-muted-foreground">{t("candidateProfile.basicInfoForm.skillsHint")}</p>
         </div>
 
         {/* Roles - Grid de dos columnas */}
@@ -477,33 +462,30 @@ const ProfileBasicInfoForm: React.FC<ProfileBasicInfoFormProps> = ({
         {showActions && (
           <div className="flex justify-end gap-3 pt-4">
             {onCancel && (
-              <button
-                type="button"
-                onClick={onCancel}
-                className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
-              >
+              <Button type="button" variant="outline" onClick={onCancel}>
                 {t("candidateProfile.basicInfoForm.cancel")}
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               type="submit"
               disabled={isLoading || !formData.name || !formData.email || !formData.dateOfBirth}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
             >
               {isLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {t("candidateProfile.basicInfoForm.saving")}
                 </>
               ) : (
                 t("candidateProfile.basicInfoForm.save")
               )}
-            </button>
+            </Button>
           </div>
         )}
       </form>
     </div>
   );
-};
+});
+
+ProfileBasicInfoForm.displayName = 'ProfileBasicInfoForm';
 
 export default ProfileBasicInfoForm;

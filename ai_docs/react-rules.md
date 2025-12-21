@@ -223,3 +223,86 @@ function Component({ isSpecial, shouldFetch, fetchPromise }) {
 3. **Creating hook factories** - Breaks the rules of hooks
 4. **Passing hooks as props** - Use hooks directly where needed
 5. **Forgetting the `use` prefix** - React won't recognize it as a hook
+
+## Session/Auth Management in localStorage
+
+### Single Source of Truth Pattern
+
+All session-related localStorage keys MUST be defined in a single location: `utils/jwt.ts`.
+
+```typescript
+// utils/jwt.ts - THE ONLY PLACE to define session keys
+const SESSION_KEYS = [
+  "access_token",
+  "candidate_id",
+  "job_position_id",
+  "application_id",
+  "wants_cv_help",
+] as const;
+
+export function clearAuthData(): void {
+  SESSION_KEYS.forEach(key => localStorage.removeItem(key));
+}
+```
+
+### Rules
+
+| Rule | Description |
+|------|-------------|
+| Add keys to SESSION_KEYS | When adding new session-related localStorage items, add them to `SESSION_KEYS` in `utils/jwt.ts` |
+| Use clearAuthData() | Always use `clearAuthData()` for logout/session cleanup, never manually remove individual keys |
+| No scattered cleanup | Never write `localStorage.removeItem("access_token")` directly - use the centralized function |
+
+### When to Clear Session
+
+Always clear the session before:
+- **Login flows** - Prevent mixing sessions
+- **Verification links** - Ensure clean state regardless of who was logged in
+- **Logout** - Complete cleanup
+
+```typescript
+// ✅ CORRECT: Use centralized function
+import { clearAuthData } from "../utils/jwt";
+
+function VerifyRegistrationPage() {
+  useEffect(() => {
+    clearAuthData();  // Clean slate before verification
+    // ... verification logic
+  }, []);
+}
+
+// ❌ WRONG: Manual removal (fragile, might miss keys)
+function VerifyRegistrationPage() {
+  useEffect(() => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("candidate_id");
+    // Forgot job_position_id! Bug!
+  }, []);
+}
+```
+
+### Adding New Session Data
+
+When you need to store new session-related data:
+
+1. Add the key to `SESSION_KEYS` in `utils/jwt.ts`
+2. Use `localStorage.setItem()` / `localStorage.getItem()` as normal
+3. The key will automatically be cleared by `clearAuthData()`
+
+```typescript
+// Step 1: Add to SESSION_KEYS in utils/jwt.ts
+const SESSION_KEYS = [
+  "access_token",
+  "candidate_id",
+  "job_position_id",
+  "application_id",
+  "wants_cv_help",
+  "new_session_data",  // ← Add new key here
+] as const;
+
+// Step 2: Use normally in your component
+localStorage.setItem("new_session_data", value);
+const data = localStorage.getItem("new_session_data");
+
+// Step 3: It's automatically cleared by clearAuthData() - no extra work!
+```

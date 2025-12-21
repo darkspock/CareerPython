@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Plus, Edit, Trash2, FolderOpen, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../lib/api';
@@ -19,11 +19,16 @@ interface ProfileProjectsFormProps {
   className?: string;
 }
 
-const ProfileProjectsForm: React.FC<ProfileProjectsFormProps> = ({
+// Expose submit method via ref for parent components (e.g., wizard)
+export interface ProfileProjectsFormHandle {
+  submit: () => Promise<boolean>;
+}
+
+const ProfileProjectsForm = forwardRef<ProfileProjectsFormHandle, ProfileProjectsFormProps>(({
   candidateId,
   onSave,
   className = ""
-}) => {
+}, ref) => {
   const { t } = useTranslation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +47,12 @@ const ProfileProjectsForm: React.FC<ProfileProjectsFormProps> = ({
   useEffect(() => {
     loadProjects();
   }, [candidateId]);
+
+  // Expose submit method to parent via ref
+  // For list-based forms, data is saved per-item, so submit just returns true
+  useImperativeHandle(ref, () => ({
+    submit: async () => true
+  }));
 
   const loadProjects = async () => {
     try {
@@ -343,6 +354,8 @@ const ProfileProjectsForm: React.FC<ProfileProjectsFormProps> = ({
       )}
     </div>
   );
-};
+});
+
+ProfileProjectsForm.displayName = 'ProfileProjectsForm';
 
 export default ProfileProjectsForm;

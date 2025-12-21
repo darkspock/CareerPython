@@ -130,7 +130,8 @@ class RegistrationController:
                 "job_position_id": command.job_position_id,
                 "access_token": access_token,
                 "redirect_url": redirect_url,
-                "wants_cv_help": command.wants_cv_help
+                "wants_cv_help": command.wants_cv_help,
+                "has_pdf": command.has_pdf
             }
 
         except ValueError as e:

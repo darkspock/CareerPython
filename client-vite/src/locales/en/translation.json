@@ -107,7 +107,9 @@
     "errorDeleting": "Error deleting education",
     "degreePlaceholder": "e.g. Computer Engineering",
     "institutionPlaceholder": "e.g. Polytechnic University",
-    "descriptionPlaceholder": "Describe your education, specialization, academic achievements..."
+    "descriptionPlaceholder": "Describe your education, specialization, academic achievements...",
+    "noEducation": "No education added yet",
+    "startAddingEducation": "Start by adding your academic background"
   },
   "projects": {
     "name": "Project Name",

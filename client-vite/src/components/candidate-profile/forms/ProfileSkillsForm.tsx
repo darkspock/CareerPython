@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../lib/api';
 import { X, Plus } from 'lucide-react';
@@ -8,9 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 
 interface ProfileSkillsFormProps {
   onSuccess?: () => void;
+  showActions?: boolean;
 }
 
-const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
+// Expose submit method via ref for parent components (e.g., wizard)
+export interface ProfileSkillsFormHandle {
+  submit: () => Promise<boolean>;
+}
+
+const ProfileSkillsForm = forwardRef<ProfileSkillsFormHandle, ProfileSkillsFormProps>(({ onSuccess, showActions = true }, ref) => {
   const { t } = useTranslation();
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
@@ -55,7 +61,8 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
     }
   };
 
-  const handleSave = async () => {
+  // Core submit logic - returns true on success, false on error
+  const submitForm = async (): Promise<boolean> => {
     try {
       setSaving(true);
       setError('');
@@ -71,12 +78,23 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
       setSuccess(t("candidateProfile.skillsForm.successMessage"));
       setTimeout(() => setSuccess(''), 3000);
       onSuccess?.();
+      return true;
     } catch (err) {
       console.error('Error saving skills:', err);
       setError(t("candidateProfile.skillsForm.errorSaving"));
+      return false;
     } finally {
       setSaving(false);
     }
+  };
+
+  // Expose submit method to parent via ref
+  useImperativeHandle(ref, () => ({
+    submit: submitForm
+  }));
+
+  const handleSave = async () => {
+    await submitForm();
   };
 
   if (loading) {
@@ -177,17 +195,21 @@ const ProfileSkillsForm: React.FC<ProfileSkillsFormProps> = ({ onSuccess }) => {
         </div>
 
         {/* Save button */}
-        <div className="flex justify-end pt-4 border-t">
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? t("candidateProfile.skillsForm.saving") : t("candidateProfile.skillsForm.save")}
-          </Button>
-        </div>
+        {showActions && (
+          <div className="flex justify-end pt-4 border-t">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving ? t("candidateProfile.skillsForm.saving") : t("candidateProfile.skillsForm.save")}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
-};
+});
+
+ProfileSkillsForm.displayName = 'ProfileSkillsForm';
 
 export default ProfileSkillsForm;

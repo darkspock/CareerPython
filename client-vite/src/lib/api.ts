@@ -213,6 +213,7 @@ export const api = {
       access_token: string | null;
       redirect_url: string;
       wants_cv_help: boolean;
+      has_pdf: boolean;
     }>(`/candidate/registration/verify/${token}`),
 
   getRegistrationStatus: (registrationId: string) =>

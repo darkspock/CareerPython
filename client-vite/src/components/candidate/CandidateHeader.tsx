@@ -6,16 +6,20 @@ import type { CompanyCandidate } from '../../types/companyCandidate';
 import type { WorkflowStage } from '../../types/workflow';
 import { KanbanDisplay } from '../../types/workflow';
 import CandidateReportModal from './CandidateReportModal';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface CandidateHeaderProps {
   candidate: CompanyCandidate;
   candidateId: string;
   availableStages: WorkflowStage[];
   changingStage: boolean;
-  showMoveToStageDropdown: boolean;
-  onToggleMoveToStageDropdown: () => void;
   onMoveToStage: (stageId: string) => void;
-  moveToStageDropdownRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function CandidateHeader({
@@ -23,10 +27,7 @@ export default function CandidateHeader({
   candidateId,
   availableStages,
   changingStage,
-  showMoveToStageDropdown,
-  onToggleMoveToStageDropdown,
   onMoveToStage,
-  moveToStageDropdownRef,
 }: CandidateHeaderProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -69,94 +70,92 @@ export default function CandidateHeader({
 
   return (
     <div className="mb-6">
-      <button
+      <Button
+        variant="ghost"
         onClick={() => navigate('/company/candidates')}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+        className="mb-4 text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="w-5 h-5" />
+        <ArrowLeft className="w-5 h-5 mr-2" />
         {t('company.candidates.backToCandidates')}
-      </button>
+      </Button>
 
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           {/* Avatar */}
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-            <span className="text-2xl font-bold text-blue-600">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <span className="text-2xl font-bold text-primary">
               {candidate.candidate_name?.charAt(0).toUpperCase() || 'C'}
             </span>
           </div>
 
           {/* Name & Email */}
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-foreground">
               {candidate.candidate_name || 'N/A'}
             </h1>
-            <p className="text-gray-600">{candidate.candidate_email || 'N/A'}</p>
+            <p className="text-muted-foreground">{candidate.candidate_email || 'N/A'}</p>
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="default"
             onClick={() => setShowReportModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="bg-green-600 hover:bg-green-700"
             title={t('company.candidates.generateReport', 'Generate AI Report')}
           >
-            <FileText className="w-4 h-4" />
+            <FileText className="w-4 h-4 mr-2" />
             {t('company.candidates.report.button', 'Report')}
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="default"
             onClick={handleEditClick}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             title={t('company.candidates.editCandidateDetails')}
           >
-            <Edit className="w-4 h-4" />
+            <Edit className="w-4 h-4 mr-2" />
             {t('company.candidates.edit')}
-          </button>
+          </Button>
 
           {/* Move to Stage Dropdown */}
           {stagesToShow.stages.length > 0 && (
-            <div ref={moveToStageDropdownRef} className="relative">
-              <button
-                onClick={onToggleMoveToStageDropdown}
-                disabled={changingStage}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title={t('company.workflowBoard.moveToStage')}
-              >
-                <Move className="w-4 h-4" />
-                {t('company.workflowBoard.moveToStage')}
-                <ChevronDown className="w-4 h-4" />
-              </button>
-
-              {showMoveToStageDropdown && (
-                <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[200px]">
-                  <div className="py-1">
-                    {stagesToShow.stages.map((stage) => (
-                      <button
-                        key={stage.id}
-                        onClick={() => onMoveToStage(stage.id)}
-                        disabled={changingStage}
-                        className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span
-                          className="text-sm"
-                          dangerouslySetInnerHTML={{ __html: stage.style?.icon || '' }}
-                        />
-                        <span className="text-gray-700">
-                          {stage.name}
-                          {stagesToShow.nextStageOption && stage.id === stagesToShow.nextStageOption.id && (
-                            <span className="ml-2 text-blue-600 text-xs">
-                              ({t('company.workflowBoard.nextStage')})
-                            </span>
-                          )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="default"
+                  disabled={changingStage}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  <Move className="w-4 h-4 mr-2" />
+                  {t('company.workflowBoard.moveToStage')}
+                  <ChevronDown className="w-4 h-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[200px]">
+                {stagesToShow.stages.map((stage) => (
+                  <DropdownMenuItem
+                    key={stage.id}
+                    onClick={() => onMoveToStage(stage.id)}
+                    disabled={changingStage}
+                    className="cursor-pointer"
+                  >
+                    <span
+                      className="text-sm mr-2"
+                      dangerouslySetInnerHTML={{ __html: stage.style?.icon || '' }}
+                    />
+                    <span>
+                      {stage.name}
+                      {stagesToShow.nextStageOption && stage.id === stagesToShow.nextStageOption.id && (
+                        <span className="ml-2 text-primary text-xs">
+                          ({t('company.workflowBoard.nextStage')})
                         </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+                      )}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>

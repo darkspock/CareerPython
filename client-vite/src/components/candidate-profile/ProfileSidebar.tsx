@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ProfileSidebarProps {
   currentSection?: string;
@@ -99,67 +101,66 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ currentSection }) => {
   };
 
   return (
-    <aside className="w-64 bg-white shadow-sm border-r border-gray-200 min-h-screen">
+    <aside className="w-64 bg-card shadow-sm border-r border-border min-h-screen">
       {/* Logo/Brand */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">CP</span>
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">CP</span>
           </div>
           <div>
-            <h2 className="font-bold text-gray-900">{t('candidateProfile.header.title')}</h2>
-            <p className="text-xs text-gray-500">{t('candidateProfile.header.subtitle')}</p>
+            <h2 className="font-bold text-foreground">{t('candidateProfile.header.title')}</h2>
+            <p className="text-xs text-muted-foreground">{t('candidateProfile.header.subtitle')}</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="p-4">
-        <div className="space-y-2">
+        <div className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item);
             const disabled = item.disabled;
 
             return (
-              <button
+              <Button
                 key={item.id}
+                variant="ghost"
                 onClick={() => !disabled && navigate(item.path)}
                 disabled={disabled}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
-                  disabled
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : active
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
+                className={cn(
+                  "w-full justify-start h-auto py-3 px-3",
+                  active && "bg-primary/10 text-primary border border-primary/20",
+                  disabled && "opacity-50"
+                )}
               >
-                <Icon className={`w-5 h-5 ${
-                  disabled
-                    ? 'text-gray-300'
-                    : active
-                    ? 'text-blue-600'
-                    : 'text-gray-500'
-                }`} />
-                <div className="flex-1">
-                  <div className={`font-medium ${disabled ? 'text-gray-400' : ''}`}>
+                <Icon className={cn(
+                  "w-5 h-5 mr-3 flex-shrink-0",
+                  active ? "text-primary" : "text-muted-foreground"
+                )} />
+                <div className="flex-1 text-left">
+                  <div className={cn(
+                    "font-medium",
+                    active ? "text-primary" : "text-foreground"
+                  )}>
                     {t(item.labelKey)}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground font-normal">
                     {t(item.descriptionKey)}
                   </div>
                 </div>
-              </button>
+              </Button>
             );
           })}
         </div>
       </nav>
 
       {/* Footer */}
-      <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200">
+      <div className="absolute bottom-0 w-64 p-4 border-t border-border">
         <div className="text-center">
-          <p className="text-xs text-gray-500">{t('candidateProfile.footer.brandName')}</p>
-          <p className="text-xs text-gray-400">{t('candidateProfile.footer.version')}</p>
+          <p className="text-xs text-muted-foreground">{t('candidateProfile.footer.brandName')}</p>
+          <p className="text-xs text-muted-foreground/70">{t('candidateProfile.footer.version')}</p>
         </div>
       </div>
     </aside>

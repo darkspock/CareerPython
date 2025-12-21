@@ -84,6 +84,40 @@ Traditional ATS platforms view candidates as applicants to be processed. ATS Mon
 | **Archive** | Hide old applications from main view |
 | **Withdraw** | Remove self from consideration |
 
+#### FR-CA01.4: Application Wizard - CV Requirement
+
+**Business Rule**: The company ALWAYS needs to receive a CV from the candidate.
+
+The application wizard determines which profile sections to display based on:
+
+| Condition | Sections Shown |
+|-----------|---------------|
+| No PDF uploaded | ALL sections (to generate CV) |
+| Wants CV help | ALL sections (to generate CV) |
+| Has PDF + Job requires sections | Only required sections |
+| Has PDF + No requirements | Questions only (if any) |
+
+**Section Types**:
+- `general` - Basic info (name, contact, summary)
+- `experience` - Work history
+- `education` - Academic background
+- `projects` - Portfolio items
+- `skills` - Technical and soft skills
+
+**Flow Logic**:
+```
+IF candidate has no PDF uploaded:
+    → Show ALL profile sections (mandatory CV generation)
+ELSE IF candidate requested CV help:
+    → Show ALL profile sections (CV enhancement)
+ELSE IF job_position.required_sections is not empty:
+    → Show only those sections
+ELSE:
+    → Show questions step only (if any killer questions)
+```
+
+**Rationale**: Companies invest time reviewing applications. Ensuring every application includes a CV (uploaded or generated) maintains application quality and provides recruiters with necessary candidate information.
+
 ### FR-CA02: Platform Registration
 
 #### FR-CA02.1: Registration Options

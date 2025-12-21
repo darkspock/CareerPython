@@ -29,9 +29,11 @@ class JobApplicationResponse(BaseModel):
 
 class CandidateJobApplicationSummary(BaseModel):
     id: str
+    job_position_id: str  # Added for wizard to fetch position details
     job_title: str
     company_name: str
     status: ApplicationStatusEnum
+    task_status: str  # pending, in_progress, completed
     created_at: datetime
     updated_at: Optional[datetime]
     applied_at: Optional[datetime]

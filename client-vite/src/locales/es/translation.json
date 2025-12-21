@@ -107,7 +107,9 @@
     "errorDeleting": "Error al eliminar la educación",
     "degreePlaceholder": "ej. Ingeniería Informática",
     "institutionPlaceholder": "ej. Universidad Politécnica",
-    "descriptionPlaceholder": "Describe tu formación, especialización, logros académicos..."
+    "descriptionPlaceholder": "Describe tu formación, especialización, logros académicos...",
+    "noEducation": "No has añadido formación académica",
+    "startAddingEducation": "Comienza añadiendo tu formación académica"
   },
   "projects": {
     "name": "Nombre del Proyecto",

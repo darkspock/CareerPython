@@ -38,6 +38,7 @@ class VerifyRegistrationCommand(Command):
     has_job_application: bool = False
     job_position_id: Optional[str] = None
     wants_cv_help: bool = False
+    has_pdf: bool = False  # Whether candidate uploaded a PDF during registration
 
 
 class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]):
@@ -91,6 +92,8 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
                     command.is_new_user = False
                 command.has_job_application = registration.job_position_id is not None
                 command.job_position_id = registration.job_position_id
+                command.wants_cv_help = registration.wants_cv_help
+                command.has_pdf = registration.has_pdf()
                 return  # Exit successfully
 
             # 3. Check if expired
@@ -116,8 +119,9 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
                 self.logger.info(f"Created new user {user_id} and candidate {candidate_id}")
 
             # 5. Copy PDF to user_assets if exists
+            cv_asset_id: Optional[str] = None
             if registration.has_pdf():
-                self._copy_pdf_to_user_assets(user_id, registration)
+                cv_asset_id = self._copy_pdf_to_user_assets(user_id, registration)
 
             # 6. Create job application if job_position_id exists
             has_job_application = False
@@ -125,7 +129,8 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
                 self._create_job_application(
                     candidate_id,
                     registration.job_position_id,
-                    registration.wants_cv_help
+                    registration.wants_cv_help,
+                    cv_asset_id
                 )
                 has_job_application = True
 
@@ -144,6 +149,7 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
             command.job_position_id = registration.job_position_id
             command.has_job_application = has_job_application
             command.wants_cv_help = registration.wants_cv_help
+            command.has_pdf = registration.has_pdf()
 
             self.logger.info(f"Registration verified for {registration.email}")
 
@@ -250,8 +256,8 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
         personal_info: Dict[str, Any] = registration.extracted_data.get("personal_info", {})
         return personal_info
 
-    def _copy_pdf_to_user_assets(self, user_id: UserId, registration: UserRegistration) -> None:
-        """Copy PDF data from registration to user_assets"""
+    def _copy_pdf_to_user_assets(self, user_id: UserId, registration: UserRegistration) -> Optional[str]:
+        """Copy PDF data from registration to user_assets. Returns asset ID if successful."""
         try:
             asset_id = UserAssetId(generate_id())
 
@@ -279,17 +285,20 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
                 user_asset.add_metadata("extracted_data", registration.extracted_data)
 
             self.user_asset_repository.save(user_asset)
-            self.logger.info(f"Copied PDF to user_assets for user {user_id}")
+            self.logger.info(f"Copied PDF to user_assets for user {user_id}, asset_id: {asset_id}")
+            return str(asset_id)
 
         except Exception as e:
             self.logger.error(f"Error copying PDF to user_assets: {str(e)}")
             # Don't raise - this shouldn't break verification
+            return None
 
     def _create_job_application(
             self,
             candidate_id: CandidateId,
             job_position_id: str,
-            wants_cv_help: bool = False
+            wants_cv_help: bool = False,
+            cv_file_id: Optional[str] = None
     ) -> None:
         """Create job application for candidate"""
         try:
@@ -297,10 +306,11 @@ class VerifyRegistrationCommandHandler(CommandHandler[VerifyRegistrationCommand]
                 candidate_id=str(candidate_id),
                 job_position_id=job_position_id,
                 notes="Application created during registration verification",
-                wants_cv_help=wants_cv_help
+                wants_cv_help=wants_cv_help,
+                cv_file_id=cv_file_id
             )
             self.command_bus.dispatch(application_command)
-            self.logger.info(f"Created job application for candidate {candidate_id} and position {job_position_id}")
+            self.logger.info(f"Created job application for candidate {candidate_id} and position {job_position_id}, cv_file_id: {cv_file_id}")
 
         except Exception as e:
             self.logger.error(f"Error creating job application: {str(e)}")

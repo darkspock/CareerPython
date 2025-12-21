@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Plus, Edit, Trash2, GraduationCap, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../lib/api';
@@ -20,11 +20,16 @@ interface ProfileEducationFormProps {
   className?: string;
 }
 
-const ProfileEducationForm: React.FC<ProfileEducationFormProps> = ({
+// Expose submit method via ref for parent components (e.g., wizard)
+export interface ProfileEducationFormHandle {
+  submit: () => Promise<boolean>;
+}
+
+const ProfileEducationForm = forwardRef<ProfileEducationFormHandle, ProfileEducationFormProps>(({
   candidateId,
   onSave,
   className = ""
-}) => {
+}, ref) => {
   const { t } = useTranslation();
   const [educations, setEducations] = useState<Education[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +49,12 @@ const ProfileEducationForm: React.FC<ProfileEducationFormProps> = ({
   useEffect(() => {
     loadEducations();
   }, [candidateId]);
+
+  // Expose submit method to parent via ref
+  // For list-based forms, data is saved per-item, so submit just returns true
+  useImperativeHandle(ref, () => ({
+    submit: async () => true
+  }));
 
   const loadEducations = async () => {
     try {
@@ -358,6 +369,8 @@ const ProfileEducationForm: React.FC<ProfileEducationFormProps> = ({
       )}
     </div>
   );
-};
+});
+
+ProfileEducationForm.displayName = 'ProfileEducationForm';
 
 export default ProfileEducationForm;

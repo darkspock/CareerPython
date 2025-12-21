@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Edit, Trash2, Briefcase, Calendar } from 'lucide-react';
 import { api } from '../../../lib/api';
@@ -20,11 +20,16 @@ interface ProfileExperienceFormProps {
   className?: string;
 }
 
-const ProfileExperienceForm: React.FC<ProfileExperienceFormProps> = ({
+// Expose submit method via ref for parent components (e.g., wizard)
+export interface ProfileExperienceFormHandle {
+  submit: () => Promise<boolean>;
+}
+
+const ProfileExperienceForm = forwardRef<ProfileExperienceFormHandle, ProfileExperienceFormProps>(({
   candidateId,
   onSave,
   className = ""
-}) => {
+}, ref) => {
   const { t } = useTranslation();
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +49,12 @@ const ProfileExperienceForm: React.FC<ProfileExperienceFormProps> = ({
   useEffect(() => {
     loadExperiences();
   }, [candidateId]);
+
+  // Expose submit method to parent via ref
+  // For list-based forms, data is saved per-item, so submit just returns true
+  useImperativeHandle(ref, () => ({
+    submit: async () => true
+  }));
 
   const loadExperiences = async () => {
     try {
@@ -355,6 +366,8 @@ const ProfileExperienceForm: React.FC<ProfileExperienceFormProps> = ({
       )}
     </div>
   );
-};
+});
+
+ProfileExperienceForm.displayName = 'ProfileExperienceForm';
 
 export default ProfileExperienceForm;

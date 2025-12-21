@@ -131,9 +131,11 @@ class ApplicationController:
 
         return CandidateJobApplicationSummary(
             id=dto.id,
+            job_position_id=dto.job_position_id,
             job_title=job_title,
             company_name=company_name,
             status=dto.application_status,
+            task_status=dto.task_status.value if dto.task_status else "pending",
             created_at=dto.applied_at,
             updated_at=dto.updated_at,
             applied_at=dto.applied_at,

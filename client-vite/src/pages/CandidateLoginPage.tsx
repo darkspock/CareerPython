@@ -29,7 +29,7 @@ export default function CandidateLoginPage() {
         navigate("/candidate/profile");
       } else {
         // User exists but no candidate profile, redirect to profile completion
-        navigate("/complete-profile");
+        navigate("/candidate/onboarding/complete-profile");
       }
     } catch (error: any) {
       console.error("Login error:", error);

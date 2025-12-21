@@ -62,6 +62,8 @@ class JobPositionMapper:
             public_slug=dto.public_slug,
             visible_fields=visible_fields,
             killer_questions=dto.killer_questions or [],
+            application_mode=dto.application_mode or "short",
+            required_sections=dto.required_sections or [],
             created_at=dto.created_at,
             updated_at=dto.updated_at
         )

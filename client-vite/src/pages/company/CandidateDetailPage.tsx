@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -45,9 +45,7 @@ export default function CandidateDetailPage() {
   const [activeTab, setActiveTab] = useState<'info' | 'profile' | 'answers' | 'comments' | 'reviews' | 'documents' | 'interviews' | 'history'>('info');
   const [showLiveProfile, setShowLiveProfile] = useState(false);
   const [changingStage, setChangingStage] = useState(false);
-  const [showMoveToStageDropdown, setShowMoveToStageDropdown] = useState(false);
   const [reviewsRefreshKey, setReviewsRefreshKey] = useState(0);
-  const moveToStageDropdownRef = useRef<HTMLDivElement>(null);
 
   const companyId = useCompanyId();
 
@@ -107,7 +105,6 @@ export default function CandidateDetailPage() {
       setChangingStage(true);
       await companyCandidateService.changeStage(id, { new_stage_id: stageId });
       await reloadCandidate();
-      setShowMoveToStageDropdown(false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to move candidate';
       toast.error(t('company.workflowBoard.failedToMoveCandidateMessage', { message: errorMessage }));
@@ -115,21 +112,6 @@ export default function CandidateDetailPage() {
       setChangingStage(false);
     }
   }, [id, candidate, reloadCandidate, t]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (moveToStageDropdownRef.current && !moveToStageDropdownRef.current.contains(event.target as Node)) {
-        setShowMoveToStageDropdown(false);
-      }
-    };
-
-    if (showMoveToStageDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showMoveToStageDropdown]);
-
 
   const handleChangeStage = useCallback(async (newStageId: string) => {
     if (!id) return;
@@ -182,10 +164,6 @@ export default function CandidateDetailPage() {
     }
   }, []);
 
-  const handleToggleMoveToStageDropdown = useCallback(() => {
-    setShowMoveToStageDropdown((prev) => !prev);
-  }, []);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -222,10 +200,7 @@ export default function CandidateDetailPage() {
           candidateId={id!}
           availableStages={availableStages}
           changingStage={changingStage}
-          showMoveToStageDropdown={showMoveToStageDropdown}
-          onToggleMoveToStageDropdown={handleToggleMoveToStageDropdown}
           onMoveToStage={handleMoveToStage}
-          moveToStageDropdownRef={moveToStageDropdownRef}
         />
       )}
 

@@ -181,7 +181,7 @@ export default function HomePage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Link
-                    to="/complete-profile"
+                    to="/candidate/onboarding/complete-profile"
                     className="block text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
                     Editar Perfil Básico

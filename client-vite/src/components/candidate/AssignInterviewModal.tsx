@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, AlertCircle, Plus } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
 import { companyInterviewService } from '../../services/companyInterviewService';
 import { companyInterviewTemplateService, type InterviewTemplate } from '../../services/companyInterviewTemplateService';
 import { CompanyUserService } from '../../services/companyUserService';
@@ -10,6 +10,24 @@ import type { WorkflowStage } from '../../types/workflow';
 import type { CompanyRole } from '../../types/company';
 import type { CompanyUser } from '../../types/companyUser';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 import RoleAssignmentSelector, { type RoleAssignment } from '../interviews/RoleAssignmentSelector';
 
 // Interview types enum (must match backend InterviewTypeEnum)
@@ -225,12 +243,6 @@ export default function AssignInterviewModal({
         .filter(Boolean)
         .filter((id, index, self) => self.indexOf(id) === index); // Remove duplicates
 
-      console.log('Sending interview data:', {
-        requiredRoles,
-        allInterviewers,
-        roleAssignments: validAssignments
-      });
-
       // Call create interview service through companyInterviewService
       await companyInterviewService.createInterview({
         candidate_id: candidateId,
@@ -283,128 +295,105 @@ export default function AssignInterviewModal({
   // Get IDs of roles that are already used
   const usedRoleIds = roleAssignments.map(a => a.roleId).filter(Boolean);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {t('company.interviews.assignInterview')}
-          </h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{t('company.interviews.assignInterview')}</DialogTitle>
+        </DialogHeader>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Global form error */}
           {formError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-600">{formError}</p>
-              </div>
-            </div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
           )}
 
           {/* Two Column Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Workflow Stage (Obligatorio) */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('company.interviews.form.stage')} <span className="text-red-600">*</span>
-              </label>
-              <select
-                value={workflowStageId}
-                onChange={(e) => setWorkflowStageId(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  fieldErrors.workflowStageId ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">{t('company.interviews.form.selectStage')}</option>
-                {availableStages.map((stage) => (
-                  <option key={stage.id} value={stage.id}>
-                    {stage.name}
-                    {stage.id === currentStageId && ` (${t('company.interviews.current', { defaultValue: 'Current' })})`}
-                  </option>
-                ))}
-              </select>
+            {/* Workflow Stage */}
+            <div className="space-y-2">
+              <Label>
+                {t('company.interviews.form.stage')} <span className="text-destructive">*</span>
+              </Label>
+              <Select value={workflowStageId} onValueChange={setWorkflowStageId}>
+                <SelectTrigger className={fieldErrors.workflowStageId ? 'border-destructive' : ''}>
+                  <SelectValue placeholder={t('company.interviews.form.selectStage')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableStages.map((stage) => (
+                    <SelectItem key={stage.id} value={stage.id}>
+                      {stage.name}
+                      {stage.id === currentStageId && ` (${t('company.interviews.current', { defaultValue: 'Current' })})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {fieldErrors.workflowStageId && (
-                <p className="mt-1 text-sm text-red-600">{fieldErrors.workflowStageId}</p>
+                <p className="text-sm text-destructive">{fieldErrors.workflowStageId}</p>
               )}
             </div>
 
-            {/* Interview Type (Obligatorio) */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('company.interviews.form.type')} <span className="text-red-600">*</span>
-              </label>
-              <select
-                value={interviewType}
-                onChange={(e) => setInterviewType(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  fieldErrors.interviewType ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">{t('company.interviews.form.selectType')}</option>
-                {INTERVIEW_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {t(`company.interviews.types.${type.value}`, { defaultValue: type.label })}
-                  </option>
-                ))}
-              </select>
+            {/* Interview Type */}
+            <div className="space-y-2">
+              <Label>
+                {t('company.interviews.form.type')} <span className="text-destructive">*</span>
+              </Label>
+              <Select value={interviewType} onValueChange={setInterviewType}>
+                <SelectTrigger className={fieldErrors.interviewType ? 'border-destructive' : ''}>
+                  <SelectValue placeholder={t('company.interviews.form.selectType')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {INTERVIEW_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {t(`company.interviews.types.${type.value}`, { defaultValue: type.label })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {fieldErrors.interviewType && (
-                <p className="mt-1 text-sm text-red-600">{fieldErrors.interviewType}</p>
+                <p className="text-sm text-destructive">{fieldErrors.interviewType}</p>
               )}
             </div>
 
             {/* Template (Conditional) */}
             {interviewType && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="md:col-span-2 space-y-2">
+                <Label>
                   {t('company.interviews.form.template')}
-                  {availableTemplates.length > 1 && <span className="text-red-600">*</span>}
-                </label>
+                  {availableTemplates.length > 1 && <span className="text-destructive">*</span>}
+                </Label>
                 {loadingTemplates ? (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                    <span className="text-sm">{t('common.loading')}</span>
-                  </div>
+                  <LoadingSpinner size="sm" text={t('common.loading')} />
                 ) : availableTemplates.length === 0 ? (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {t('company.interviews.form.noTemplates', { defaultValue: 'No templates available for this type' })}
                   </p>
                 ) : availableTemplates.length === 1 ? (
-                  <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                    <p className="text-sm text-gray-700">{availableTemplates[0].name}</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                  <div className="px-3 py-2 bg-muted rounded-lg">
+                    <p className="text-sm text-foreground">{availableTemplates[0].name}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {t('company.interviews.form.autoSelected', { defaultValue: 'Automatically selected' })}
                     </p>
                   </div>
                 ) : (
                   <>
-                    <select
-                      value={templateId}
-                      onChange={(e) => setTemplateId(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        fieldErrors.templateId ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    >
-                      <option value="">{t('company.interviews.form.selectTemplate')}</option>
-                      {availableTemplates.map((template) => (
-                        <option key={template.id} value={template.id}>
-                          {template.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={templateId} onValueChange={setTemplateId}>
+                      <SelectTrigger className={fieldErrors.templateId ? 'border-destructive' : ''}>
+                        <SelectValue placeholder={t('company.interviews.form.selectTemplate')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableTemplates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {fieldErrors.templateId && (
-                      <p className="mt-1 text-sm text-red-600">{fieldErrors.templateId}</p>
+                      <p className="text-sm text-destructive">{fieldErrors.templateId}</p>
                     )}
                   </>
                 )}
@@ -412,22 +401,18 @@ export default function AssignInterviewModal({
             )}
 
             {/* Scheduled Date */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('company.interviews.form.scheduledDate')}
-              </label>
-              <input
+            <div className="md:col-span-2 space-y-2">
+              <Label>{t('company.interviews.form.scheduledDate')}</Label>
+              <Input
                 type="datetime-local"
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  fieldErrors.scheduledAt ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={fieldErrors.scheduledAt ? 'border-destructive' : ''}
               />
               {fieldErrors.scheduledAt && (
-                <p className="mt-1 text-sm text-red-600">{fieldErrors.scheduledAt}</p>
+                <p className="text-sm text-destructive">{fieldErrors.scheduledAt}</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 {t('company.interviews.form.scheduledDateHelp', { defaultValue: 'Optional - leave empty to schedule later' })}
               </p>
             </div>
@@ -436,8 +421,8 @@ export default function AssignInterviewModal({
           {/* Role Assignments Section */}
           <div className="border-t pt-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                {t('company.interviews.form.roleAssignments', { defaultValue: 'Role Assignments' })} <span className="text-red-600">*</span>
+              <h3 className="text-lg font-medium text-foreground">
+                {t('company.interviews.form.roleAssignments', { defaultValue: 'Role Assignments' })} <span className="text-destructive">*</span>
               </h3>
               <Button
                 type="button"
@@ -450,18 +435,15 @@ export default function AssignInterviewModal({
                 {t('company.interviews.form.addRole', { defaultValue: 'Add Role' })}
               </Button>
             </div>
-            
+
             {loadingRoles || loadingUsers ? (
-              <div className="flex items-center gap-2 text-gray-600">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                <span className="text-sm">{t('common.loading')}</span>
-              </div>
+              <LoadingSpinner size="sm" text={t('common.loading')} />
             ) : availableRoles.length === 0 ? (
-              <p className="text-sm text-gray-500">{t('company.interviews.form.noRoles')}</p>
+              <p className="text-sm text-muted-foreground">{t('company.interviews.form.noRoles')}</p>
             ) : (
               <div className="space-y-4">
                 {roleAssignments.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
+                  <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                     <p className="text-sm">
                       {t('company.interviews.form.noRolesAssigned', { defaultValue: 'No roles assigned yet' })}
                     </p>
@@ -484,38 +466,26 @@ export default function AssignInterviewModal({
                 )}
               </div>
             )}
-            
+
             {fieldErrors.roleAssignments && (
-              <p className="mt-2 text-sm text-red-600">{fieldErrors.roleAssignments}</p>
+              <p className="mt-2 text-sm text-destructive">{fieldErrors.roleAssignments}</p>
             )}
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-muted-foreground">
               {t('company.interviews.form.roleAssignmentsHelp', { defaultValue: 'Assign at least one person to any role. You can leave roles empty and assign people later.' })}
             </p>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={submitting}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-            >
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={handleClose} disabled={submitting}>
               {t('common.cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || loadingTemplates || loadingRoles || loadingUsers}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {submitting && (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-              )}
+            </Button>
+            <Button type="submit" disabled={submitting || loadingTemplates || loadingRoles || loadingUsers}>
+              {submitting && <LoadingSpinner size="sm" color="white" className="mr-2" />}
               {t('company.interviews.assignInterview')}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

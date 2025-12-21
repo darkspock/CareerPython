@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
@@ -18,12 +18,12 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { cn } from "../lib/utils";
 
-// Import existing form components
-import ProfileBasicInfoForm from "../components/candidate-profile/forms/ProfileBasicInfoForm";
-import ProfileExperienceForm from "../components/candidate-profile/forms/ProfileExperienceForm";
-import ProfileEducationForm from "../components/candidate-profile/forms/ProfileEducationForm";
-import ProfileProjectsForm from "../components/candidate-profile/forms/ProfileProjectsForm";
-import ProfileSkillsForm from "../components/candidate-profile/forms/ProfileSkillsForm";
+// Import existing form components with their handle types
+import ProfileBasicInfoForm, { type ProfileBasicInfoFormHandle } from "../components/candidate-profile/forms/ProfileBasicInfoForm";
+import ProfileExperienceForm, { type ProfileExperienceFormHandle } from "../components/candidate-profile/forms/ProfileExperienceForm";
+import ProfileEducationForm, { type ProfileEducationFormHandle } from "../components/candidate-profile/forms/ProfileEducationForm";
+import ProfileProjectsForm, { type ProfileProjectsFormHandle } from "../components/candidate-profile/forms/ProfileProjectsForm";
+import ProfileSkillsForm, { type ProfileSkillsFormHandle } from "../components/candidate-profile/forms/ProfileSkillsForm";
 
 // Step IDs for the wizard
 const STEP_IDS = ["general", "experience", "education", "projects", "skills", "questions", "submit"] as const;
@@ -327,22 +327,41 @@ export default function ApplicationWizardPage() {
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<ApplicationQuestion[]>([]);
   const [questionAnswers, setQuestionAnswers] = useState<Record<string, unknown>>({});
-  const [applicationMode, setApplicationMode] = useState<string>('full');
+  const [_applicationMode, setApplicationMode] = useState<string>('full');
   const [wantsCVHelp, setWantsCVHelp] = useState(false);
+  const [hasPdf, setHasPdf] = useState(false);
+  const [requiredSections, setRequiredSections] = useState<string[]>([]);
 
-  // Profile steps that should be skipped in SHORT mode without CV help
-  const PROFILE_STEPS: StepId[] = ["general", "experience", "education", "projects", "skills"];
+  // Refs for form components to call submit programmatically
+  const basicInfoFormRef = useRef<ProfileBasicInfoFormHandle>(null);
+  const experienceFormRef = useRef<ProfileExperienceFormHandle>(null);
+  const educationFormRef = useRef<ProfileEducationFormHandle>(null);
+  const projectsFormRef = useRef<ProfileProjectsFormHandle>(null);
+  const skillsFormRef = useRef<ProfileSkillsFormHandle>(null);
 
-  // Determine if we should show profile steps
-  const showProfileSteps = applicationMode !== 'short' || wantsCVHelp;
+  // All profile steps
+  const ALL_PROFILE_STEPS: StepId[] = ["general", "experience", "education", "projects", "skills"];
+
+  // Business rule: Company ALWAYS needs a CV
+  // If no PDF uploaded OR wants CV help → show ALL profile sections to generate CV
+  // Otherwise → show only required_sections from job position (if any)
+  const mustShowAllSections = !hasPdf || wantsCVHelp;
+
+  // Determine which profile steps to show
+  const sectionsToShow: StepId[] = mustShowAllSections
+    ? ALL_PROFILE_STEPS
+    : (requiredSections.length > 0 ? requiredSections as StepId[] : []);
+
+  // For SubmitStep component - true if any profile sections are shown
+  const showProfileSteps = sectionsToShow.length > 0;
 
   // Build wizard steps with translations
   const wizardSteps: WizardStep[] = STEP_IDS
     .filter(id => {
       // Filter out questions step if no questions
       if (id === "questions" && !hasQuestions) return false;
-      // Filter out profile steps if SHORT mode and no CV help requested
-      if (PROFILE_STEPS.includes(id) && !showProfileSteps) return false;
+      // Filter out profile steps that are not in sectionsToShow
+      if (ALL_PROFILE_STEPS.includes(id) && !sectionsToShow.includes(id)) return false;
       return true;
     })
     .map(id => ({
@@ -365,25 +384,87 @@ export default function ApplicationWizardPage() {
     const cvHelpFlag = localStorage.getItem("wants_cv_help");
     setWantsCVHelp(cvHelpFlag === 'true');
 
+    // Read has_pdf from localStorage
+    const hasPdfFlag = localStorage.getItem("has_pdf");
+    setHasPdf(hasPdfFlag === 'true');
+
     // Load job position data and questions
     const loadJobPositionData = async () => {
       try {
-        const jobPositionId = localStorage.getItem("job_position_id");
+        let jobPositionId = localStorage.getItem("job_position_id");
+
+        // If job_position_id not in localStorage, try to get it from user's applications
+        if (!jobPositionId) {
+          const token = localStorage.getItem("access_token");
+          if (token) {
+            try {
+              const appsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/candidate/application?limit=1`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (appsResponse.ok) {
+                const apps = await appsResponse.json();
+                if (apps && apps.length > 0) {
+                  jobPositionId = apps[0].job_position_id;
+                  // Store for future use
+                  if (jobPositionId) {
+                    localStorage.setItem("job_position_id", jobPositionId);
+                  }
+                }
+              }
+            } catch (err) {
+              console.error("Error fetching applications:", err);
+            }
+          }
+        }
+
         if (jobPositionId) {
-          // Fetch job position details to get application_mode
-          const positionResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/public/positions/${jobPositionId}`);
+          // Fetch job position details to get application_mode and killer_questions
+          const positionResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/public/positions/${jobPositionId}`);
           if (positionResponse.ok) {
             const positionData = await positionResponse.json();
             setApplicationMode(positionData.application_mode || 'full');
-          }
+            setRequiredSections(positionData.required_sections || []);
 
-          // Fetch questions for the job position
-          const questionsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/public/positions/${jobPositionId}/questions`);
-          if (questionsResponse.ok) {
-            const questionsData = await questionsResponse.json();
-            const fetchedQuestions = questionsData.questions || [];
-            setQuestions(fetchedQuestions);
-            setHasQuestions(fetchedQuestions.length > 0);
+            // Convert killer_questions to ApplicationQuestion format
+            const killerQuestions = positionData.killer_questions || [];
+            const convertedQuestions: ApplicationQuestion[] = killerQuestions.map((kq: {
+              id: string;
+              name: string;
+              description?: string;  // Internal notes for recruiters - NOT shown to candidates
+              data_type: string;
+              scoring_values?: Array<{ label: string; scoring: number }>;
+              is_killer?: boolean;
+              sort_order?: number;
+            }) => {
+              // Map data_type to field_type
+              // short_string → textarea (for open-ended questions)
+              // scoring → select (for scored options)
+              // text → text (single line input)
+              let fieldType = kq.data_type;
+              if (kq.data_type === 'scoring') {
+                fieldType = 'select';
+              } else if (kq.data_type === 'short_string' || kq.data_type === 'long_string') {
+                fieldType = 'textarea';
+              }
+
+              return {
+                id: kq.id,
+                field_key: kq.id,
+                label: kq.name,
+                field_type: fieldType,
+                // NOTE: description is intentionally NOT passed - it contains internal recruiter notes
+                description: undefined,
+                options: kq.scoring_values?.map(sv => ({
+                  label: sv.label,
+                  value: sv.label
+                })),
+                is_required: kq.is_killer ?? true,
+                sort_order: kq.sort_order ?? 0
+              };
+            });
+
+            setQuestions(convertedQuestions);
+            setHasQuestions(convertedQuestions.length > 0);
           }
         }
       } catch (error) {
@@ -404,8 +485,46 @@ export default function ApplicationWizardPage() {
     }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < wizardSteps.length - 1) {
+      // Save current step before advancing
+      const currentStepId = wizardSteps[currentStep].id;
+
+      // Try to save the current form if it has a submit method
+      let success = true;
+      switch (currentStepId) {
+        case "general":
+          if (basicInfoFormRef.current) {
+            success = await basicInfoFormRef.current.submit();
+          }
+          break;
+        case "experience":
+          if (experienceFormRef.current) {
+            success = await experienceFormRef.current.submit();
+          }
+          break;
+        case "education":
+          if (educationFormRef.current) {
+            success = await educationFormRef.current.submit();
+          }
+          break;
+        case "projects":
+          if (projectsFormRef.current) {
+            success = await projectsFormRef.current.submit();
+          }
+          break;
+        case "skills":
+          if (skillsFormRef.current) {
+            success = await skillsFormRef.current.submit();
+          }
+          break;
+      }
+
+      // Don't advance if save failed
+      if (!success) {
+        return;
+      }
+
       setCurrentStep(currentStep + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -484,15 +603,15 @@ export default function ApplicationWizardPage() {
   const renderStepContent = () => {
     switch (wizardSteps[currentStep].id) {
       case "general":
-        return <ProfileBasicInfoForm />;
+        return <ProfileBasicInfoForm ref={basicInfoFormRef} showActions={false} />;
       case "experience":
-        return <ProfileExperienceForm />;
+        return <ProfileExperienceForm ref={experienceFormRef} />;
       case "education":
-        return <ProfileEducationForm />;
+        return <ProfileEducationForm ref={educationFormRef} />;
       case "projects":
-        return <ProfileProjectsForm />;
+        return <ProfileProjectsForm ref={projectsFormRef} />;
       case "skills":
-        return <ProfileSkillsForm />;
+        return <ProfileSkillsForm ref={skillsFormRef} showActions={false} />;
       case "questions":
         return (
           <QuestionsStep

@@ -76,6 +76,10 @@ class JobPositionDto:
     screening_template_id: Optional[str]
     killer_questions: List[Dict[str, Any]]  # Simple inline killer questions
 
+    # Application configuration
+    application_mode: str  # SHORT, FULL, or CV_BUILDER
+    required_sections: List[str]  # Sections required when application_mode is FULL
+
     # Visibility and publishing
     visibility: str
     public_slug: Optional[str]
@@ -150,6 +154,9 @@ class JobPositionDto:
             candidate_pipeline_id=entity.candidate_pipeline_id,
             screening_template_id=entity.screening_template_id,
             killer_questions=entity.killer_questions or [],
+            # Application configuration
+            application_mode=entity.application_mode.value if entity.application_mode else "short",
+            required_sections=entity.required_sections or [],
             # Visibility and publishing
             visibility=entity.visibility.value,
             public_slug=entity.public_slug,

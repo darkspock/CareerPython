@@ -23,6 +23,9 @@ class PublicPositionResponse(BaseModel):
     visible_fields: Dict[str, Any] = {}
     # Killer questions for application screening
     killer_questions: List[Dict[str, Any]] = []
+    # Application configuration - needed for candidate application flow
+    application_mode: str = "short"  # SHORT, FULL, or CV_BUILDER
+    required_sections: List[str] = []  # Sections required when application_mode is FULL
     created_at: datetime
     company_id: str
 
@@ -42,6 +45,8 @@ class PublicPositionResponse(BaseModel):
             public_slug=public_response.public_slug,
             visible_fields=public_response.visible_fields,
             killer_questions=public_response.killer_questions,
+            application_mode=public_response.application_mode or "short",
+            required_sections=public_response.required_sections or [],
             created_at=public_response.created_at if public_response.created_at else datetime.now(),
             company_id=public_response.company_id
         )

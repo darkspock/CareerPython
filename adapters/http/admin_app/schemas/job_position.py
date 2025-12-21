@@ -303,6 +303,9 @@ class JobPositionPublicResponse(BaseModel):
     visible_fields: Dict[str, Any] = Field(default_factory=dict)
     # Killer questions for application screening
     killer_questions: List[Dict[str, Any]] = Field(default_factory=list)
+    # Application configuration - needed for candidate application flow
+    application_mode: str = "short"  # SHORT, FULL, or CV_BUILDER
+    required_sections: List[str] = Field(default_factory=list)  # Sections required when FULL
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

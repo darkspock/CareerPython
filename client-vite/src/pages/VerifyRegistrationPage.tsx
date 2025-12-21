@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2, AlertTriangle } from "lucide-react";
 import { api } from "../lib/api";
+import { clearAuthData } from "../utils/jwt";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 
@@ -18,6 +19,7 @@ interface VerificationResult {
   access_token: string | null;
   redirect_url: string;
   wants_cv_help: boolean;
+  has_pdf: boolean;
 }
 
 export default function VerifyRegistrationPage() {
@@ -33,6 +35,10 @@ export default function VerifyRegistrationPage() {
       setErrorMessage("Token de verificación no encontrado");
       return;
     }
+
+    // Clear any existing session data before verification
+    // This ensures the verification link works regardless of who was logged in
+    clearAuthData();
 
     const verifyRegistration = async () => {
       try {
@@ -59,6 +65,9 @@ export default function VerifyRegistrationPage() {
 
           // Store wants_cv_help flag for wizard
           localStorage.setItem("wants_cv_help", data.wants_cv_help ? 'true' : 'false');
+
+          // Store has_pdf flag for wizard to determine which sections to show
+          localStorage.setItem("has_pdf", data.has_pdf ? 'true' : 'false');
 
           // Auto-redirect after 3 seconds
           setTimeout(() => {

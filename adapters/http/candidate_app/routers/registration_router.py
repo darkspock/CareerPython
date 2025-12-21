@@ -29,6 +29,7 @@ class VerifyRegistrationResponse(BaseModel):
     access_token: Optional[str] = None
     redirect_url: str
     wants_cv_help: bool = False
+    has_pdf: bool = False  # Whether candidate uploaded a PDF during registration
 
 
 class RegistrationStatusResponse(BaseModel):
