@@ -13,7 +13,23 @@ import type {
 } from '../types/jobPositionComment';
 
 class JobPositionCommentService {
-  private baseUrl = '/api/company/positions';
+  /**
+   * Get the company slug from localStorage
+   */
+  private getCompanySlug(): string {
+    const slug = localStorage.getItem('company_slug');
+    if (!slug) {
+      throw new Error('Company slug not found. Please log in again.');
+    }
+    return slug;
+  }
+
+  /**
+   * Get the base URL for position endpoints (company-scoped)
+   */
+  private getBaseUrl(): string {
+    return `/${this.getCompanySlug()}/admin/positions`;
+  }
 
   /**
    * Create a new comment for a job position
@@ -23,7 +39,7 @@ class JobPositionCommentService {
     data: CreateJobPositionCommentRequest
   ): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `${this.baseUrl}/${positionId}/comments`,
+      `${this.getBaseUrl()}/${positionId}/comments`,
       {
         method: 'POST',
         body: JSON.stringify(data),
@@ -56,7 +72,7 @@ class JobPositionCommentService {
     params.append('include_global', includeGlobal.toString());
 
     return ApiClient.authenticatedRequest<JobPositionCommentListResponse>(
-      `${this.baseUrl}/${positionId}/comments?${params.toString()}`,
+      `${this.getBaseUrl()}/${positionId}/comments?${params.toString()}`,
       { method: 'GET' }
     );
   }
@@ -69,7 +85,7 @@ class JobPositionCommentService {
     data: UpdateJobPositionCommentRequest
   ): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `${this.baseUrl}/comments/${commentId}`,
+      `${this.getBaseUrl()}/comments/${commentId}`,
       {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -82,7 +98,7 @@ class JobPositionCommentService {
    */
   async deleteComment(commentId: string): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `${this.baseUrl}/comments/${commentId}`,
+      `${this.getBaseUrl()}/comments/${commentId}`,
       { method: 'DELETE' }
     );
   }
@@ -92,7 +108,7 @@ class JobPositionCommentService {
    */
   async markCommentAsReviewed(commentId: string): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `${this.baseUrl}/comments/${commentId}/mark-reviewed`,
+      `${this.getBaseUrl()}/comments/${commentId}/mark-reviewed`,
       { method: 'POST' }
     );
   }
@@ -102,7 +118,7 @@ class JobPositionCommentService {
    */
   async markCommentAsPending(commentId: string): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `${this.baseUrl}/comments/${commentId}/mark-pending`,
+      `${this.getBaseUrl()}/comments/${commentId}/mark-pending`,
       { method: 'POST' }
     );
   }
@@ -133,7 +149,7 @@ class JobPositionCommentService {
    */
   async getAllComments(positionId: string): Promise<JobPositionComment[]> {
     return ApiClient.authenticatedRequest<JobPositionComment[]>(
-      `${this.baseUrl}/${positionId}/comments/all`,
+      `${this.getBaseUrl()}/${positionId}/comments/all`,
       { method: 'GET' }
     );
   }

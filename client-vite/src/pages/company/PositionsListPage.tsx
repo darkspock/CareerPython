@@ -18,8 +18,8 @@ import { recruiterCompanyService } from '../../services/recruiterCompanyService'
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import type { Position, JobPositionWorkflow, JobPositionWorkflowStage, ClosedReason } from '../../types/position';
 import type { CompanyWorkflow, WorkflowStage } from '../../types/workflow.ts';
-import { getVisibilityLabel, getVisibilityColor, getStatusLabelFromStage, getStatusColorFromStage, JobPositionStatus, getJobPositionStatusLabel, getAvailableTransitions } from '../../types/position';
-import { StatusBadge, ClosePositionModal, RejectPositionModal } from '../../components/jobPosition/publishing';
+import { getVisibilityLabel, getVisibilityColor, JobPositionStatus, getJobPositionStatusLabel, getAvailableTransitions } from '../../types/position';
+import { ClosePositionModal, RejectPositionModal } from '../../components/jobPosition/publishing';
 import {
   Tooltip,
   TooltipContent,
@@ -90,19 +90,14 @@ function PositionCard({
           <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
             {position.title}
           </h3>
-          <div className="flex items-center gap-2">
-            {position.stage && (
-              <Badge variant="secondary" className={getStatusColorFromStage(position.stage)}>
-                {getStatusLabelFromStage(position.stage)}
-              </Badge>
-            )}
-            {position.pending_comments_count !== undefined && position.pending_comments_count > 0 && (
+          {position.pending_comments_count !== undefined && position.pending_comments_count > 0 && (
+            <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
                 <MessageCircle className="w-3 h-3 mr-1" />
                 {position.pending_comments_count}
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
       <div className="space-y-1 mb-3 text-xs text-gray-600">
@@ -1055,9 +1050,6 @@ function PositionsListPageContent() {
                     Title
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Visibility
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1089,9 +1081,6 @@ function PositionsListPageContent() {
                     <tr key={position.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{position.title}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <StatusBadge status={position.status} size="sm" />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Badge variant="outline" className={getVisibilityColor(position.visibility)}>
@@ -1362,14 +1351,9 @@ function PositionsListPageContent() {
           <DragOverlay>
             {activeDragPosition && (
               <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-64">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                <h3 className="text-sm font-semibold text-gray-900">
                   {activeDragPosition.title}
                 </h3>
-                {activeDragPosition.stage && (
-                  <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColorFromStage(activeDragPosition.stage)}`}>
-                    {getStatusLabelFromStage(activeDragPosition.stage)}
-                  </span>
-                )}
               </div>
             )}
           </DragOverlay>

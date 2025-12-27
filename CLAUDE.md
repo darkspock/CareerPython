@@ -398,6 +398,50 @@ This architecture ensures complete decoupling, testability, and maintainability.
 - i18next for internationalization (en/es)
 - Component structure in `src/components/`
 
+### Company-Scoped URL Architecture
+
+The application uses company-scoped URLs where the company slug is part of the URL path:
+
+**URL Pattern**: `/{company_slug}/admin/*` and `/{company_slug}/candidate/*`
+
+**Benefits**:
+- Clear company context in every request
+- Prevents admin users from accidentally creating candidate records for their own company
+- Better security through explicit company validation
+- SEO-friendly public URLs like `/{company_slug}/positions`
+
+**Key Files**:
+- `adapters/http/shared/dependencies/company_context.py` - Company context dependencies
+- `adapters/http/company_app/routers/company_scoped_admin_router.py` - Admin routes
+- `adapters/http/company_app/routers/company_scoped_public_router.py` - Public routes
+- `adapters/http/candidate_app/routers/company_scoped_candidate_router.py` - Candidate routes
+
+**Dependencies (Type Aliases)**:
+- `CompanyContext` - Basic company context from URL slug
+- `AdminCompanyContext` - Requires user to be staff of the company
+- `CandidateCompanyContext` - Validates user is NOT staff of the company (prevents self-applications)
+- `CurrentCompanyUser` - Gets the company user record for the current user
+
+**Route Examples**:
+```
+# Public routes (no auth)
+GET /{company_slug}/positions          # Job board
+GET /{company_slug}/positions/{id}     # Position detail
+GET /{company_slug}/about              # Company about page
+
+# Admin routes (requires staff)
+GET /{company_slug}/admin/candidates   # List candidates
+GET /{company_slug}/admin/positions    # List positions
+GET /{company_slug}/admin/interviews   # List interviews
+GET /{company_slug}/admin/workflows    # List workflows
+
+# Candidate routes (blocks own company staff)
+GET /{company_slug}/candidate/applications   # My applications to this company
+POST /{company_slug}/candidate/apply/{id}    # Apply to position
+```
+
+**DEPRECATED Routes**: Old routes at `/api/company/*` are deprecated. Use new company-scoped routes.
+
 ## Key Components
 
 ### Core Infrastructure

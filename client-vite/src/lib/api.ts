@@ -310,7 +310,7 @@ export const api = {
   getMyProfileSummary: () =>
     ApiClient.authenticatedRequest('/candidate/profile/summary'),
 
-  // Applications
+  // Applications (Global - all applications across all companies)
   getMyApplications: (params?: { status?: string; limit?: number }) => {
     let endpoint = '/candidate/application';
     if (params) {
@@ -333,6 +333,172 @@ export const api = {
       has_customized_content: boolean;
     }[]>(endpoint);
   },
+
+  // Company-scoped Applications (applications to a specific company)
+  getCompanyApplications: (companySlug: string, params?: { status?: string; limit?: number }) => {
+    let endpoint = `/${companySlug}/candidate/applications`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.status) queryParams.append('status', params.status);
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      const queryString = queryParams.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+    return ApiClient.authenticatedRequest<{
+      id: string;
+      job_position_id: string;
+      job_title: string;
+      company_name: string;
+      status: string;
+      task_status: string;
+      created_at: string;
+      updated_at: string | null;
+      applied_at: string | null;
+      has_customized_content: boolean;
+    }[]>(endpoint);
+  },
+
+  // Apply to a position at a specific company
+  applyToPosition: (companySlug: string, positionId: string, coverLetter?: string) => {
+    let endpoint = `/${companySlug}/candidate/apply/${positionId}`;
+    if (coverLetter) {
+      endpoint += `?cover_letter=${encodeURIComponent(coverLetter)}`;
+    }
+    return ApiClient.authenticatedRequest<{
+      message: string;
+      position_id: string;
+      company: {
+        id: string;
+        name: string;
+        slug: string;
+      };
+    }>(endpoint, { method: 'POST' });
+  },
+
+  // Get company info for candidate portal
+  getCompanyInfoForCandidate: (companySlug: string) =>
+    ApiClient.request<{
+      id: string;
+      name: string;
+      slug: string;
+      logo_url: string | null;
+    }>(`/${companySlug}/candidate/company-info`),
+
+  // Get positions at a specific company (public - candidate portal)
+  getCompanyPositions: (companySlug: string) =>
+    ApiClient.request<{
+      company: {
+        id: string;
+        name: string;
+        slug: string;
+      };
+      positions: Array<{
+        id: string;
+        title: string;
+        description: string;
+        location: string;
+        employment_type: string;
+        status: string;
+      }>;
+      total: number;
+    }>(`/${companySlug}/candidate/positions`),
+
+  // ==================== PUBLIC COMPANY-SCOPED API ====================
+  // These endpoints are public (no authentication required) and use company slug
+
+  // Get company basic info (public)
+  getPublicCompanyInfo: (companySlug: string) =>
+    ApiClient.request<{
+      id: string;
+      name: string;
+      slug: string;
+      logo_url: string | null;
+    }>(`/${companySlug}`),
+
+  // List published positions at a company (public)
+  getPublicCompanyPositions: (companySlug: string, params?: {
+    search?: string;
+    page?: number;
+    page_size?: number;
+  }) => {
+    let endpoint = `/${companySlug}/positions`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.search) queryParams.append('search', params.search);
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.page_size) queryParams.append('page_size', params.page_size.toString());
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return ApiClient.request<{
+      company: {
+        id: string;
+        name: string;
+        slug: string;
+        logo_url: string | null;
+      };
+      positions: Array<{
+        id: string;
+        title: string;
+        description: string;
+        location: string;
+        employment_type: string;
+        job_category: string;
+        status: string;
+      }>;
+      total: number;
+      page: number;
+      page_size: number;
+      total_pages: number;
+    }>(endpoint);
+  },
+
+  // Get a specific position at a company (public)
+  getPublicCompanyPosition: (companySlug: string, positionId: string) =>
+    ApiClient.request<{
+      id: string;
+      title: string;
+      description: string;
+      location: string;
+      employment_type: string;
+      job_category: string;
+      required_experience: string | null;
+      salary_range: string | null;
+      benefits: string | null;
+      requirements: string | null;
+      responsibilities: string | null;
+      status: string;
+      public_slug: string | null;
+      created_at: string | null;
+      company: {
+        id: string;
+        name: string;
+        slug: string;
+        logo_url: string | null;
+      };
+    }>(`/${companySlug}/positions/${positionId}`),
+
+  // Get company about page (public)
+  getPublicCompanyAbout: (companySlug: string) =>
+    ApiClient.request<{
+      company: {
+        id: string;
+        name: string;
+        slug: string;
+        logo_url: string | null;
+      };
+      page: {
+        type: string;
+        title: string;
+        content: string | null;
+        sections: Array<{
+          title: string;
+          content: string;
+        }>;
+      };
+    }>(`/${companySlug}/about`),
 
   updateMyProfile: (candidateData: any) =>
     ApiClient.authenticatedRequest('/candidate/profile', {
@@ -1000,6 +1166,481 @@ export const api = {
 
   deleteCompanyRole: (companyId: string, roleId: string) =>
     ApiClient.authenticatedRequest(`/companies/${companyId}/roles/${roleId}`, {
+      method: 'DELETE',
+    }),
+
+  // ==================== COMPANY-SCOPED ADMIN API ====================
+  // These endpoints use company slug in the URL for proper context validation
+
+  // Admin Position Management (company-scoped)
+  adminListPositions: (companySlug: string, params?: {
+    search_term?: string;
+    is_active?: boolean;
+    page?: number;
+    page_size?: number;
+  }) => {
+    let endpoint = `/${companySlug}/admin/positions`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.search_term) queryParams.append('search_term', params.search_term);
+      if (params.is_active !== undefined) queryParams.append('is_active', params.is_active.toString());
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.page_size) queryParams.append('page_size', params.page_size.toString());
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return ApiClient.authenticatedRequest(endpoint);
+  },
+
+  adminGetPosition: (companySlug: string, positionId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}`),
+
+  adminCreatePosition: (companySlug: string, data: any) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminUpdatePosition: (companySlug: string, positionId: string, data: any) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminDeletePosition: (companySlug: string, positionId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}`, {
+      method: 'DELETE',
+    }),
+
+  adminPublishPosition: (companySlug: string, positionId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}/publish`, {
+      method: 'POST',
+    }),
+
+  adminHoldPosition: (companySlug: string, positionId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}/hold`, {
+      method: 'POST',
+    }),
+
+  adminResumePosition: (companySlug: string, positionId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}/resume`, {
+      method: 'POST',
+    }),
+
+  adminClosePosition: (companySlug: string, positionId: string, reason?: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}/close`, {
+      method: 'POST',
+      body: JSON.stringify({ reason: reason || '' }),
+    }),
+
+  adminArchivePosition: (companySlug: string, positionId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}/archive`, {
+      method: 'POST',
+    }),
+
+  adminClonePosition: (companySlug: string, positionId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/positions/${positionId}/clone`, {
+      method: 'POST',
+    }),
+
+  // Admin Candidate Management (company-scoped)
+  adminListCandidates: (companySlug: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates`),
+
+  adminGetCandidate: (companySlug: string, companyCandidateId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}`),
+
+  adminCreateCandidate: (companySlug: string, data: {
+    candidate_id: string;
+    job_position_id?: string;
+    workflow_id?: string;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminUpdateCandidate: (companySlug: string, companyCandidateId: string, data: any) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminConfirmCandidate: (companySlug: string, companyCandidateId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/confirm`, {
+      method: 'POST',
+    }),
+
+  adminRejectCandidate: (companySlug: string, companyCandidateId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/reject`, {
+      method: 'POST',
+    }),
+
+  adminArchiveCandidate: (companySlug: string, companyCandidateId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/archive`, {
+      method: 'POST',
+    }),
+
+  adminAssignWorkflow: (companySlug: string, companyCandidateId: string, data: {
+    workflow_id: string;
+    start_stage_id?: string;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/assign-workflow`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminChangeCandidateStage: (companySlug: string, companyCandidateId: string, data: {
+    stage_id: string;
+    notes?: string;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/change-stage`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminGenerateCandidateReport: (companySlug: string, companyCandidateId: string, data?: {
+    include_comments?: boolean;
+    include_interviews?: boolean;
+    include_reviews?: boolean;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/report`, {
+      method: 'POST',
+      body: JSON.stringify(data || {
+        include_comments: true,
+        include_interviews: true,
+        include_reviews: true,
+      }),
+    }),
+
+  // Admin Application Management (company-scoped)
+  adminAssignCandidateToPosition: (companySlug: string, data: {
+    candidate_id: string;
+    job_position_id: string;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/applications`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminCheckCanProcessApplication: (companySlug: string, applicationId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/applications/${applicationId}/can-process`),
+
+  // Admin Interview Management (company-scoped)
+  adminListInterviews: (companySlug: string, params?: {
+    candidate_id?: string;
+    job_position_id?: string;
+    status?: string;
+    from_date?: string;
+    to_date?: string;
+    limit?: number;
+    offset?: number;
+  }) => {
+    let endpoint = `/${companySlug}/admin/interviews`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.candidate_id) queryParams.append('candidate_id', params.candidate_id);
+      if (params.job_position_id) queryParams.append('job_position_id', params.job_position_id);
+      if (params.status) queryParams.append('status', params.status);
+      if (params.from_date) queryParams.append('from_date', params.from_date);
+      if (params.to_date) queryParams.append('to_date', params.to_date);
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.offset) queryParams.append('offset', params.offset.toString());
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return ApiClient.authenticatedRequest(endpoint);
+  },
+
+  adminGetInterviewStats: (companySlug: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interviews/statistics`),
+
+  adminGetInterview: (companySlug: string, interviewId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interviews/${interviewId}`),
+
+  adminGetInterviewView: (companySlug: string, interviewId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interviews/${interviewId}/view`),
+
+  adminCreateInterview: (companySlug: string, data: any) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interviews`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminUpdateInterview: (companySlug: string, interviewId: string, data: any) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interviews/${interviewId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminStartInterview: (companySlug: string, interviewId: string, startedBy?: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interviews/${interviewId}/start`, {
+      method: 'POST',
+      body: JSON.stringify({ started_by: startedBy }),
+    }),
+
+  adminFinishInterview: (companySlug: string, interviewId: string, finishedBy?: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interviews/${interviewId}/finish`, {
+      method: 'POST',
+      body: JSON.stringify({ finished_by: finishedBy }),
+    }),
+
+  // Admin Interview Template Management (company-scoped)
+  adminListInterviewTemplates: (companySlug: string, params?: {
+    search_term?: string;
+    type?: string;
+    status?: string;
+    page?: number;
+    page_size?: number;
+  }) => {
+    let endpoint = `/${companySlug}/admin/interview-templates`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.search_term) queryParams.append('search_term', params.search_term);
+      if (params.type) queryParams.append('type', params.type);
+      if (params.status) queryParams.append('status', params.status);
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.page_size) queryParams.append('page_size', params.page_size.toString());
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return ApiClient.authenticatedRequest(endpoint);
+  },
+
+  adminGetInterviewTemplate: (companySlug: string, templateId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interview-templates/${templateId}`),
+
+  adminCreateInterviewTemplate: (companySlug: string, data: any) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interview-templates`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminUpdateInterviewTemplate: (companySlug: string, templateId: string, data: any) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interview-templates/${templateId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminDeleteInterviewTemplate: (companySlug: string, templateId: string, params?: {
+    delete_reason?: string;
+    force_delete?: boolean;
+  }) => {
+    let endpoint = `/${companySlug}/admin/interview-templates/${templateId}`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.delete_reason) queryParams.append('delete_reason', params.delete_reason);
+      if (params.force_delete !== undefined) queryParams.append('force_delete', params.force_delete.toString());
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return ApiClient.authenticatedRequest(endpoint, { method: 'DELETE' });
+  },
+
+  adminEnableInterviewTemplate: (companySlug: string, templateId: string, enableReason?: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interview-templates/${templateId}/enable`, {
+      method: 'POST',
+      body: JSON.stringify({ enable_reason: enableReason }),
+    }),
+
+  adminDisableInterviewTemplate: (companySlug: string, templateId: string, params?: {
+    disable_reason?: string;
+    force_disable?: boolean;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/interview-templates/${templateId}/disable`, {
+      method: 'POST',
+      body: JSON.stringify(params || {}),
+    }),
+
+  // Admin Workflow Management (company-scoped)
+  adminListWorkflows: (companySlug: string, params?: {
+    is_active?: boolean;
+    search_term?: string;
+    limit?: number;
+    offset?: number;
+  }) => {
+    let endpoint = `/${companySlug}/admin/workflows`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.is_active !== undefined) queryParams.append('is_active', params.is_active.toString());
+      if (params.search_term) queryParams.append('search_term', params.search_term);
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.offset) queryParams.append('offset', params.offset.toString());
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return ApiClient.authenticatedRequest(endpoint);
+  },
+
+  adminGetWorkflow: (companySlug: string, workflowId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}`),
+
+  adminCreateWorkflow: (companySlug: string, data: {
+    name: string;
+    description?: string;
+    stages?: Array<{ name: string; description?: string; order: number }>;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminUpdateWorkflow: (companySlug: string, workflowId: string, data: {
+    name?: string;
+    description?: string;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminActivateWorkflow: (companySlug: string, workflowId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/activate`, {
+      method: 'POST',
+    }),
+
+  adminDeactivateWorkflow: (companySlug: string, workflowId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/deactivate`, {
+      method: 'POST',
+    }),
+
+  adminArchiveWorkflow: (companySlug: string, workflowId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/archive`, {
+      method: 'POST',
+    }),
+
+  adminSetDefaultWorkflow: (companySlug: string, workflowId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/set-default`, {
+      method: 'POST',
+    }),
+
+  adminDeleteWorkflow: (companySlug: string, workflowId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}`, {
+      method: 'DELETE',
+    }),
+
+  // Admin Workflow Stage Management (company-scoped)
+  adminListWorkflowStages: (companySlug: string, workflowId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/stages`),
+
+  adminGetWorkflowStage: (companySlug: string, workflowId: string, stageId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/stages/${stageId}`),
+
+  adminCreateWorkflowStage: (companySlug: string, workflowId: string, data: {
+    name: string;
+    description?: string;
+    order?: number;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/stages`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminUpdateWorkflowStage: (companySlug: string, workflowId: string, stageId: string, data: {
+    name?: string;
+    description?: string;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/stages/${stageId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminDeleteWorkflowStage: (companySlug: string, workflowId: string, stageId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/stages/${stageId}`, {
+      method: 'DELETE',
+    }),
+
+  adminReorderWorkflowStages: (companySlug: string, workflowId: string, data: {
+    stage_ids: string[];
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/workflows/${workflowId}/stages/reorder`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // Admin Candidate Comments (company-scoped)
+  adminListCandidateComments: (companySlug: string, companyCandidateId: string, params?: {
+    limit?: number;
+    offset?: number;
+  }) => {
+    let endpoint = `/${companySlug}/admin/candidates/${companyCandidateId}/comments`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.offset) queryParams.append('offset', params.offset.toString());
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return ApiClient.authenticatedRequest(endpoint);
+  },
+
+  adminCreateCandidateComment: (companySlug: string, companyCandidateId: string, data: {
+    content: string;
+    is_private?: boolean;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminGetCandidateComment: (companySlug: string, companyCandidateId: string, commentId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/comments/${commentId}`),
+
+  adminUpdateCandidateComment: (companySlug: string, companyCandidateId: string, commentId: string, data: {
+    content?: string;
+    is_private?: boolean;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/comments/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminDeleteCandidateComment: (companySlug: string, companyCandidateId: string, commentId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/comments/${commentId}`, {
+      method: 'DELETE',
+    }),
+
+  // Admin Candidate Reviews (company-scoped)
+  adminListCandidateReviews: (companySlug: string, companyCandidateId: string, params?: {
+    limit?: number;
+    offset?: number;
+  }) => {
+    let endpoint = `/${companySlug}/admin/candidates/${companyCandidateId}/reviews`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.offset) queryParams.append('offset', params.offset.toString());
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return ApiClient.authenticatedRequest(endpoint);
+  },
+
+  adminCreateCandidateReview: (companySlug: string, companyCandidateId: string, data: {
+    rating: number;
+    feedback: string;
+    criteria_scores?: Record<string, number>;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  adminGetCandidateReview: (companySlug: string, companyCandidateId: string, reviewId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/reviews/${reviewId}`),
+
+  adminUpdateCandidateReview: (companySlug: string, companyCandidateId: string, reviewId: string, data: {
+    rating?: number;
+    feedback?: string;
+    criteria_scores?: Record<string, number>;
+  }) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/reviews/${reviewId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminDeleteCandidateReview: (companySlug: string, companyCandidateId: string, reviewId: string) =>
+    ApiClient.authenticatedRequest(`/${companySlug}/admin/candidates/${companyCandidateId}/reviews/${reviewId}`, {
       method: 'DELETE',
     }),
 

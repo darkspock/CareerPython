@@ -155,6 +155,24 @@ export type FinishInterviewRequest = {
   notes?: string;
 };
 
+/**
+ * Get the company slug from localStorage
+ */
+function getCompanySlug(): string {
+  const slug = localStorage.getItem('company_slug');
+  if (!slug) {
+    throw new Error('Company slug not found. Please log in again.');
+  }
+  return slug;
+}
+
+/**
+ * Get the base path for interview endpoints (company-scoped)
+ */
+function getInterviewsBasePath(): string {
+  return `/${getCompanySlug()}/admin/interviews`;
+}
+
 export const companyInterviewService = {
   /**
    * List all interviews for the company
@@ -175,7 +193,7 @@ export const companyInterviewService = {
     if (filters?.limit) queryParams.append('limit', filters.limit.toString());
     if (filters?.offset) queryParams.append('offset', filters.offset.toString());
 
-    const endpoint = `/api/company/interviews${queryParams.toString() ? `?${queryParams}` : ''}`;
+    const endpoint = `${getInterviewsBasePath()}${queryParams.toString() ? `?${queryParams}` : ''}`;
     return ApiClient.authenticatedRequest<InterviewListResponse>(endpoint);
   },
 
@@ -183,7 +201,7 @@ export const companyInterviewService = {
    * Get interview statistics for the company
    */
   async getInterviewStats(): Promise<InterviewStatsResponse> {
-    return ApiClient.authenticatedRequest<InterviewStatsResponse>('/api/company/interviews/statistics');
+    return ApiClient.authenticatedRequest<InterviewStatsResponse>(`${getInterviewsBasePath()}/statistics`);
   },
 
   /**
@@ -194,35 +212,35 @@ export const companyInterviewService = {
     queryParams.append('from_date', fromDate);
     queryParams.append('to_date', toDate);
     queryParams.append('filter_by', 'scheduled');
-    return ApiClient.authenticatedRequest<Interview[]>(`/api/company/interviews/calendar?${queryParams}`);
+    return ApiClient.authenticatedRequest<Interview[]>(`${getInterviewsBasePath()}/calendar?${queryParams}`);
   },
 
   /**
    * Get overdue interviews
    */
   async getOverdueInterviews(): Promise<Interview[]> {
-    return ApiClient.authenticatedRequest<Interview[]>('/api/company/interviews/overdue');
+    return ApiClient.authenticatedRequest<Interview[]>(`${getInterviewsBasePath()}/overdue`);
   },
 
   /**
    * Get a single interview by ID (for editing - only interview fields)
    */
   async getInterview(interviewId: string): Promise<Interview> {
-    return ApiClient.authenticatedRequest<Interview>(`/api/company/interviews/${interviewId}`);
+    return ApiClient.authenticatedRequest<Interview>(`${getInterviewsBasePath()}/${interviewId}`);
   },
 
   /**
    * Get a single interview by ID with full denormalized information (for viewing)
    */
   async getInterviewView(interviewId: string): Promise<Interview> {
-    return ApiClient.authenticatedRequest<Interview>(`/api/company/interviews/${interviewId}/view`);
+    return ApiClient.authenticatedRequest<Interview>(`${getInterviewsBasePath()}/${interviewId}/view`);
   },
 
   /**
    * Create a new interview
    */
   async createInterview(data: CreateInterviewRequest): Promise<InterviewActionResponse> {
-    return ApiClient.authenticatedRequest<InterviewActionResponse>('/api/company/interviews', {
+    return ApiClient.authenticatedRequest<InterviewActionResponse>(`${getInterviewsBasePath()}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -233,7 +251,7 @@ export const companyInterviewService = {
    * Update an interview
    */
   async updateInterview(interviewId: string, data: UpdateInterviewRequest): Promise<InterviewActionResponse> {
-    return ApiClient.authenticatedRequest<InterviewActionResponse>(`/api/company/interviews/${interviewId}`, {
+    return ApiClient.authenticatedRequest<InterviewActionResponse>(`${getInterviewsBasePath()}/${interviewId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -244,7 +262,7 @@ export const companyInterviewService = {
    * Cancel an interview (updates status to DISCARDED)
    */
   async cancelInterview(interviewId: string): Promise<InterviewActionResponse> {
-    return ApiClient.authenticatedRequest<InterviewActionResponse>(`/api/company/interviews/${interviewId}`, {
+    return ApiClient.authenticatedRequest<InterviewActionResponse>(`${getInterviewsBasePath()}/${interviewId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'DISCARDED' }),
@@ -255,7 +273,7 @@ export const companyInterviewService = {
    * Start an interview
    */
   async startInterview(interviewId: string, data?: StartInterviewRequest): Promise<InterviewActionResponse> {
-    return ApiClient.authenticatedRequest<InterviewActionResponse>(`/api/company/interviews/${interviewId}/start`, {
+    return ApiClient.authenticatedRequest<InterviewActionResponse>(`${getInterviewsBasePath()}/${interviewId}/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data || {}),
@@ -266,7 +284,7 @@ export const companyInterviewService = {
    * Finish an interview
    */
   async finishInterview(interviewId: string, data?: FinishInterviewRequest): Promise<InterviewActionResponse> {
-    return ApiClient.authenticatedRequest<InterviewActionResponse>(`/api/company/interviews/${interviewId}/finish`, {
+    return ApiClient.authenticatedRequest<InterviewActionResponse>(`${getInterviewsBasePath()}/${interviewId}/finish`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data || {}),
@@ -284,7 +302,7 @@ export const companyInterviewService = {
     if (filters?.status) queryParams.append('status', filters.status);
     if (filters?.interview_type) queryParams.append('interview_type', filters.interview_type);
 
-    const endpoint = `/api/company/interviews/candidate/${candidateId}${queryParams.toString() ? `?${queryParams}` : ''}`;
+    const endpoint = `${getInterviewsBasePath()}/candidate/${candidateId}${queryParams.toString() ? `?${queryParams}` : ''}`;
     return ApiClient.authenticatedRequest<Interview[]>(endpoint);
   },
 
@@ -301,7 +319,7 @@ export const companyInterviewService = {
     if (filters?.to_date) queryParams.append('to_date', filters.to_date);
     if (filters?.interviewer) queryParams.append('interviewer', filters.interviewer);
 
-    const endpoint = `/api/company/interviews/scheduled${queryParams.toString() ? `?${queryParams}` : ''}`;
+    const endpoint = `${getInterviewsBasePath()}/scheduled${queryParams.toString() ? `?${queryParams}` : ''}`;
     return ApiClient.authenticatedRequest<Interview[]>(endpoint);
   },
 
@@ -310,7 +328,7 @@ export const companyInterviewService = {
    */
   async getInterviewScoreSummary(interviewId: string): Promise<InterviewScoreSummaryResponse> {
     return ApiClient.authenticatedRequest<InterviewScoreSummaryResponse>(
-      `/api/company/interviews/${interviewId}/score-summary`
+      `${getInterviewsBasePath()}/${interviewId}/score-summary`
     );
   },
 
@@ -322,7 +340,7 @@ export const companyInterviewService = {
     expiresInDays: number = 30
   ): Promise<{ message: string; status: string; link?: string; link_token?: string; interview_id?: string; expires_in_days?: number; expires_at?: string }> {
     return ApiClient.authenticatedRequest<{ message: string; status: string; link?: string; link_token?: string; interview_id?: string; expires_in_days?: number; expires_at?: string }>(
-      `/api/company/interviews/${interviewId}/generate-link?expires_in_days=${expiresInDays}`,
+      `${getInterviewsBasePath()}/${interviewId}/generate-link?expires_in_days=${expiresInDays}`,
       {
         method: 'POST',
       }

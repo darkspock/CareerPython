@@ -1,6 +1,24 @@
 import { ApiClient } from '../lib/api';
 import type { CandidateReview, CreateReviewRequest, UpdateReviewRequest } from '../types/candidateReview';
 
+/**
+ * Get the company slug from localStorage
+ */
+function getCompanySlug(): string {
+  const slug = localStorage.getItem('company_slug');
+  if (!slug) {
+    throw new Error('Company slug not found. Please log in again.');
+  }
+  return slug;
+}
+
+/**
+ * Get the base path for candidate endpoints (company-scoped)
+ */
+function getCandidatesBasePath(): string {
+  return `/${getCompanySlug()}/admin/candidates`;
+}
+
 export class CandidateReviewService {
   /**
    * Create a new review for a candidate
@@ -10,7 +28,7 @@ export class CandidateReviewService {
     data: CreateReviewRequest
   ): Promise<CandidateReview> {
     return await ApiClient.authenticatedRequest<CandidateReview>(
-      `/api/company/candidates/${companyCandidateId}/reviews`,
+      `${getCandidatesBasePath()}/${companyCandidateId}/reviews`,
       {
         method: 'POST',
         body: JSON.stringify(data),
@@ -23,7 +41,7 @@ export class CandidateReviewService {
    */
   static async getReviewsByCandidate(companyCandidateId: string): Promise<CandidateReview[]> {
     return await ApiClient.authenticatedRequest<CandidateReview[]>(
-      `/api/company/candidates/${companyCandidateId}/reviews`
+      `${getCandidatesBasePath()}/${companyCandidateId}/reviews`
     );
   }
 
@@ -35,7 +53,7 @@ export class CandidateReviewService {
     stageId: string
   ): Promise<CandidateReview[]> {
     return await ApiClient.authenticatedRequest<CandidateReview[]>(
-      `/api/company/candidates/${companyCandidateId}/reviews/stage/${stageId}`
+      `${getCandidatesBasePath()}/${companyCandidateId}/reviews/stage/${stageId}`
     );
   }
 
@@ -44,7 +62,7 @@ export class CandidateReviewService {
    */
   static async getGlobalReviews(companyCandidateId: string): Promise<CandidateReview[]> {
     return await ApiClient.authenticatedRequest<CandidateReview[]>(
-      `/api/company/candidates/${companyCandidateId}/reviews/global`
+      `${getCandidatesBasePath()}/${companyCandidateId}/reviews/global`
     );
   }
 
@@ -53,7 +71,7 @@ export class CandidateReviewService {
    */
   static async getReviewById(reviewId: string): Promise<CandidateReview> {
     return await ApiClient.authenticatedRequest<CandidateReview>(
-      `/api/company/candidates/reviews/${reviewId}`
+      `${getCandidatesBasePath()}/reviews/${reviewId}`
     );
   }
 
@@ -62,7 +80,7 @@ export class CandidateReviewService {
    */
   static async updateReview(reviewId: string, data: UpdateReviewRequest): Promise<CandidateReview> {
     return await ApiClient.authenticatedRequest<CandidateReview>(
-      `/api/company/candidates/reviews/${reviewId}`,
+      `${getCandidatesBasePath()}/reviews/${reviewId}`,
       {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -74,7 +92,7 @@ export class CandidateReviewService {
    * Delete a review
    */
   static async deleteReview(reviewId: string): Promise<void> {
-    await ApiClient.authenticatedRequest(`/api/company/candidates/reviews/${reviewId}`, {
+    await ApiClient.authenticatedRequest(`${getCandidatesBasePath()}/reviews/${reviewId}`, {
       method: 'DELETE',
     });
   }
@@ -84,7 +102,7 @@ export class CandidateReviewService {
    */
   static async markAsReviewed(reviewId: string): Promise<CandidateReview> {
     return await ApiClient.authenticatedRequest<CandidateReview>(
-      `/api/company/candidates/reviews/${reviewId}/mark-reviewed`,
+      `${getCandidatesBasePath()}/reviews/${reviewId}/mark-reviewed`,
       {
         method: 'POST',
       }
@@ -96,7 +114,7 @@ export class CandidateReviewService {
    */
   static async markAsPending(reviewId: string): Promise<CandidateReview> {
     return await ApiClient.authenticatedRequest<CandidateReview>(
-      `/api/company/candidates/reviews/${reviewId}/mark-pending`,
+      `${getCandidatesBasePath()}/reviews/${reviewId}/mark-pending`,
       {
         method: 'POST',
       }

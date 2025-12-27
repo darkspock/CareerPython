@@ -17,8 +17,25 @@ import type {
 import { ClosedReason } from '../types/position';
 
 export class PositionService {
-  private static readonly BASE_PATH = '/api/company/positions';
   private static readonly WORKFLOW_BASE_PATH = '/admin/workflows';
+
+  /**
+   * Get the company slug from localStorage
+   */
+  private static getCompanySlug(): string {
+    const slug = localStorage.getItem('company_slug');
+    if (!slug) {
+      throw new Error('Company slug not found. Please log in again.');
+    }
+    return slug;
+  }
+
+  /**
+   * Get the base path for position endpoints (company-scoped)
+   */
+  private static getBasePath(): string {
+    return `/${this.getCompanySlug()}/admin/positions`;
+  }
 
   /**
    * Get list of positions with optional filters - simplified
@@ -26,7 +43,7 @@ export class PositionService {
   static async getPositions(filters?: PositionFilters): Promise<PositionListResponse> {
     const queryParams = new URLSearchParams();
 
-    if (filters?.company_id) queryParams.append('company_id', filters.company_id);
+    // Note: company_id filter is no longer needed as it's implicit in the URL
     if (filters?.search_term) queryParams.append('search_term', filters.search_term);
     if (filters?.job_category) queryParams.append('job_category', filters.job_category);
     if (filters?.visibility) queryParams.append('visibility', filters.visibility);
@@ -34,7 +51,8 @@ export class PositionService {
     if (filters?.page) queryParams.append('page', filters.page.toString());
     if (filters?.page_size) queryParams.append('page_size', filters.page_size.toString());
 
-    const endpoint = `${this.BASE_PATH}${queryParams.toString() ? `?${queryParams}` : ''}`;
+    const basePath = this.getBasePath();
+    const endpoint = `${basePath}${queryParams.toString() ? `?${queryParams}` : ''}`;
 
     console.log('[PositionService] Fetching from endpoint:', endpoint);
     console.log('[PositionService] Filters:', filters);
@@ -61,7 +79,7 @@ export class PositionService {
    */
   static async getPositionStats(): Promise<PositionStats> {
     try {
-      const response = await api.authenticatedRequest<PositionStats>(`${this.BASE_PATH}/stats`);
+      const response = await api.authenticatedRequest<PositionStats>(`${this.getBasePath()}/stats`);
       return {
         total_positions: response.total_positions || 0,
         active_positions: response.active_positions || 0,
@@ -81,7 +99,7 @@ export class PositionService {
    */
   static async getPositionById(positionId: string): Promise<Position> {
     try {
-      const response = await api.authenticatedRequest<Position>(`${this.BASE_PATH}/${positionId}`);
+      const response = await api.authenticatedRequest<Position>(`${this.getBasePath()}/${positionId}`);
       return response;
     } catch (error) {
       console.error(`Error fetching position ${positionId}:`, error);
@@ -94,7 +112,7 @@ export class PositionService {
    */
   static async createPosition(positionData: CreatePositionRequest): Promise<Position> {
     try {
-      const response = await api.authenticatedRequest<Position>(this.BASE_PATH, {
+      const response = await api.authenticatedRequest<Position>(this.getBasePath(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -113,7 +131,7 @@ export class PositionService {
    */
   static async updatePosition(positionId: string, positionData: UpdatePositionRequest): Promise<Position> {
     try {
-      const response = await api.authenticatedRequest<Position>(`${this.BASE_PATH}/${positionId}`, {
+      const response = await api.authenticatedRequest<Position>(`${this.getBasePath()}/${positionId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -132,7 +150,7 @@ export class PositionService {
    */
   static async deletePosition(positionId: string): Promise<PositionActionResponse> {
     try {
-      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.BASE_PATH}/${positionId}`, {
+      const response = await api.authenticatedRequest<PositionActionResponse>(`${this.getBasePath()}/${positionId}`, {
         method: 'DELETE'
       });
       return response;
@@ -324,7 +342,7 @@ export class PositionService {
   static async moveToStage(positionId: string, stageId: string, comment?: string): Promise<{ success: boolean; message: string; position_id: string }> {
     try {
       const response = await api.authenticatedRequest<{ success: boolean; message: string; position_id: string }>(
-        `${this.BASE_PATH}/${positionId}/move-to-stage`,
+        `${this.getBasePath()}/${positionId}/move-to-stage`,
         {
           method: 'POST',
           headers: {
@@ -349,7 +367,7 @@ export class PositionService {
   static async updateCustomFields(positionId: string, customFieldsValues: Record<string, any>): Promise<{ success: boolean; message: string; position_id: string }> {
     try {
       const response = await api.authenticatedRequest<{ success: boolean; message: string; position_id: string }>(
-        `${this.BASE_PATH}/${positionId}/custom-fields`,
+        `${this.getBasePath()}/${positionId}/custom-fields`,
         {
           method: 'PUT',
           headers: {
@@ -379,7 +397,7 @@ export class PositionService {
     if (filters?.visibility) queryParams.append('visibility', filters.visibility);
     queryParams.append('format', format);
 
-    const endpoint = `${this.BASE_PATH}/export${queryParams.toString() ? `?${queryParams}` : ''}`;
+    const endpoint = `${this.getBasePath()}/export${queryParams.toString() ? `?${queryParams}` : ''}`;
 
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -406,7 +424,7 @@ export class PositionService {
   static async requestApproval(positionId: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/request-approval`,
+        `${this.getBasePath()}/${positionId}/request-approval`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
@@ -426,7 +444,7 @@ export class PositionService {
   static async approve(positionId: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/approve`,
+        `${this.getBasePath()}/${positionId}/approve`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
@@ -446,7 +464,7 @@ export class PositionService {
   static async reject(positionId: string, reason: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/reject`,
+        `${this.getBasePath()}/${positionId}/reject`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -467,7 +485,7 @@ export class PositionService {
   static async publish(positionId: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/publish`,
+        `${this.getBasePath()}/${positionId}/publish`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
@@ -487,7 +505,7 @@ export class PositionService {
   static async hold(positionId: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/hold`,
+        `${this.getBasePath()}/${positionId}/hold`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
@@ -507,7 +525,7 @@ export class PositionService {
   static async resume(positionId: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/resume`,
+        `${this.getBasePath()}/${positionId}/resume`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
@@ -527,7 +545,7 @@ export class PositionService {
   static async close(positionId: string, closedReason: ClosedReason, note?: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/close`,
+        `${this.getBasePath()}/${positionId}/close`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -548,7 +566,7 @@ export class PositionService {
   static async archive(positionId: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/archive`,
+        `${this.getBasePath()}/${positionId}/archive`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
@@ -568,7 +586,7 @@ export class PositionService {
   static async revertToDraft(positionId: string): Promise<StatusTransitionResponse> {
     try {
       const response = await api.authenticatedRequest<StatusTransitionResponse>(
-        `${this.BASE_PATH}/${positionId}/revert-to-draft`,
+        `${this.getBasePath()}/${positionId}/revert-to-draft`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
@@ -588,7 +606,7 @@ export class PositionService {
   static async clone(positionId: string, newTitle?: string): Promise<Position> {
     try {
       const response = await api.authenticatedRequest<Position>(
-        `${this.BASE_PATH}/${positionId}/clone`,
+        `${this.getBasePath()}/${positionId}/clone`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -609,7 +627,7 @@ export class PositionService {
     try {
       const queryParams = companyId ? `?company_id=${companyId}` : '';
       const response = await api.authenticatedRequest<PositionStatusStats>(
-        `${this.BASE_PATH}/status-stats${queryParams}`
+        `${this.getBasePath()}/status-stats${queryParams}`
       );
       return response;
     } catch (error) {
@@ -624,7 +642,7 @@ export class PositionService {
   static async getPendingApprovals(): Promise<Position[]> {
     try {
       const response = await api.authenticatedRequest<Position[]>(
-        `${this.BASE_PATH}/pending-approvals`
+        `${this.getBasePath()}/pending-approvals`
       );
       return response;
     } catch (error) {

@@ -50,10 +50,21 @@ class ApplicationController:
             query = GetApplicationsByCandidateIdQuery(
                 candidate_id=candidate_id,
                 status_filter=filters.status.value if filters.status else None,
-                limit=filters.limit
+                limit=None  # Don't limit at query level if we need to filter by company
             )
 
             applications_dto: List[CandidateApplicationDto] = self._query_bus.query(query)
+
+            # Filter by company_id if provided
+            if filters.company_id:
+                applications_dto = [
+                    dto for dto in applications_dto
+                    if self._get_company_id_for_position(dto.job_position_id) == filters.company_id
+                ]
+
+            # Apply limit after company filtering
+            if filters.limit and len(applications_dto) > filters.limit:
+                applications_dto = applications_dto[:filters.limit]
 
             # Convert DTOs to response schema
             return [
@@ -63,6 +74,21 @@ class ApplicationController:
         except Exception as e:
             logger.error(f"Error getting applications for candidate {candidate_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to retrieve applications")
+
+    def _get_company_id_for_position(self, job_position_id: str) -> Optional[str]:
+        """Get the company ID for a job position"""
+        if not self._job_position_repository or not job_position_id:
+            return None
+        try:
+            from src.company_bc.job_position.domain.value_objects.job_position_id import JobPositionId
+            job_position = self._job_position_repository.get_by_id(
+                JobPositionId.from_string(job_position_id)
+            )
+            if job_position:
+                return str(job_position.company_id) if job_position.company_id else None
+        except Exception as e:
+            logger.warning(f"Could not fetch company for position {job_position_id}: {e}")
+        return None
 
     def create_application(
             self,

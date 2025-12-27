@@ -32,20 +32,33 @@ export interface ConfigurePositionQuestionRequest {
   sort_order_override?: number;
 }
 
+/**
+ * Get the company slug from localStorage
+ */
+function getCompanySlug(): string {
+  const slug = localStorage.getItem('company_slug');
+  if (!slug) {
+    throw new Error('Company slug not found. Please log in again.');
+  }
+  return slug;
+}
+
 export const positionQuestionConfigService = {
   /**
    * List question configs for a position
    */
   async listConfigs(positionId: string): Promise<PositionQuestionConfig[]> {
-    return ApiClient.get<PositionQuestionConfig[]>(`/api/company/positions/${positionId}/questions`);
+    const companySlug = getCompanySlug();
+    return ApiClient.get<PositionQuestionConfig[]>(`/${companySlug}/admin/positions/${positionId}/questions`);
   },
 
   /**
    * Get enabled questions for a position (combines workflow questions with position configs)
    */
   async getEnabledQuestions(positionId: string): Promise<EnabledQuestionForPosition[]> {
+    const companySlug = getCompanySlug();
     return ApiClient.get<EnabledQuestionForPosition[]>(
-      `/api/company/positions/${positionId}/questions/enabled`
+      `/${companySlug}/admin/positions/${positionId}/questions/enabled`
     );
   },
 
@@ -56,14 +69,16 @@ export const positionQuestionConfigService = {
     positionId: string,
     data: ConfigurePositionQuestionRequest
   ): Promise<PositionQuestionConfig> {
-    return ApiClient.post<PositionQuestionConfig>(`/api/company/positions/${positionId}/questions`, data);
+    const companySlug = getCompanySlug();
+    return ApiClient.post<PositionQuestionConfig>(`/${companySlug}/admin/positions/${positionId}/questions`, data);
   },
 
   /**
    * Remove question config (revert to workflow defaults)
    */
   async removeConfig(positionId: string, questionId: string): Promise<void> {
-    return ApiClient.delete<void>(`/api/company/positions/${positionId}/questions/${questionId}`);
+    const companySlug = getCompanySlug();
+    return ApiClient.delete<void>(`/${companySlug}/admin/positions/${positionId}/questions/${questionId}`);
   },
 
   /**

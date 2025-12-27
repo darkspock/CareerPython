@@ -7,6 +7,7 @@ from src.auth_bc.user.domain.services.password_service import PasswordService
 from src.auth_bc.user.domain.services.token_service import TokenService
 from src.company_bc.company.application.dtos.auth_dto import AuthenticatedCompanyUserDto
 from src.company_bc.company.domain.enums import CompanyUserStatus
+from src.company_bc.company.domain.infrastructure.company_repository_interface import CompanyRepositoryInterface
 from src.company_bc.company.domain.infrastructure.company_user_repository_interface import \
     CompanyUserRepositoryInterface
 from src.framework.application.query_bus import Query, QueryHandler
@@ -26,10 +27,12 @@ class AuthenticateCompanyUserQueryHandler(
     def __init__(
             self,
             user_repository: UserRepositoryInterface,
-            company_user_repository: CompanyUserRepositoryInterface
+            company_user_repository: CompanyUserRepositoryInterface,
+            company_repository: CompanyRepositoryInterface
     ):
         self.user_repository = user_repository
         self.company_user_repository = company_user_repository
+        self.company_repository = company_repository
 
     def handle(self, query: AuthenticateCompanyUserQuery) -> Optional[AuthenticatedCompanyUserDto]:
         """
@@ -60,11 +63,16 @@ class AuthenticateCompanyUserQueryHandler(
         if company_user.status != CompanyUserStatus.ACTIVE:
             return None
 
-        # Create access token with company context
+        # Get company to include slug in token
+        company = self.company_repository.get_by_id(company_user.company_id)
+        company_slug = company.slug if company else None
+
+        # Create access token with company context (including slug for frontend routing)
         access_token = TokenService.create_access_token(data={
             "sub": user.email,
             "user_id": user.id.value,
             "company_id": company_user.company_id.value,
+            "company_slug": company_slug,
             "company_user_id": company_user.id.value,
             "role": company_user.role.value
         })
@@ -72,6 +80,7 @@ class AuthenticateCompanyUserQueryHandler(
         return AuthenticatedCompanyUserDto(
             user_id=user.id.value,
             company_id=company_user.company_id.value,
+            company_slug=company_slug,
             email=user.email,
             role=company_user.role.value,
             access_token=access_token,

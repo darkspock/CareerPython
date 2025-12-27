@@ -75,6 +75,7 @@ class CandidateJobApplicationStatsResponse(BaseModel):
 
 class JobApplicationListFilters(BaseModel):
     status: Optional[ApplicationStatusEnum] = None
+    company_id: Optional[str] = None  # Filter by company ID
     company_name: Optional[str] = None
     job_title: Optional[str] = None
     limit: Optional[int] = Field(None, ge=1, le=100)

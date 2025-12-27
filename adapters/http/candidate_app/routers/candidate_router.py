@@ -12,7 +12,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from adapters.http.auth.schemas.token import Token
 from adapters.http.auth.schemas.user import UserResponse
 from adapters.http.auth.services.authentication_service import get_current_user
-from adapters.http.candidate_app.controllers.application_controller import ApplicationController
 from adapters.http.candidate_app.controllers.candidate import CandidateController
 from adapters.http.candidate_app.schemas.candidate import CandidateCreate, CandidateUpdate, CandidateResponse, \
     CandidateListResponse
@@ -20,10 +19,6 @@ from adapters.http.candidate_app.schemas.candidate_education import CandidateEdu
     CandidateEducationCreateRequest
 from adapters.http.candidate_app.schemas.candidate_experience import CandidateExperienceResponse, \
     CandidateExperienceCreateRequest
-from adapters.http.candidate_app.schemas.candidate_job_applications import (
-    CandidateJobApplicationSummary,
-    JobApplicationListFilters
-)
 from adapters.http.candidate_app.schemas.candidate_project import CandidateProjectResponse, \
     CandidateProjectCreateRequest
 from core.containers import Container
@@ -32,7 +27,6 @@ from src.auth_bc.user.application.queries.dtos.auth_dto import AuthenticatedUser
 from src.auth_bc.user.domain.value_objects import UserId
 from src.candidate_bc.candidate.application import GetCandidateByUserIdQuery
 from src.candidate_bc.candidate.application.queries.shared.candidate_dto import CandidateDto
-from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
 from src.framework.application.query_bus import QueryBus
 
 log = logging.getLogger(__name__)
@@ -265,74 +259,6 @@ def delete_my_project(
 ) -> None:
     """Delete project for authenticated user"""
     controller.delete_my_project(current_user.id, project_id)
-
-
-# ====================================
-# APPLICATION ENDPOINTS
-# ====================================
-
-@candidate_router.get("/application", response_model=List[CandidateJobApplicationSummary])
-@inject
-def get_my_applications(
-        controller: Annotated[ApplicationController, Depends(Provide[Container.application_controller])],
-        candidate_controller: Annotated[CandidateController, Depends(Provide[Container.candidate_controller])],
-        current_user: UserResponse = Depends(get_current_user),
-        status: Optional[str] = None,
-        limit: Optional[int] = None,
-) -> List[CandidateJobApplicationSummary]:
-    """Get applications for authenticated user"""
-    candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
-
-    filters = JobApplicationListFilters(
-        status=ApplicationStatusEnum(status) if status else None,
-        limit=limit
-    )
-
-    return controller.get_applications_by_candidate(candidate.id, filters)
-
-
-@candidate_router.post("/application", status_code=201)
-@inject
-def create_application(
-        job_position_id: str,
-        controller: Annotated[ApplicationController, Depends(Provide[Container.application_controller])],
-        candidate_controller: Annotated[CandidateController, Depends(Provide[Container.candidate_controller])],
-        current_user: UserResponse = Depends(get_current_user),
-        cover_letter: Optional[str] = None,
-) -> dict:
-    """Create new application for authenticated user"""
-    candidate = candidate_controller.get_my_profile(current_user.id, current_user.email)
-
-    application_id = controller.create_application(
-        candidate_id=candidate.id,
-        job_position_id=job_position_id,
-        cover_letter=cover_letter
-    )
-
-    return {
-        "application_id": application_id,
-        "message": "Application created successfully"
-    }
-
-
-@candidate_router.put("/application/{application_id}/status", status_code=204)
-@inject
-def update_application_status(
-        application_id: str,
-        status: str,
-        controller: Annotated[ApplicationController, Depends(Provide[Container.application_controller])],
-        current_user: UserResponse = Depends(get_current_user),
-        notes: Optional[str] = None,
-) -> None:
-    """Update application status for authenticated user"""
-    from src.company_bc.candidate_application.domain.enums.application_status import ApplicationStatusEnum
-
-    try:
-        status_enum = ApplicationStatusEnum(status)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid status value")
-
-    controller.update_application_status(application_id, status_enum, notes)
 
 
 # ====================================

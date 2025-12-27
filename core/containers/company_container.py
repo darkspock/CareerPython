@@ -203,7 +203,8 @@ class CompanyContainer(containers.DeclarativeContainer):
     authenticate_company_user_query_handler = providers.Factory(
         AuthenticateCompanyUserQueryHandler,
         user_repository=shared.user_repository,
-        company_user_repository=company_user_repository
+        company_user_repository=company_user_repository,
+        company_repository=company_repository
     )
     
     get_user_invitation_query_handler = providers.Factory(

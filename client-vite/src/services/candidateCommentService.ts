@@ -6,7 +6,23 @@ import type {
 } from '../types/candidateComment';
 
 class CandidateCommentService {
-  private baseUrl = '/api/company/candidates';
+  /**
+   * Get the company slug from localStorage
+   */
+  private getCompanySlug(): string {
+    const slug = localStorage.getItem('company_slug');
+    if (!slug) {
+      throw new Error('Company slug not found. Please log in again.');
+    }
+    return slug;
+  }
+
+  /**
+   * Get the base URL for candidate endpoints (company-scoped)
+   */
+  private getBaseUrl(): string {
+    return `/${this.getCompanySlug()}/admin/candidates`;
+  }
 
   /**
    * Create a new comment for a candidate
@@ -16,7 +32,7 @@ class CandidateCommentService {
     data: CreateCandidateCommentRequest
   ): Promise<CandidateComment> {
     return ApiClient.authenticatedRequest<CandidateComment>(
-      `${this.baseUrl}/${companyCandidateId}/comments`,
+      `${this.getBaseUrl()}/${companyCandidateId}/comments`,
       {
         method: 'POST',
         body: JSON.stringify(data),
@@ -29,7 +45,7 @@ class CandidateCommentService {
    */
   async getCommentsByCompanyCandidate(companyCandidateId: string): Promise<CandidateComment[]> {
     return ApiClient.authenticatedRequest<CandidateComment[]>(
-      `${this.baseUrl}/${companyCandidateId}/comments`
+      `${this.getBaseUrl()}/${companyCandidateId}/comments`
     );
   }
 
@@ -41,7 +57,7 @@ class CandidateCommentService {
     stageId: string
   ): Promise<CandidateComment[]> {
     return ApiClient.authenticatedRequest<CandidateComment[]>(
-      `${this.baseUrl}/${companyCandidateId}/comments/stage/${stageId}`
+      `${this.getBaseUrl()}/${companyCandidateId}/comments/stage/${stageId}`
     );
   }
 
@@ -50,7 +66,7 @@ class CandidateCommentService {
    */
   async countPendingComments(companyCandidateId: string): Promise<number> {
     return ApiClient.authenticatedRequest<number>(
-      `${this.baseUrl}/${companyCandidateId}/comments/pending/count`
+      `${this.getBaseUrl()}/${companyCandidateId}/comments/pending/count`
     );
   }
 
@@ -59,7 +75,7 @@ class CandidateCommentService {
    */
   async getCommentById(commentId: string): Promise<CandidateComment> {
     return ApiClient.authenticatedRequest<CandidateComment>(
-      `${this.baseUrl}/comments/${commentId}`
+      `${this.getBaseUrl()}/comments/${commentId}`
     );
   }
 
@@ -71,7 +87,7 @@ class CandidateCommentService {
     data: UpdateCandidateCommentRequest
   ): Promise<CandidateComment> {
     return ApiClient.authenticatedRequest<CandidateComment>(
-      `${this.baseUrl}/comments/${commentId}`,
+      `${this.getBaseUrl()}/comments/${commentId}`,
       {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -83,7 +99,7 @@ class CandidateCommentService {
    * Delete a comment
    */
   async deleteComment(commentId: string): Promise<void> {
-    await ApiClient.authenticatedRequest(`${this.baseUrl}/comments/${commentId}`, {
+    await ApiClient.authenticatedRequest(`${this.getBaseUrl()}/comments/${commentId}`, {
       method: 'DELETE',
     });
   }
@@ -93,7 +109,7 @@ class CandidateCommentService {
    */
   async markAsPending(commentId: string): Promise<CandidateComment> {
     return ApiClient.authenticatedRequest<CandidateComment>(
-      `${this.baseUrl}/comments/${commentId}/mark-pending`,
+      `${this.getBaseUrl()}/comments/${commentId}/mark-pending`,
       {
         method: 'POST',
       }
@@ -105,7 +121,7 @@ class CandidateCommentService {
    */
   async markAsReviewed(commentId: string): Promise<CandidateComment> {
     return ApiClient.authenticatedRequest<CandidateComment>(
-      `${this.baseUrl}/comments/${commentId}/mark-reviewed`,
+      `${this.getBaseUrl()}/comments/${commentId}/mark-reviewed`,
       {
         method: 'POST',
       }

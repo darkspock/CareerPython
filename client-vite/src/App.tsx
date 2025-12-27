@@ -99,6 +99,11 @@ import WorkflowAnalyticsPageWrapper from './pages/company/WorkflowAnalyticsPageW
 import PublicPositionsPage from './pages/public/PublicPositionsPage';
 import PublicPositionDetailPage from './pages/public/PublicPositionDetailPage';
 import CompanyPublicPositionsPage from './pages/public/CompanyPublicPositionsPage';
+import CompanyScopedAboutPage from './pages/public/CompanyScopedAboutPage';
+
+// Import company-scoped route components
+import ProtectedCompanyScopedRoute from './components/company/ProtectedCompanyScopedRoute';
+import PublicCompanyRoute from './components/company/PublicCompanyRoute';
 import AcceptInvitationPage from './pages/public/AcceptInvitationPage';
 import CompanyLandingPage from './pages/public/CompanyLandingPage';
 import CompanyRegisterPage from './pages/public/CompanyRegisterPage';
@@ -210,6 +215,70 @@ function App() {
                         <Route path="/interviews/analytics" element={<div>Interview Analytics - Temporarily Disabled</div>} />
                         <Route path="/interviews/templates" element={<div>Interview Templates - Temporarily Disabled</div>} />
                         <Route path="/interviews/:interviewId/conduct" element={<div>Interview Conduct - Temporarily Disabled</div>} />
+
+                        {/* ================== COMPANY-SCOPED ROUTES ================== */}
+                        {/* Public company routes (no authentication required) */}
+                        <Route path="/:companySlug/positions" element={
+                          <PublicCompanyRoute>
+                            <CompanyPublicPositionsPage />
+                          </PublicCompanyRoute>
+                        } />
+                        <Route path="/:companySlug/positions/:slugOrId" element={
+                          <PublicCompanyRoute>
+                            <PublicPositionDetailPage />
+                          </PublicCompanyRoute>
+                        } />
+                        <Route path="/:companySlug/about" element={
+                          <PublicCompanyRoute>
+                            <CompanyScopedAboutPage />
+                          </PublicCompanyRoute>
+                        } />
+
+                        {/* Company-scoped admin routes (requires authentication) */}
+                        <Route path="/:companySlug/admin/*" element={
+                          <ProtectedCompanyScopedRoute>
+                            <CompanyLayout />
+                          </ProtectedCompanyScopedRoute>
+                        }>
+                          <Route path="dashboard" element={<CompanyDashboardPage />} />
+                          <Route path="candidates" element={<CandidatesListPage />} />
+                          <Route path="candidates/add" element={<AddCandidatePage />} />
+                          <Route path="candidates/:id" element={<CandidateDetailPage />} />
+                          <Route path="candidates/:id/edit" element={<EditCandidatePage />} />
+                          <Route path="workflow-board" element={<WorkflowBoardPage />} />
+                          <Route path="positions" element={<PositionsListPage />} />
+                          <Route path="positions/select-workflows" element={<WorkflowSelectionPage />} />
+                          <Route path="positions/create" element={<CreatePositionPage />} />
+                          <Route path="positions/:id" element={<PositionDetailPage />} />
+                          <Route path="positions/:id/edit" element={<EditPositionPage />} />
+                          <Route path="hiring-pipelines/:workflowId/edit" element={<EditWorkflowPage />} />
+                          <Route path="hiring-pipelines/:workflowId/advanced-config" element={<WorkflowAdvancedConfigPage />} />
+                          <Route path="workflows/:workflowId/edit" element={<EditWorkflowPage />} />
+                          <Route path="workflows/:workflowId/advanced-config" element={<WorkflowAdvancedConfigPage />} />
+                          <Route path="pages" element={<CompanyPagesListPage />} />
+                          <Route path="pages/create" element={<CreateCompanyPagePage />} />
+                          <Route path="pages/:pageId/view" element={<ViewCompanyPagePage />} />
+                          <Route path="pages/:pageId/edit" element={<EditCompanyPagePage />} />
+                          <Route path="settings" element={<CompanySettingsPage />} />
+                          <Route path="settings/edit" element={<EditCompanyPage />} />
+                          <Route path="settings/hiring-pipelines" element={<WorkflowsSettingsPage />} />
+                          <Route path="settings/hiring-pipelines/create" element={<CreateWorkflowPage workflowType="CA" backRoute="settings/hiring-pipelines" />} />
+                          <Route path="settings/publication-workflows" element={<PublicationWorkflowsSettingsPage />} />
+                          <Route path="settings/publication-workflows/create" element={<CreateWorkflowPage workflowType="PO" backRoute="settings/publication-workflows" />} />
+                          <Route path="settings/phases" element={<PhasesPage />} />
+                          <Route path="settings/roles" element={<CompanyRolesPage />} />
+                          <Route path="interview-templates" element={<CompanyInterviewTemplatesPage />} />
+                          <Route path="interview-templates/create" element={<InterviewTemplateEditor />} />
+                          <Route path="interview-templates/edit/:templateId" element={<InterviewTemplateEditor />} />
+                          <Route path="interviews" element={<CompanyInterviewsPage />} />
+                          <Route path="interviews/:interviewId" element={<CompanyInterviewDetailPage />} />
+                          <Route path="interviews/create" element={<CreateInterviewPage />} />
+                          <Route path="interviews/:interviewId/edit" element={<EditInterviewPage />} />
+                          <Route path="users" element={<UsersManagementPage />} />
+                          <Route path="talent-pool" element={<TalentPoolPageWrapper />} />
+                          <Route path="analytics/workflow" element={<WorkflowAnalyticsPageWrapper />} />
+                          <Route index element={<CompanyDashboardPage />} />
+                        </Route>
 
                         {/* Admin Routes */}
                         <Route path="/admin/*" element={

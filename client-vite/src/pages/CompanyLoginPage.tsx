@@ -25,8 +25,21 @@ export default function CompanyLoginPage() {
 
       localStorage.setItem("access_token", response.access_token);
 
-      // Redirect to company dashboard
-      navigate("/company/dashboard");
+      // Extract company_slug from JWT token for redirect
+      let redirectPath = "/company/dashboard"; // fallback
+      try {
+        const payload = JSON.parse(atob(response.access_token.split('.')[1]));
+        if (payload.company_slug) {
+          // Store company slug for future use
+          localStorage.setItem("company_slug", payload.company_slug);
+          // Redirect to company-scoped admin dashboard
+          redirectPath = `/${payload.company_slug}/admin/dashboard`;
+        }
+      } catch (decodeError) {
+        console.warn("Could not decode JWT for company slug, using fallback redirect");
+      }
+
+      navigate(redirectPath);
     } catch (error: any) {
       console.error("Login error:", error);
       setError(error.message || t('companyLogin.errors.invalidCredentials'));

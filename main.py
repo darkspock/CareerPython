@@ -21,6 +21,9 @@ from adapters.http.candidate_app.routers.landing_router import router as landing
 from adapters.http.candidate_app.routers.registration_router import router as registration_router
 from adapters.http.candidate_app.routers.candidate_router import candidate_router
 from adapters.http.candidate_app.routers.resume_router import router as resume_router
+from adapters.http.candidate_app.routers.company_scoped_candidate_router import router as company_scoped_candidate_router
+from adapters.http.company_app.routers.company_scoped_admin_router import router as company_scoped_admin_router
+from adapters.http.company_app.routers.company_scoped_public_router import router as company_scoped_public_router
 from adapters.http.candidate_app.routers.interview_router import router as candidate_interview_router
 from adapters.http.candidate_app.routers.file_router import file_router
 from adapters.http.candidate_app.routers.job_router import job_router
@@ -38,14 +41,9 @@ from adapters.http.company_app.company_candidate.routers.company_candidate_route
 from adapters.http.shared.workflow.routers.workflow_router import router as candidate_application_workflow_router
 from adapters.http.shared.workflow.routers.workflow_stage_router import router as workflow_stage_router
 from adapters.http.shared.customization.routers.entity_customization_router import router as entity_customization_router
-from adapters.http.company_app.company.routers.candidate_comment_router import router as candidate_comment_router
 from adapters.http.company_app.company.routers.job_position_comment_router import router as job_position_comment_router
-from adapters.http.company_app.company.routers.candidate_review_router import router as candidate_review_router
-from adapters.http.company_app.job_position.routers.company_position_router import router as company_position_router
 from adapters.http.company_app.company_page.routers.company_page_router import router as company_page_router
 from adapters.http.company_app.company_page.routers.public_company_page_router import router as public_company_page_router
-from adapters.http.company_app.interview.routers.company_interview_template_router import router as company_interview_template_router
-from adapters.http.company_app.interview.routers.company_interview_router import router as company_interview_router
 from adapters.http.company_app.notification.routers.notification_router import router as notification_router
 from adapters.http.company_app.application_question.routers.application_question_router import router as application_question_router
 from adapters.http.company_app.job_position.routers.position_question_config_router import router as position_question_config_router
@@ -107,12 +105,7 @@ app.include_router(company_candidate_router)  # Company candidate management
 app.include_router(candidate_application_workflow_router)  # Company workflow management
 app.include_router(workflow_stage_router)  # Workflow stage management
 app.include_router(entity_customization_router)  # Entity customization management
-app.include_router(candidate_comment_router)  # Candidate comment management
-app.include_router(candidate_review_router)  # Candidate review management
-app.include_router(company_position_router)  # Company job position management (must be before comment router)
 app.include_router(job_position_comment_router)  # Job position comment management
-app.include_router(company_interview_template_router)  # Company interview template management
-app.include_router(company_interview_router)  # Company interview management
 app.include_router(notification_router)  # In-app notifications
 app.include_router(application_question_router)  # Application questions for workflows
 app.include_router(position_question_config_router)  # Position question configurations
@@ -125,6 +118,9 @@ app.include_router(public_company_page_router)  # Public company pages
 app.include_router(file_attachment_router)  # File attachment management
 app.include_router(phase_router)  # Phase 12: Phase management
 app.include_router(candidate_router)
+app.include_router(company_scoped_candidate_router)  # Company-scoped candidate routes
+app.include_router(company_scoped_admin_router)  # Company-scoped admin routes
+app.include_router(company_scoped_public_router)  # Company-scoped public routes (no auth)
 app.include_router(candidate_interview_router)  # Candidate interview access by token
 app.include_router(user_router)
 app.include_router(invitation_router)  # Public invitation endpoints
@@ -170,7 +166,11 @@ container.wire(modules=[
     "adapters.http.candidate_app.routers.landing_router",
     "adapters.http.candidate_app.routers.registration_router",
     "adapters.http.candidate_app.routers.candidate_router",
+    "adapters.http.candidate_app.routers.company_scoped_candidate_router",  # Company-scoped candidate routes
+    "adapters.http.company_app.routers.company_scoped_admin_router",  # Company-scoped admin routes
+    "adapters.http.company_app.routers.company_scoped_public_router",  # Company-scoped public routes
     "adapters.http.candidate_app.routers.resume_router",
+    "adapters.http.shared.dependencies.company_context",  # Company context dependencies
     "adapters.http.candidate_app.routers.file_router",
     "adapters.http.candidate_app.routers.job_router",
     "adapters.http.company_app.company.routers.company_registration_router",  # Public registration (includes users_router)
@@ -183,12 +183,7 @@ container.wire(modules=[
     "adapters.http.shared.workflow.routers.workflow_router",
     "adapters.http.shared.workflow.routers.workflow_stage_router",
     "adapters.http.shared.customization.routers.entity_customization_router",
-    "adapters.http.company_app.company.routers.candidate_comment_router",
-    "adapters.http.company_app.company.routers.candidate_review_router",
     "adapters.http.company_app.company.routers.job_position_comment_router",
-    "adapters.http.company_app.job_position.routers.company_position_router",  # Company job position management
-    "adapters.http.company_app.interview.routers.company_interview_template_router",  # Company interview template management
-    "adapters.http.company_app.interview.routers.company_interview_router",  # Company interview management
     "adapters.http.shared.field_validation.routers.validation_rule_router",
     "adapters.http.company_app.application_question.routers.application_question_router",
     "adapters.http.company_app.job_position.routers.position_question_config_router",
