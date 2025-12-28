@@ -21,15 +21,31 @@ export interface UpdateCustomFieldValueRequest {
   field_value: any;
 }
 
-class CustomFieldValueService {
-  private baseUrl = '/api/company-workflow/custom-field-values';
+/**
+ * Get the company slug from localStorage
+ */
+function getCompanySlug(): string {
+  const slug = localStorage.getItem('company_slug');
+  if (!slug) {
+    throw new Error('Company slug not found. Please log in again.');
+  }
+  return slug;
+}
 
+/**
+ * Get the base path for custom field value endpoints (company-scoped)
+ */
+function getBasePath(): string {
+  return `/${getCompanySlug()}/admin/custom-field-values`;
+}
+
+class CustomFieldValueService {
   /**
    * Get all custom field values for a company candidate (current workflow only)
    */
   async getCustomFieldValuesByCompanyCandidate(companyCandidateId: string): Promise<Record<string, CustomFieldValue>> {
     return ApiClient.authenticatedRequest<Record<string, CustomFieldValue>>(
-      `${this.baseUrl}/company-candidate/${companyCandidateId}`
+      `${getBasePath()}/company-candidate/${companyCandidateId}`
     );
   }
 
@@ -38,7 +54,7 @@ class CustomFieldValueService {
    */
   async getAllCustomFieldValuesByCompanyCandidate(companyCandidateId: string): Promise<Record<string, Record<string, CustomFieldValue>>> {
     return ApiClient.authenticatedRequest<Record<string, Record<string, CustomFieldValue>>>(
-      `${this.baseUrl}/company-candidate/${companyCandidateId}/all`
+      `${getBasePath()}/company-candidate/${companyCandidateId}/all`
     );
   }
 
@@ -46,7 +62,7 @@ class CustomFieldValueService {
    * Create a new custom field value
    */
   async createCustomFieldValue(data: CreateCustomFieldValueRequest): Promise<CustomFieldValue> {
-    return ApiClient.authenticatedRequest<CustomFieldValue>(this.baseUrl, {
+    return ApiClient.authenticatedRequest<CustomFieldValue>(getBasePath(), {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -56,7 +72,7 @@ class CustomFieldValueService {
    * Update an existing custom field value
    */
   async updateCustomFieldValue(customFieldValueId: string, data: UpdateCustomFieldValueRequest): Promise<CustomFieldValue> {
-    return ApiClient.authenticatedRequest<CustomFieldValue>(`${this.baseUrl}/${customFieldValueId}`, {
+    return ApiClient.authenticatedRequest<CustomFieldValue>(`${getBasePath()}/${customFieldValueId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -66,7 +82,7 @@ class CustomFieldValueService {
    * Delete a custom field value
    */
   async deleteCustomFieldValue(customFieldValueId: string): Promise<void> {
-    await ApiClient.authenticatedRequest(`${this.baseUrl}/${customFieldValueId}`, {
+    await ApiClient.authenticatedRequest(`${getBasePath()}/${customFieldValueId}`, {
       method: 'DELETE',
     });
   }
@@ -76,13 +92,13 @@ class CustomFieldValueService {
    * This is a convenience method that handles both create and update
    */
   async upsertCustomFieldValue(
-    companyCandidateId: string, 
-    customFieldId: string, 
+    companyCandidateId: string,
+    customFieldId: string,
     fieldValue: any
   ): Promise<CustomFieldValue> {
     // Use the new endpoint that handles upsert directly
     return ApiClient.authenticatedRequest<CustomFieldValue>(
-      `${this.baseUrl}/company-candidate/${companyCandidateId}/field/${customFieldId}`,
+      `${getBasePath()}/company-candidate/${companyCandidateId}/field/${customFieldId}`,
       {
         method: 'PUT',
         body: JSON.stringify({ value: fieldValue }),

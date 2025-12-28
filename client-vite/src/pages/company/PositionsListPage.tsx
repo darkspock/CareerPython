@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import {
   DndContext,
   DragOverlay,
@@ -327,6 +328,7 @@ export default function PositionsListPage() {
 
 function PositionsListPageContent() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [positions, setPositions] = useState<Position[]>([]);
   const [workflows, setWorkflows] = useState<JobPositionWorkflow[]>([]);
@@ -660,7 +662,7 @@ function PositionsListPageContent() {
         );
         
         if (shouldEdit) {
-          navigate(`/company/positions/${positionId}/edit`);
+          navigate(getPath(`positions/${positionId}/edit`));
         }
       } else {
         alert('Failed to move position: ' + (err.message || 'Unknown error'));
@@ -731,7 +733,7 @@ function PositionsListPageContent() {
         );
         
         if (shouldEdit) {
-          navigate(`/company/positions/${positionId}/edit`);
+          navigate(getPath(`positions/${positionId}/edit`));
         }
       } else {
         alert('Failed to move position: ' + (err.message || 'Unknown error'));
@@ -937,7 +939,7 @@ function PositionsListPageContent() {
               </Button>
             )}
             <Button
-              onClick={() => navigate('/company/positions/select-workflows')}
+              onClick={() => navigate(getPath('positions/select-workflows'))}
             >
               <Plus className="w-5 h-5 mr-2" />
               Create Position
@@ -1032,7 +1034,7 @@ function PositionsListPageContent() {
           </p>
           {statusFilter === 'all' && (
             <Button
-              onClick={() => navigate('/company/positions/select-workflows')}
+              onClick={() => navigate(getPath('positions/select-workflows'))}
             >
               <Plus className="w-5 h-5 mr-2" />
               Create Position
@@ -1124,7 +1126,7 @@ function PositionsListPageContent() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => navigate(`/company/positions/${position.id}`)}
+                                  onClick={() => navigate(getPath(`positions/${position.id}`))}
                                   className="bg-blue-50 text-blue-700 hover:bg-blue-100"
                                 >
                                   <Eye className="w-4 h-4" />
@@ -1140,7 +1142,7 @@ function PositionsListPageContent() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => navigate(`/company/positions/${position.id}/edit`)}
+                                  onClick={() => navigate(getPath(`positions/${position.id}/edit`))}
                                   className="bg-green-50 text-green-700 hover:bg-green-100"
                                 >
                                   <Edit className="w-4 h-4" />
@@ -1280,8 +1282,8 @@ function PositionsListPageContent() {
                         <StageColumn
                           stage={stage}
                           positions={stagePositions}
-                          onView={(id) => navigate(`/company/positions/${id}`)}
-                          onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
+                          onView={(id) => navigate(getPath(`positions/${id}`))}
+                          onEdit={(id) => navigate(getPath(`positions/${id}/edit`))}
                           onViewPublic={handleViewPublic}
                           horizontalStages={horizontalStages}
                           onMoveToStage={handleMoveToStage}
@@ -1308,8 +1310,8 @@ function PositionsListPageContent() {
                         <StageColumn
                           stage={stage}
                           positions={stagePositions}
-                          onView={(id) => navigate(`/company/positions/${id}`)}
-                          onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
+                          onView={(id) => navigate(getPath(`positions/${id}`))}
+                          onEdit={(id) => navigate(getPath(`positions/${id}/edit`))}
                           onViewPublic={handleViewPublic}
                           horizontalStages={horizontalStages}
                           onMoveToStage={handleMoveToStage}
@@ -1335,8 +1337,8 @@ function PositionsListPageContent() {
                         <StageColumn
                           stage={stage}
                           positions={stagePositions}
-                          onView={(id) => navigate(`/company/positions/${id}`)}
-                          onEdit={(id) => navigate(`/company/positions/${id}/edit`)}
+                          onView={(id) => navigate(getPath(`positions/${id}`))}
+                          onEdit={(id) => navigate(getPath(`positions/${id}/edit`))}
                           onViewPublic={handleViewPublic}
                           horizontalStages={horizontalStages}
                           onMoveToStage={handleMoveToStage}

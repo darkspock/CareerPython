@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Edit, Move, ChevronDown, FileText } from 'lucide-react';
 import type { CompanyCandidate } from '../../types/companyCandidate';
@@ -31,6 +32,7 @@ export default function CandidateHeader({
 }: CandidateHeaderProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [showReportModal, setShowReportModal] = useState(false);
 
   const stagesToShow = useMemo((): { stages: WorkflowStage[]; nextStageOption: WorkflowStage | null } => {
@@ -61,8 +63,8 @@ export default function CandidateHeader({
   }, [availableStages, candidate.current_stage_id]);
 
   const handleEditClick = useCallback(() => {
-    navigate(`/company/candidates/${candidateId}/edit`);
-  }, [navigate, candidateId]);
+    navigate(getPath(`candidates/${candidateId}/edit`));
+  }, [navigate, getPath, candidateId]);
 
   if (stagesToShow.stages.length === 0 && availableStages.length === 0) {
     return null;
@@ -72,7 +74,7 @@ export default function CandidateHeader({
     <div className="mb-6">
       <Button
         variant="ghost"
-        onClick={() => navigate('/company/candidates')}
+        onClick={() => navigate(getPath('candidates'))}
         className="mb-4 text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="w-5 h-5 mr-2" />

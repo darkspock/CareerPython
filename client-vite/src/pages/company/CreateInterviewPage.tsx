@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Calendar, User, Briefcase, FileText, Users, X } from 'lucide-react';
 import { companyInterviewService, type CreateInterviewRequest } from '../../services/companyInterviewService';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { useInterviewForm } from '../../hooks/useInterviewForm';
 
 export default function CreateInterviewPage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   
   // Load form data
   const {
@@ -94,9 +96,9 @@ export default function CreateInterviewPage() {
       toast.success('Entrevista creada correctamente');
       const interviewId = response.interview_id || (response as any).interview?.id;
       if (interviewId) {
-        navigate(`/company/interviews/${interviewId}`);
+        navigate(getPath(`interviews/${interviewId}`));
       } else {
-        navigate('/company/interviews');
+        navigate(getPath('interviews'));
       }
     } catch (err: any) {
       const errorMessage = err.message || 'Error al crear la entrevista';
@@ -122,7 +124,7 @@ export default function CreateInterviewPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/interviews')}
+          onClick={() => navigate(getPath('interviews'))}
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -487,7 +489,7 @@ export default function CreateInterviewPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/company/interviews')}
+            onClick={() => navigate(getPath('interviews'))}
           >
             Cancelar
           </Button>

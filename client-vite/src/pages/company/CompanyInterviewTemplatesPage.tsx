@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { useTranslation } from 'react-i18next';
 import { Plus, Search, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { companyInterviewTemplateService } from '../../services/companyInterviewTemplateService';
@@ -33,6 +34,7 @@ import { toast } from 'react-toastify';
 
 const CompanyInterviewTemplatesPage: React.FC = () => {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const { t } = useTranslation();
   const [templates, setTemplates] = useState<InterviewTemplate[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,11 +83,11 @@ const CompanyInterviewTemplatesPage: React.FC = () => {
   };
 
   const handleCreateTemplate = () => {
-    navigate('/company/interview-templates/create');
+    navigate(getPath('interview-templates/create'));
   };
 
   const handleEditTemplate = (template: InterviewTemplate) => {
-    navigate(`/company/interview-templates/edit/${template.id}`);
+    navigate(getPath(`interview-templates/edit/${template.id}`));
   };
 
   const handleDeleteTemplate = async (templateId: string) => {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { CompanyProvider, useCompany } from '../../context/CompanyContext';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 
 interface ProtectedCompanyScopedRouteProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface ProtectedCompanyScopedRouteProps {
 const ProtectedCompanyScopedRouteInner: React.FC<ProtectedCompanyScopedRouteProps> = ({ children }) => {
   const { companySlug } = useParams<{ companySlug: string }>();
   const { company, isLoading: companyLoading, error: companyError } = useCompany();
+  const { getPath } = useCompanyNavigation();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -108,7 +110,7 @@ const ProtectedCompanyScopedRouteInner: React.FC<ProtectedCompanyScopedRouteProp
             You don't have permission to access {company.name}'s admin panel.
           </p>
           <a
-            href="/company/dashboard"
+            href={getPath('dashboard')}
             className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             Go to Your Dashboard

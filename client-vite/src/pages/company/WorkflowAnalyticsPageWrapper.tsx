@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { BarChart2 } from 'lucide-react';
 import { WorkflowAnalyticsPage } from '../../components/company/workflowAnalytics/WorkflowAnalyticsPage';
 import { workflowService } from '../../services/workflowService';
@@ -23,6 +24,7 @@ function getCompanyId(): string | null {
 
 export default function WorkflowAnalyticsPageWrapper() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [workflows, setWorkflows] = useState<CandidateApplicationWorkflow[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
@@ -119,7 +121,7 @@ export default function WorkflowAnalyticsPageWrapper() {
             Create a workflow first to view analytics.
           </p>
           <button
-            onClick={() => navigate('/company/settings/hiring-pipelines')}
+            onClick={() => navigate(getPath('settings/hiring-pipelines'))}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Go to Hiring Pipelines

@@ -43,15 +43,15 @@ For candidates interacting with a specific company.
 
 ### 3. Company-Scoped Public Routes
 
-**Pattern:** `/{company_slug}/*` (without /admin or /candidate)
+**Pattern:** `/{company_slug}/public/*` (without /admin or /candidate)
 
 Public pages visible to anyone.
 
-| URL | Description |
-|-----|-------------|
-| `/{slug}/careers` | Public careers page |
-| `/{slug}/positions/:positionSlug` | Public position detail |
-| `/{slug}/about` | Company about page |
+| URL                                      | Description |
+|------------------------------------------|-------------|
+| `/{slug}/public/careers`                 | Public careers page |
+| `/{slug}/public/positions/:positionSlug` | Public position detail |
+| `/{slug}/public/about`                   | Company about page |
 
 ### 4. Legacy Routes (DEPRECATED)
 
@@ -73,7 +73,7 @@ These routes are **deprecated** and should not be used in new code.
 
 ### 5. Global Admin Routes
 
-**Pattern:** `/admin/*`
+**Pattern:** `/admin/*` (do not allow a company called admin)
 
 For platform-wide administration (superadmin only).
 
@@ -85,7 +85,7 @@ For platform-wide administration (superadmin only).
 
 ### 6. Candidate Personal Routes
 
-**Pattern:** `/candidate/*`
+**Pattern:** `/candidate/*` (do not allow a company called candidate)
 
 For candidate's personal profile and settings (not company-specific).
 
@@ -133,7 +133,7 @@ There are **two different concepts** that are often confused:
 - Managed manually by recruiters
 - Displayed at: `/{slug}/admin/candidates`
 
-#### 2. `candidate_applications` (Job Applications)
+#### 2. `candidate_applications` (Job Applications), should have also a company_candidate record
 - Candidates who applied to a specific job position
 - Created when someone applies through the careers page
 - Linked to a specific `job_position`

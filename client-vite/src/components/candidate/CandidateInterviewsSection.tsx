@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { toast } from 'react-toastify';
 import { Plus, ChevronDown, ChevronRight, Calendar, User, AlertCircle, Clock, CheckCircle, X, Ban } from 'lucide-react';
 import { useCandidateInterviews } from '../../hooks/useCandidateInterviews';
@@ -33,6 +35,8 @@ export default function CandidateInterviewsSection({
   jobPositionId,
 }: CandidateInterviewsSectionProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [showOtherStages, setShowOtherStages] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showPositionError, setShowPositionError] = useState(false);
@@ -215,7 +219,7 @@ export default function CandidateInterviewsSection({
                 variant="link"
                 size="sm"
                 onClick={() => {
-                  window.location.href = `/company/interviews/${interview.id}`;
+                  navigate(getPath(`interviews/${interview.id}`));
                 }}
                 className="h-auto p-0"
               >

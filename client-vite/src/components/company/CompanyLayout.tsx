@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import {
   Building2,
   Users,
@@ -28,16 +28,20 @@ export default function CompanyLayout() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { companySlug } = useParams<{ companySlug: string }>();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [companyName, setCompanyName] = useState<string>('Company');
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [phases, setPhases] = useState<Phase[]>([]);
   const [candidatesMenuOpen, setCandidatesMenuOpen] = useState(false);
 
+  // Base path for all admin routes
+  const basePath = `/${companySlug}/admin`;
+
   useEffect(() => {
     loadCompanyName();
     loadPhases();
-  }, []);
+  }, [companySlug]);
 
   const getCompanyId = () => {
     const token = localStorage.getItem('access_token');
@@ -79,46 +83,47 @@ export default function CompanyLayout() {
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('company_slug');
     navigate('/company/login');
   };
 
   const getPhaseUrl = (phase: Phase) => {
     // Determine the correct view based on phase configuration
     if (phase.default_view === 'KANBAN') {
-      return `/company/workflow-board?phase=${phase.id}`;
+      return `${basePath}/workflow-board?phase=${phase.id}`;
     } else {
-      return `/company/candidates?phase=${phase.id}`;
+      return `${basePath}/candidates?phase=${phase.id}`;
     }
   };
 
   const menuItems = [
-    { path: '/company/dashboard', icon: LayoutDashboard, label: t('company.navigation.dashboard') },
-    { path: '/company/positions', icon: Briefcase, label: t('company.navigation.jobPositions') },
-    { path: '/company/interviews', icon: MessageSquare, label: t('company.navigation.interviews') },
-    { path: '/company/talent-pool', icon: Star, label: t('company.navigation.talentPool') },
-    { path: '/company/analytics/workflow', icon: BarChart2, label: t('company.navigation.analytics') },
-    { path: '/company/settings', icon: Settings, label: t('company.navigation.settings') },
+    { path: `${basePath}/dashboard`, icon: LayoutDashboard, label: t('company.navigation.dashboard') },
+    { path: `${basePath}/positions`, icon: Briefcase, label: t('company.navigation.jobPositions') },
+    { path: `${basePath}/interviews`, icon: MessageSquare, label: t('company.navigation.interviews') },
+    { path: `${basePath}/talent-pool`, icon: Star, label: t('company.navigation.talentPool') },
+    { path: `${basePath}/analytics/workflow`, icon: BarChart2, label: t('company.navigation.analytics') },
+    { path: `${basePath}/settings`, icon: Settings, label: t('company.navigation.settings') },
   ];
 
   const isActive = (path: string) => {
-    if (path === '/company/settings') {
-      return location.pathname.startsWith('/company/settings') || location.pathname.startsWith('/company/users');
+    if (path === `${basePath}/settings`) {
+      return location.pathname.startsWith(`${basePath}/settings`) || location.pathname.startsWith(`${basePath}/users`);
     }
-    if (path === '/company/interview-templates') {
-      return location.pathname.startsWith('/company/interview-templates');
+    if (path === `${basePath}/interview-templates`) {
+      return location.pathname.startsWith(`${basePath}/interview-templates`);
     }
-    if (path === '/company/interviews') {
-      return location.pathname.startsWith('/company/interviews');
+    if (path === `${basePath}/interviews`) {
+      return location.pathname.startsWith(`${basePath}/interviews`);
     }
-    if (path === '/company/talent-pool') {
-      return location.pathname.startsWith('/company/talent-pool');
+    if (path === `${basePath}/talent-pool`) {
+      return location.pathname.startsWith(`${basePath}/talent-pool`);
     }
-    if (path === '/company/analytics/workflow') {
-      return location.pathname.startsWith('/company/analytics');
+    if (path === `${basePath}/analytics/workflow`) {
+      return location.pathname.startsWith(`${basePath}/analytics`);
     }
     return location.pathname === path;
   };
-  const isCandidatesActive = location.pathname.startsWith('/company/candidates') || location.pathname.startsWith('/company/workflow-board');
+  const isCandidatesActive = location.pathname.startsWith(`${basePath}/candidates`) || location.pathname.startsWith(`${basePath}/workflow-board`);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -218,12 +223,12 @@ export default function CompanyLayout() {
                 <div className="ml-4 mt-1 space-y-1">
                   {/* Search All Candidates Button */}
                   <Link
-                    to="/company/candidates"
+                    to={`${basePath}/candidates`}
                     onClick={() => setSidebarOpen(false)}
                     className={`
                       flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
                       ${
-                        location.pathname === '/company/candidates' && !location.search.includes('phase=')
+                        location.pathname === `${basePath}/candidates` && !location.search.includes('phase=')
                           ? 'bg-blue-50 text-blue-700 font-medium'
                           : 'text-gray-600 hover:bg-gray-100'
                       }
@@ -364,12 +369,12 @@ export default function CompanyLayout() {
                 <div className="ml-4 mt-1 space-y-1">
                   {/* Search All Candidates Button */}
                   <Link
-                    to="/company/candidates"
+                    to={`${basePath}/candidates`}
                     onClick={() => setSidebarOpen(false)}
                     className={`
                       flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
                       ${
-                        location.pathname === '/company/candidates' && !location.search.includes('phase=')
+                        location.pathname === `${basePath}/candidates` && !location.search.includes('phase=')
                           ? 'bg-blue-50 text-blue-700 font-medium'
                           : 'text-gray-600 hover:bg-gray-100'
                       }

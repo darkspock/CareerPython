@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { toast } from 'react-toastify';
 import {
   ArrowLeft,
@@ -42,6 +43,7 @@ export default function CandidateDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [activeTab, setActiveTab] = useState<'info' | 'profile' | 'answers' | 'comments' | 'reviews' | 'documents' | 'interviews' | 'history'>('info');
   const [showLiveProfile, setShowLiveProfile] = useState(false);
   const [changingStage, setChangingStage] = useState(false);
@@ -181,7 +183,7 @@ export default function CandidateDetailPage() {
         </AlertDescription>
         <Button
           variant="outline"
-          onClick={() => navigate('/company/candidates')}
+          onClick={() => navigate(getPath('candidates'))}
           className="mt-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

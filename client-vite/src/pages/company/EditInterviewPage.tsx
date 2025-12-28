@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Calendar, FileText, Users, X } from 'lucide-react';
 import { companyInterviewService, type UpdateInterviewRequest } from '../../services/companyInterviewService';
 import { InterviewCalendarExport } from '../../components/interviews/InterviewCalendarExport';
@@ -25,6 +26,7 @@ import { useInterviewForm } from '../../hooks/useInterviewForm';
 export default function EditInterviewPage() {
   const { interviewId } = useParams<{ interviewId: string }>();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   
   // Load interview data (for edit, use getInterview not getInterviewView)
   const {
@@ -85,7 +87,7 @@ export default function EditInterviewPage() {
     try {
       await companyInterviewService.updateInterview(interviewId, formData);
       toast.success('Entrevista actualizada correctamente');
-      navigate(`/company/interviews/${interviewId}`);
+      navigate(getPath(`interviews/${interviewId}`));
     } catch (err: any) {
       const errorMessage = err.message || 'Error al actualizar la entrevista';
       toast.error(errorMessage);
@@ -121,7 +123,7 @@ export default function EditInterviewPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate(`/company/interviews/${interviewId}`)}
+          onClick={() => navigate(getPath(`interviews/${interviewId}`))}
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -444,7 +446,7 @@ export default function EditInterviewPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate(`/company/interviews/${interviewId}`)}
+            onClick={() => navigate(getPath(`interviews/${interviewId}`))}
           >
             Cancelar
           </Button>

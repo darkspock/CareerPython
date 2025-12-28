@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import {
   Plus,
   Search,
@@ -119,6 +120,7 @@ interface CandidateFilters {
 export default function CandidatesListPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [searchParams] = useSearchParams();
 
   // Get phaseId from URL for backward compatibility with workflow board links
@@ -325,7 +327,7 @@ export default function CandidatesListPage() {
             <p className="text-gray-600 mt-1">{t('company.candidates.managePipeline', { defaultValue: 'Manage your candidate pipeline' })}</p>
           </div>
           <Button asChild>
-            <Link to="/company/candidates/add">
+            <Link to={getPath('candidates/add')}>
               <Plus className="w-5 h-5" />
               {t('company.candidates.addCandidate')}
             </Link>
@@ -336,7 +338,7 @@ export default function CandidatesListPage() {
         {phaseId && (
           <div className="flex items-center gap-4">
             <Button variant="outline" asChild>
-              <Link to={`/company/workflow-board?phase=${phaseId}`}>
+              <Link to={getPath(`workflow-board?phase=${phaseId}`)}>
                 <Kanban className="w-4 h-4" />
                 {t('company.workflowBoard.kanbanView', { defaultValue: 'Kanban View' })}
               </Link>
@@ -459,7 +461,7 @@ export default function CandidatesListPage() {
             </p>
             {!hasActiveFilters && (
               <Button asChild>
-                <Link to="/company/candidates/add">
+                <Link to={getPath('candidates/add')}>
                   <Plus className="w-5 h-5" />
                   {t('company.candidates.addCandidate')}
                 </Link>
@@ -542,7 +544,7 @@ export default function CandidatesListPage() {
                     <TableCell>
                       <div className="min-w-[200px] max-w-[300px]">
                         <button
-                          onClick={() => navigate(`/company/candidates/${candidate.id}`)}
+                          onClick={() => navigate(getPath(`candidates/${candidate.id}`))}
                           className={`text-sm font-medium text-gray-900 truncate hover:text-blue-600 hover:underline cursor-pointer text-left ${
                             candidate.status?.toLowerCase() === 'archived' ? 'line-through' : ''
                           }`}
@@ -558,7 +560,7 @@ export default function CandidatesListPage() {
                       {candidate.job_position_title ? (
                         <>
                           <button
-                            onClick={() => navigate(`/company/positions/${candidate.job_position_id}`)}
+                            onClick={() => navigate(getPath(`positions/${candidate.job_position_id}`))}
                             className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-left"
                           >
                             {candidate.job_position_title}
@@ -630,7 +632,7 @@ export default function CandidatesListPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => navigate(`/company/candidates/${candidate.id}`)}
+                              onClick={() => navigate(getPath(`candidates/${candidate.id}`))}
                             >
                               <Eye className="w-5 h-5" />
                             </Button>
@@ -644,7 +646,7 @@ export default function CandidatesListPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => navigate(`/company/candidates/${candidate.id}/edit`)}
+                              onClick={() => navigate(getPath(`candidates/${candidate.id}/edit`))}
                               className="text-green-600 hover:text-green-900"
                             >
                               <Edit className="w-5 h-5" />
@@ -723,7 +725,7 @@ export default function CandidatesListPage() {
                 <div className="text-center py-12">
                   <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">No open positions available</p>
-                  <Button variant="link" onClick={() => navigate('/company/positions/create')}>
+                  <Button variant="link" onClick={() => navigate(getPath('positions/create'))}>
                     Create a new position
                   </Button>
                 </div>

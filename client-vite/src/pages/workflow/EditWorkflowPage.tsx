@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, Trash2, ArrowUp, ArrowDown, Settings, Palette } from 'lucide-react';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { toast } from 'react-toastify';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { phaseService } from '../../services/phaseService.ts';
@@ -41,6 +42,7 @@ interface StageFormData {
 
 export default function EditWorkflowPage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const { workflowId } = useParams<{ workflowId: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -449,7 +451,7 @@ export default function EditWorkflowPage() {
       }
 
       toast.success('Workflow updated successfully');
-      navigate('/company/settings/hiring-pipelines');
+      navigate(getPath('settings/hiring-pipelines'));
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to update workflow';
       toast.error(errorMessage);
@@ -480,7 +482,7 @@ export default function EditWorkflowPage() {
       {/* Header */}
       <div className="mb-6">
         <button
-          onClick={() => navigate('/company/settings/hiring-pipelines')}
+          onClick={() => navigate(getPath('settings/hiring-pipelines'))}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -532,7 +534,7 @@ export default function EditWorkflowPage() {
                 <div className="text-sm text-gray-500">Loading phases...</div>
               ) : phases.length === 0 ? (
                 <div className="text-sm text-gray-500">
-                  No phases available. <a href="/company/settings/phases" className="text-blue-600 hover:underline">Create phases first</a>
+                  No phases available. <a href={getPath('settings/phases')} className="text-blue-600 hover:underline">Create phases first</a>
                 </div>
               ) : (
                 <select
@@ -719,7 +721,7 @@ export default function EditWorkflowPage() {
                       <div className="text-sm text-gray-500 px-4 py-2">Loading roles...</div>
                     ) : roles.length === 0 ? (
                       <div className="text-sm text-gray-500 px-4 py-2">
-                        No roles available. <a href="/company/settings/roles" className="text-blue-600 hover:underline">Create roles first</a>
+                        No roles available. <a href={getPath('settings/roles')} className="text-blue-600 hover:underline">Create roles first</a>
                       </div>
                     ) : (
                       <select
@@ -826,7 +828,7 @@ export default function EditWorkflowPage() {
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={() => navigate('/company/settings/hiring-pipelines')}
+            onClick={() => navigate(getPath('settings/hiring-pipelines'))}
             className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Cancel
@@ -953,7 +955,7 @@ export default function EditWorkflowPage() {
                       <div className="text-sm text-gray-500">Loading roles...</div>
                     ) : roles.length === 0 ? (
                       <div className="text-sm text-gray-500">
-                        No roles available. <a href="/company/settings/roles" className="text-blue-600 hover:underline">Create roles first</a>
+                        No roles available. <a href={getPath('settings/roles')} className="text-blue-600 hover:underline">Create roles first</a>
                       </div>
                     ) : (
                       <div className="space-y-2 p-4 border border-gray-300 rounded-lg bg-gray-50 max-h-48 overflow-y-auto">
@@ -989,7 +991,7 @@ export default function EditWorkflowPage() {
                         <div className="text-sm text-gray-500">Loading phases...</div>
                       ) : phases.length === 0 ? (
                         <div className="text-sm text-gray-500">
-                          No phases available. <a href="/company/settings/phases" className="text-blue-600 hover:underline">Create phases first</a>
+                          No phases available. <a href={getPath('settings/phases')} className="text-blue-600 hover:underline">Create phases first</a>
                         </div>
                       ) : (
                         <select
@@ -1027,7 +1029,7 @@ export default function EditWorkflowPage() {
                         <div className="text-sm text-gray-500 py-4 space-y-2">
                           <p>No interview templates available.</p>
                           <p>
-                            <a href="/company/interview-templates" className="text-blue-600 hover:underline font-medium">
+                            <a href={getPath('interview-templates')} className="text-blue-600 hover:underline font-medium">
                               Create templates first
                             </a>
                           </p>

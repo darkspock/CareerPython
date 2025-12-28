@@ -182,9 +182,15 @@ export default function AcceptInvitationPage() {
 
     const result = await acceptInvitation(request);
     if (result) {
-      // Redirect after 2 seconds
+      // Redirect after 2 seconds using company slug
       setTimeout(() => {
-        navigate('/company/dashboard');
+        const companySlug = localStorage.getItem('company_slug');
+        if (companySlug) {
+          navigate(`/${companySlug}/admin/dashboard`);
+        } else {
+          // Fallback to login if no slug available
+          navigate('/company/auth/login');
+        }
       }, 2000);
     }
   };

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Users, Briefcase, TrendingUp } from "lucide-react";
+import { useCompanyNavigation } from "../hooks/useCompanyNavigation";
 import { useTranslation } from "react-i18next";
 
 export default function CompanyDashboardPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { getPath } = useCompanyNavigation();
   const [_companyName] = useState("My Company"); // TODO: Get from API
 
   return (
@@ -78,7 +80,7 @@ export default function CompanyDashboardPage() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('company.dashboard.quickActions.title')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
-              onClick={() => navigate('/company/candidates')}
+              onClick={() => navigate(getPath('candidates'))}
               className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-left"
             >
               <Users className="w-6 h-6 text-blue-600 mb-2" />
@@ -87,7 +89,7 @@ export default function CompanyDashboardPage() {
             </button>
 
             <button
-              onClick={() => navigate('/company/positions')}
+              onClick={() => navigate(getPath('positions'))}
               className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-left"
             >
               <Briefcase className="w-6 h-6 text-green-600 mb-2" />
@@ -96,7 +98,7 @@ export default function CompanyDashboardPage() {
             </button>
 
             <button
-              onClick={() => navigate('/company/phases')}
+              onClick={() => navigate(getPath('phases'))}
               className="p-4 border-2 border-gray-200 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-all text-left"
             >
               <TrendingUp className="w-6 h-6 text-yellow-600 mb-2" />
@@ -105,7 +107,7 @@ export default function CompanyDashboardPage() {
             </button>
 
             <button
-              onClick={() => navigate('/company/settings')}
+              onClick={() => navigate(getPath('settings'))}
               className="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-left"
             >
               <Building2 className="w-6 h-6 text-purple-600 mb-2" />

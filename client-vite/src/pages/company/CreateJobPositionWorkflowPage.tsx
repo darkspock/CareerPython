@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import { api } from '../../lib/api';
@@ -33,6 +34,7 @@ interface StageFormData {
 
 export default function CreateJobPositionWorkflowPage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -189,7 +191,7 @@ export default function CreateJobPositionWorkflowPage() {
         custom_fields_config: {},
       });
 
-      navigate('/company/settings/publication-workflows');
+      navigate(getPath('settings/publication-workflows'));
     } catch (err: any) {
       setError(err.message || 'Failed to create workflow');
       console.error('Error creating workflow:', err);
@@ -204,7 +206,7 @@ export default function CreateJobPositionWorkflowPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/settings/publication-workflows')}
+          onClick={() => navigate(getPath('settings/publication-workflows'))}
           className="mb-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -440,7 +442,7 @@ export default function CreateJobPositionWorkflowPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/company/settings/publication-workflows')}
+            onClick={() => navigate(getPath('settings/publication-workflows'))}
           >
             Cancel
           </Button>

@@ -1,99 +1,47 @@
-"""In-App Notification Router - For company users to manage their notifications"""
-import base64
-import json
+"""
+In-App Notification Router - For company users to manage their notifications.
+
+Company-scoped routes for in-app notifications.
+URL Pattern: /{company_slug}/admin/notifications/*
+"""
 import logging
-from typing import Optional
+from typing import Annotated
 
 from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from adapters.http.company_app.notification.controllers.notification_controller import NotificationController
 from adapters.http.company_app.notification.schemas.notification_schemas import (
     NotificationListResponse,
     UnreadCountResponse
 )
+from adapters.http.shared.dependencies.company_context import AdminCompanyContext, CurrentCompanyUser
 from core.containers import Container
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/company/notifications", tags=["In-App Notifications"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/companies/auth/login")
-
-
-def get_company_id_from_token(token: str = Security(oauth2_scheme)) -> str:
-    """Extract company_id from JWT token"""
-    try:
-        parts = token.split('.')
-        if len(parts) != 3:
-            raise HTTPException(status_code=401, detail="Invalid token format")
-
-        payload = parts[1]
-        padding = 4 - len(payload) % 4
-        if padding != 4:
-            payload += '=' * padding
-
-        decoded = base64.urlsafe_b64decode(payload)
-        data = json.loads(decoded)
-        company_id = data.get('company_id')
-
-        if not company_id or not isinstance(company_id, str):
-            raise HTTPException(status_code=401, detail="company_id not found in token")
-
-        return str(company_id)
-    except HTTPException:
-        raise
-    except Exception as e:
-        log.error(f"Error extracting company_id from token: {e}")
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-
-def get_user_id_from_token(token: str = Security(oauth2_scheme)) -> str:
-    """Extract user_id (company_user_id) from JWT token"""
-    try:
-        parts = token.split('.')
-        if len(parts) != 3:
-            raise HTTPException(status_code=401, detail="Invalid token format")
-
-        payload = parts[1]
-        padding = 4 - len(payload) % 4
-        if padding != 4:
-            payload += '=' * padding
-
-        decoded = base64.urlsafe_b64decode(payload)
-        data = json.loads(decoded)
-        user_id = data.get('company_user_id') or data.get('user_id')
-
-        if not user_id or not isinstance(user_id, str):
-            raise HTTPException(status_code=401, detail="user_id not found in token")
-
-        return str(user_id)
-    except HTTPException:
-        raise
-    except Exception as e:
-        log.error(f"Error extracting user_id from token: {e}")
-        raise HTTPException(status_code=401, detail="Invalid token")
+router = APIRouter(prefix="/{company_slug}/admin/notifications", tags=["In-App Notifications"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=NotificationListResponse,
     summary="List notifications for the current user"
 )
 @inject
 def list_notifications(
+    company: AdminCompanyContext,
+    current_user: CurrentCompanyUser,
+    controller: Annotated[NotificationController, Depends(Provide[Container.notification_controller])],
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
-    unread_only: bool = Query(default=False),
-    controller: NotificationController = Depends(Provide[Container.notification_controller]),
-    company_id: str = Depends(get_company_id_from_token),
-    user_id: str = Depends(get_user_id_from_token)
+    unread_only: bool = Query(default=False)
 ) -> NotificationListResponse:
     """List in-app notifications for the current user"""
     try:
         return controller.list_notifications(
-            user_id=user_id,
-            company_id=company_id,
+            user_id=current_user.id,
+            company_id=company.id,
             limit=limit,
             offset=offset,
             unread_only=unread_only
@@ -112,8 +60,8 @@ def list_notifications(
     summary="Get unread notification count"
 )
 def get_unread_count(
-    company_id: str = Depends(get_company_id_from_token),
-    user_id: str = Depends(get_user_id_from_token)
+    company: AdminCompanyContext,
+    current_user: CurrentCompanyUser
 ) -> UnreadCountResponse:
     """Get the count of unread notifications for the current user.
 
@@ -131,16 +79,16 @@ def get_unread_count(
 @inject
 def mark_as_read(
     notification_id: str,
-    controller: NotificationController = Depends(Provide[Container.notification_controller]),
-    company_id: str = Depends(get_company_id_from_token),
-    user_id: str = Depends(get_user_id_from_token)
+    company: AdminCompanyContext,
+    current_user: CurrentCompanyUser,
+    controller: Annotated[NotificationController, Depends(Provide[Container.notification_controller])]
 ) -> None:
     """Mark a specific notification as read"""
     try:
         controller.mark_as_read(
             notification_id=notification_id,
-            user_id=user_id,
-            company_id=company_id
+            user_id=current_user.id,
+            company_id=company.id
         )
     except Exception as e:
         log.error(f"Error marking notification as read: {e}")
@@ -157,13 +105,13 @@ def mark_as_read(
 )
 @inject
 def mark_all_as_read(
-    controller: NotificationController = Depends(Provide[Container.notification_controller]),
-    company_id: str = Depends(get_company_id_from_token),
-    user_id: str = Depends(get_user_id_from_token)
+    company: AdminCompanyContext,
+    current_user: CurrentCompanyUser,
+    controller: Annotated[NotificationController, Depends(Provide[Container.notification_controller])]
 ) -> None:
     """Mark all notifications as read for the current user"""
     try:
-        controller.mark_all_as_read(user_id=user_id, company_id=company_id)
+        controller.mark_all_as_read(user_id=current_user.id, company_id=company.id)
     except Exception as e:
         log.error(f"Error marking all notifications as read: {e}")
         raise HTTPException(
@@ -180,16 +128,16 @@ def mark_all_as_read(
 @inject
 def delete_notification(
     notification_id: str,
-    controller: NotificationController = Depends(Provide[Container.notification_controller]),
-    company_id: str = Depends(get_company_id_from_token),
-    user_id: str = Depends(get_user_id_from_token)
+    company: AdminCompanyContext,
+    current_user: CurrentCompanyUser,
+    controller: Annotated[NotificationController, Depends(Provide[Container.notification_controller])]
 ) -> None:
     """Delete a specific notification"""
     try:
         controller.delete_notification(
             notification_id=notification_id,
-            user_id=user_id,
-            company_id=company_id
+            user_id=current_user.id,
+            company_id=company.id
         )
     except Exception as e:
         log.error(f"Error deleting notification: {e}")

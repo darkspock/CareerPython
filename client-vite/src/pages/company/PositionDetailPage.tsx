@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Edit, Workflow, Eye, EyeOff, FileText, MessageSquare, History, Users, Check, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -107,6 +108,7 @@ const loadCandidateVisibleFields = async (
 export default function PositionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [position, setPosition] = useState<Position | null>(null);
   const [workflow, setWorkflow] = useState<JobPositionWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -333,7 +335,7 @@ export default function PositionDetailPage() {
         <AlertDescription>{error || 'Position not found'}</AlertDescription>
         <Button
           variant="outline"
-          onClick={() => navigate('/company/positions')}
+          onClick={() => navigate(getPath('positions'))}
           className="mt-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -349,7 +351,7 @@ export default function PositionDetailPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/positions')}
+          onClick={() => navigate(getPath('positions'))}
           className="mb-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -386,7 +388,7 @@ export default function PositionDetailPage() {
               </Badge>
             </a>
             <Button
-              onClick={() => navigate(`/company/positions/${id}/edit`)}
+              onClick={() => navigate(getPath(`positions/${id}/edit`))}
               title="Edit this position"
             >
               <Edit className="w-4 h-4 mr-2" />

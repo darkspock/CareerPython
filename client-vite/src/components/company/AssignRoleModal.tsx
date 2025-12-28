@@ -20,6 +20,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { UserCog, AlertTriangle, Loader2 } from 'lucide-react';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import {
   Dialog,
   DialogContent,
@@ -71,6 +72,7 @@ export default function AssignRoleModal({
   const [loadingCompanyRoles, setLoadingCompanyRoles] = useState(false);
 
   const { assignRole, loading, error, reset } = useAssignRole();
+  const { getPath } = useCompanyNavigation();
 
   useEffect(() => {
     if (isOpen) {
@@ -217,7 +219,7 @@ export default function AssignRoleModal({
                 <CardContent className="pt-4">
                   <p className="text-sm text-muted-foreground">
                     No hay roles personalizados creados.{' '}
-                    <a href="/company/settings/roles" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    <a href={getPath('settings/roles')} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                       Crear roles
                     </a>
                   </p>

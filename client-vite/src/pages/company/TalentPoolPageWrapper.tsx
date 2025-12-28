@@ -4,6 +4,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { TalentPoolPage } from '../../components/company/talentPool/TalentPoolPage';
 
 function getCompanyId(): string | null {
@@ -19,6 +20,7 @@ function getCompanyId(): string | null {
 
 export default function TalentPoolPageWrapper() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const companyId = getCompanyId();
 
   if (!companyId) {
@@ -43,7 +45,7 @@ export default function TalentPoolPageWrapper() {
       onViewEntry={(entry) => {
         // Navigate to candidate detail if candidate_id exists
         if (entry.candidate_id) {
-          navigate(`/company/candidates/${entry.candidate_id}`);
+          navigate(getPath(`candidates/${entry.candidate_id}`));
         }
       }}
     />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Save, Eye, EyeOff, Archive, Trash2, Star } from 'lucide-react';
 import { WysiwygEditor } from '../../components/common';
 import { companyPageService } from '../../services/companyPageService';
@@ -23,6 +24,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 export default function EditCompanyPagePage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const { pageId } = useParams<{ pageId: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -90,7 +92,7 @@ export default function EditCompanyPagePage() {
       setError(null);
 
       await companyPageService.updatePage(pageId, formData);
-      navigate('/company/pages');
+      navigate(getPath('pages'));
     } catch (err: any) {
       setError(err.message || 'Error al actualizar la página');
       console.error('Error updating page:', err);
@@ -152,7 +154,7 @@ export default function EditCompanyPagePage() {
         setSaving(true);
         setError(null);
         await companyPageService.deletePage(pageId);
-        navigate('/company/pages');
+        navigate(getPath('pages'));
       } catch (err: any) {
         setError(err.message || 'Error al eliminar la página');
       } finally {
@@ -201,7 +203,7 @@ export default function EditCompanyPagePage() {
       <div className="text-center py-12">
         <h3 className="text-lg font-medium text-gray-900 mb-2">Página no encontrada</h3>
         <p className="text-gray-600 mb-4">La página que buscas no existe o ha sido eliminada.</p>
-        <Button onClick={() => navigate('/company/pages')}>
+        <Button onClick={() => navigate(getPath('pages'))}>
           <ArrowLeft className="w-5 h-5 mr-2" />
           Volver a Páginas
         </Button>
@@ -216,7 +218,7 @@ export default function EditCompanyPagePage() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/company/pages')}
+            onClick={() => navigate(getPath('pages'))}
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Volver
@@ -492,7 +494,7 @@ export default function EditCompanyPagePage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/company/pages')}
+                  onClick={() => navigate(getPath('pages'))}
                   className="w-full"
                 >
                   Cancel

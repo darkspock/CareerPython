@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { Calendar, CalendarDays, ChevronDown, ChevronUp, Filter, List, Plus, Search, X } from 'lucide-react';
 import { companyInterviewService } from '../../services/companyInterviewService';
 import type { InterviewFilterEnum } from '../../services/companyInterviewService';
@@ -22,6 +23,7 @@ type ViewMode = 'table' | 'calendar';
 
 const CompanyInterviewsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [viewMode, setViewMode] = useState<ViewMode>('table');
 
   // Use custom hooks
@@ -182,12 +184,12 @@ const CompanyInterviewsPage: React.FC = () => {
   }, [setCurrentPage]);
   
   const handleViewInterview = useCallback((interviewId: string) => {
-    navigate(`/company/interviews/${interviewId}`);
-  }, [navigate]);
-  
+    navigate(getPath(`interviews/${interviewId}`));
+  }, [navigate, getPath]);
+
   const handleCreateInterview = useCallback(() => {
-    navigate('/company/interviews/create');
-  }, [navigate]);
+    navigate(getPath('interviews/create'));
+  }, [navigate, getPath]);
   
   const handleGenerateAndOpenLink = useCallback(async (interviewId: string) => {
     try {

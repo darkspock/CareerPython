@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { Plus, Settings, Trash2, Star, CheckCircle, Edit, Filter } from 'lucide-react';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { phaseService } from '../../services/phaseService.ts';
@@ -27,6 +28,7 @@ export default function WorkflowsSettingsPage({
 }: WorkflowsSettingsPageProps = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [workflows, setWorkflows] = useState<CompanyWorkflow[]>([]);
   const [allWorkflows, setAllWorkflows] = useState<CompanyWorkflow[]>([]);
   const [phases, setPhases] = useState<Phase[]>([]);
@@ -123,7 +125,7 @@ export default function WorkflowsSettingsPage({
   };
 
   const handleCreateWorkflow = () => {
-    const baseRoute = createRoute || '/company/settings/hiring-pipelines/create';
+    const baseRoute = createRoute || getPath('settings/hiring-pipelines/create');
     const url = selectedPhaseId ? `${baseRoute}?phaseId=${selectedPhaseId}` : baseRoute;
     navigate(url);
   };
@@ -132,7 +134,7 @@ export default function WorkflowsSettingsPage({
     if (editRoute) {
       navigate(editRoute(workflowId));
     } else {
-      navigate(`/company/hiring-pipelines/${workflowId}/edit`);
+      navigate(getPath(`hiring-pipelines/${workflowId}/edit`));
     }
   };
 
@@ -140,7 +142,7 @@ export default function WorkflowsSettingsPage({
     if (advancedConfigRoute) {
       navigate(advancedConfigRoute(workflowId));
     } else {
-      navigate(`/company/hiring-pipelines/${workflowId}/advanced-config`);
+      navigate(getPath(`hiring-pipelines/${workflowId}/advanced-config`));
     }
   };
 

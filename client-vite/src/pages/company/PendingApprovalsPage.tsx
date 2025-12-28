@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import {
   ArrowLeft,
   CheckCircle,
@@ -38,6 +39,7 @@ import {
 
 export default function PendingApprovalsPage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,7 +144,7 @@ export default function PendingApprovalsPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/positions')}
+          onClick={() => navigate(getPath('positions'))}
           className="mb-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -283,7 +285,7 @@ export default function PendingApprovalsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/company/positions/${position.id}`)}
+                        onClick={() => navigate(getPath(`positions/${position.id}`))}
                         disabled={isLoading}
                       >
                         <Eye className="w-4 h-4 mr-1" />

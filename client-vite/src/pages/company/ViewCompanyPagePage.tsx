@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Edit, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,7 @@ import { getPageTypeLabel, getPageStatusLabel, getPageStatusColor } from '../../
 export default function ViewCompanyPagePage() {
   const { pageId } = useParams<{ pageId: string }>();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [page, setPage] = useState<CompanyPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export default function ViewCompanyPagePage() {
 
   const handleEdit = () => {
     if (pageId) {
-      navigate(`/company/pages/${pageId}/edit`);
+      navigate(getPath(`pages/${pageId}/edit`));
     }
   };
 
@@ -71,7 +73,7 @@ export default function ViewCompanyPagePage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
             <Button
-              onClick={() => navigate('/company/pages')}
+              onClick={() => navigate(getPath('pages'))}
               className="w-full mt-4"
             >
               Back to Pages
@@ -89,7 +91,7 @@ export default function ViewCompanyPagePage() {
           <CardContent className="pt-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Page not found</h2>
             <Button
-              onClick={() => navigate('/company/pages')}
+              onClick={() => navigate(getPath('pages'))}
               className="w-full"
             >
               Back to Pages
@@ -108,7 +110,7 @@ export default function ViewCompanyPagePage() {
           <div className="flex items-center justify-between mb-4">
             <Button
               variant="ghost"
-              onClick={() => navigate('/company/pages')}
+              onClick={() => navigate(getPath('pages'))}
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to Pages

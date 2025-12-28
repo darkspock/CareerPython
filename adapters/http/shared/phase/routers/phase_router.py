@@ -1,9 +1,15 @@
-"""Phase router for REST API endpoints"""
-from typing import List
+"""
+Phase router for REST API endpoints.
+
+Company-scoped routes for phase management.
+URL Pattern: /{company_slug}/admin/phases/*
+"""
+from typing import List, Annotated
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from adapters.http.shared.dependencies.company_context import AdminCompanyContext
 from adapters.http.shared.phase.controllers.phase_controller import PhaseController
 from adapters.http.shared.phase.schemas.phase_schemas import (
     CreatePhaseRequest,
@@ -12,7 +18,7 @@ from adapters.http.shared.phase.schemas.phase_schemas import (
 )
 from core.containers import Container
 
-router = APIRouter(prefix="/api/companies/{company_id}/phases", tags=["phases"])
+router = APIRouter(prefix="/{company_slug}/admin/phases", tags=["phases"])
 
 
 @router.post(
@@ -23,24 +29,13 @@ router = APIRouter(prefix="/api/companies/{company_id}/phases", tags=["phases"])
 )
 @inject
 def create_phase(
-        company_id: str,
+        company: AdminCompanyContext,
         request: CreatePhaseRequest,
-        controller: PhaseController = Depends(Provide[Container.phase_controller])
+        controller: Annotated[PhaseController, Depends(Provide[Container.phase_controller])]
 ) -> PhaseResponse:
-    """Create a new phase for a company
-
-    Args:
-        company_id: Company ID
-        request: Create phase request
-
-    Returns:
-        Created phase
-
-    Raises:
-        HTTPException: If creation fails
-    """
+    """Create a new phase for a company"""
     try:
-        return controller.create_phase(company_id, request)
+        return controller.create_phase(company.id, request)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
@@ -54,19 +49,12 @@ def create_phase(
 )
 @inject
 def list_phases(
-        company_id: str,
-        controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company: AdminCompanyContext,
+        controller: Annotated[PhaseController, Depends(Provide[Container.phase_controller])]
 ) -> List[PhaseResponse]:
-    """List all phases for a company, ordered by sort_order
-
-    Args:
-        company_id: Company ID
-
-    Returns:
-        List of phases
-    """
+    """List all phases for a company, ordered by sort_order"""
     try:
-        return controller.list_phases_by_company(company_id)
+        return controller.list_phases_by_company(company.id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -78,22 +66,11 @@ def list_phases(
 )
 @inject
 def get_phase(
-        company_id: str,
         phase_id: str,
-        controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company: AdminCompanyContext,
+        controller: Annotated[PhaseController, Depends(Provide[Container.phase_controller])]
 ) -> PhaseResponse:
-    """Get a phase by ID
-
-    Args:
-        company_id: Company ID
-        phase_id: Phase ID
-
-    Returns:
-        Phase details
-
-    Raises:
-        HTTPException: If phase not found
-    """
+    """Get a phase by ID"""
     try:
         return controller.get_phase_by_id(phase_id)
     except ValueError as e:
@@ -109,24 +86,12 @@ def get_phase(
 )
 @inject
 def update_phase(
-        company_id: str,
         phase_id: str,
         request: UpdatePhaseRequest,
-        controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company: AdminCompanyContext,
+        controller: Annotated[PhaseController, Depends(Provide[Container.phase_controller])]
 ) -> PhaseResponse:
-    """Update an existing phase
-
-    Args:
-        company_id: Company ID
-        phase_id: Phase ID
-        request: Update phase request
-
-    Returns:
-        Updated phase
-
-    Raises:
-        HTTPException: If phase not found or update fails
-    """
+    """Update an existing phase"""
     try:
         return controller.update_phase(phase_id, request)
     except ValueError as e:
@@ -142,19 +107,11 @@ def update_phase(
 )
 @inject
 def delete_phase(
-        company_id: str,
         phase_id: str,
-        controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company: AdminCompanyContext,
+        controller: Annotated[PhaseController, Depends(Provide[Container.phase_controller])]
 ) -> None:
-    """Delete a phase
-
-    Args:
-        company_id: Company ID
-        phase_id: Phase ID
-
-    Raises:
-        HTTPException: If phase not found or deletion fails
-    """
+    """Delete a phase"""
     try:
         controller.delete_phase(phase_id)
     except ValueError as e:
@@ -171,8 +128,8 @@ def delete_phase(
 )
 @inject
 def initialize_default_phases(
-        company_id: str,
-        controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company: AdminCompanyContext,
+        controller: Annotated[PhaseController, Depends(Provide[Container.phase_controller])]
 ) -> List[PhaseResponse]:
     """Initialize default phases for a company (reset to defaults)
 
@@ -180,18 +137,9 @@ def initialize_default_phases(
     - Sourcing (Kanban) - Screening process
     - Evaluation (Kanban) - Interview and assessment
     - Offer and Pre-Onboarding (List) - Offer negotiation
-
-    Args:
-        company_id: Company ID
-
-    Returns:
-        List of created phases
-
-    Raises:
-        HTTPException: If initialization fails
     """
     try:
-        return controller.initialize_default_phases(company_id)
+        return controller.initialize_default_phases(company.id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -203,22 +151,11 @@ def initialize_default_phases(
 )
 @inject
 def archive_phase(
-        company_id: str,
         phase_id: str,
-        controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company: AdminCompanyContext,
+        controller: Annotated[PhaseController, Depends(Provide[Container.phase_controller])]
 ) -> PhaseResponse:
-    """Archive a phase (soft delete)
-
-    Args:
-        company_id: Company ID
-        phase_id: Phase ID to archive
-
-    Returns:
-        Archived phase
-
-    Raises:
-        HTTPException: If phase not found or archiving fails
-    """
+    """Archive a phase (soft delete)"""
     try:
         return controller.archive_phase(phase_id)
     except ValueError as e:
@@ -234,22 +171,11 @@ def archive_phase(
 )
 @inject
 def activate_phase(
-        company_id: str,
         phase_id: str,
-        controller: PhaseController = Depends(Provide[Container.phase_controller])
+        company: AdminCompanyContext,
+        controller: Annotated[PhaseController, Depends(Provide[Container.phase_controller])]
 ) -> PhaseResponse:
-    """Activate a phase
-
-    Args:
-        company_id: Company ID
-        phase_id: Phase ID to activate
-
-    Returns:
-        Activated phase
-
-    Raises:
-        HTTPException: If phase not found or activation fails
-    """
+    """Activate a phase"""
     try:
         return controller.activate_phase(phase_id)
     except ValueError as e:

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Save, Eye, EyeOff } from 'lucide-react';
 import { WysiwygEditor } from '../../components/common';
 import { companyPageService } from '../../services/companyPageService';
@@ -24,6 +25,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 export default function CreateCompanyPagePage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
@@ -58,7 +60,7 @@ export default function CreateCompanyPagePage() {
       setError(null);
 
       await companyPageService.createPage(formData);
-      navigate('/company/pages');
+      navigate(getPath('pages'));
     } catch (err: any) {
       setError(err.message || 'Error creating page');
       console.error('Error creating page:', err);
@@ -98,7 +100,7 @@ export default function CreateCompanyPagePage() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/company/pages')}
+            onClick={() => navigate(getPath('pages'))}
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back
@@ -312,7 +314,7 @@ export default function CreateCompanyPagePage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/company/pages')}
+                  onClick={() => navigate(getPath('pages'))}
                   className="w-full"
                 >
                   Cancel

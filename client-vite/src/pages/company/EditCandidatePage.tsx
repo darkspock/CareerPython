@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Save, X, Plus } from 'lucide-react';
 import { companyCandidateService } from '../../services/companyCandidateService';
 import type { Priority } from '../../types/companyCandidate';
@@ -20,6 +21,7 @@ import {
 
 export default function EditCandidatePage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -106,7 +108,7 @@ export default function EditCandidatePage() {
         internal_notes: formData.internal_notes || undefined,
       });
 
-      navigate(`/company/candidates/${id}`);
+      navigate(getPath(`candidates/${id}`));
     } catch (err: any) {
       setError(err.message || 'Failed to update candidate');
       console.error('Error updating candidate:', err);
@@ -129,7 +131,7 @@ export default function EditCandidatePage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate(`/company/candidates/${id}`)}
+          onClick={() => navigate(getPath(`candidates/${id}`))}
           className="mb-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -295,7 +297,7 @@ export default function EditCandidatePage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(`/company/candidates/${id}`)}
+                onClick={() => navigate(getPath(`candidates/${id}`))}
               >
                 Cancel
               </Button>

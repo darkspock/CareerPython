@@ -1,5 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import {
   User,
   Users,
@@ -39,12 +40,13 @@ export const InterviewTableRow: React.FC<InterviewTableRowProps> = memo(({
   onCopyLink,
 }) => {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
 
   const handleEditClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(`/company/interviews/${interview.id}/edit`);
-  }, [navigate, interview.id]);
+    navigate(getPath(`interviews/${interview.id}/edit`));
+  }, [navigate, getPath, interview.id]);
 
   const handleViewClick = useCallback(() => {
     onView(interview.id);

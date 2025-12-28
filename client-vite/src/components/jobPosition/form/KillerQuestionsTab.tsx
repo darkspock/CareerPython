@@ -7,6 +7,7 @@
  */
 import { useState, useEffect } from 'react';
 import { FileQuestion, Plus, Trash2, GripVertical, ChevronUp, ChevronDown, Star, Edit, ExternalLink } from 'lucide-react';
+import { useCompanyNavigation } from '../../../hooks/useCompanyNavigation';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -80,6 +81,7 @@ export function KillerQuestionsTab({
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [editingQuestion, setEditingQuestion] = useState<KillerQuestion | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { getPath } = useCompanyNavigation();
 
   // Determine mode: template (if templateId set) or direct (if questions exist or no template)
   const isTemplateMode = !!screeningTemplateId;
@@ -227,7 +229,7 @@ export function KillerQuestionsTab({
               </div>
               <div className="flex items-center gap-2">
                 <a
-                  href={`/company/interview-templates/${selectedTemplate.id}`}
+                  href={getPath(`interview-templates/${selectedTemplate.id}`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-sm text-primary hover:underline"

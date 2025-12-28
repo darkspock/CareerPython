@@ -4,6 +4,7 @@
  */
 import {useEffect, useRef, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {useCompanyNavigation} from '../../../hooks/useCompanyNavigation';
 import {ArrowLeft, Info, Lock, Save} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -58,6 +59,7 @@ export function PositionFormTabs({
                                      canEditBudget = true,
                                  }: PositionFormTabsProps) {
     const navigate = useNavigate();
+    const { getPath } = useCompanyNavigation();
     const [activeTab, setActiveTab] = useState('basic');
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
@@ -1085,7 +1087,7 @@ export function PositionFormTabs({
                                 <p className="text-sm text-muted-foreground">
                                     Hiring pipelines are configured in the application settings.{' '}
                                     <a
-                                        href="/company/settings/hiring-pipelines"
+                                        href={getPath('settings/hiring-pipelines')}
                                         className="text-primary hover:underline"
                                     >
                                         Manage hiring pipelines

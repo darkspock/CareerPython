@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { toast } from 'react-toastify';
 import {
   DndContext,
@@ -27,19 +28,20 @@ import { KanbanDisplay } from '../../types/workflow.ts';
 import '../../components/kanban/kanban-styles.css';
 
 // Candidate Card Component
-function CandidateCard({ 
-  candidate, 
-  companyId: _companyId, 
+function CandidateCard({
+  candidate,
+  companyId: _companyId,
   allStages,
-  onMoveToStage 
-}: { 
-  candidate: CompanyCandidate; 
+  onMoveToStage
+}: {
+  candidate: CompanyCandidate;
   companyId: string;
   allStages: WorkflowStage[];
   onMoveToStage: (candidateId: string, stageId: string) => void;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -76,7 +78,7 @@ function CandidateCard({
       onClick={(e) => {
         if (!isDragging) {
           e.stopPropagation();
-          navigate(`/company/candidates/${candidate.id}`);
+          navigate(getPath(`candidates/${candidate.id}`));
         }
       }}
     >
@@ -279,6 +281,7 @@ function StageColumn({
 // Main Kanban Board Component
 export default function WorkflowBoardPage() {
   const { t } = useTranslation();
+  const { getPath } = useCompanyNavigation();
   const [searchParams] = useSearchParams();
   const phaseIdFromUrl = searchParams.get('phase');
   
@@ -579,7 +582,7 @@ export default function WorkflowBoardPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('company.workflowBoard.noPhaseSelected')}</h2>
           <p className="text-gray-600 mb-6">{t('company.workflowBoard.selectPhase')}</p>
           <Link
-            to="/company/phases"
+            to={getPath('phases')}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <List className="w-4 h-4 mr-2" />
@@ -614,7 +617,7 @@ export default function WorkflowBoardPage() {
         {phaseIdFromUrl && (
           <div className="flex items-center gap-4">
             <Link
-              to={`/company/candidates?phase=${phaseIdFromUrl}`}
+              to={getPath(`candidates?phase=${phaseIdFromUrl}`)}
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
             >
               <List className="w-4 h-4" />
@@ -622,7 +625,7 @@ export default function WorkflowBoardPage() {
             </Link>
             {isFirstPhase && (
               <Link
-                to="/company/candidates/add"
+                to={getPath('candidates/add')}
                 className="text-blue-600 hover:text-blue-800 hover:underline"
               >
                 {t('company.candidates.addCandidate')}
@@ -690,7 +693,7 @@ export default function WorkflowBoardPage() {
                     candidates={getCandidatesByStage(stage.id)}
                     onCandidateClick={(candidate) => {
                       // Navigate to candidate details
-                      window.location.href = `/company/candidates/${candidate.id}`;
+                      window.location.href = getPath(`candidates/${candidate.id}`);
                     }}
                   />
                 ))}

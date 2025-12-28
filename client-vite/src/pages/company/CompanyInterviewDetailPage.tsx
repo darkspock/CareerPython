@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import {
   ArrowLeft,
   Calendar,
@@ -21,6 +22,7 @@ import { formatDateDetailed, getStatusBadge, getTypeLabel } from '../../utils/in
 export default function CompanyInterviewDetailPage() {
   const { interviewId } = useParams<{ interviewId: string }>();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   
   const {
     interview,
@@ -54,7 +56,7 @@ export default function CompanyInterviewDetailPage() {
             </div>
             <Button
               variant="outline"
-              onClick={() => navigate('/company/interviews')}
+              onClick={() => navigate(getPath('interviews'))}
               className="mt-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -72,7 +74,7 @@ export default function CompanyInterviewDetailPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/interviews')}
+          onClick={() => navigate(getPath('interviews'))}
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -119,7 +121,7 @@ export default function CompanyInterviewDetailPage() {
             )}
             <Button
               variant="outline"
-              onClick={() => navigate(`/company/interviews/${interviewId}/edit`)}
+              onClick={() => navigate(getPath(`interviews/${interviewId}/edit`))}
               className="flex items-center gap-2"
             >
               <Edit className="w-4 h-4" />
@@ -267,7 +269,7 @@ export default function CompanyInterviewDetailPage() {
                 <Button
                   variant="link"
                   size="sm"
-                  onClick={() => navigate(`/company/candidates/${interview.candidate_id}`)}
+                  onClick={() => navigate(getPath(`candidates/${interview.candidate_id}`))}
                   className="p-0 h-auto mt-2"
                 >
                   Ver perfil del candidato →
@@ -292,7 +294,7 @@ export default function CompanyInterviewDetailPage() {
                   <Button
                     variant="link"
                     size="sm"
-                    onClick={() => navigate(`/company/positions/${interview.job_position_id}`)}
+                    onClick={() => navigate(getPath(`positions/${interview.job_position_id}`))}
                     className="p-0 h-auto mt-2"
                   >
                     Ver posición →

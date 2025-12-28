@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { Building2, ArrowLeft, Save, AlertCircle, Upload, Image as ImageIcon, Edit3 } from 'lucide-react';
 import { recruiterCompanyService } from '../../services/recruiterCompanyService';
 import type { RecruiterCompany, UpdateRecruiterCompanyRequest } from '../../types/recruiter-company';
@@ -17,6 +18,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function EditCompanyPage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -100,7 +102,7 @@ export default function EditCompanyPage() {
       await recruiterCompanyService.updateCompany(companyId, updateData);
 
       // Navigate back to settings
-      navigate('/company/settings');
+      navigate(getPath('settings'));
     } catch (err: any) {
       setError(err.message || 'Failed to update company information');
       console.error('Error updating company:', err);
@@ -260,7 +262,7 @@ export default function EditCompanyPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/settings')}
+          onClick={() => navigate(getPath('settings'))}
           className="mb-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -469,7 +471,7 @@ export default function EditCompanyPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/company/settings')}
+                onClick={() => navigate(getPath('settings'))}
               >
                 Cancel
               </Button>

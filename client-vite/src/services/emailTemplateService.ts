@@ -12,14 +12,30 @@ import type {
   TriggerEvent
 } from '../types/emailTemplate';
 
-export class EmailTemplateService {
-  private static readonly BASE_PATH = '/api/company/email-templates';
+/**
+ * Get the company slug from localStorage
+ */
+function getCompanySlug(): string {
+  const slug = localStorage.getItem('company_slug');
+  if (!slug) {
+    throw new Error('Company slug not found. Please log in again.');
+  }
+  return slug;
+}
 
+/**
+ * Get the base path for email template endpoints (company-scoped)
+ */
+function getBasePath(): string {
+  return `/${getCompanySlug()}/admin/email-templates`;
+}
+
+export class EmailTemplateService {
   /**
    * Create a new email template
    */
   static async createTemplate(data: CreateEmailTemplateRequest): Promise<EmailTemplate> {
-    return await api.authenticatedRequest<EmailTemplate>(this.BASE_PATH, {
+    return await api.authenticatedRequest<EmailTemplate>(getBasePath(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -30,7 +46,7 @@ export class EmailTemplateService {
    * Get an email template by ID
    */
   static async getTemplateById(templateId: string): Promise<EmailTemplate> {
-    return await api.authenticatedRequest<EmailTemplate>(`${this.BASE_PATH}/${templateId}`);
+    return await api.authenticatedRequest<EmailTemplate>(`${getBasePath()}/${templateId}`);
   }
 
   /**
@@ -40,7 +56,7 @@ export class EmailTemplateService {
     templateId: string,
     data: UpdateEmailTemplateRequest
   ): Promise<{ message: string; template_id: string }> {
-    return await api.authenticatedRequest<{ message: string; template_id: string }>(`${this.BASE_PATH}/${templateId}`, {
+    return await api.authenticatedRequest<{ message: string; template_id: string }>(`${getBasePath()}/${templateId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -51,7 +67,7 @@ export class EmailTemplateService {
    * Delete an email template
    */
   static async deleteTemplate(templateId: string): Promise<{ message: string }> {
-    return await api.authenticatedRequest<{ message: string }>(`${this.BASE_PATH}/${templateId}`, {
+    return await api.authenticatedRequest<{ message: string }>(`${getBasePath()}/${templateId}`, {
       method: 'DELETE'
     });
   }
@@ -60,7 +76,7 @@ export class EmailTemplateService {
    * Activate an email template
    */
   static async activateTemplate(templateId: string): Promise<{ message: string }> {
-    return await api.authenticatedRequest<{ message: string }>(`${this.BASE_PATH}/${templateId}/activate`, {
+    return await api.authenticatedRequest<{ message: string }>(`${getBasePath()}/${templateId}/activate`, {
       method: 'POST'
     });
   }
@@ -69,7 +85,7 @@ export class EmailTemplateService {
    * Deactivate an email template
    */
   static async deactivateTemplate(templateId: string): Promise<{ message: string }> {
-    return await api.authenticatedRequest<{ message: string }>(`${this.BASE_PATH}/${templateId}/deactivate`, {
+    return await api.authenticatedRequest<{ message: string }>(`${getBasePath()}/${templateId}/deactivate`, {
       method: 'POST'
     });
   }
@@ -84,7 +100,7 @@ export class EmailTemplateService {
     const params = new URLSearchParams();
     if (activeOnly) params.append('active_only', 'true');
 
-    return await api.authenticatedRequest<EmailTemplate[]>(`${this.BASE_PATH}/workflow/${workflowId}?${params.toString()}`);
+    return await api.authenticatedRequest<EmailTemplate[]>(`${getBasePath()}/workflow/${workflowId}?${params.toString()}`);
   }
 
   /**
@@ -97,7 +113,7 @@ export class EmailTemplateService {
     const params = new URLSearchParams();
     if (activeOnly) params.append('active_only', 'true');
 
-    return await api.authenticatedRequest<EmailTemplate[]>(`${this.BASE_PATH}/stage/${stageId}?${params.toString()}`);
+    return await api.authenticatedRequest<EmailTemplate[]>(`${getBasePath()}/stage/${stageId}?${params.toString()}`);
   }
 
   /**
@@ -114,7 +130,7 @@ export class EmailTemplateService {
     if (activeOnly) params.append('active_only', 'true');
 
     return await api.authenticatedRequest<EmailTemplate[]>(
-      `${this.BASE_PATH}/trigger/${workflowId}/${triggerEvent}?${params.toString()}`
+      `${getBasePath()}/trigger/${workflowId}/${triggerEvent}?${params.toString()}`
     );
   }
 
@@ -155,7 +171,7 @@ export class EmailTemplateService {
     }>
   ): Promise<{ message: string; total: number; queued: number }> {
     return await api.authenticatedRequest<{ message: string; total: number; queued: number }>(
-      `${this.BASE_PATH}/send-bulk`,
+      `${getBasePath()}/send-bulk`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

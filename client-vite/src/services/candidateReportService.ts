@@ -33,13 +33,31 @@ export interface ReportGenerationStatus {
   message?: string;
 }
 
+/**
+ * Get the company slug from localStorage
+ */
+function getCompanySlug(): string {
+  const slug = localStorage.getItem('company_slug');
+  if (!slug) {
+    throw new Error('Company slug not found. Please log in again.');
+  }
+  return slug;
+}
+
+/**
+ * Get the base path for candidate report endpoints (company-scoped)
+ */
+function getBasePath(): string {
+  return `/${getCompanySlug()}/admin/candidates/reports`;
+}
+
 export const candidateReportService = {
   /**
    * Generate a new candidate report
    */
   async generateReport(request: CandidateReportRequest): Promise<CandidateReportResponse> {
     return await api.authenticatedRequest<CandidateReportResponse>(
-      '/api/company-candidates/reports/generate',
+      `${getBasePath()}/generate`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,7 +71,7 @@ export const candidateReportService = {
    */
   async getReport(reportId: string): Promise<CandidateReportResponse> {
     return await api.authenticatedRequest<CandidateReportResponse>(
-      `/api/company/candidates/reports/${reportId}`
+      `${getBasePath()}/${reportId}`
     );
   },
 
@@ -61,8 +79,9 @@ export const candidateReportService = {
    * Get all reports for a candidate
    */
   async getReportsForCandidate(companyCandidateId: string): Promise<CandidateReportResponse[]> {
+    const slug = getCompanySlug();
     return await api.authenticatedRequest<CandidateReportResponse[]>(
-      `/api/company/candidates/${companyCandidateId}/reports`
+      `/${slug}/admin/candidates/${companyCandidateId}/reports`
     );
   },
 
@@ -71,7 +90,7 @@ export const candidateReportService = {
    */
   async downloadReportPdf(reportId: string): Promise<Blob> {
     const response = await api.authenticatedRequest<Response>(
-      `/api/company/candidates/reports/${reportId}/pdf`,
+      `${getBasePath()}/${reportId}/pdf`,
       {
         method: 'GET',
         headers: { 'Accept': 'application/pdf' }

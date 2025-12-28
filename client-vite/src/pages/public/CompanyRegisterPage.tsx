@@ -185,7 +185,13 @@ export default function CompanyRegisterPage() {
         if (response.redirect_url) {
           window.location.href = response.redirect_url;
         } else {
-          navigate('/company/dashboard');
+          // Use company slug from localStorage (set during registration)
+          const companySlug = localStorage.getItem('company_slug');
+          if (companySlug) {
+            navigate(`/${companySlug}/admin/dashboard`);
+          } else {
+            navigate('/company/auth/login');
+          }
         }
       }, 2000);
     } catch (err: any) {

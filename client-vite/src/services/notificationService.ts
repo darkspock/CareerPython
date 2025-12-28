@@ -25,6 +25,24 @@ export interface UnreadCountResponse {
   unread_count: number;
 }
 
+/**
+ * Get the company slug from localStorage
+ */
+function getCompanySlug(): string {
+  const slug = localStorage.getItem('company_slug');
+  if (!slug) {
+    throw new Error('Company slug not found. Please log in again.');
+  }
+  return slug;
+}
+
+/**
+ * Get the base path for notification endpoints (company-scoped)
+ */
+function getBasePath(): string {
+  return `/${getCompanySlug()}/admin/notifications`;
+}
+
 export const notificationService = {
   /**
    * Get list of notifications for the current user
@@ -40,7 +58,7 @@ export const notificationService = {
       unread_only: unreadOnly.toString(),
     });
     return ApiClient.authenticatedRequest<NotificationListResponse>(
-      `/api/company/notifications/?${params}`
+      `${getBasePath()}?${params}`
     );
   },
 
@@ -49,7 +67,7 @@ export const notificationService = {
    */
   async getUnreadCount(): Promise<UnreadCountResponse> {
     return ApiClient.authenticatedRequest<UnreadCountResponse>(
-      '/api/company/notifications/unread-count'
+      `${getBasePath()}/unread-count`
     );
   },
 
@@ -58,7 +76,7 @@ export const notificationService = {
    */
   async markAsRead(notificationId: string): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `/api/company/notifications/${notificationId}/read`,
+      `${getBasePath()}/${notificationId}/read`,
       { method: 'POST' }
     );
   },
@@ -68,7 +86,7 @@ export const notificationService = {
    */
   async markAllAsRead(): Promise<void> {
     await ApiClient.authenticatedRequest(
-      '/api/company/notifications/read-all',
+      `${getBasePath()}/read-all`,
       { method: 'POST' }
     );
   },
@@ -78,7 +96,7 @@ export const notificationService = {
    */
   async deleteNotification(notificationId: string): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `/api/company/notifications/${notificationId}`,
+      `${getBasePath()}/${notificationId}`,
       { method: 'DELETE' }
     );
   },

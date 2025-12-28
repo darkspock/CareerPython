@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Plus, Workflow, Users, Layers, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
@@ -11,6 +12,7 @@ import type { Phase } from '../../types/phase';
 export default function WorkflowSelectionPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
 
   const [positionTitle, setPositionTitle] = useState<string>('');
   const [publicationWorkflows, setPublicationWorkflows] = useState<CompanyWorkflow[]>([]);
@@ -130,7 +132,7 @@ export default function WorkflowSelectionPage() {
       }
 
       // Navigate to edit page
-      navigate(`/company/positions/${positionId}/edit`);
+      navigate(getPath(`positions/${positionId}/edit`));
     } catch (err: any) {
       console.error('Error creating position:', err);
       setError(err.message || 'Failed to create position');
@@ -166,7 +168,7 @@ export default function WorkflowSelectionPage() {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <button
-          onClick={() => navigate('/company/positions')}
+          onClick={() => navigate(getPath('positions'))}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -186,7 +188,7 @@ export default function WorkflowSelectionPage() {
                 <Workflow className="w-5 h-5" />
                 <span>{t('position.create.noPublicationWorkflows')}</span>
                 <a
-                  href="/company/settings/publication-workflows"
+                  href={getPath('settings/publication-workflows')}
                   className="text-blue-600 hover:underline ml-2"
                 >
                   {t('position.create.createOne')}
@@ -198,7 +200,7 @@ export default function WorkflowSelectionPage() {
                 <Layers className="w-5 h-5" />
                 <span>{t('position.create.noPhases')}</span>
                 <a
-                  href="/company/settings/phases"
+                  href={getPath('settings/phases')}
                   className="text-blue-600 hover:underline ml-2"
                 >
                   {t('position.create.createOne')}
@@ -214,7 +216,7 @@ export default function WorkflowSelectionPage() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <button
-        onClick={() => navigate('/company/positions')}
+        onClick={() => navigate(getPath('positions'))}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
       >
         <ArrowLeft className="w-5 h-5" />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, ArrowUp, ArrowDown } from 'lucide-react';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
 import { phaseService } from '../../services/phaseService.ts';
 import { api } from '../../lib/api.ts';
@@ -28,9 +29,11 @@ interface CreateWorkflowPageProps {
 
 export default function CreateWorkflowPage({
   workflowType = 'CA',
-  backRoute = '/company/settings/hiring-pipelines'
+  backRoute
 }: CreateWorkflowPageProps) {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
+  const resolvedBackRoute = backRoute || getPath('settings/hiring-pipelines');
   const [searchParams] = useSearchParams();
   const defaultPhaseId = searchParams.get('phaseId') || '';
 
@@ -241,7 +244,7 @@ export default function CreateWorkflowPage({
         });
       }
 
-      navigate(backRoute);
+      navigate(resolvedBackRoute);
     } catch (err: any) {
       setError(err.message || 'Failed to create workflow');
       console.error('Error creating workflow:', err);
@@ -255,7 +258,7 @@ export default function CreateWorkflowPage({
       {/* Header */}
       <div className="mb-6">
         <button
-          onClick={() => navigate(backRoute)}
+          onClick={() => navigate(resolvedBackRoute)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -320,7 +323,7 @@ export default function CreateWorkflowPage({
                 <div className="text-sm text-gray-500">Loading phases...</div>
               ) : phases.length === 0 ? (
                 <div className="text-sm text-gray-500">
-                  No phases available. <a href="/company/settings/phases" className="text-blue-600 hover:underline">Create phases first</a>
+                  No phases available. <a href={getPath('settings/phases')} className="text-blue-600 hover:underline">Create phases first</a>
                 </div>
               ) : (
                 <select
@@ -546,7 +549,7 @@ export default function CreateWorkflowPage({
                       <div className="text-sm text-gray-500">Loading roles...</div>
                     ) : roles.length === 0 ? (
                       <div className="text-sm text-gray-500">
-                        No roles available. <a href="/company/settings/roles" className="text-blue-600 hover:underline">Create roles first</a>
+                        No roles available. <a href={getPath('settings/roles')} className="text-blue-600 hover:underline">Create roles first</a>
                       </div>
                     ) : (
                       <div className="space-y-2 p-4 border border-gray-300 rounded-lg bg-gray-50">
@@ -581,7 +584,7 @@ export default function CreateWorkflowPage({
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={() => navigate('/company/settings')}
+            onClick={() => navigate(getPath('settings'))}
             className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Cancel

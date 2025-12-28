@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { companyWorkflowService } from '../../services/companyWorkflowService.ts';
@@ -10,9 +11,10 @@ import { EntityCustomFieldEditor, FieldVisibilityMatrix } from '../../components
 
 export default function WorkflowAdvancedConfigPage() {
   console.log('WorkflowAdvancedConfigPage component rendered');
-  
+
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const { workflowId } = useParams<{ workflowId: string }>();
   
   console.log('workflowId from params:', workflowId);
@@ -95,7 +97,7 @@ export default function WorkflowAdvancedConfigPage() {
   };
 
   const handleBack = () => {
-    navigate('/company/settings/hiring-pipelines');
+    navigate(getPath('settings/hiring-pipelines'));
   };
 
   if (loading) {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { PositionService } from '../../services/positionService';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import { EntityCustomizationService } from '../../services/entityCustomizationService';
@@ -109,6 +110,7 @@ const loadCandidateVisibleFields = async (
 export default function EditPositionPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
@@ -229,7 +231,7 @@ export default function EditPositionPage() {
     }
 
     await PositionService.updatePosition(id, data);
-    navigate(`/company/positions/${id}`);
+    navigate(getPath(`positions/${id}`));
   };
 
   if (loading) {

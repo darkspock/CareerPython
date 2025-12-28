@@ -58,6 +58,24 @@ export type TemplateFilters = {
   page_size?: number;
 };
 
+/**
+ * Get the company slug from localStorage
+ */
+function getCompanySlug(): string {
+  const slug = localStorage.getItem('company_slug');
+  if (!slug) {
+    throw new Error('Company slug not found. Please log in again.');
+  }
+  return slug;
+}
+
+/**
+ * Get the base path for interview template endpoints (company-scoped)
+ */
+function getBasePath(): string {
+  return `/${getCompanySlug()}/admin/interview-templates`;
+}
+
 export const companyInterviewTemplateService = {
   /**
    * List all interview templates for the company
@@ -72,11 +90,11 @@ export const companyInterviewTemplateService = {
     if (filters?.page) queryParams.append('page', filters.page.toString());
     if (filters?.page_size) queryParams.append('page_size', filters.page_size.toString());
 
-    const endpoint = `/api/company/interview-templates${queryParams.toString() ? `?${queryParams}` : ''}`;
+    const endpoint = `${getBasePath()}${queryParams.toString() ? `?${queryParams}` : ''}`;
     try {
       const response = await ApiClient.authenticatedRequest<InterviewTemplate[]>(endpoint);
       console.log('[companyInterviewTemplateService] Raw response:', response);
-      
+
       // Handle different response formats
       if (Array.isArray(response)) {
         return response;
@@ -87,7 +105,7 @@ export const companyInterviewTemplateService = {
         // Handle wrapped response
         return (response as any).templates || [];
       }
-      
+
       console.warn('[companyInterviewTemplateService] Unexpected response format:', response);
       return [];
     } catch (error) {
@@ -100,14 +118,14 @@ export const companyInterviewTemplateService = {
    * Get a single interview template by ID
    */
   async getTemplate(templateId: string): Promise<InterviewTemplate> {
-    return ApiClient.authenticatedRequest<InterviewTemplate>(`/api/company/interview-templates/${templateId}`);
+    return ApiClient.authenticatedRequest<InterviewTemplate>(`${getBasePath()}/${templateId}`);
   },
 
   /**
    * Create a new interview template
    */
   async createTemplate(data: Partial<InterviewTemplate>): Promise<InterviewTemplate> {
-    return ApiClient.authenticatedRequest<InterviewTemplate>('/api/company/interview-templates', {
+    return ApiClient.authenticatedRequest<InterviewTemplate>(getBasePath(), {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -117,7 +135,7 @@ export const companyInterviewTemplateService = {
    * Update an interview template
    */
   async updateTemplate(templateId: string, data: Partial<InterviewTemplate>): Promise<InterviewTemplate> {
-    return ApiClient.authenticatedRequest<InterviewTemplate>(`/api/company/interview-templates/${templateId}`, {
+    return ApiClient.authenticatedRequest<InterviewTemplate>(`${getBasePath()}/${templateId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -131,7 +149,7 @@ export const companyInterviewTemplateService = {
     if (deleteReason) queryParams.append('delete_reason', deleteReason);
     if (forceDelete) queryParams.append('force_delete', 'true');
 
-    await ApiClient.authenticatedRequest(`/api/company/interview-templates/${templateId}?${queryParams.toString()}`, {
+    await ApiClient.authenticatedRequest(`${getBasePath()}/${templateId}?${queryParams.toString()}`, {
       method: 'DELETE',
     });
   },
@@ -143,7 +161,7 @@ export const companyInterviewTemplateService = {
     const body: any = {};
     if (enableReason) body.enable_reason = enableReason;
 
-    await ApiClient.authenticatedRequest(`/api/company/interview-templates/${templateId}/enable`, {
+    await ApiClient.authenticatedRequest(`${getBasePath()}/${templateId}/enable`, {
       method: 'POST',
       body: JSON.stringify(body),
     });
@@ -157,7 +175,7 @@ export const companyInterviewTemplateService = {
     if (disableReason) body.disable_reason = disableReason;
     if (forceDisable) body.force_disable = forceDisable;
 
-    await ApiClient.authenticatedRequest(`/api/company/interview-templates/${templateId}/disable`, {
+    await ApiClient.authenticatedRequest(`${getBasePath()}/${templateId}/disable`, {
       method: 'POST',
       body: JSON.stringify(body),
     });
@@ -168,7 +186,7 @@ export const companyInterviewTemplateService = {
    */
   async getQuestionsBySection(sectionId: string): Promise<InterviewTemplateQuestion[]> {
     return ApiClient.authenticatedRequest<InterviewTemplateQuestion[]>(
-      `/api/company/interview-templates/sections/${sectionId}/questions`
+      `${getBasePath()}/sections/${sectionId}/questions`
     );
   },
 
@@ -220,7 +238,7 @@ export const companyInterviewTemplateService = {
     legal_notice?: string;
   }): Promise<InterviewTemplateSection> {
     return ApiClient.authenticatedRequest<InterviewTemplateSection>(
-      '/api/company/interview-templates/sections',
+      `${getBasePath()}/sections`,
       {
         method: 'POST',
         body: JSON.stringify(data),
@@ -244,7 +262,7 @@ export const companyInterviewTemplateService = {
     scoring_values?: Array<{ label: string; scoring: number }>;
   }): Promise<InterviewTemplateQuestion> {
     return ApiClient.authenticatedRequest<InterviewTemplateQuestion>(
-      '/api/company/interview-templates/questions',
+      `${getBasePath()}/questions`,
       {
         method: 'POST',
         body: JSON.stringify(data),
@@ -267,7 +285,7 @@ export const companyInterviewTemplateService = {
     scoring_values: Array<{ label: string; scoring: number }>;
   }>): Promise<InterviewTemplateQuestion> {
     return ApiClient.authenticatedRequest<InterviewTemplateQuestion>(
-      `/api/company/interview-templates/questions/${questionId}`,
+      `${getBasePath()}/questions/${questionId}`,
       {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -280,7 +298,7 @@ export const companyInterviewTemplateService = {
    */
   async deleteQuestion(questionId: string): Promise<void> {
     await ApiClient.authenticatedRequest(
-      `/api/company/interview-templates/questions/${questionId}`,
+      `${getBasePath()}/questions/${questionId}`,
       {
         method: 'DELETE',
       }
@@ -347,4 +365,3 @@ export const companyInterviewTemplateService = {
     return this.getTemplateWithQuestions(template.id);
   },
 };
-

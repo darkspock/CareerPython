@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ import type { Position } from '../../types/position';
 
 export default function AddCandidatePage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -152,7 +154,7 @@ export default function AddCandidatePage() {
         job_position_id: formData.job_position_id || undefined,
       });
 
-      navigate('/company/candidates');
+      navigate(getPath('candidates'));
     } catch (err: any) {
       setError(err.message || 'Failed to add candidate');
       console.error('Error adding candidate:', err);
@@ -167,7 +169,7 @@ export default function AddCandidatePage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/candidates')}
+          onClick={() => navigate(getPath('candidates'))}
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -358,7 +360,7 @@ export default function AddCandidatePage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/company/candidates')}
+                onClick={() => navigate(getPath('candidates'))}
               >
                 Cancel
               </Button>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { useTranslation } from 'react-i18next';
 import { Workflow, Users, Settings, Layers, RotateCcw, Building2, FileText, UserCog, Briefcase, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { PositionService } from '../../services/positionService';
 export default function CompanySettingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetting, setResetting] = useState(false);
 
@@ -60,7 +62,7 @@ export default function CompanySettingsPage() {
           `- Candidate phases: ${phasesResult?.length || 0}\n` +
           `- Job position workflows: ${workflowsResult?.length || 0}`;
         alert(message);
-        navigate('/company/settings/phases');
+        navigate(getPath('settings/phases'));
       } else {
         alert(t('company.settings.phasesAlreadyExist'));
       }
@@ -78,49 +80,49 @@ export default function CompanySettingsPage() {
       title: t('company.settings.contentPages.title'),
       description: t('company.settings.contentPages.description'),
       icon: FileText,
-      path: '/company/pages',
+      path: getPath('pages'),
       color: 'indigo',
     },
     {
       title: t('company.settings.phaseManagement.title'),
       description: t('company.settings.phaseManagement.description'),
       icon: Layers,
-      path: '/company/settings/phases',
+      path: getPath('settings/phases'),
       color: 'purple',
     },
     {
       title: t('company.settings.hiringPipelines.title'),
       description: t('company.settings.hiringPipelines.description'),
       icon: Workflow,
-      path: '/company/settings/hiring-pipelines',
+      path: getPath('settings/hiring-pipelines'),
       color: 'blue',
     },
     {
       title: t('company.settings.publicationWorkflows.title'),
       description: t('company.settings.publicationWorkflows.description'),
       icon: Briefcase,
-      path: '/company/settings/publication-workflows',
+      path: getPath('settings/publication-workflows'),
       color: 'indigo',
     },
     {
       title: t('company.settings.companyRoles.title'),
       description: t('company.settings.companyRoles.description'),
       icon: Users,
-      path: '/company/settings/roles',
+      path: getPath('settings/roles'),
       color: 'green',
     },
     {
       title: 'Usuarios',
       description: 'Gestiona los usuarios de la empresa',
       icon: UserCog,
-      path: '/company/users',
+      path: getPath('users'),
       color: 'orange',
     },
     {
       title: 'Interview Templates',
       description: 'Gestiona los interview templates para candidatos',
       icon: MessageSquare,
-      path: '/company/interview-templates',
+      path: getPath('interview-templates'),
       color: 'teal',
     },
   ];
@@ -151,7 +153,7 @@ export default function CompanySettingsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Company Profile Card */}
         <Link
-          to="/company/settings/edit"
+          to={getPath('settings/edit')}
           className="group"
         >
           <Card className="h-full hover:shadow-md transition-all duration-200 hover:border-gray-300">
@@ -213,7 +215,7 @@ export default function CompanySettingsPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('company.settings.quickAccess.title')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
-              to="/company/settings/hiring-pipelines/create"
+              to={getPath('settings/hiring-pipelines/create')}
               className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
             >
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
@@ -225,7 +227,7 @@ export default function CompanySettingsPage() {
               </div>
             </Link>
             <Link
-              to="/company/settings/roles"
+              to={getPath('settings/roles')}
               className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors"
             >
               <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-semibold">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { Plus, Search, FileText, Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ import { PAGE_TYPE_OPTIONS, PAGE_STATUS_OPTIONS } from '../../types/companyPage'
 
 export default function CompanyPagesListPage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pages, setPages] = useState<CompanyPage[]>([]);
@@ -82,11 +84,11 @@ export default function CompanyPagesListPage() {
   };
 
   const handleEdit = (pageId: string) => {
-    navigate(`/company/pages/${pageId}/edit`);
+    navigate(getPath(`pages/${pageId}/edit`));
   };
 
   const handleView = (pageId: string) => {
-    navigate(`/company/pages/${pageId}/view`);
+    navigate(getPath(`pages/${pageId}/view`));
   };
 
   const handlePublish = async (pageId: string) => {
@@ -137,7 +139,7 @@ export default function CompanyPagesListPage() {
           <h1 className="text-2xl font-bold text-gray-900">Páginas de Contenido</h1>
           <p className="text-muted-foreground mt-1">Gestiona las páginas de contenido de tu empresa</p>
         </div>
-        <Button onClick={() => navigate('/company/pages/create')}>
+        <Button onClick={() => navigate(getPath('pages/create'))}>
           <Plus className="w-4 h-4 mr-2" />
           Nueva Página
         </Button>
@@ -261,7 +263,7 @@ export default function CompanyPagesListPage() {
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No hay páginas</h3>
             <p className="text-muted-foreground mb-4">Comienza creando tu primera página de contenido.</p>
-            <Button onClick={() => navigate('/company/pages/create')}>
+            <Button onClick={() => navigate(getPath('pages/create'))}>
               <Plus className="w-4 h-4 mr-2" />
               Crear Primera Página
             </Button>

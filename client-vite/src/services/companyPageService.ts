@@ -3,28 +3,27 @@ import { API_BASE_URL } from '../config/api';
 import { PageType, PageStatus, type CompanyPage, type CompanyPageFilters, type CompanyPageListResponse, type CreateCompanyPageRequest, type UpdateCompanyPageRequest } from '../types/companyPage';
 
 class CompanyPageService {
-  private getCompanyId(): string | null {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.company_id;
-    } catch {
-      return null;
+  /**
+   * Get the company slug from localStorage
+   */
+  private getCompanySlug(): string {
+    const slug = localStorage.getItem('company_slug');
+    if (!slug) {
+      throw new Error('Company slug not found. Please log in again.');
     }
+    return slug;
   }
 
+  /**
+   * Get the base path for company page endpoints (company-scoped)
+   */
   private getBaseUrl(): string {
-    const companyId = this.getCompanyId();
-    if (!companyId) {
-      throw new Error('Company ID not found in token');
-    }
-    return `/api/company/${companyId}/pages`;
+    return `/${this.getCompanySlug()}/admin/pages`;
   }
 
   async getPages(filters: CompanyPageFilters = {}): Promise<CompanyPageListResponse> {
     const params = new URLSearchParams();
-    
+
     if (filters.page_type) {
       // Convert key to value (e.g., 'PUBLIC_COMPANY_DESCRIPTION' -> 'public_company_description')
       const pageTypeValue = PageType[filters.page_type];
@@ -43,8 +42,7 @@ class CompanyPageService {
   }
 
   async getPageById(pageId: string): Promise<CompanyPage> {
-    // Use the endpoint without company_id: /api/company/pages/{page_id}
-    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}`);
+    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}`);
     return response as CompanyPage;
   }
 
@@ -72,8 +70,7 @@ class CompanyPageService {
   }
 
   async updatePage(pageId: string, data: UpdateCompanyPageRequest): Promise<CompanyPage> {
-    // Use the endpoint without company_id: /api/company/pages/{page_id}
-    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}`, {
+    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -82,51 +79,47 @@ class CompanyPageService {
   }
 
   async publishPage(pageId: string): Promise<CompanyPage> {
-    // Use the endpoint without company_id: /api/company/pages/{page_id}/publish
-    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}/publish`, {
+    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}/publish`, {
       method: 'POST',
     });
     return response as CompanyPage;
   }
 
   async archivePage(pageId: string): Promise<CompanyPage> {
-    // Use the endpoint without company_id: /api/company/pages/{page_id}/archive
-    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}/archive`, {
+    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}/archive`, {
       method: 'POST',
     });
     return response as CompanyPage;
   }
 
   async setDefaultPage(pageId: string): Promise<CompanyPage> {
-    // Use the endpoint without company_id: /api/company/pages/{page_id}/set-default
-    const response = await api.authenticatedRequest(`/api/company/pages/${pageId}/set-default`, {
+    const response = await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}/set-default`, {
       method: 'POST',
     });
     return response as CompanyPage;
   }
 
   async deletePage(pageId: string): Promise<void> {
-    // Use the endpoint without company_id: /api/company/pages/{page_id}
-    await api.authenticatedRequest(`/api/company/pages/${pageId}`, {
+    await api.authenticatedRequest(`${this.getBaseUrl()}/${pageId}`, {
       method: 'DELETE',
     });
   }
 
   // Methods for public pages (no authentication required)
-  async getPublicPage(companyId: string, pageType: keyof typeof PageType): Promise<CompanyPage | null> {
+  async getPublicPage(companySlug: string, pageType: keyof typeof PageType): Promise<CompanyPage | null> {
     try {
       // Convert key to value (e.g., 'PUBLIC_COMPANY_DESCRIPTION' -> 'public_company_description')
       const pageTypeValue = PageType[pageType];
       // Use public endpoint without authentication
-      const response = await fetch(`${API_BASE_URL}/api/public/company/${companyId}/pages/${pageTypeValue}`);
-      
+      const response = await fetch(`${API_BASE_URL}/${companySlug}/pages/${pageTypeValue}`);
+
       if (!response.ok) {
         if (response.status === 404) {
           return null;
         }
         throw new Error(`Failed to fetch company page: ${response.statusText}`);
       }
-      
+
       return await response.json() as CompanyPage;
     } catch (error: any) {
       if (error.message?.includes('404') || error.message?.includes('not found')) {

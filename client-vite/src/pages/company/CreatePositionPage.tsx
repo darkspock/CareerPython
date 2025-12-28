@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { PositionService } from '../../services/positionService';
 import { companyWorkflowService } from '../../services/companyWorkflowService';
 import type { CreatePositionRequest, UpdatePositionRequest, JobPositionWorkflow, JobPositionWorkflowStage } from '../../types/position';
@@ -8,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function CreatePositionPage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export default function CreatePositionPage() {
 
       // If workflows were not selected (direct access to create page), redirect to workflow selection
       if (!publicationWorkflowId || !phaseWorkflowsParam) {
-        navigate('/company/positions/select-workflows');
+        navigate(getPath('positions/select-workflows'));
         return;
       }
 
@@ -51,7 +53,7 @@ export default function CreatePositionPage() {
         setPhaseWorkflows(parsedPhaseWorkflows);
       } catch {
         console.error('Failed to parse phase_workflows');
-        navigate('/company/positions/select-workflows');
+        navigate(getPath('positions/select-workflows'));
         return;
       }
 
@@ -132,7 +134,7 @@ export default function CreatePositionPage() {
     };
 
     await PositionService.createPosition(requestData);
-    navigate('/company/positions');
+    navigate(getPath('positions'));
   };
 
   if (loading) {

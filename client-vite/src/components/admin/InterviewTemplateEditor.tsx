@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Plus, ChevronUp, ChevronDown, Pencil, MessageSquare, Power, PowerOff, Trash2, X, FileText, Star } from 'lucide-react';
 import { api } from '../../lib/api';
 import { InterviewTemplateType } from '../../types/interview';
@@ -70,11 +71,12 @@ interface InterviewTemplateSection {
 const InterviewTemplateEditor: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const { templateId } = useParams<{ templateId?: string }>();
   const isEditing = !!templateId;
-  
+
   // Only company context - admin doesn't have templates
-  const basePath = '/company/interview-templates';
+  const basePath = getPath('interview-templates');
   const apiBasePath = '/api/company/interview-templates';
 
   const [loading, setLoading] = useState(false);

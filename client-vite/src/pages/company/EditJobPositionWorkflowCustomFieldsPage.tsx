@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { PositionService } from '../../services/positionService';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ interface StageFormData {
 
 export default function EditJobPositionWorkflowCustomFieldsPage() {
   const navigate = useNavigate();
+  const { getPath } = useCompanyNavigation();
   const { workflowId } = useParams<{ workflowId: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -130,7 +132,7 @@ export default function EditJobPositionWorkflowCustomFieldsPage() {
         custom_fields_config: customFieldsConfig,
       });
 
-      navigate('/company/settings/publication-workflows');
+      navigate(getPath('settings/publication-workflows'));
     } catch (err: any) {
       setError(err.message || 'Failed to update custom fields configuration');
       console.error('Error updating custom fields:', err);
@@ -153,7 +155,7 @@ export default function EditJobPositionWorkflowCustomFieldsPage() {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/company/settings/publication-workflows')}
+          onClick={() => navigate(getPath('settings/publication-workflows'))}
           className="mb-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -544,7 +546,7 @@ export default function EditJobPositionWorkflowCustomFieldsPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/company/settings/publication-workflows')}
+            onClick={() => navigate(getPath('settings/publication-workflows'))}
           >
             Cancel
           </Button>
